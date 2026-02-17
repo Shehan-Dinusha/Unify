@@ -104,73 +104,78 @@ const VerificationQueue = () => {
         </div>
 
         {/* Filter Bar */}
-        <Card variant="container" className="p-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            {/* Search */}
-            <div className="relative w-full md:w-96">
-                <img src="/icon_search.svg" alt="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] opacity-50" />
-                <input 
-                    type="text" 
-                    placeholder="Search by name, ID or entity..." 
-                    className="w-full h-10 pl-10 pr-4 bg-dark-4 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:border-primary-blue transition-colors"
-                />
-            </div>
+        <Card variant="container" className="">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                {/* Search */}
+                <div className="relative w-full md:w-96">
+                    <img src="/icon_search.svg" alt="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] opacity-50" />
+                    <input 
+                        type="text" 
+                        placeholder="Search by name, ID or entity..." 
+                        className="w-full h-10 pl-10 pr-4 bg-dark-4 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:border-primary-blue transition-colors"
+                    />
+                </div>
 
-            {/* Filters */}
-            <div className="flex items-center gap-2">
-                <Button size="small" variant="primary" className="h-9">All Requests</Button>
-                <Button size="small" variant="secondary" className="h-9 bg-dark-4 text-slate-300">Clubs</Button>
-                <Button size="small" variant="secondary" className="h-9 bg-dark-4 text-slate-300">Batch Reps</Button>
+                {/* Filters */}
+                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                    <Button size="small" variant="primary" className="h-9 whitespace-nowrap">All Requests</Button>
+                    <Button size="small" variant="secondary" className="h-9 bg-dark-4 text-slate-300 whitespace-nowrap border border-slate-700">Clubs</Button>
+                    <Button size="small" variant="secondary" className="h-9 bg-dark-4 text-slate-300 whitespace-nowrap border border-slate-700">Batch Reps</Button>
+                </div>
             </div>
         </Card>
 
         {/* Request List */}
-        <div className="flex flex-col gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {mockRequests.map((req) => (
-                <Card key={req.id} variant="container" className="p-0 overflow-hidden">
-                    <div className="flex flex-col md:flex-row h-full">
-                        {/* Summary Section */}
-                        <div className="w-full md:w-96 p-5 border-b md:border-b-0 md:border-r border-white/10 flex flex-col justify-between">
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-start gap-3">
-                                    <img src={req.avatar} alt={req.name} className="w-12 h-12 rounded-full border border-slate-700" />
-                                    <div>
-                                        <h3 className="text-base font-bold text-white">{req.name}</h3>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className={`px-2 py-0.5 rounded text-xs font-bold font-inter ${
-                                                req.type === 'Club' ? 'bg-indigo-900/30 text-indigo-300' : 'bg-purple-900/30 text-purple-300'
-                                            }`}>
-                                                {req.type}
-                                            </span>
-                                            <span className="text-slate-400 text-xs font-normal">• {req.time}</span>
-                                        </div>
+                <Card key={req.id} variant="container" className="h-full">
+                    <div className="flex flex-col gap-6 h-full">
+                        {/* Header Section */}
+                        <div className="flex justify-between items-start">
+                            <div className="flex gap-3">
+                                <img src={req.avatar} alt={req.name} className="w-12 h-12 rounded-full border border-slate-700 object-cover" />
+                                <div>
+                                    <h3 className="text-base font-bold text-white">{req.name}</h3>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className={`px-2 py-0.5 rounded text-xs font-bold font-inter ${
+                                            req.type === 'Club' ? 'bg-indigo-900/30 text-indigo-300' : 'bg-purple-900/30 text-purple-300'
+                                        }`}>
+                                            {req.type}
+                                        </span>
+                                        <span className="text-slate-400 text-xs font-normal">• {req.time}</span>
                                     </div>
                                 </div>
-                                <div className="p-1.5 bg-yellow-900/30 rounded-full flex items-center justify-center">
-                                   <img src="/icon_pending.svg" alt="Pending Status" className="w-3 h-3" />
-                                </div>
                             </div>
+                            <div className="p-1.5 bg-yellow-900/20 rounded flex items-center justify-center">
+                               <img src="/icon_pending.svg" alt="Pending Status" className="w-3 h-3 text-yellow-500" />
+                            </div>
+                        </div>
 
-                            {/* File Preview */}
-                            <div className="mt-6 p-3 bg-dark-4 rounded-lg border border-slate-700 flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded flex items-center justify-center ${
+                        {/* File Preview */}
+                        <div className="p-3 bg-dark-4 rounded-lg border border-slate-700 flex items-center justify-between">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                                <div className={`w-10 h-10 rounded flex-shrink-0 flex items-center justify-center ${
                                     req.fileType === 'pdf' ? 'bg-red-900/20' : 
                                     req.fileType === 'doc' ? 'bg-blue-900/20' : 'bg-orange-900/20'
                                 }`}>
-                                   {req.fileType === 'pdf' && <img src="/icon_file_pdf.svg" className="w-6 h-6" />}
-                                   {req.fileType === 'doc' && <img src="/icon_docs.svg" className="w-6 h-6" />}
-                                   {req.fileType === 'image' && <img src="/icon_image.svg" className="w-6 h-6" />}
+                                   {req.fileType === 'pdf' && <img src="/icon_file_pdf.svg" className="w-5 h-5" />}
+                                   {req.fileType === 'doc' && <img src="/icon_docs.svg" className="w-5 h-5" />}
+                                   {req.fileType === 'image' && <img src="/icon_image.svg" className="w-5 h-5" />}
                                 </div>
-                                <div className="flex-1 overflow-hidden">
-                                    <p className="text-white text-sm truncate">{req.file}</p>
+                                <div className="min-w-0">
+                                    <p className="text-white text-sm font-medium truncate">{req.file}</p>
                                     <p className="text-slate-400 text-xs">{req.fileSize}</p>
                                 </div>
                             </div>
+                            <button className="flex-shrink-0 text-slate-400 hover:text-primary-blue transition-colors">
+                                <img src="/icon_view.svg" alt="View" className="w-5 h-5 opacity-50 hover:opacity-100" />
+                            </button>
+                        </div>
 
-                            {/* Actions */}
-                            <div className="mt-4 pt-4 border-t border-slate-700 flex gap-3">
-                                <Button variant="dangerOutline" className="flex-1 h-12 bg-red-400/5 text-red-400 border-red-400 hover:bg-red-400/10">Reject</Button>
-                                <Button variant="primary" className="flex-1 h-12 shadow-custom">Verify</Button>
-                            </div>
+                        {/* Actions */}
+                        <div className="grid grid-cols-2 gap-3 mt-auto">
+                            <Button variant="dangerOutline" className="h-[42px] border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50">Reject</Button>
+                            <Button variant="primary" className="h-[42px] shadow-none bg-primary-blue hover:bg-primary-blue/90">Verify</Button>
                         </div>
                     </div>
                 </Card>
