@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -37,8 +38,28 @@ const VerificationQueue = () => {
       fileSize: "1.2 MB",
       fileType: "image",
       status: "pending"
+    },
+    {
+      id: 4,
+      name: "Debate Society",
+      type: "Club",
+      time: "1 day ago",
+      avatar: "https://placehold.co/48x48",
+      file: "speaker_profile_pic.jpg",
+      fileSize: "1.2 MB",
+      fileType: "image",
+      status: "pending"
     }
   ];
+
+  const [filter, setFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredRequests = mockRequests.filter(req => {
+    const matchesFilter = filter === 'All' || req.type === filter;
+    const matchesSearch = req.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   const headerActions = (
     <div className="flex bg-white/5 p-1 rounded-2xl border border-primary-blue/20">
@@ -58,6 +79,7 @@ const VerificationQueue = () => {
       user={{ name: "Alex Johnson", role: "admin" }}
       pageTitle="Verification Queue"
       headerRight={headerActions}
+      verificationCount={mockRequests.length}
     >
       <div className="flex flex-col gap-8 w-full max-w-[1122px]">
         {/* Stats Row */}
@@ -71,7 +93,7 @@ const VerificationQueue = () => {
                 <p className="text-sm font-bold text-white">Total Pending</p>
              </div>
              <div className="absolute top-[100px] left-6 flex items-end gap-2">
-                <span className="text-3xl font-bold text-white">14</span>
+                <span className="text-3xl font-bold text-white">{mockRequests.length}</span>
                 <span className="text-sm font-bold text-state-success pb-1">+2 new</span>
              </div>
           </Card>
@@ -112,22 +134,45 @@ const VerificationQueue = () => {
                     <input 
                         type="text" 
                         placeholder="Search by name, ID or entity..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full h-10 pl-10 pr-4 bg-dark-4 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-400 focus:outline-none focus:border-primary-blue transition-colors"
                     />
                 </div>
 
                 {/* Filters */}
                 <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-                    <Button size="small" variant="primary" className="h-9 whitespace-nowrap">All Requests</Button>
-                    <Button size="small" variant="secondary" className="h-9 bg-dark-4 text-slate-300 whitespace-nowrap border border-slate-700">Clubs</Button>
-                    <Button size="small" variant="secondary" className="h-9 bg-dark-4 text-slate-300 whitespace-nowrap border border-slate-700">Batch Reps</Button>
+                    <Button 
+                        size="small" 
+                        variant={filter === 'All' ? 'primary' : 'secondary'} 
+                        className={`h-9 whitespace-nowrap ${filter !== 'All' ? 'bg-dark-4 text-slate-300 border border-slate-700' : ''}`}
+                        onClick={() => setFilter('All')}
+                    >
+                        All Requests
+                    </Button>
+                    <Button 
+                        size="small" 
+                        variant={filter === 'Club' ? 'primary' : 'secondary'} 
+                        className={`h-9 whitespace-nowrap ${filter !== 'Club' ? 'bg-dark-4 text-slate-300 border border-slate-700' : ''}`}
+                        onClick={() => setFilter('Club')}
+                    >
+                        Clubs
+                    </Button>
+                    <Button 
+                        size="small" 
+                        variant={filter === 'Batch Rep' ? 'primary' : 'secondary'} 
+                        className={`h-9 whitespace-nowrap ${filter !== 'Batch Rep' ? 'bg-dark-4 text-slate-300 border border-slate-700' : ''}`}
+                        onClick={() => setFilter('Batch Rep')}
+                    >
+                        Batch Reps
+                    </Button>
                 </div>
             </div>
         </Card>
 
         {/* Request List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockRequests.map((req) => (
+            {filteredRequests.map((req) => (
                 <Card key={req.id} variant="container" className="h-full">
                     <div className="flex flex-col gap-6 h-full">
                         {/* Header Section */}

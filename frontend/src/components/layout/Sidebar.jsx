@@ -35,7 +35,7 @@ const SidebarItem = ({ icon: Icon, iconSrc, label, badge, active = false, isDang
         )}
         <span className="text-base font-bold font-inter leading-5">{label}</span>
       </div>
-      {badge && (
+      {!!badge && (
         <div className="w-5 h-5 bg-primary-blue rounded-full flex justify-center items-center border border-white/10 shadow-lg">
           <span className="text-white text-[10px] font-bold font-inter">{badge}</span>
         </div>
@@ -44,7 +44,7 @@ const SidebarItem = ({ icon: Icon, iconSrc, label, badge, active = false, isDang
   );
 };
 
-const UnifiedSidebar = ({ user }) => {
+const UnifiedSidebar = ({ user, verificationCount }) => {
   // Configuration Map for different user roles
   const roleConfigs = {
     student: {
@@ -65,7 +65,7 @@ const UnifiedSidebar = ({ user }) => {
         { iconSrc: "/icon_report_moderation.svg", label: "Report Moderation", badge: 3 },
         { iconSrc: "/icon_suspended_users.svg", label: "Suspended Users", badge: 3 },
         { iconSrc: "/icon_boost_controller.svg", label: "Boost Controller" },
-        { iconSrc: "/icon_tab_verified.svg", label: "Verification Queue", badge: 3, path: "/verification-queue" },
+        { iconSrc: "/icon_tab_verified.svg", label: "Verification Queue", badge: verificationCount, path: "/verification-queue" },
       ]
     },
     business: {
