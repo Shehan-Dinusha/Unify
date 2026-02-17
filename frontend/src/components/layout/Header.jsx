@@ -19,7 +19,9 @@ const Header = ({ title = "News Feed", rightContent }) => {
         ) : (
           <div className="flex items-center gap-2">
             {/* Default Search Icon Toggle */}
-            <Button variant="ghost" icon={Search} iconOnly onClick={() => console.log('Search')} />
+            <button className="p-2 relative flex items-center justify-center shrink-0 hover:bg-white/5 rounded-full transition-colors" onClick={() => console.log('Search')}>
+               <img src="/icon_search.svg" alt="Search" className="w-6 h-6 opacity-70" />
+            </button>
             
             <Button 
                 variant="ghost" 

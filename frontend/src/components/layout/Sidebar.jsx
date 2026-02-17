@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 // Sub-component for individual Nav Items
-const SidebarItem = ({ icon: Icon, label, badge, active = false, isDanger = false, path }) => {
+const SidebarItem = ({ icon: Icon, iconSrc, label, badge, active = false, isDanger = false, path }) => {
   const baseStyles = "w-full px-3 py-2.5 rounded-xl inline-flex justify-between items-center transition-all duration-200 cursor-pointer group";
   
   const activeStyles = active 
@@ -24,7 +24,15 @@ const SidebarItem = ({ icon: Icon, label, badge, active = false, isDanger = fals
       onClick={() => path && navigate(path)}
     >
       <div className="flex items-center gap-3">
-        <Icon size={22} className={active ? "text-white" : "group-hover:scale-110 transition-transform"} />
+        {iconSrc ? (
+          <img 
+            src={iconSrc} 
+            alt={label} 
+            className={`w-[22px] h-[22px] object-contain transition-transform group-hover:scale-110 ${active ? 'brightness-200 contrast-200' : 'opacity-70 group-hover:opacity-100'}`} 
+          />
+        ) : (
+          <Icon size={22} className={active ? "text-white" : "group-hover:scale-110 transition-transform"} />
+        )}
         <span className="text-base font-bold font-inter leading-5">{label}</span>
       </div>
       {badge && (
@@ -53,11 +61,11 @@ const UnifiedSidebar = ({ user }) => {
     admin: {
       title: "Admin Dashboard",
       links: [
-        { icon: LayoutDashboard, label: "Dashboard", active: true, path: "/" },
-        { icon: ShieldAlert, label: "Report Moderation", badge: 3 },
-        { icon: UserX, label: "Suspended Users", badge: 3 },
-        { icon: Zap, label: "Boost Controller" },
-        { icon: UserCheck, label: "Verification Queue", badge: 3, path: "/verification-queue" },
+        { iconSrc: "/icon_dashboard.svg", label: "Dashboard", active: true, path: "/" },
+        { iconSrc: "/icon_report_moderation.svg", label: "Report Moderation", badge: 3 },
+        { iconSrc: "/icon_suspended_users.svg", label: "Suspended Users", badge: 3 },
+        { iconSrc: "/icon_boost_controller.svg", label: "Boost Controller" },
+        { iconSrc: "/icon_tab_verified.svg", label: "Verification Queue", badge: 3, path: "/verification-queue" },
       ]
     },
     business: {
@@ -88,8 +96,8 @@ const UnifiedSidebar = ({ user }) => {
       {/* Brand & Dynamic Navigation */}
       <div className="w-full p-4 flex flex-col gap-6">
         <div className="p-2 flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary-blue rounded-xl flex items-center justify-center shadow-custom overflow-hidden">
-            <img src="/Unify_logo_White.svg" alt="Unify Logo" className="w-full h-full object-contain p-2" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-custom overflow-hidden">
+            <img src="/icon_unify_logo.svg" alt="Unify Logo" className="w-full h-full object-contain" />
           </div>
           <div className="overflow-hidden">
             <h1 className="text-white text-2xl font-bold font-inter leading-tight">Unify</h1>
@@ -108,7 +116,7 @@ const UnifiedSidebar = ({ user }) => {
       <div className="w-full px-4 pb-6 flex flex-col gap-4">
         <div className="h-px bg-white/10 w-full" />
         
-        <SidebarItem icon={LogOut} label="Log Out" isDanger />
+        <SidebarItem iconSrc="/icon_log_out.svg" label="Log Out" isDanger />
 
         <div className="w-full p-3 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer group">
           <img 
