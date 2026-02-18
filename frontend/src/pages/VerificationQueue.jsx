@@ -3,11 +3,63 @@ import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { mockRequests } from '../data/mockData';
+import { 
+    VerificationConfirmationModal, 
+    VerificationSuccessModal, 
+    VerificationRejectionModal, 
+    VerificationRejectedSuccessModal 
+} from '../components/common/VerificationModals';
 
 const VerificationQueue = () => {
 
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Modal State
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [verifiedRequest, setVerifiedRequest] = useState(null);
+
+  // Rejection State
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [showRejectionSuccessModal, setShowRejectionSuccessModal] = useState(false);
+  const [rejectedRequest, setRejectedRequest] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+
+  const handleVerifyClick = (request) => {
+    setSelectedRequest(request);
+  };
+
+  const handleConfirmVerify = () => {
+    // In a real app, you would make an API call here
+    setVerifiedRequest(selectedRequest);
+    setSelectedRequest(null);
+    setShowSuccessModal(true);
+  };
+
+  const handleCloseSuccess = () => {
+    setShowSuccessModal(false);
+    setVerifiedRequest(null);
+  };
+
+  // Rejection Handlers
+  const handleRejectClick = (request) => {
+    setRejectedRequest(request);
+    setShowRejectionModal(true);
+  };
+
+  const handleConfirmReject = (reason, customReason) => {
+    // In a real app, API call here
+    setRejectionReason(customReason ? customReason : reason);
+    setShowRejectionModal(false);
+    setShowRejectionSuccessModal(true);
+  };
+
+  const handleCloseRejectionSuccess = () => {
+    setShowRejectionSuccessModal(false);
+    setRejectedRequest(null);
+    setRejectionReason('');
+  };
 
   const filteredRequests = mockRequests.filter(req => {
     const matchesFilter = filter === 'All' || req.type === filter;
@@ -173,14 +225,53 @@ const VerificationQueue = () => {
 
                         {/* Actions */}
                         <div className="grid grid-cols-2 gap-sm mt-auto">
-                            <Button variant="dangerOutline" className="h-[42px] border-state-error/30 text-state-error hover:bg-state-error/10 hover:border-state-error/50">Reject</Button>
-                            <Button variant="primary" className="h-[42px] shadow-none bg-primary-blue hover:bg-primary-blue/90">Verify</Button>
+                            <Button 
+                                variant="dangerOutline" 
+                                className="h-[42px] border-state-error/30 text-state-error hover:bg-state-error/10 hover:border-state-error/50"
+                                onClick={() => handleRejectClick(req)}
+                            >
+                                Reject
+                            </Button>
+                            <Button 
+                                variant="primary" 
+                                className="h-[42px] shadow-none bg-primary-blue hover:bg-primary-blue/90"
+                                onClick={() => handleVerifyClick(req)}
+                            >
+                                Verify
+                            </Button>
                         </div>
                     </div>
                 </Card>
             ))}
         </div>
       </div>
+
+      {/* Verification Modals */}
+      <VerificationConfirmationModal 
+        isOpen={!!selectedRequest}
+        onClose={() => setSelectedRequest(null)}
+        onConfirm={handleConfirmVerify}
+      />
+      <VerificationSuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleCloseSuccess}
+        clubName={verifiedRequest?.name}
+      />
+
+      {/* Rejection Modals */}
+      <VerificationRejectionModal
+        isOpen={showRejectionModal}
+        onClose={() => setShowRejectionModal(false)}
+        onConfirm={handleConfirmReject}
+        clubName={rejectedRequest?.name}
+        requestType={rejectedRequest?.type}
+      />
+      <VerificationRejectedSuccessModal
+        isOpen={showRejectionSuccessModal}
+        onClose={handleCloseRejectionSuccess}
+        clubName={rejectedRequest?.name}
+        reason={rejectionReason}
+      />
     </MainLayout>
   );
 };
