@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import StatsCard from '../common/StatsCard';
 import VerifiedEntityCard from './VerifiedEntityCard';
 import { mockVerified } from '../../data/mockData';
 
@@ -13,8 +14,6 @@ const VerifiedList = () => {
         const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesFilter && matchesSearch;
     });
-
-    const categories = ['All', 'Club', 'Batch Rep'];
 
     // Stats calculations
     const totalVerified = mockVerified.length;
@@ -30,46 +29,31 @@ const VerifiedList = () => {
         <div className="flex flex-col gap-xl w-full max-w-[1122px]">
              {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-                {/* Verified Clubs */}
-                <Card variant="container" className="h-40 relative group transition-colors">
-                    <div className="absolute top-lg left-lg w-10 h-10 bg-blue-900/30 rounded-lg flex items-center justify-center">
-                         <img src="/icon_verified_clubs.svg" alt="Verified Clubs" className="w-6 h-6" />
-                    </div>
-                    <div className="absolute top-[80px] left-lg">
-                        <p className="text-body-small-bold text-text-secondary">Verified Clubs</p>
-                    </div>
-                    <div className="absolute top-[100px] left-lg flex items-end gap-sm">
-                        <span className="text-heading-medium text-text-primary">{verifiedClubs}</span>
-                        <span className="text-body-small-bold text-state-success pb-xs">+3 new</span>
-                    </div>
-                </Card>
-
-                {/* Batch Reps */}
-                <Card variant="container" className="h-40 relative group transition-colors">
-                    <div className="absolute top-lg left-lg w-10 h-10 bg-purple-900/30 rounded-lg flex items-center justify-center">
-                        <img src="/icon_batch_rep.svg" alt="Batch Reps" className="w-6 h-6" />
-                    </div>
-                    <div className="absolute top-[80px] left-lg">
-                        <p className="text-body-small-bold text-text-secondary">Batch Reps</p>
-                    </div>
-                    <div className="absolute top-[100px] left-lg flex items-end gap-sm">
-                        <span className="text-heading-medium text-text-primary">{verifiedReps}</span>
-                        <span className="text-body-small-bold text-state-success pb-xs">+1 new</span>
-                    </div>
-                </Card>
-
-                {/* Total Verified */}
-                <Card variant="container" className="h-40 relative group transition-colors">
-                    <div className="absolute top-lg left-lg w-10 h-10 bg-blue-500/5 rounded-lg flex items-center justify-center">
-                        <img src="/icon_verified_badge.svg" alt="Total Verified" className="w-6 h-6" />
-                    </div>
-                    <div className="absolute top-[80px] left-lg">
-                        <p className="text-body-small-bold text-text-secondary">Total Verified</p>
-                    </div>
-                    <div className="absolute top-[100px] left-lg">
-                        <span className="text-heading-medium text-text-primary">{totalVerified}</span>
-                    </div>
-                </Card>
+                <StatsCard 
+                    iconSrc="/icon_verified_clubs.svg" 
+                    iconAlt="Verified Clubs" 
+                    iconBgClass="bg-blue-900/30" 
+                    title="Verified Clubs" 
+                    value={verifiedClubs} 
+                    subValue="+3 new" 
+                    subValueClass="text-state-success" 
+                />
+                <StatsCard 
+                    iconSrc="/icon_batch_rep.svg" 
+                    iconAlt="Batch Reps" 
+                    iconBgClass="bg-purple-900/30" 
+                    title="Batch Reps" 
+                    value={verifiedReps} 
+                    subValue="+1 new" 
+                    subValueClass="text-state-success" 
+                />
+                <StatsCard 
+                    iconSrc="/icon_verified_badge.svg" 
+                    iconAlt="Total Verified" 
+                    iconBgClass="bg-blue-500/5" 
+                    title="Total Verified" 
+                    value={totalVerified} 
+                />
             </div>
 
             {/* Filter Bar */}
