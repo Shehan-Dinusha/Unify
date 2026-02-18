@@ -15,9 +15,9 @@ const Button = ({
   
   // Size Mapping
   const sizes = {
-    small: "h-9 px-4 text-body-small-bold rounded-2xl",
-    medium: "h-12 px-6 text-body-medium-bold rounded-2xl",
-    large: "h-14 px-8 text-body-large-bold rounded-2xl",
+    small: "h-9 px-md text-body-small-bold rounded-2xl",
+    medium: "h-12 px-lg text-body-medium-bold rounded-2xl",
+    large: "h-14 px-xl text-body-large-bold rounded-2xl",
   };
 
   // Variant Mapping

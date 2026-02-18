@@ -23,7 +23,7 @@ const Card = ({
       {...props}
     >
       {/* Content wrapper to ensure padding is consistent */}
-      <div className="p-6 h-full w-full">
+      <div className="p-lg h-full w-full">
         {children}
       </div>
     </div>
