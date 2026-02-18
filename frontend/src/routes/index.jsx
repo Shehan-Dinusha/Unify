@@ -1,10 +1,14 @@
 import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import VerificationQueue from '../pages/VerificationQueue';
+import AdminDashboard from '../pages/AdminDashboard';
+import RevenueOverview from '../pages/RevenueOverview';
+import ActiveBusinesses from '../pages/ActiveBusinesses';
+import StudentManagement from '../pages/StudentManagement';
 import { mockRequests } from '../data/mockData';
 
 const PlaceholderPage = ({ title, verificationCount }) => (
-  <MainLayout user={{name: "Alex Johnson", role: "admin"}} pageTitle={title} verificationCount={verificationCount}>
+  <MainLayout user={{ name: "Alex Johnson", role: "admin" }} pageTitle={title} verificationCount={verificationCount}>
     <div className="flex flex-col items-center justify-center h-full text-center p-lg">
       <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-lg">
         <span className="text-heading-large">🚧</span>
@@ -20,11 +24,23 @@ const PlaceholderPage = ({ title, verificationCount }) => (
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <PlaceholderPage title="Dashboard" verificationCount={mockRequests.length} />,
+    element: <AdminDashboard />,
   },
   {
     path: '/verification-queue',
     element: <VerificationQueue />,
+  },
+  {
+    path: '/revenue-overview',
+    element: <RevenueOverview />,
+  },
+  {
+    path: '/active-businesses',
+    element: <ActiveBusinesses />,
+  },
+  {
+    path: '/student-management',
+    element: <StudentManagement />,
   },
   { path: '/news-feed', element: <PlaceholderPage title="News Feed" verificationCount={mockRequests.length} /> },
   { path: '/notifications', element: <PlaceholderPage title="Notifications" verificationCount={mockRequests.length} /> },
