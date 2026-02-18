@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Rss, Bell, MessageSquare, PackageSearch, Store, GraduationCap, 
   LayoutDashboard, ShieldAlert, UserX, Zap, UserCheck, 
@@ -35,7 +35,7 @@ const SidebarItem = ({ icon: Icon, iconSrc, label, badge, active = false, isDang
         )}
         <span className="text-body-medium font-bold font-inter leading-5">{label}</span>
       </div>
-      {!!badge && (
+      {!!badge && !active && (
         <div className="w-5 h-5 bg-primary-blue rounded-full flex justify-center items-center border border-white/10 shadow-lg">
           <span className="text-text-primary text-body-extra-small-bold font-inter">{badge}</span>
         </div>
@@ -45,45 +45,47 @@ const SidebarItem = ({ icon: Icon, iconSrc, label, badge, active = false, isDang
 };
 
 const UnifiedSidebar = ({ user, verificationCount }) => {
+  const { pathname } = useLocation();
+
   // Configuration Map for different user roles
   const roleConfigs = {
     student: {
       title: "Student Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", active: true },
-        { icon: Bell, label: "Notification", badge: 3 },
-        { icon: MessageSquare, label: "Message", badge: 3 },
-        { icon: PackageSearch, label: "Lost & Found" },
-        { icon: Store, label: "Marketplace" },
-        { icon: GraduationCap, label: "Learning" },
+        { icon: Rss, label: "News Feed", path: "/news-feed" },
+        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
+        { icon: Store, label: "Marketplace", path: "/marketplace" },
+        { icon: GraduationCap, label: "Learning", path: "/learning" },
       ]
     },
     admin: {
       title: "Admin Dashboard",
       links: [
-        { iconSrc: "/icon_dashboard.svg", label: "Dashboard", active: true, path: "/" },
-        { iconSrc: "/icon_report_moderation.svg", label: "Report Moderation", badge: 3 },
-        { iconSrc: "/icon_suspended_users.svg", label: "Suspended Users", badge: 3 },
-        { iconSrc: "/icon_boost_controller.svg", label: "Boost Controller" },
+        { iconSrc: "/icon_dashboard.svg", label: "Dashboard", path: "/" },
+        { iconSrc: "/icon_report_moderation.svg", label: "Report Moderation", badge: 3, path: "/report-moderation" },
+        { iconSrc: "/icon_suspended_users.svg", label: "Suspended Users", badge: 3, path: "/suspended-users" },
+        { iconSrc: "/icon_boost_controller.svg", label: "Boost Controller", path: "/boost-controller" },
         { iconSrc: "/icon_tab_verified.svg", label: "Verification Queue", badge: verificationCount, path: "/verification-queue" },
       ]
     },
     business: {
       title: "Business Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", active: true },
-        { icon: Bell, label: "Notification", badge: 3 },
-        { icon: ShoppingCart, label: "My Products" },
-        { icon: ClipboardList, label: "Order History" },
+        { icon: Rss, label: "News Feed", path: "/news-feed" },
+        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: ShoppingCart, label: "My Products", path: "/my-products" },
+        { icon: ClipboardList, label: "Order History", path: "/order-history" },
       ]
     },
     club: {
       title: "Clubs & Societies Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", active: true },
-        { icon: Bell, label: "Notification", badge: 3 },
-        { icon: MessageSquare, label: "Message", badge: 3 },
-        { icon: LayoutDashboard, label: "Order Dashboard" },
+        { icon: Rss, label: "News Feed", path: "/news-feed" },
+        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: LayoutDashboard, label: "Order Dashboard", path: "/order-dashboard" },
       ]
     }
   };
@@ -107,7 +109,7 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
 
         <nav className="flex flex-col gap-xs w-full">
           {currentConfig.links.map((link, index) => (
-            <SidebarItem key={index} {...link} />
+            <SidebarItem key={index} {...link} active={pathname === link.path} />
           ))}
         </nav>
       </div>
