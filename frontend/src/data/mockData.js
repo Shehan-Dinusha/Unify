@@ -102,3 +102,37 @@ export const mockVerified = [
       email: "ieee@unify.com"
   },
 ];
+
+const mockPosts = [
+  {
+    id: 1,
+    author: "Jane D.",
+    authorInitial: "JD",
+    time: "5h ago",
+    title: "Millenium",
+    description:
+      "Perfect for grad students. Quiet, private entrance, kitchenette included.",
+    image:
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836",
+    likes: 124,
+    comments: 10,
+    isPromoted: false,
+  },
+  {
+    id: 2,
+    author: "Robotics Club",
+    authorInitial: "RC",
+    time: "2h ago",
+    title: "Hackathon 2026 Registration Open!",
+    description:
+      "Teams of 4. Prizes worth Rs.50000. Don't miss this opportunity to build something amazing!",
+    image:
+      "https://images.unsplash.com/photo-1551836022-d5d88e9218df",
+    likes: 340,
+    comments: 28,
+    isPromoted: true,
+  },
+];
+
+export default mockPosts;
+

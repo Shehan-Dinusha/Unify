@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import VerificationQueue from '../pages/VerificationQueue';
 import { mockRequests } from '../data/mockData';
+import NewsFeed from '../pages/NewsFeed';
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout user={{name: "Alex Johnson", role: "admin"}} pageTitle={title} verificationCount={verificationCount}>
@@ -26,7 +27,9 @@ const router = createBrowserRouter([
     path: '/verification-queue',
     element: <VerificationQueue />,
   },
-  { path: '/news-feed', element: <PlaceholderPage title="News Feed" verificationCount={mockRequests.length} /> },
+  { path: '/news-feed', 
+    element: <NewsFeed />,
+  },
   { path: '/notifications', element: <PlaceholderPage title="Notifications" verificationCount={mockRequests.length} /> },
   { path: '/messages', element: <PlaceholderPage title="Messages" verificationCount={mockRequests.length} /> },
   { path: '/lost-and-found', element: <PlaceholderPage title="Lost & Found" verificationCount={mockRequests.length} /> },
