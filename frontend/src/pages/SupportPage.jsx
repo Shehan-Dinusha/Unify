@@ -40,7 +40,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => {
 };
 
 const SupportPage = () => {
-  const [openIndex, setOpenIndex] = useState(0);
+  const [openIndex, setOpenIndex] = useState(-1);
 
   const faqs = [
     {
@@ -128,7 +128,7 @@ const SupportPage = () => {
   return (
     <LandingLayout>
       <section className="w-full flex flex-col items-center justify-start min-h-screen pt-10 pb-20 relative overflow-hidden">
-        <div className="w-full max-w-[1000px] px-4 flex flex-col items-center gap-12 z-10">
+        <div className="w-full max-w-[1280px] px-4 flex flex-col items-center gap-12 z-10">
           {/* Hero Title */}
           <div className="text-center">
             <h1 className="text-heading-display text-white tracking-tight leading-tight">
@@ -137,7 +137,7 @@ const SupportPage = () => {
           </div>
 
           {/* FAQ Accordion */}
-          <div className="w-full flex flex-col gap-4">
+          <div className="w-full max-w-[1000px] flex flex-col gap-4">
             {faqs.map((faq, index) => (
               <FAQItem
                 key={index}
