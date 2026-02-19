@@ -3,6 +3,7 @@ import MainLayout from "../components/layout/MainLayout";
 import VerificationQueue from "../pages/VerificationQueue";
 import LandingHome from "../pages/LandingHome";
 import AboutPage from "../pages/AboutPage";
+import FeaturesPage from "../pages/FeaturesPage";
 
 const ProjectReady = () => (
   // Temporary placeholder component
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
   {
     path: "/about",
     element: <AboutPage />,
+  },
+  {
+    path: "/features",
+    element: <FeaturesPage />,
   },
 
   {
