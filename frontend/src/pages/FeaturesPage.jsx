@@ -4,8 +4,11 @@ import Card from "../components/common/Card";
 
 const FeatureItem = ({ title, description, icon, iconBg }) => {
   return (
-    <div className="h-full min-h-[220px] relative bg-white/5 rounded-2xl group overflow-hidden transition-all duration-300 hover:bg-white/10 hover:scale-[1.02] border border-white/5 hover:border-white/10">
-      <div className="w-full h-full p-8 flex flex-col justify-start items-start gap-5">
+    <Card 
+      variant="card"
+      className="h-full min-h-[220px] hover:border-primary-blue/40 hover:-translate-y-2 group"
+    >
+      <div className="flex flex-col justify-start items-start gap-5">
         {/* Icon Container using the specific bg color from design */}
         <div
           className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl ${iconBg}`}
@@ -24,7 +27,7 @@ const FeatureItem = ({ title, description, icon, iconBg }) => {
           </p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 

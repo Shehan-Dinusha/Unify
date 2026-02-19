@@ -4,6 +4,7 @@ import VerificationQueue from "../pages/VerificationQueue";
 import LandingHome from "../pages/LandingHome";
 import AboutPage from "../pages/AboutPage";
 import FeaturesPage from "../pages/FeaturesPage";
+import SupportPage from "../pages/SupportPage";
 
 const ProjectReady = () => (
   // Temporary placeholder component
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
   {
     path: "/features",
     element: <FeaturesPage />,
+  },
+  {
+    path: "/support",
+    element: <SupportPage />,
   },
 
   {

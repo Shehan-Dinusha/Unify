@@ -4,6 +4,7 @@ const Card = ({
   children, 
   variant = 'card', // 'card' or 'container'
   className = '', 
+  noPadding = false,
   ...props 
 }) => {
   // Common base styles: Border, rounding, and backdrop blur
@@ -23,7 +24,7 @@ const Card = ({
       {...props}
     >
       {/* Content wrapper to ensure padding is consistent */}
-      <div className="p-6 h-full w-full">
+      <div className={`${noPadding ? '' : 'p-6'} h-full w-full`}>
         {children}
       </div>
     </div>
