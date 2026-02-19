@@ -102,3 +102,12 @@ export const mockVerified = [
       email: "ieee@unify.com"
   },
 ];
+
+export const mockFullDocument = {
+    id: 1,
+    name: "Annual Budget Proposal.pdf",
+    size: "2.4 MB",
+    date: "Uploaded Today",
+    type: "pdf",
+    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" // Example S3-like URL
+};
