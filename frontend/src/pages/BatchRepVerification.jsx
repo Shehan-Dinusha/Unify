@@ -5,6 +5,7 @@ import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import FileUpload from '../components/common/FileUpload';
 import DocumentPreviewModal from '../components/common/DocumentPreviewModal';
+import RevokePrivilegesModal from '../components/common/RevokePrivilegesModal';
 import { mockBatchRepDocuments } from '../data/mockData';
 
 const BatchRepVerification = () => {
@@ -12,6 +13,7 @@ const BatchRepVerification = () => {
     const [submittedFile, setSubmittedFile] = useState(null);
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
+    const [showRevokeModal, setShowRevokeModal] = useState(false);
     const [previewDocument, setPreviewDocument] = useState(null);
     
     // Mock Data for declined reason
@@ -258,14 +260,16 @@ const BatchRepVerification = () => {
 
                             {submissionStatus === 'approved' && (
                             <>
-                                <button 
-                                    className="w-full h-10 rounded-xl bg-red-400/5 hover:bg-red-400/10 border-2 border-red-400 flex items-center justify-center gap-2 group transition-colors"
-                                    onClick={() => setShowWithdrawModal(true)}
+                                <Button
+                                    variant="dangerOutline"
+                                    size="small"
+                                    fullWidth
+                                    onClick={() => setShowRevokeModal(true)}
+                                    className="gap-2"
                                 >
-                                    <div className="w-5 h-5 bg-red-400 mask-trash" /> {/* Visual sim */}
-                                    <Trash2 className="w-4 h-4 text-red-400" />
-                                    <span className="font-semibold text-sm text-red-400">Remove as Batch Rep</span>
-                                </button>
+                                    <Trash2 className="w-4 h-4" />
+                                    Remove as Batch Rep
+                                </Button>
                                 <p className="text-zinc-400 text-xs text-center">
                                     Revoking your status will remove access to administrative tools immediately.
                                 </p>
@@ -340,6 +344,13 @@ const BatchRepVerification = () => {
                 document={previewDocument}
         />
        )}
+
+       {/* Revoke Privileges Modal */}
+       <RevokePrivilegesModal
+           isOpen={showRevokeModal}
+           onClose={() => setShowRevokeModal(false)}
+           onConfirm={() => setSubmissionStatus('idle')}
+       />
 
       {/* DEBUG: Temporary controls to visualize states */}
       <div className="absolute bottom-4 right-4 flex gap-2 z-50 bg-black/50 p-2 rounded-lg backdrop-blur-sm border border-white/10">
