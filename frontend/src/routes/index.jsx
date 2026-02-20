@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import VerificationQueue from '../pages/VerificationQueue';
 import ClubVerification from '../pages/ClubVerification';
+import BatchRepVerification from '../pages/BatchRepVerification';
 import { mockRequests } from '../data/mockData';
 
 const PlaceholderPage = ({ title, verificationCount }) => (
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
   {
     path: '/club-verification',
     element: <ClubVerification />,
+  },
+  {
+    path: '/batch-rep-verification',
+    element: <BatchRepVerification />,
   },
   { path: '/news-feed', element: <PlaceholderPage title="News Feed" verificationCount={mockRequests.length} /> },
   { path: '/notifications', element: <PlaceholderPage title="Notifications" verificationCount={mockRequests.length} /> },

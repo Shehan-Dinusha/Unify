@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
-import { Info, ArrowRight, ArrowLeft, Clock, FileText, XCircle, CheckCircle, AlertCircle, Eye, Download } from 'lucide-react';
+import { Info, ArrowRight, ArrowLeft, Clock, FileText, XCircle, CheckCircle, AlertCircle, Eye, Download, Upload, Users, FileType, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import FileUpload from '../components/common/FileUpload';
 import DocumentPreviewModal from '../components/common/DocumentPreviewModal';
-import { mockFullDocument } from '../data/mockData';
+import { mockBatchRepDocuments } from '../data/mockData';
 
-const ClubVerification = () => {
+const BatchRepVerification = () => {
     const [submissionStatus, setSubmissionStatus] = useState('idle'); // 'idle' | 'pending' | 'approved' | 'declined'
     const [submittedFile, setSubmittedFile] = useState(null);
     const [showWithdrawModal, setShowWithdrawModal] = useState(false);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
+    const [previewDocument, setPreviewDocument] = useState(null);
     
-    // Mock Data
-    const declineReason = "The submitted constitution document is missing the required Faculty Advisor signature on page 3. Please acquire the signature and resubmit.";
+    // Mock Data for declined reason
+    const declineReason = "The uploaded nomination document is missing the required signature from the Department Head. Please ensure the document is signed and stamped before re-uploading.";
 
     const handleFileSelect = (file) => {
         setSubmittedFile(file);
@@ -22,13 +23,11 @@ const ClubVerification = () => {
 
     const handleSubmit = () => {
         if (submittedFile) {
-            console.log("Submitting file:", submittedFile.name);
             setSubmissionStatus('pending');
         }
     };
 
     const handleWithdrawConfirm = () => {
-        console.log("Withdrawing application");
         setSubmissionStatus('idle');
         setSubmittedFile(null);
         setShowWithdrawModal(false);
@@ -42,12 +41,17 @@ const ClubVerification = () => {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
+    const handlePreview = (doc) => {
+        setPreviewDocument(doc);
+        setShowPreviewModal(true);
+    };
+
     // Helper to render logic for icon, title, badge based on status
     const getStatusConfig = () => {
         switch (submissionStatus) {
             case 'pending':
                 return {
-                    icon: <Clock className="w-6 h-6 text-amber-400" />,
+                    icon: <Clock className="w-5 h-5 text-amber-400" />,
                     iconBg: 'bg-amber-500/10',
                     iconBorder: 'border-amber-500/20',
                     badgeBg: 'bg-amber-500/20',
@@ -58,7 +62,7 @@ const ClubVerification = () => {
                 };
             case 'approved':
                 return {
-                    icon: <CheckCircle className="w-6 h-6 text-green-400" />,
+                    icon: <CheckCircle className="w-5 h-5 text-green-400" />,
                     iconBg: 'bg-green-500/10',
                     iconBorder: 'border-green-500/20',
                     badgeBg: 'bg-green-500/20',
@@ -69,7 +73,7 @@ const ClubVerification = () => {
                 };
             case 'declined':
                 return {
-                    icon: <XCircle className="w-6 h-6 text-red-400" />,
+                    icon: <XCircle className="w-5 h-5 text-red-400" />,
                     iconBg: 'bg-red-500/10',
                     iconBorder: 'border-red-500/20',
                     badgeBg: 'bg-red-500/20',
@@ -91,20 +95,20 @@ const ClubVerification = () => {
       <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-800/20 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="flex flex-col items-center gap-6 z-10 w-full max-w-2xl">
-        {/* Glass Card */}
-        <Card variant="card" className="w-full max-w-[600px]" padding="p-8">
+      <div className="flex flex-col items-center gap-4 z-10 w-full max-w-2xl">
+        {/* Glass Card - Reduced padding from p-8 to p-6 */}
+        <Card variant="card" className="w-full max-w-[600px]" padding="p-6">
             
-            <div className="text-center mb-6">
+            <div className="text-center mb-4">
                  {/* Icon - only show when not idle */}
                  {submissionStatus !== 'idle' && config && (
-                     <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 border ${config.iconBg} ${config.iconBorder}`}>
+                     <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 border ${config.iconBg} ${config.iconBorder}`}>
                         {config.icon}
                      </div>
                  )}
 
                 {/* Title */}
-                <h1 className="text-heading-medium text-white mb-2">Club Verification</h1>
+                <h1 className="text-heading-medium text-white mb-2 font-inter text-xl font-bold">Batch Rep Verification</h1>
                 
                 {/* Status Badge */}
                 {submissionStatus !== 'idle' && config && (
@@ -120,21 +124,21 @@ const ClubVerification = () => {
 
             {submissionStatus === 'idle' ? (
                 <>
-                    {/* Info Banner */}
-                    <div className="bg-white/5 rounded-xl border border-white/20 p-2.5 mb-4 flex gap-3 items-center">
+                    {/* Info Banner - Reduced margin */}
+                    <div className="bg-white/5 rounded-xl border border-white/20 p-2.5 mb-3 flex gap-3 items-center">
                         <Info className="w-4 h-4 text-primary-blue shrink-0" />
                         <p className="text-primary-blue text-sm leading-tight">
-                            General club details are already collected during registration.
+                            Personal details are already collected during registration.
                         </p>
                     </div>
 
-                    {/* Instructions */}
-                    <p className="text-text-secondary text-sm text-center mb-6 leading-relaxed">
-                        To finalize the verification of your club account, we require official documentation to validate the organization's legitimacy and faculty approval.
+                    {/* Instructions - Reduced margin */}
+                    <p className="text-text-secondary text-sm text-center mb-4 leading-relaxed">
+                        To complete your verification, please upload an acceptable document such as an official letter of nomination, a student ID card confirming batch enrollment, or a formal endorsement from the faculty advisor.
                     </p>
 
-                    {/* Upload Section */}
-                    <div className="mb-6">
+                    {/* Verification Document Section - Reduced margin */}
+                    <div className="mb-4">
                         <FileUpload 
                             onFileSelect={handleFileSelect}
                             maxSizeMB={10}
@@ -144,46 +148,48 @@ const ClubVerification = () => {
                     {/* Submit Button */}
                     <Button 
                         variant="primary" 
-                        className="w-full h-10 rounded-xl shadow-lg shadow-primary-blue/25 flex items-center justify-center gap-2 group"
+                        className="w-full h-10 rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 group bg-blue-500 hover:bg-blue-600 border-none"
                         disabled={!submittedFile}
                         onClick={handleSubmit}
                     >
-                        <span>Submit Document</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <span className="font-bold text-sm">Submit Document</span>
+                        <div className="bg-white/20 p-0.5 rounded-full">
+                             <ArrowRight className="w-4 h-4 text-white" />
+                        </div>
                     </Button>
                 </>
             ) : (
                 <>
-                    {/* Status Message */}
-                    <p className="text-text-secondary text-sm text-center mb-4 leading-relaxed font-bold px-4">
+                    {/* Status Message - Reduced margin/font if needed */}
+                    <p className="text-text-secondary text-sm text-center mb-3 leading-relaxed font-bold px-4">
                         {submissionStatus === 'pending' && (
-                             <>Your document have been submitted and are currently <br/>under review by the administration. You will be notified via email once the process is complete.</>
+                             <>Your document has been submitted and is currently <br/>under review by the administration. You will be notified via email once the process is complete.</>
                         )}
                         {submissionStatus === 'approved' && (
-                             <>The verification for Robotics Club is complete.<br/>You have been granted the full club privileges.</>
+                             <>Your verification is complete. You have been granted Batch Representative privileges for the current academic term.</>
                         )}
                         {submissionStatus === 'declined' && (
-                             <>Your club registration request for "Robotics & AI Society" has been reviewed and declined by the administration.</>
+                             <>Your request for Batch Representative has been reviewed and declined by the administration.</>
                         )}
                     </p>
 
-                    {/* Declined Reason */}
+                    {/* Declined Reason - Compact */}
                     {submissionStatus === 'declined' && (
-                        <div className="bg-red-400/5 rounded-xl border border-red-400/20 p-3 mb-4">
-                            <div className="flex items-center gap-2 mb-1">
-                                <AlertCircle className="w-3.5 h-3.5 text-red-400" />
-                                <span className="text-red-400 text-xs font-bold">Reason for Decline</span>
-                            </div>
-                            <p className="text-red-400 text-xs leading-snug pl-5 opacity-90">
+                        <div className="bg-red-400/5 rounded-xl border border-red-400/20 p-3 mb-3 relative">
+                             <div className="flex items-center gap-2 mb-1">
+                                 <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                                 <span className="text-red-400 text-xs font-bold">Reason for Decline</span>
+                             </div>
+                             <p className="text-red-400 text-xs leading-snug pl-5 opacity-90">
                                 {declineReason}
-                            </p>
+                             </p>
                         </div>
                     )}
 
-                    {/* Submitted Document Section */}
-                    <div className="flex flex-col gap-2 mb-4">
+                    {/* Submitted Document Section - Reduced margin */}
+                    <div className="flex flex-col gap-2 mb-3">
                         <div className="flex justify-between items-center">
-                            <span className="text-text-secondary text-xs font-bold">Submitted Document</span>
+                            <span className="text-gray-400 text-xs font-bold">Submitted Document</span>
                             <div className="flex items-center gap-1">
                                 {submissionStatus === 'pending' && <Clock className="w-3 h-3 text-amber-400" />}
                                 {submissionStatus === 'approved' && <Clock className="w-3 h-3 text-green-400" />}
@@ -199,20 +205,20 @@ const ClubVerification = () => {
                             </div>
                         </div>
 
-                        {/* File Card */}
-                        <div className="bg-dark-4 rounded-xl border border-white/5 overflow-hidden group hover:border-white/10 transition-colors">
+                        {/* File Card - Single Document */}
+                        <div className="bg-gray-800 rounded-xl border border-white/5 overflow-hidden group hover:border-white/10 transition-colors">
                             <div className="p-2 flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3 overflow-hidden">
+                                <div className="flex items-center gap-3 overflow-hidden cursor-pointer" onClick={() => handlePreview(submittedFile || mockBatchRepDocuments[0])}>
                                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
                                          submissionStatus === 'declined' ? 'bg-red-500/20 border-red-500/30' : 'bg-red-500/20 border-red-500/30'
                                      }`}>
                                         <FileText className={`w-4 h-4 ${submissionStatus === 'declined' ? 'text-red-400' : 'text-red-400'}`} />
                                     </div>
                                     <div className="flex flex-col overflow-hidden">
-                                        <span className={`text-sm font-bold truncate ${submissionStatus === 'declined' ? 'text-red-400 line-through' : 'text-text-primary'}`}>
-                                            {submittedFile?.name || 'Club_Constitution.pdf'}
+                                        <span className={`text-sm font-bold truncate ${submissionStatus === 'declined' ? 'text-red-400 line-through' : 'text-neutral-100'}`}>
+                                            {submittedFile?.name || 'Batch_rep_nomination.pdf'}
                                         </span>
-                                        <span className="text-text-secondary text-xs">
+                                        <span className="text-zinc-400 text-xs">
                                             {submittedFile ? formatFileSize(submittedFile.size) : '3.2 MB'} • Uploaded Today
                                         </span>
                                     </div>
@@ -221,7 +227,7 @@ const ClubVerification = () => {
                                 {/* View/Download Actions */}
                                 <div className="flex gap-1">
                                     <button 
-                                        onClick={() => setShowPreviewModal(true)}
+                                        onClick={() => handlePreview(submittedFile || mockBatchRepDocuments[0])}
                                         className="p-1.5 hover:bg-white/10 rounded-lg text-text-secondary hover:text-white transition-colors"
                                         title="View Document"
                                     >
@@ -232,67 +238,80 @@ const ClubVerification = () => {
                         </div>
                     </div>
 
-                    {/* Footer Actions */}
-                    {/* Footer Actions - Hide in approved state as there are no actions */}
-                    {submissionStatus !== 'approved' && (
-                        <div className="pt-4 border-t border-primary-blue/20 flex flex-col gap-2">
-                             {submissionStatus === 'pending' && (
-                                <>
-                                    <Button 
-                                        variant="secondary" 
-                                        className="w-full h-10 rounded-xl bg-dark-4 border-none hover:bg-white/5 flex items-center justify-center gap-2 text-text-secondary hover:text-white"
-                                        onClick={() => setShowWithdrawModal(true)}
-                                    >
-                                        <XCircle className="w-4 h-4" />
-                                        <span className="font-semibold text-sm">Withdraw Application</span>
-                                    </Button>
-                                    <p className="text-text-tertiary text-xs text-center">
-                                        Withdrawing your application will remove all submitted data.
-                                    </p>
-                                </>
-                             )}
+                    {/* Footer Actions - Reduced pt */}
+                    <div className="pt-4 border-t border-blue-500/20 flex flex-col gap-3">
+                            {submissionStatus === 'pending' && (
+                            <>
+                                <Button 
+                                    variant="secondary" 
+                                    className="w-full h-10 rounded-xl bg-dark-4 border-none hover:bg-white/5 flex items-center justify-center gap-2 text-text-secondary hover:text-white"
+                                    onClick={() => setShowWithdrawModal(true)}
+                                >
+                                    <XCircle className="w-4 h-4" />
+                                    <span className="font-semibold text-sm">Withdraw Application</span>
+                                </Button>
+                                <p className="text-zinc-400 text-xs text-center">
+                                    Withdrawing your application will remove all submitted data.
+                                </p>
+                            </>
+                            )}
 
-                             {submissionStatus === 'declined' && (
-                                <>
-                                    <Button 
-                                        variant="primary" 
-                                        className="w-full h-10 rounded-xl shadow-lg shadow-primary-blue/25 flex items-center justify-center gap-2 group"
-                                        onClick={() => setSubmissionStatus('idle')}
-                                    >
-                                        <span className="font-semibold text-sm">Resubmit Document</span>
-                                    </Button>
-                                    <p className="text-text-tertiary text-xs text-center">
-                                        You can update your document and try again immediately.
-                                    </p>
-                                </>
-                             )}
-                        </div>
-                    )}
+                            {submissionStatus === 'approved' && (
+                            <>
+                                <button 
+                                    className="w-full h-10 rounded-xl bg-red-400/5 hover:bg-red-400/10 border-2 border-red-400 flex items-center justify-center gap-2 group transition-colors"
+                                    onClick={() => setShowWithdrawModal(true)}
+                                >
+                                    <div className="w-5 h-5 bg-red-400 mask-trash" /> {/* Visual sim */}
+                                    <Trash2 className="w-4 h-4 text-red-400" />
+                                    <span className="font-semibold text-sm text-red-400">Remove as Batch Rep</span>
+                                </button>
+                                <p className="text-zinc-400 text-xs text-center">
+                                    Revoking your status will remove access to administrative tools immediately.
+                                </p>
+                            </>
+                            )}
+
+                            {submissionStatus === 'declined' && (
+                            <>
+                                <button 
+                                    className="w-full h-10 rounded-xl bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 group transition-colors"
+                                    onClick={() => setSubmissionStatus('idle')}
+                                >
+                            
+                                    <span className="font-bold text-sm text-white">Resubmit Document</span>
+                                </button>
+                                <p className="text-zinc-400 text-xs text-center">
+                                    You can update your document and try again immediately.
+                                </p>
+                            </>
+                            )}
+                    </div>
                 </>
             )}
 
         </Card>
 
-        {/* Back Link */}
-        <Link to="/" className="flex items-center gap-2 text-text-secondary hover:text-white transition-colors group">
+        {/* Back Link - Reduced margin */}
+        <Link to="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group mt-1">
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm">Back to Dashboard</span>
+            <span className="text-sm font-bold">Back to {submissionStatus === 'idle' || submissionStatus === 'declined' ? 'Profile' : 'Dashboard'}</span>
         </Link>
       </div>
 
-       {/* Withdraw Confirmation Modal */}
+       {/* Withdraw Confirmation Modal - Matched size and style with Club Verif */}
        {showWithdrawModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowWithdrawModal(false)} />
             <div className="relative w-full max-w-sm bg-gray-900 rounded-3xl p-6 border border-white/10 shadow-xl flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
                 
                 <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mb-4 border border-red-500/20">
-                    <AlertCircle className="w-6 h-6 text-red-500" />
+                     <AlertCircle className="w-6 h-6 text-red-500" /> {/* Explicitly use AlertCircle like ClubVerification */}
                 </div>
                 
                 <h3 className="text-white text-xl font-bold mb-2">Withdraw Application?</h3>
-                <p className="text-text-secondary text-sm mb-6 leading-relaxed">
-                    Are you sure you want to withdraw your club verification application? This will <span className="text-red-400 font-bold">permanently delete all uploaded document</span> and reset your status.
+                <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+                    Are you sure you want to withdraw your Rep verification application? This will <span className="text-red-400 font-bold">permanently delete all uploaded document</span> and reset your status.
                 </p>
 
                 <div className="flex flex-col gap-3 w-full">
@@ -304,7 +323,7 @@ const ClubVerification = () => {
                     </button>
                     <button 
                         onClick={() => setShowWithdrawModal(false)}
-                        className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-bold transition-colors"
+                        className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-neutral-100 rounded-xl font-bold transition-colors"
                     >
                         Cancel
                     </button>
@@ -314,17 +333,13 @@ const ClubVerification = () => {
        )}
 
        {/* Document Preview Modal */}
-       <DocumentPreviewModal 
-            isOpen={showPreviewModal}
-            onClose={() => setShowPreviewModal(false)}
-            document={{
-                ...mockFullDocument,
-                // Override with actual file if present
-                file: submittedFile,
-                name: submittedFile?.name || mockFullDocument.name,
-                size: submittedFile ? formatFileSize(submittedFile.size) : mockFullDocument.size,
-            }}
-       />
+       {previewDocument && (
+        <DocumentPreviewModal 
+                isOpen={showPreviewModal}
+                onClose={() => setShowPreviewModal(false)}
+                document={previewDocument}
+        />
+       )}
 
       {/* DEBUG: Temporary controls to visualize states */}
       <div className="absolute bottom-4 right-4 flex gap-2 z-50 bg-black/50 p-2 rounded-lg backdrop-blur-sm border border-white/10">
@@ -338,4 +353,4 @@ const ClubVerification = () => {
   );
 };
 
-export default ClubVerification;
+export default BatchRepVerification;
