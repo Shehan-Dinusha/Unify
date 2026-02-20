@@ -2,9 +2,13 @@ import { createBrowserRouter } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import VerificationQueue from '../pages/VerificationQueue';
 import { mockRequests } from '../data/mockData';
+import Marketplace from '../pages/Marketplace';
+import Club from "../pages/Club";
+import ClubProduct from "../pages/ClubProduct";
+
 
 const PlaceholderPage = ({ title, verificationCount }) => (
-  <MainLayout user={{name: "Alex Johnson", role: "admin"}} pageTitle={title} verificationCount={verificationCount}>
+  <MainLayout user={{ name: "Alex Johnson", role: "admin" }} pageTitle={title} verificationCount={verificationCount}>
     <div className="flex flex-col items-center justify-center h-full text-center p-lg">
       <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-lg">
         <span className="text-heading-large">🚧</span>
@@ -26,11 +30,14 @@ const router = createBrowserRouter([
     path: '/verification-queue',
     element: <VerificationQueue />,
   },
+
   { path: '/news-feed', element: <PlaceholderPage title="News Feed" verificationCount={mockRequests.length} /> },
   { path: '/notifications', element: <PlaceholderPage title="Notifications" verificationCount={mockRequests.length} /> },
   { path: '/messages', element: <PlaceholderPage title="Messages" verificationCount={mockRequests.length} /> },
   { path: '/lost-and-found', element: <PlaceholderPage title="Lost & Found" verificationCount={mockRequests.length} /> },
-  { path: '/marketplace', element: <PlaceholderPage title="Marketplace" verificationCount={mockRequests.length} /> },
+  { path: '/marketplace', element: <Marketplace /> },
+  { path: "/marketplace/club", element: <Club /> },
+  { path: "/marketplace/club/product", element: <ClubProduct /> },
   { path: '/learning', element: <PlaceholderPage title="Learning" verificationCount={mockRequests.length} /> },
   { path: '/report-moderation', element: <PlaceholderPage title="Report Moderation" verificationCount={mockRequests.length} /> },
   { path: '/suspended-users', element: <PlaceholderPage title="Suspended Users" verificationCount={mockRequests.length} /> },
