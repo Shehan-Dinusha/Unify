@@ -1,6 +1,9 @@
 import React from "react";
 import MainLayout from "../components/layout/MainLayout";
 import StatsCard from "../components/common/StatsCard";
+import PostCard from "../components/feed/PostCard";
+import mockPosts from "../data/mockData";
+
 
 
 const NewsFeed = () => {
@@ -15,8 +18,8 @@ const NewsFeed = () => {
       pageTitle="News Feed"
       verificationCount={0}
     >
-      <div className="flex flex-col gap-2xl w-full max-w-3xl mx-auto">
-        
+      <div className="flex flex-col gap-8 w-full max-w-3xl mx-auto">
+
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
 
@@ -47,8 +50,24 @@ const NewsFeed = () => {
 
         </div>
 
-        
-    
+        {/* Posts Section */}
+        <div className="flex flex-col gap-6 w-full">
+          {mockPosts.map((post) => (
+            <PostCard
+              key={post.id}
+              author={post.author}
+              authorInitial={post.authorInitial}
+              time={post.time}
+              title={post.title}
+              location={post.location}
+              description={post.description}
+              image={post.image}
+              likes={post.likes}
+              comments={post.comments}
+              isPromoted={post.isPromoted}
+            />
+          ))}
+        </div>
 
       </div>
     </MainLayout>
