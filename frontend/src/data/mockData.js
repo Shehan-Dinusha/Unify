@@ -102,3 +102,59 @@ export const mockVerified = [
       email: "ieee@unify.com"
   },
 ];
+
+export const mockBoostPackages = [
+  {
+    id: 'pkg-001',
+    name: 'Starter',
+    price: 1000,
+    duration: '24 Hours',
+    durationValue: 24,
+    durationUnit: 'Hours',
+    badge: 'No Badge',
+    description: 'Perfect for quick announcements or flash sales.',
+    features: ['Standard Visibility', 'Basic Analytics', 'Feed Placement'],
+    status: 'live',
+  },
+  {
+    id: 'pkg-002',
+    name: 'Growth',
+    price: 2000,
+    duration: '24 Hours',
+    durationValue: 24,
+    durationUnit: 'Hours',
+    badge: 'Most Popular',
+    description: 'Best balance of reach and duration for weekly promos.',
+    features: ['2x Audience Reach', 'Top of Category', 'Detailed Analytics', 'Priority Support'],
+    status: 'live',
+  },
+  {
+    id: 'pkg-003',
+    name: 'Dominate',
+    price: 4000,
+    duration: '7 Days',
+    durationValue: 7,
+    durationUnit: 'Days',
+    badge: 'Premium',
+    description: 'Maximize brand with a full week campaign.',
+    features: ['Max Reach Potential', 'Top of Feed Placement', 'Highlighted Gold Border', 'CRM Integration'],
+    status: 'live',
+  },
+];
+
+export const mockBoostLogs = [
+  {
+    id: 'log-001',
+    type: 'feature_added',
+    title: "Feature added to 'Growth'",
+    description: "'Detailed Analytics' included in tier",
+    time: 'Yesterday, 4:12 PM',
+  },
+  {
+    id: 'log-002',
+    type: 'price_updated',
+    title: "Price updated for 'Dominate' package",
+    description: 'Changed from LKR 20,000 to LKR 22,500',
+    time: '2 hours ago',
+  },
+];
