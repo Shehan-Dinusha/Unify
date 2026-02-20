@@ -194,6 +194,21 @@ const mockPosts = [
     comments: 18,
     isPromoted: false,
   },
+  {
+    id: 7,
+    author: "Robotic Club",
+    authorInitial: "RC",
+    time: "7h ago",
+    title: "Calculus Early Transcendentals",
+    location: "",
+    description:
+      "High quality pages with beautifully embossed cover. Pre-order now to reserve your copy and dive into the code. Price is Rs: 1050.00",
+    image:
+      "img_post7.jpg",
+    likes: 150,
+    comments: 18,
+    isPromoted: false,
+  },
 
 ];
 
