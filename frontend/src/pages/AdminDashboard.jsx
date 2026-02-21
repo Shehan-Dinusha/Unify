@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
@@ -7,13 +7,137 @@ import { mockRequests } from '../data/mockData';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const yAxisLabels = ['30K', '25K', '20K', '15K', '10K', '5K', '0'];
-const studentData = [8000, 9500, 11000, 12000, 14000, 15500, 17000, 18500, 21000, 19000, 18000, 17500];
-const businessData = [5000, 6000, 6500, 7000, 8000, 9000, 10000, 11500, 13000, 15000, 16000, 17000];
-const barData = [6000, 8000, 10000, 11000, 13000, 14000, 15500, 17000, 21000, 18500, 17000, 16500];
-const MAX_VAL = 30000;
-const HIGHLIGHT_IDX = 8; // Sep
+// ─── Carousel Chart Data (per range) ─────────────────────────────────────────
+
+const fmtK = (v) => v >= 1000 ? `${(v / 1000).toFixed(1)}K` : v;
+const fmtNum = (v) => v.toLocaleString();
+const fmtRs = (v) => `Rs. ${v.toLocaleString()}`;
+
+const chartDataByRange = {
+    'This Month': {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        slides: [
+            {
+                title: 'Platform Growth',
+                description: 'Weekly new user registrations this month',
+                legend: 'Registrations',
+                data: [320, 410, 385, 305],
+                maxVal: 500,
+                peakIdx: 1,
+                yLabels: ['500', '400', '300', '200', '0'],
+                yVals: [500, 400, 300, 200, 0],
+                statLabel: 'Total Users',
+                formatValue: fmtNum, formatStat: fmtNum,
+            },
+            {
+                title: 'Revenue Growth',
+                description: 'Weekly platform revenue this month',
+                legend: 'Weekly Revenue',
+                data: [2800, 3400, 3100, 3600],
+                maxVal: 4500,
+                peakIdx: 3,
+                yLabels: ['4.5K', '3K', '1.5K', '0'],
+                yVals: [4500, 3000, 1500, 0],
+                statLabel: 'Total Revenue',
+                formatValue: fmtK, formatStat: fmtRs,
+            },
+            {
+                title: 'Business Growth',
+                description: 'Weekly new business registrations this month',
+                legend: 'New Businesses',
+                data: [12, 18, 15, 21],
+                maxVal: 30,
+                peakIdx: 3,
+                yLabels: ['30', '20', '10', '0'],
+                yVals: [30, 20, 10, 0],
+                statLabel: 'Total Businesses',
+                formatValue: fmtNum, formatStat: fmtNum,
+            },
+        ],
+    },
+    'Last 30 Days': {
+        labels: ['W1', 'W2', 'W3', 'W4', 'W5'],
+        slides: [
+            {
+                title: 'Platform Growth',
+                description: 'Weekly new user registrations over the last 30 days',
+                legend: 'Registrations',
+                data: [280, 350, 420, 390, 310],
+                maxVal: 500,
+                peakIdx: 2,
+                yLabels: ['500', '400', '300', '200', '0'],
+                yVals: [500, 400, 300, 200, 0],
+                statLabel: 'Total Users',
+                formatValue: fmtNum, formatStat: fmtNum,
+            },
+            {
+                title: 'Revenue Growth',
+                description: 'Weekly platform revenue over the last 30 days',
+                legend: 'Weekly Revenue',
+                data: [2500, 3100, 3800, 3200, 2900],
+                maxVal: 4500,
+                peakIdx: 2,
+                yLabels: ['4.5K', '3K', '1.5K', '0'],
+                yVals: [4500, 3000, 1500, 0],
+                statLabel: 'Total Revenue',
+                formatValue: fmtK, formatStat: fmtRs,
+            },
+            {
+                title: 'Business Growth',
+                description: 'Weekly new business registrations over the last 30 days',
+                legend: 'New Businesses',
+                data: [10, 14, 22, 17, 13],
+                maxVal: 30,
+                peakIdx: 2,
+                yLabels: ['30', '20', '10', '0'],
+                yVals: [30, 20, 10, 0],
+                statLabel: 'Total Businesses',
+                formatValue: fmtNum, formatStat: fmtNum,
+            },
+        ],
+    },
+    'Yearly': {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        slides: [
+            {
+                title: 'Platform Growth',
+                description: 'Monthly new user registrations across the platform',
+                legend: 'Total Registrations',
+                data: [365, 1010, 495, 340, 425, 515, 930, 1130, 1420, 845, 500, 380],
+                maxVal: 1600,
+                peakIdx: 8,
+                yLabels: ['1.6K', '1.2K', '800', '400', '0'],
+                yVals: [1600, 1200, 800, 400, 0],
+                statLabel: 'Total Users',
+                formatValue: fmtK, formatStat: fmtNum,
+            },
+            {
+                title: 'Revenue Growth',
+                description: 'Monthly platform revenue for the fiscal year',
+                legend: 'Monthly Revenue',
+                data: [2100, 3200, 4800, 5500, 7200, 8800, 9500, 9400, 10500, 11800, 12500, 12800],
+                maxVal: 15000,
+                peakIdx: 11,
+                yLabels: ['15K', '12K', '9K', '6K', '3K', '0'],
+                yVals: [15000, 12000, 9000, 6000, 3000, 0],
+                statLabel: 'Total Revenue',
+                formatValue: fmtK, formatStat: fmtRs,
+            },
+            {
+                title: 'Business Growth',
+                description: 'Monthly new business registrations on the platform',
+                legend: 'New Businesses',
+                data: [45, 120, 85, 60, 75, 95, 150, 180, 220, 165, 110, 70],
+                maxVal: 260,
+                peakIdx: 8,
+                yLabels: ['260', '200', '140', '80', '0'],
+                yVals: [260, 200, 140, 80, 0],
+                statLabel: 'Total Businesses',
+                formatValue: fmtNum, formatStat: fmtNum,
+            },
+        ],
+    },
+};
 
 const moderationData = { resolved: 115, reviewing: 30, pending: 12 };
 const engagementData = [
@@ -23,100 +147,134 @@ const engagementData = [
     { label: 'Clubs & Society', value: 28, color: '#9CA3AF' },
 ];
 
-// ─── Unified SVG Chart (bars + lines in one coordinate system) ───────────────
+// ─── Premium Bar Chart ───────────────────────────────────────────────────────
 
-const ActivityChart = ({ barData, studentData, businessData, maxVal, highlightIdx, months }) => {
-    // SVG canvas dimensions
+const RegistrationChart = ({ data, maxVal, peakIdx, labels, yLabels, yVals, formatValue, formatStat, statLabel }) => {
     const W = 600;
-    const H = 200;
-    const padL = 0;
-    const padR = 0;
-    const padT = 8;
-    const padB = 0; // x-axis labels are outside SVG
+    const H = 280;
+    const padT = 28;
+    const padB = 0;
 
-    const n = barData.length;
-    const slotW = (W - padL - padR) / n;
-    const barW = slotW * 0.45;
+    const n = data.length;
+    const slotW = W / n;
+    const barW = slotW * 0.55;
 
-    // Convert a data value to SVG y coordinate
     const toY = (v) => padT + (1 - v / maxVal) * (H - padT - padB);
-    // Center x of slot i
-    const toX = (i) => padL + i * slotW + slotW / 2;
+    const toX = (i) => i * slotW + slotW / 2;
 
-    // Build smooth polyline points string
-    const linePoints = (data) =>
-        data.map((v, i) => `${toX(i)},${toY(v)}`).join(' ');
-
-    // Horizontal grid lines at each y-axis label
-    const gridVals = [0, 5000, 10000, 15000, 20000, 25000, 30000];
+    // Stats
+    const total = data.reduce((a, b) => a + b, 0);
+    const avg = total / n;
+    const peak = data[peakIdx];
 
     return (
-        <svg
-            viewBox={`0 0 ${W} ${H}`}
-            preserveAspectRatio="xMidYMid meet"
-            className="w-full"
-            style={{ height: H }}
-        >
-            {/* Grid lines */}
-            {gridVals.map((v) => (
-                <line
-                    key={v}
-                    x1={padL} y1={toY(v)}
-                    x2={W - padR} y2={toY(v)}
-                    stroke="rgba(255,255,255,0.05)"
-                    strokeWidth="1"
-                />
-            ))}
+        <div>
+            <div className="flex gap-sm items-stretch">
+                {/* Y-axis */}
+                <div className="flex flex-col justify-between text-body-extra-small text-text-secondary text-right shrink-0 pb-6" style={{ height: H }}>
+                    {yLabels.map((l) => (
+                        <span key={l}>{l}</span>
+                    ))}
+                </div>
 
-            {/* Bars */}
-            {barData.map((v, i) => {
-                const bH = (v / maxVal) * (H - padT - padB);
-                const bX = toX(i) - barW / 2;
-                const bY = H - padB - bH;
-                const isHighlight = i === highlightIdx;
-                return (
-                    <rect
-                        key={i}
-                        x={bX} y={bY}
-                        width={barW} height={bH}
-                        rx="2"
-                        fill={isHighlight ? '#2B8CEE' : 'rgba(43,140,238,0.35)'}
-                    />
-                );
-            })}
+                {/* Chart + X-axis */}
+                <div className="flex-1 min-w-0">
+                    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" className="w-full" style={{ height: H }}>
+                        <defs>
+                            {/* Normal bar gradient — cool blue */}
+                            <linearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
+                                <stop offset="0%" stopColor="#1a5276" />
+                                <stop offset="100%" stopColor="#2B8CEE" />
+                            </linearGradient>
+                            {/* Peak bar gradient — bright accent */}
+                            <linearGradient id="peakGrad" x1="0" y1="1" x2="0" y2="0">
+                                <stop offset="0%" stopColor="#2B8CEE" />
+                                <stop offset="100%" stopColor="#60B8FF" />
+                            </linearGradient>
+                            {/* Peak glow */}
+                            <filter id="peakGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="4" result="blur" />
+                                <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
 
-            {/* Business line (purple) */}
-            <polyline
-                points={linePoints(businessData)}
-                fill="none"
-                stroke="#6A3093"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
+                        {/* Grid lines */}
+                        {yVals.map((v) => (
+                            <line key={v} x1={0} y1={toY(v)} x2={W} y2={toY(v)} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                        ))}
 
-            {/* Student line (green) */}
-            <polyline
-                points={linePoints(studentData)}
-                fill="none"
-                stroke="#4ADE80"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
+                        {/* Bars + value labels */}
+                        {data.map((v, i) => {
+                            const barH = (v / maxVal) * (H - padT - padB);
+                            const bX = toX(i) - barW / 2;
+                            const bY = H - padB - barH;
+                            const isPeak = i === peakIdx;
 
-            {/* Highlight dot on Sep for student line */}
-            <circle
-                cx={toX(highlightIdx)}
-                cy={toY(studentData[highlightIdx])}
-                r="4"
-                fill="#4ADE80"
-                stroke="#0D1A26"
-                strokeWidth="2"
-            />
-        </svg>
+                            return (
+                                <g key={i}>
+                                    {/* Bar */}
+                                    <rect
+                                        x={bX} y={bY}
+                                        width={barW} height={barH}
+                                        rx="5" ry="5"
+                                        fill={isPeak ? 'url(#peakGrad)' : 'url(#barGrad)'}
+                                        filter={isPeak ? 'url(#peakGlow)' : undefined}
+                                        opacity={isPeak ? 1 : 0.85}
+                                    />
+                                    {/* Value label above bar */}
+                                    <text
+                                        x={toX(i)}
+                                        y={bY - 6}
+                                        textAnchor="middle"
+                                        fill={isPeak ? '#60B8FF' : 'rgba(255,255,255,0.5)'}
+                                        fontSize={isPeak ? '11' : '9'}
+                                        fontWeight={isPeak ? '700' : '500'}
+                                        fontFamily="Inter, sans-serif"
+                                    >
+                                        {formatValue(v)}
+                                    </text>
+                                </g>
+                            );
+                        })}
+                    </svg>
+
+                    {/* X-axis labels */}
+                    <div className="flex mt-1">
+                        {labels.map((m, i) => (
+                            <div key={m} className="flex-1 text-center">
+                                <span className={`text-body-extra-small ${i === peakIdx ? 'text-primary-blue font-bold' : 'text-text-secondary'}`}>
+                                    {m}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Summary stats row */}
+            <div className="flex items-center gap-lg mt-md pt-md border-t border-white/5">
+                <div className="flex items-center gap-xs">
+                    <span className="text-body-extra-small text-text-secondary">{statLabel}:</span>
+                    <span className="text-body-small-bold text-text-primary">{formatStat(total)}</span>
+                </div>
+                <div className="w-px h-4 bg-white/10" />
+                <div className="flex items-center gap-xs">
+                    <span className="text-body-extra-small text-text-secondary">Monthly Avg:</span>
+                    <span className="text-body-small-bold text-text-primary">{formatStat(Math.round(avg))}</span>
+                </div>
+                <div className="w-px h-4 bg-white/10" />
+                <div className="flex items-center gap-xs">
+                    <span className="text-body-extra-small text-text-secondary">Peak ({labels[peakIdx]}):</span>
+                    <span className="text-body-small-bold text-primary-blue">{formatStat(peak)}</span>
+                </div>
+            </div>
+        </div>
     );
 };
+
 
 // ─── Donut Chart ─────────────────────────────────────────────────────────────
 
@@ -167,7 +325,55 @@ const ProgressBar = ({ value, max, color }) => (
 const AdminDashboard = () => {
     const navigate = useNavigate();
     const [activeRange, setActiveRange] = useState('This Month');
+    const [chartIdx, setChartIdx] = useState(0);
+    const [isTransitioning, setIsTransitioning] = useState(true);
+    const autoPlayRef = useRef(null);
     const moderationTotal = moderationData.resolved + moderationData.reviewing + moderationData.pending;
+
+    // Derive slides and labels from active range
+    const { slides: chartSlides, labels: xLabels } = chartDataByRange[activeRange];
+    const slideCount = chartSlides.length;
+    const realIdx = chartIdx % slideCount;
+
+    // Auto-play: advance chart every 5 seconds
+    const resetAutoPlay = useCallback(() => {
+        if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+        autoPlayRef.current = setInterval(() => {
+            setIsTransitioning(true);
+            setChartIdx((prev) => prev + 1);
+        }, 5000);
+    }, []);
+
+    useEffect(() => {
+        resetAutoPlay();
+        return () => clearInterval(autoPlayRef.current);
+    }, [resetAutoPlay]);
+
+    // When we land on the ghost slide (index === slideCount), snap back to 0 instantly
+    const handleTransitionEnd = useCallback(() => {
+        if (chartIdx >= slideCount) {
+            setIsTransitioning(false);
+            setChartIdx(0);
+        }
+    }, [chartIdx, slideCount]);
+
+    const goTo = (idx) => {
+        setIsTransitioning(true);
+        setChartIdx(idx);
+        resetAutoPlay();
+    };
+    const goPrev = () => goTo((realIdx - 1 + slideCount) % slideCount);
+    const goNext = () => {
+        setIsTransitioning(true);
+        setChartIdx((prev) => prev + 1);
+        resetAutoPlay();
+    };
+    const handleRangeChange = (range) => {
+        setActiveRange(range);
+        setIsTransitioning(false);
+        setChartIdx(0);
+        resetAutoPlay();
+    };
 
     const statsTiles = [
         {
@@ -248,10 +454,10 @@ const AdminDashboard = () => {
                     {rangeOptions.map((opt) => (
                         <button
                             key={opt}
-                            onClick={() => setActiveRange(opt)}
+                            onClick={() => handleRangeChange(opt)}
                             className={`px-lg py-sm rounded-xl text-body-small-bold font-inter transition-all ${activeRange === opt
-                                    ? 'bg-primary-blue text-text-primary shadow-custom'
-                                    : 'text-text-secondary hover:text-text-primary'
+                                ? 'bg-primary-blue text-text-primary shadow-custom'
+                                : 'text-text-secondary hover:text-text-primary'
                                 }`}
                         >
                             {opt}
@@ -263,58 +469,76 @@ const AdminDashboard = () => {
             {/* ── Charts Row ────────────────────────────────────── */}
             <div className="grid grid-cols-3 gap-md">
 
-                {/* ── Left: Main Activity Chart (2 cols) ─────────── */}
+                {/* ── Left: Chart Carousel (2 cols) ────── */}
                 <div className="col-span-2">
                     <Card variant="container">
-                        {/* Header */}
+                        {/* Header with arrows */}
                         <div className="flex items-start justify-between mb-md">
-                            <div>
-                                <h3 className="text-body-large-bold text-text-primary">Overall User Activity & Growth</h3>
-                                <p className="text-body-extra-small text-text-secondary mt-xs">
-                                    Student vs Business registration trends across universities
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-lg shrink-0 ml-md">
-                                <div className="flex items-center gap-xs">
-                                    <div className="w-2.5 h-2.5 rounded-full bg-state-success" />
-                                    <span className="text-body-extra-small text-text-secondary">Students</span>
+                            <div className="flex items-center gap-sm">
+                                {/* Left arrow */}
+                                <button
+                                    onClick={goPrev}
+                                    className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 hover:border-primary-blue/30 transition-all"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                                </button>
+                                <div>
+                                    <h3 className="text-body-large-bold text-text-primary">{chartSlides[realIdx].title}</h3>
+                                    <p className="text-body-extra-small text-text-secondary mt-xs">
+                                        {chartSlides[realIdx].description}
+                                    </p>
                                 </div>
+                                {/* Right arrow */}
+                                <button
+                                    onClick={goNext}
+                                    className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 hover:border-primary-blue/30 transition-all"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-md shrink-0 ml-md">
+                                {/* Legend */}
                                 <div className="flex items-center gap-xs">
-                                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#6A3093' }} />
-                                    <span className="text-body-extra-small text-text-secondary">Businesses</span>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-primary-blue" />
+                                    <span className="text-body-extra-small text-text-secondary">{chartSlides[realIdx].legend}</span>
+                                </div>
+                                {/* Dot indicators */}
+                                <div className="flex items-center gap-xs">
+                                    {chartSlides.map((_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => goTo(i)}
+                                            className={`w-2 h-2 rounded-full transition-all ${i === realIdx ? 'bg-primary-blue scale-125' : 'bg-white/20 hover:bg-white/40'
+                                                }`}
+                                        />
+                                    ))}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Chart body: Y-axis labels + SVG */}
-                        <div className="flex gap-sm items-stretch">
-                            {/* Y-axis labels */}
-                            <div className="flex flex-col justify-between text-body-extra-small text-text-secondary text-right shrink-0 pb-6" style={{ height: 200 }}>
-                                {yAxisLabels.map((l) => (
-                                    <span key={l}>{l}</span>
+                        {/* Sliding chart body — infinite forward loop */}
+                        <div className="overflow-hidden">
+                            <div
+                                className={`flex ${isTransitioning ? 'transition-transform duration-500 ease-in-out' : ''}`}
+                                style={{ transform: `translateX(-${chartIdx * 100}%)` }}
+                                onTransitionEnd={handleTransitionEnd}
+                            >
+                                {/* Real slides + ghost clone of first slide at end */}
+                                {[...chartSlides, chartSlides[0]].map((slide, i) => (
+                                    <div key={i} className="w-full shrink-0">
+                                        <RegistrationChart
+                                            data={slide.data}
+                                            maxVal={slide.maxVal}
+                                            peakIdx={slide.peakIdx}
+                                            labels={xLabels}
+                                            yLabels={slide.yLabels}
+                                            yVals={slide.yVals}
+                                            formatValue={slide.formatValue}
+                                            formatStat={slide.formatStat}
+                                            statLabel={slide.statLabel}
+                                        />
+                                    </div>
                                 ))}
-                            </div>
-
-                            {/* Chart + X-axis */}
-                            <div className="flex-1 min-w-0">
-                                <ActivityChart
-                                    barData={barData}
-                                    studentData={studentData}
-                                    businessData={businessData}
-                                    maxVal={MAX_VAL}
-                                    highlightIdx={HIGHLIGHT_IDX}
-                                    months={months}
-                                />
-                                {/* X-axis labels — same slot widths as SVG */}
-                                <div className="flex mt-1">
-                                    {months.map((m, i) => (
-                                        <div key={m} className="flex-1 text-center">
-                                            <span className={`text-body-extra-small ${i === HIGHLIGHT_IDX ? 'text-primary-blue font-bold' : 'text-text-secondary'}`}>
-                                                {m}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
                             </div>
                         </div>
                     </Card>
