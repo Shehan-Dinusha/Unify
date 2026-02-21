@@ -5,17 +5,19 @@ import Card from '../components/common/Card';
 import Input from '../components/common/Input';
 import Select from '../components/common/Select';
 import Button from '../components/common/Button';
-import { mockBoostPackages, mockRequests } from '../data/mockData';
-import { CheckCircle2, Trash2, Plus, GripVertical, Eye, Info, ArrowLeft, Settings } from 'lucide-react';
+import { useBoostPackages } from '../context/BoostPackageContext';
+import { mockRequests } from '../data/mockData';
+import { CheckCircle2, Trash2, Plus, GripVertical, Eye, Info, LayoutDashboard, Settings, Save, AlertTriangle } from 'lucide-react';
 
 const BoostPackageForm = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const isEditing = !!id;
+    const { packages, addPackage, updatePackage } = useBoostPackages();
 
     // Find existing package if editing
     const existingPackage = isEditing
-        ? mockBoostPackages.find((pkg) => pkg.id === id)
+        ? packages.find((pkg) => pkg.id === id)
         : null;
 
     // Form state
@@ -27,9 +29,10 @@ const BoostPackageForm = () => {
     const [description, setDescription] = useState('');
     const [features, setFeatures] = useState(['']);
 
-    // Success modal state
+    // Modal states
     const [showSuccess, setShowSuccess] = useState(false);
     const [successData, setSuccessData] = useState(null);
+    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
     // Pre-fill form if editing
     useEffect(() => {
@@ -52,13 +55,38 @@ const BoostPackageForm = () => {
         setFeatures(features.filter((_, i) => i !== index));
     };
 
-    const updateFeature = (index, value) => {
+    const updateFeatureText = (index, value) => {
         const updated = [...features];
         updated[index] = value;
         setFeatures(updated);
     };
 
-    const handleSave = () => {
+    // Show save confirmation first
+    const handleSaveClick = () => {
+        setShowSaveConfirm(true);
+    };
+
+    // Actually save after confirmation
+    const confirmSave = () => {
+        setShowSaveConfirm(false);
+
+        const pkgData = {
+            name: packageName || 'Untitled',
+            price: Number(price) || 0,
+            duration: `${durationValue} ${durationUnit}`,
+            durationValue: Number(durationValue) || 0,
+            durationUnit,
+            badge: badgeType,
+            description: description || 'No description provided.',
+            features: features.filter(f => f.trim() !== ''),
+        };
+
+        if (isEditing) {
+            updatePackage(id, pkgData);
+        } else {
+            addPackage(pkgData);
+        }
+
         const operationId = `#bst-${Math.floor(10000 + Math.random() * 90000)}-tf`;
         const now = new Date();
         const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -71,6 +99,10 @@ const BoostPackageForm = () => {
             isEdit: isEditing,
         });
         setShowSuccess(true);
+    };
+
+    const cancelSave = () => {
+        setShowSaveConfirm(false);
     };
 
     const handleDiscard = () => {
@@ -102,7 +134,7 @@ const BoostPackageForm = () => {
             <Button variant="secondary" size="small" onClick={handleDiscard}>
                 Discard Changes
             </Button>
-            <Button variant="primary" size="small" onClick={handleSave}>
+            <Button variant="primary" size="small" onClick={handleSaveClick}>
                 Save Changes
             </Button>
         </div>
@@ -110,38 +142,80 @@ const BoostPackageForm = () => {
 
     return (
         <>
-            {/* Success Modal - Blurred backdrop popup, same pattern as VerificationModals */}
-            {showSuccess && successData && (
+            {/* Save Confirmation Modal */}
+            {showSaveConfirm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
-                    <Card variant="card" padding="p-0" className="w-full max-w-[480px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+                    <Card variant="card" padding="p-0" className="w-full max-w-[420px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
                         <div className="p-8 pb-6 flex flex-col items-center text-center">
-                            {/* Success Icon */}
-                            <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
-                                <CheckCircle2 size={32} className="text-state-success" />
+                            {/* Confirm Icon */}
+                            <div className="w-16 h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-primary-blue/5">
+                                <Save size={32} className="text-primary-blue" />
                             </div>
 
                             <h2 className="text-xl font-bold text-white mb-3">
+                                {isEditing ? 'Update Package?' : 'Save New Package?'}
+                            </h2>
+                            <p className="text-text-secondary text-sm leading-relaxed mb-2 max-w-sm">
+                                {isEditing
+                                    ? <>Are you sure you want to update the <span className="text-text-primary font-semibold">"{packageName || 'Untitled'}"</span> package? Changes will take effect immediately.</>
+                                    : <>Are you sure you want to create the <span className="text-text-primary font-semibold">"{packageName || 'Untitled'}"</span> package? It will be available for businesses immediately.</>
+                                }
+                            </p>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="px-8 pb-8 pt-2 flex flex-col gap-3">
+                            <button
+                                onClick={confirmSave}
+                                className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+                            >
+                                <Save size={18} />
+                                {isEditing ? 'Yes, Update Package' : 'Yes, Save Package'}
+                            </button>
+                            <button
+                                onClick={cancelSave}
+                                className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </Card>
+                </div>
+            )}
+
+            {/* Success Modal - Scrollable to prevent cut-off */}
+            {showSuccess && successData && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">
+                    <Card variant="card" padding="p-0" className="w-full max-w-[480px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl my-auto">
+                        <div className="p-6 sm:p-8 pb-4 sm:pb-6 flex flex-col items-center text-center">
+                            {/* Success Icon */}
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 ring-4 ring-state-success/5">
+                                <CheckCircle2 size={28} className="text-state-success sm:hidden" />
+                                <CheckCircle2 size={32} className="text-state-success hidden sm:block" />
+                            </div>
+
+                            <h2 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">
                                 Package Successfully {successData.isEdit ? 'Updated' : 'Added'}
                             </h2>
-                            <p className="text-text-secondary text-sm leading-relaxed mb-4 max-w-sm">
+                            <p className="text-text-secondary text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 max-w-sm">
                                 The "{successData.packageTier}" boosting package has been
                                 successfully {successData.isEdit ? 'applied to your active campaign' : 'added to your active campaign'}.
                                 Your ad visibility will increase immediately.
                             </p>
 
                             {/* Details Card */}
-                            <div className="w-full bg-white/5 rounded-2xl border border-white/10 p-lg mb-6">
-                                <div className="flex items-center justify-between py-sm border-b border-white/10">
-                                    <span className="text-body-small text-text-secondary font-inter">Operation ID</span>
-                                    <span className="text-body-small-bold text-text-primary font-inter">{successData.operationId}</span>
+                            <div className="w-full bg-white/5 rounded-2xl border border-white/10 p-md sm:p-lg mb-4 sm:mb-6">
+                                <div className="flex items-center justify-between py-xs sm:py-sm border-b border-white/10">
+                                    <span className="text-body-extra-small text-text-secondary font-inter">Operation ID</span>
+                                    <span className="text-body-extra-small sm:text-body-small-bold text-text-primary font-inter">{successData.operationId}</span>
                                 </div>
-                                <div className="flex items-center justify-between py-sm border-b border-white/10">
-                                    <span className="text-body-small text-text-secondary font-inter">Activation Date</span>
-                                    <span className="text-body-small-bold text-text-primary font-inter">{successData.activationDate}</span>
+                                <div className="flex items-center justify-between py-xs sm:py-sm border-b border-white/10">
+                                    <span className="text-body-extra-small text-text-secondary font-inter">Activation Date</span>
+                                    <span className="text-body-extra-small sm:text-body-small-bold text-text-primary font-inter">{successData.activationDate}</span>
                                 </div>
-                                <div className="flex items-center justify-between py-sm">
-                                    <span className="text-body-small text-text-secondary font-inter">Package Tier</span>
-                                    <span className="text-body-small-bold text-primary-blue font-inter flex items-center gap-1">
+                                <div className="flex items-center justify-between py-xs sm:py-sm">
+                                    <span className="text-body-extra-small text-text-secondary font-inter">Package Tier</span>
+                                    <span className="text-body-extra-small sm:text-body-small-bold text-primary-blue font-inter flex items-center gap-1">
                                         <span>⚡</span> {successData.packageTier.toUpperCase()}
                                     </span>
                                 </div>
@@ -149,22 +223,21 @@ const BoostPackageForm = () => {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="p-6 pt-2 bg-transparent flex gap-4">
-                            <Button
-                                variant="primary"
-                                icon={ArrowLeft}
-                                className="flex-1 h-11 shadow-lg shadow-primary-blue/20 font-semibold"
-                                onClick={() => navigate('/boost-controller')}
+                        <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-1 sm:pt-2 flex flex-col gap-3">
+                            <button
+                                onClick={() => navigate('/')}
+                                className="w-full h-11 sm:h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
                             >
+                                <LayoutDashboard size={18} />
                                 Return to Dashboard
-                            </Button>
-                            <Button
-                                icon={Settings}
-                                className="flex-1 bg-white/5 hover:bg-white/10 text-text-secondary h-11 border-none font-medium"
+                            </button>
+                            <button
                                 onClick={() => navigate('/boost-controller')}
+                                className="w-full h-11 sm:h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
                             >
+                                <Settings size={18} className="text-text-secondary" />
                                 Manage All Packages
-                            </Button>
+                            </button>
                         </div>
                     </Card>
                 </div>
@@ -325,7 +398,7 @@ const BoostPackageForm = () => {
                                                             className="w-full bg-transparent outline-none text-sm text-text-primary placeholder:text-text-tertiary font-inter"
                                                             placeholder="Add a new feature..."
                                                             value={feature}
-                                                            onChange={(e) => updateFeature(index, e.target.value)}
+                                                            onChange={(e) => updateFeatureText(index, e.target.value)}
                                                         />
                                                     </div>
                                                     <button
