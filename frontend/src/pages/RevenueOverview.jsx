@@ -7,8 +7,8 @@ import { mockRequests } from '../data/mockData';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const yAxisLabels = ['15M', '12M', '9M', '6M', '3M', '0'];
-const actualRevenue = [3, 3.5, 4.5, 5, 6, 7, 8, 9.4, 10.5, 11, 11.8, 12.8];
-const projectedRevenue = [3, 3.5, 4.5, 5, 6, 7, 8, 9.4, 10, 10.5, 11, 12];
+const actualRevenue = [2.1, 3.2, 4.8, 5.5, 7.2, 8.8, 9.5, 9.4, 10.5, 11.8, 12.5, 12.8];
+const projectedRevenue = [2.0, 3.0, 4.2, 5.8, 7.5, 9.2, 10.5, 11.2, 12.0, 12.8, 13.5, 14.5];
 const MAX_REV = 15;
 const TOOLTIP_IDX = 7; // Aug
 
@@ -23,7 +23,7 @@ const breakdownSegments = [
 
 const RevenueChart = ({ actual, projected, maxVal, tooltipIdx }) => {
     const W = 600;
-    const H = 200;
+    const H = 340;
     const padT = 10;
     const padB = 10;
     const padL = 0;
@@ -41,13 +41,11 @@ const RevenueChart = ({ actual, projected, maxVal, tooltipIdx }) => {
         return `${line} L${toX(n - 1)},${H - padB} L${toX(0)},${H - padB} Z`;
     };
 
-    // Tooltip position as percentage of SVG dimensions
     const tipX = toX(tooltipIdx);
     const tipY = toY(actual[tooltipIdx]);
     const tipXPct = `${(tipX / W) * 100}%`;
     const tipYPct = `${(tipY / H) * 100}%`;
 
-    // Grid lines at each y label
     const gridVals = [0, 3, 6, 9, 12, 15];
 
     return (
@@ -56,7 +54,7 @@ const RevenueChart = ({ actual, projected, maxVal, tooltipIdx }) => {
                 viewBox={`0 0 ${W} ${H}`}
                 preserveAspectRatio="xMidYMid meet"
                 className="w-full"
-                style={{ height: H }}
+                style={{ height: 340 }}
             >
                 <defs>
                     <linearGradient id="revAreaGrad" x1="0" y1="0" x2="0" y2="1">
@@ -65,7 +63,6 @@ const RevenueChart = ({ actual, projected, maxVal, tooltipIdx }) => {
                     </linearGradient>
                 </defs>
 
-                {/* Grid lines */}
                 {gridVals.map((v) => (
                     <line
                         key={v}
@@ -76,10 +73,8 @@ const RevenueChart = ({ actual, projected, maxVal, tooltipIdx }) => {
                     />
                 ))}
 
-                {/* Area fill */}
                 <path d={buildArea(actual)} fill="url(#revAreaGrad)" />
 
-                {/* Projected dashed line */}
                 <path
                     d={buildPath(projected)}
                     fill="none"
@@ -90,7 +85,6 @@ const RevenueChart = ({ actual, projected, maxVal, tooltipIdx }) => {
                     strokeLinejoin="round"
                 />
 
-                {/* Actual solid line */}
                 <path
                     d={buildPath(actual)}
                     fill="none"
@@ -100,7 +94,6 @@ const RevenueChart = ({ actual, projected, maxVal, tooltipIdx }) => {
                     strokeLinejoin="round"
                 />
 
-                {/* Tooltip dot */}
                 <circle
                     cx={tipX} cy={tipY}
                     r="5"
@@ -110,7 +103,6 @@ const RevenueChart = ({ actual, projected, maxVal, tooltipIdx }) => {
                 />
             </svg>
 
-            {/* Tooltip — positioned relative to SVG container */}
             <div
                 className="absolute pointer-events-none"
                 style={{
@@ -220,19 +212,18 @@ const RevenueOverview = () => {
                     <Card
                         key={i}
                         variant="container"
-                        className="hover:border-primary-blue/30 transition-colors"
+                        className="hover:border-primary-blue/30 transition-colors h-44 relative"
                     >
-                        <div className="flex items-start justify-between mb-sm">
-                            <div>
-                                <p className="text-body-small-bold text-text-secondary">{tile.title}</p>
-                                <p className="text-body-extra-small text-text-secondary">{tile.subtitle}</p>
-                            </div>
-                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
-                                <span className="text-lg">{tile.icon}</span>
-                            </div>
+                        <div className={`absolute top-lg left-lg w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
+                            <span className="text-lg">{tile.icon}</span>
                         </div>
-                        <p className="text-heading-medium text-text-primary mt-sm">{tile.value}</p>
-                        <p className={`text-body-extra-small mt-xs ${tile.changeClass}`}>{tile.change}</p>
+                        <div className="absolute top-[72px] left-lg right-lg">
+                            <p className="text-body-small-bold text-text-secondary truncate">{tile.title}</p>
+                        </div>
+                        <div className="absolute top-[94px] left-lg right-lg">
+                            <p className="text-heading-medium text-text-primary">{tile.value}</p>
+                            <p className={`text-body-extra-small mt-xs ${tile.changeClass} truncate`}>{tile.change}</p>
+                        </div>
                     </Card>
                 ))}
             </div>
@@ -265,10 +256,10 @@ const RevenueOverview = () => {
 
                         {/* Chart body */}
                         <div className="flex gap-sm items-stretch mt-md">
-                            {/* Y-axis labels — height matches SVG */}
+                            {/* Y-axis labels */}
                             <div
                                 className="flex flex-col justify-between text-body-extra-small text-text-secondary text-right shrink-0 pb-6"
-                                style={{ height: 200 }}
+                                style={{ height: 340 }}
                             >
                                 {yAxisLabels.map((l) => (
                                     <span key={l}>{l}</span>
