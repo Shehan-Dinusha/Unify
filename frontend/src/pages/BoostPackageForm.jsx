@@ -27,7 +27,7 @@ const BoostPackageForm = () => {
     const [description, setDescription] = useState('');
     const [features, setFeatures] = useState(['']);
 
-    // Success state
+    // Success modal state
     const [showSuccess, setShowSuccess] = useState(false);
     const [successData, setSuccessData] = useState(null);
 
@@ -108,33 +108,29 @@ const BoostPackageForm = () => {
         </div>
     );
 
-    // Success screen
-    if (showSuccess && successData) {
-        return (
-            <MainLayout
-                user={{ name: 'Alex Johnson', role: 'admin' }}
-                pageTitle="Package Configuration"
-                verificationCount={mockRequests.length}
-            >
-                <div className="flex items-center justify-center min-h-[70vh]">
-                    <Card variant="card" padding="p-0" className="w-full max-w-lg">
-                        <div className="p-2xl flex flex-col items-center text-center">
+    return (
+        <>
+            {/* Success Modal - Blurred backdrop popup, same pattern as VerificationModals */}
+            {showSuccess && successData && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
+                    <Card variant="card" padding="p-0" className="w-full max-w-[480px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+                        <div className="p-8 pb-6 flex flex-col items-center text-center">
                             {/* Success Icon */}
-                            <div className="w-16 h-16 rounded-full bg-state-success/20 flex items-center justify-center mb-lg">
-                                <CheckCircle2 size={36} className="text-state-success" />
+                            <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
+                                <CheckCircle2 size={32} className="text-state-success" />
                             </div>
 
-                            <h2 className="text-heading-small text-text-primary font-inter mb-sm">
+                            <h2 className="text-xl font-bold text-white mb-3">
                                 Package Successfully {successData.isEdit ? 'Updated' : 'Added'}
                             </h2>
-                            <p className="text-body-small text-text-secondary font-inter mb-xl max-w-sm leading-relaxed">
+                            <p className="text-text-secondary text-sm leading-relaxed mb-4 max-w-sm">
                                 The "{successData.packageTier}" boosting package has been
                                 successfully {successData.isEdit ? 'applied to your active campaign' : 'added to your active campaign'}.
                                 Your ad visibility will increase immediately.
                             </p>
 
                             {/* Details Card */}
-                            <div className="w-full bg-white/5 rounded-2xl border border-white/10 p-lg mb-xl">
+                            <div className="w-full bg-white/5 rounded-2xl border border-white/10 p-lg mb-6">
                                 <div className="flex items-center justify-between py-sm border-b border-white/10">
                                     <span className="text-body-small text-text-secondary font-inter">Operation ID</span>
                                     <span className="text-body-small-bold text-text-primary font-inter">{successData.operationId}</span>
@@ -150,290 +146,285 @@ const BoostPackageForm = () => {
                                     </span>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-md w-full">
-                                <Button
-                                    variant="primary"
-                                    size="medium"
-                                    icon={ArrowLeft}
-                                    className="flex-1"
-                                    onClick={() => navigate('/boost-controller')}
-                                >
-                                    Return to Dashboard
-                                </Button>
-                                <Button
-                                    variant="secondary"
-                                    size="medium"
-                                    icon={Settings}
-                                    className="flex-1"
-                                    onClick={() => navigate('/boost-controller')}
-                                >
-                                    Manage All Packages
-                                </Button>
-                            </div>
+                        {/* Action Buttons */}
+                        <div className="p-6 pt-2 bg-transparent flex gap-4">
+                            <Button
+                                variant="primary"
+                                icon={ArrowLeft}
+                                className="flex-1 h-11 shadow-lg shadow-primary-blue/20 font-semibold"
+                                onClick={() => navigate('/boost-controller')}
+                            >
+                                Return to Dashboard
+                            </Button>
+                            <Button
+                                icon={Settings}
+                                className="flex-1 bg-white/5 hover:bg-white/10 text-text-secondary h-11 border-none font-medium"
+                                onClick={() => navigate('/boost-controller')}
+                            >
+                                Manage All Packages
+                            </Button>
                         </div>
                     </Card>
                 </div>
-            </MainLayout>
-        );
-    }
+            )}
 
-    return (
-        <MainLayout
-            user={{ name: 'Alex Johnson', role: 'admin' }}
-            pageTitle="Package Configuration"
-            headerRight={headerActions}
-            verificationCount={mockRequests.length}
-        >
-            <div className="flex flex-col gap-lg">
-                {/* Page Title */}
-                <div>
-                    <h1 className="text-heading-small text-text-primary font-inter">
-                        {isEditing ? 'Edit Boost Package' : 'Create New Boost Package'}
-                    </h1>
-                    <p className="text-body-small text-text-secondary font-inter mt-1">
-                        {isEditing
-                            ? `Modify details for the '${existingPackage?.name}' boost tier.`
-                            : 'Define a new advertising tier for businesses.'}
-                    </p>
-                </div>
-
-                {/* Main Content: Form + Preview */}
-                <div className="flex gap-lg">
-                    {/* Left: Form */}
-                    <div className="flex-1 min-w-0">
-                        <Card variant="card" padding="p-lg">
-                            <div className="flex flex-col gap-xl">
-                                {/* Package Details Section Header (Edit mode) */}
-                                {isEditing && (
-                                    <h3 className="text-body-large-bold text-text-primary font-inter">Package Details</h3>
-                                )}
-
-                                {/* Row 1: Name + Badge/Price */}
-                                <div className="grid grid-cols-2 gap-lg">
-                                    <Input
-                                        label={isEditing ? 'PACKAGE NAME' : 'Package Title'}
-                                        placeholder="eg : Campus Legend"
-                                        value={packageName}
-                                        onChange={(e) => setPackageName(e.target.value)}
-                                    />
-                                    {isEditing ? (
-                                        <Input
-                                            label="BADGE TAG"
-                                            placeholder="Most Popular"
-                                            value={badgeType}
-                                            onChange={(e) => setBadgeType(e.target.value)}
-                                        />
-                                    ) : (
-                                        <Input
-                                            label="Price (LKR)"
-                                            placeholder="Rs. 0.00"
-                                            value={price}
-                                            onChange={(e) => setPrice(e.target.value)}
-                                        />
-                                    )}
-                                </div>
-
-                                {/* Row 2: Duration + Badge/Price */}
-                                <div className="grid grid-cols-2 gap-lg">
-                                    {isEditing ? (
-                                        <Input
-                                            label="PRICE (LKR)"
-                                            placeholder="Rs. 0.00"
-                                            value={price ? `Rs. ${price}` : ''}
-                                            onChange={(e) => setPrice(e.target.value.replace(/[^0-9]/g, ''))}
-                                        />
-                                    ) : (
-                                        <Select
-                                            label="Duration"
-                                            value={durationValue === '24' && durationUnit === 'Hours' ? '24h' : `${durationValue}${durationUnit.charAt(0).toLowerCase()}`}
-                                            options={[
-                                                { value: '24h', label: '24 Hours' },
-                                                { value: '3d', label: '3 Days' },
-                                                { value: '7d', label: '7 Days' },
-                                                { value: '14d', label: '14 Days' },
-                                                { value: '30d', label: '30 Days' },
-                                            ]}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                if (val === '24h') { setDurationValue('24'); setDurationUnit('Hours'); }
-                                                else if (val === '3d') { setDurationValue('3'); setDurationUnit('Days'); }
-                                                else if (val === '7d') { setDurationValue('7'); setDurationUnit('Days'); }
-                                                else if (val === '14d') { setDurationValue('14'); setDurationUnit('Days'); }
-                                                else if (val === '30d') { setDurationValue('30'); setDurationUnit('Days'); }
-                                            }}
-                                        />
-                                    )}
-                                    {isEditing ? (
-                                        <div className="grid grid-cols-2 gap-md">
-                                            <Input
-                                                label="DURATION"
-                                                placeholder="3"
-                                                value={durationValue}
-                                                onChange={(e) => setDurationValue(e.target.value)}
-                                            />
-                                            <Select
-                                                label=" "
-                                                value={durationUnit}
-                                                options={durationUnitOptions}
-                                                onChange={(e) => setDurationUnit(e.target.value)}
-                                            />
-                                        </div>
-                                    ) : (
-                                        <Select
-                                            label="Badge Type"
-                                            value={badgeType}
-                                            options={badgeOptions}
-                                            onChange={(e) => setBadgeType(e.target.value)}
-                                        />
-                                    )}
-                                </div>
-
-                                {/* Description (Edit mode) */}
-                                {isEditing && (
-                                    <div className="flex flex-col gap-1.5 w-full">
-                                        <label className="text-text-tertiary text-xs font-bold font-inter leading-5 uppercase tracking-wider">
-                                            DESCRIPTION
-                                        </label>
-                                        <textarea
-                                            className="w-full h-20 rounded-2xl bg-white/5 border border-white/10 outline-none transition-all font-inter text-sm text-text-primary placeholder:text-text-tertiary px-4 py-3 resize-none focus:border-primary-blue/50 focus:bg-white/10 shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)]"
-                                            placeholder="Describe this package..."
-                                            value={description}
-                                            onChange={(e) => setDescription(e.target.value)}
-                                        />
-                                    </div>
-                                )}
-
-                                {/* Features Section */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-md">
-                                        <h4 className="text-body-medium-bold text-text-primary font-inter">
-                                            {isEditing ? 'Benefits & Features' : 'Key Benefits & Features'}
-                                        </h4>
-                                        <button
-                                            onClick={addFeature}
-                                            className="flex items-center gap-xs text-primary-blue text-body-small-bold font-inter hover:underline transition-all"
-                                        >
-                                            <Plus size={16} />
-                                            Add Feature
-                                        </button>
-                                    </div>
-
-                                    <div className="flex flex-col gap-sm">
-                                        {features.map((feature, index) => (
-                                            <div key={index} className="flex items-center gap-sm">
-                                                {isEditing && (
-                                                    <GripVertical size={18} className="text-text-secondary flex-shrink-0 cursor-grab" />
-                                                )}
-                                                {!isEditing && (
-                                                    <CheckCircle2 size={18} className="text-text-secondary flex-shrink-0" />
-                                                )}
-                                                <div className="flex-1 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center px-4 transition-all focus-within:border-primary-blue/50 focus-within:bg-white/10">
-                                                    <input
-                                                        type="text"
-                                                        className="w-full bg-transparent outline-none text-sm text-text-primary placeholder:text-text-tertiary font-inter"
-                                                        placeholder="Add a new feature..."
-                                                        value={feature}
-                                                        onChange={(e) => updateFeature(index, e.target.value)}
-                                                    />
-                                                </div>
-                                                <button
-                                                    onClick={() => removeFeature(index)}
-                                                    className="w-10 h-10 rounded-lg flex items-center justify-center text-state-error/70 hover:bg-state-error/10 hover:text-state-error transition-all flex-shrink-0"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
+            <MainLayout
+                user={{ name: 'Alex Johnson', role: 'admin' }}
+                pageTitle="Package Configuration"
+                headerRight={headerActions}
+                verificationCount={mockRequests.length}
+            >
+                <div className="flex flex-col gap-lg">
+                    {/* Page Title */}
+                    <div>
+                        <h1 className="text-heading-small text-text-primary font-inter">
+                            {isEditing ? 'Edit Boost Package' : 'Create New Boost Package'}
+                        </h1>
+                        <p className="text-body-small text-text-secondary font-inter mt-1">
+                            {isEditing
+                                ? `Modify details for the '${existingPackage?.name}' boost tier.`
+                                : 'Define a new advertising tier for businesses.'}
+                        </p>
                     </div>
 
-                    {/* Right: Live Preview */}
-                    <div className="w-80 flex-shrink-0">
-                        <div className="sticky top-24 flex flex-col gap-md">
-                            {/* Preview Header */}
-                            <div className="flex items-center gap-sm">
-                                <Eye size={18} className="text-primary-blue" />
-                                <span className="text-body-medium-bold text-text-primary font-inter">
-                                    {isEditing ? 'LIVE PREVIEW' : 'Card Preview'}
-                                </span>
-                            </div>
+                    {/* Main Content: Form + Preview */}
+                    <div className="flex gap-lg">
+                        {/* Left: Form */}
+                        <div className="flex-1 min-w-0">
+                            <Card variant="card" padding="p-lg">
+                                <div className="flex flex-col gap-xl">
+                                    {/* Package Details Section Header (Edit mode) */}
+                                    {isEditing && (
+                                        <h3 className="text-body-large-bold text-text-primary font-inter">Package Details</h3>
+                                    )}
 
-                            {/* Preview Card */}
-                            <div className="rounded-2xl border-2 border-primary-blue/60 bg-gradient-to-b from-white/10 to-white/5 p-lg">
-                                <div className="flex flex-col gap-sm">
-                                    <h3 className="text-body-large-bold text-primary-blue font-inter">
-                                        {packageName || 'Campus Legend'}
-                                    </h3>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-heading-small text-text-primary font-inter font-bold">
-                                            {previewPrice}
-                                        </span>
-                                        <span className="text-body-extra-small text-text-secondary font-inter">/ {previewDuration}</span>
-                                    </div>
-                                    <p className="text-body-extra-small text-text-secondary font-inter leading-relaxed">
-                                        {description || (isEditing
-                                            ? 'Best balance of reach and duration for weekly promos.'
-                                            : 'Dominate the university feed with maximum visibility and engagement.')}
-                                    </p>
-                                    <div className="flex flex-col gap-xs mt-sm">
-                                        {previewFeatures.length > 0 ? (
-                                            previewFeatures.map((f, i) => (
-                                                <div key={i} className="flex items-center gap-xs">
-                                                    <CheckCircle2 size={14} className="text-state-success flex-shrink-0" />
-                                                    <span className="text-body-small text-text-primary font-inter">{f}</span>
-                                                </div>
-                                            ))
+                                    {/* Row 1: Name + Badge/Price */}
+                                    <div className="grid grid-cols-2 gap-lg">
+                                        <Input
+                                            label={isEditing ? 'PACKAGE NAME' : 'Package Title'}
+                                            placeholder="eg : Campus Legend"
+                                            value={packageName}
+                                            onChange={(e) => setPackageName(e.target.value)}
+                                        />
+                                        {isEditing ? (
+                                            <Input
+                                                label="BADGE TAG"
+                                                placeholder="Most Popular"
+                                                value={badgeType}
+                                                onChange={(e) => setBadgeType(e.target.value)}
+                                            />
                                         ) : (
-                                            <>
-                                                <div className="flex items-center gap-xs">
-                                                    <CheckCircle2 size={14} className="text-state-success" />
-                                                    <span className="text-body-small text-text-primary font-inter">Priority feed placement</span>
-                                                </div>
-                                                <div className="flex items-center gap-xs">
-                                                    <CheckCircle2 size={14} className="text-state-success" />
-                                                    <span className="text-body-small text-text-primary font-inter">Reach 5,000+ students</span>
-                                                </div>
-                                                <div className="flex items-center gap-xs">
-                                                    <CheckCircle2 size={14} className="text-state-success" />
-                                                    <span className="text-body-small text-text-primary font-inter">Verified sponsor badge</span>
-                                                </div>
-                                            </>
+                                            <Input
+                                                label="Price (LKR)"
+                                                placeholder="Rs. 0.00"
+                                                value={price}
+                                                onChange={(e) => setPrice(e.target.value)}
+                                            />
                                         )}
                                     </div>
-                                    <Button variant="primary" size="small" fullWidth className="mt-md">
-                                        Select {packageName || 'Package'}
-                                    </Button>
-                                </div>
-                            </div>
 
-                            {/* Tip Card */}
-                            <div className="rounded-2xl bg-white/5 border border-white/10 p-md">
-                                <div className="flex items-start gap-sm">
-                                    <div className="w-8 h-8 rounded-full bg-primary-blue/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                        <Info size={16} className="text-primary-blue" />
+                                    {/* Row 2: Duration + Badge/Price */}
+                                    <div className="grid grid-cols-2 gap-lg">
+                                        {isEditing ? (
+                                            <Input
+                                                label="PRICE (LKR)"
+                                                placeholder="Rs. 0.00"
+                                                value={price ? `Rs. ${price}` : ''}
+                                                onChange={(e) => setPrice(e.target.value.replace(/[^0-9]/g, ''))}
+                                            />
+                                        ) : (
+                                            <Select
+                                                label="Duration"
+                                                value={durationValue === '24' && durationUnit === 'Hours' ? '24h' : `${durationValue}${durationUnit.charAt(0).toLowerCase()}`}
+                                                options={[
+                                                    { value: '24h', label: '24 Hours' },
+                                                    { value: '3d', label: '3 Days' },
+                                                    { value: '7d', label: '7 Days' },
+                                                    { value: '14d', label: '14 Days' },
+                                                    { value: '30d', label: '30 Days' },
+                                                ]}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === '24h') { setDurationValue('24'); setDurationUnit('Hours'); }
+                                                    else if (val === '3d') { setDurationValue('3'); setDurationUnit('Days'); }
+                                                    else if (val === '7d') { setDurationValue('7'); setDurationUnit('Days'); }
+                                                    else if (val === '14d') { setDurationValue('14'); setDurationUnit('Days'); }
+                                                    else if (val === '30d') { setDurationValue('30'); setDurationUnit('Days'); }
+                                                }}
+                                            />
+                                        )}
+                                        {isEditing ? (
+                                            <div className="grid grid-cols-2 gap-md">
+                                                <Input
+                                                    label="DURATION"
+                                                    placeholder="3"
+                                                    value={durationValue}
+                                                    onChange={(e) => setDurationValue(e.target.value)}
+                                                />
+                                                <Select
+                                                    label=" "
+                                                    value={durationUnit}
+                                                    options={durationUnitOptions}
+                                                    onChange={(e) => setDurationUnit(e.target.value)}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <Select
+                                                label="Badge Type"
+                                                value={badgeType}
+                                                options={badgeOptions}
+                                                onChange={(e) => setBadgeType(e.target.value)}
+                                            />
+                                        )}
                                     </div>
+
+                                    {/* Description (Edit mode) */}
+                                    {isEditing && (
+                                        <div className="flex flex-col gap-1.5 w-full">
+                                            <label className="text-text-tertiary text-xs font-bold font-inter leading-5 uppercase tracking-wider">
+                                                DESCRIPTION
+                                            </label>
+                                            <textarea
+                                                className="w-full h-20 rounded-2xl bg-white/5 border border-white/10 outline-none transition-all font-inter text-sm text-text-primary placeholder:text-text-tertiary px-4 py-3 resize-none focus:border-primary-blue/50 focus:bg-white/10 shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)]"
+                                                placeholder="Describe this package..."
+                                                value={description}
+                                                onChange={(e) => setDescription(e.target.value)}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Features Section */}
                                     <div>
-                                        <p className="text-body-small-bold text-text-primary font-inter mb-xs">
-                                            {isEditing ? 'Editing Tips' : 'Visibility Tip'}
-                                        </p>
+                                        <div className="flex items-center justify-between mb-md">
+                                            <h4 className="text-body-medium-bold text-text-primary font-inter">
+                                                {isEditing ? 'Benefits & Features' : 'Key Benefits & Features'}
+                                            </h4>
+                                            <button
+                                                onClick={addFeature}
+                                                className="flex items-center gap-xs text-primary-blue text-body-small-bold font-inter hover:underline transition-all"
+                                            >
+                                                <Plus size={16} />
+                                                Add Feature
+                                            </button>
+                                        </div>
+
+                                        <div className="flex flex-col gap-sm">
+                                            {features.map((feature, index) => (
+                                                <div key={index} className="flex items-center gap-sm">
+                                                    {isEditing && (
+                                                        <GripVertical size={18} className="text-text-secondary flex-shrink-0 cursor-grab" />
+                                                    )}
+                                                    {!isEditing && (
+                                                        <CheckCircle2 size={18} className="text-text-secondary flex-shrink-0" />
+                                                    )}
+                                                    <div className="flex-1 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center px-4 transition-all focus-within:border-primary-blue/50 focus-within:bg-white/10">
+                                                        <input
+                                                            type="text"
+                                                            className="w-full bg-transparent outline-none text-sm text-text-primary placeholder:text-text-tertiary font-inter"
+                                                            placeholder="Add a new feature..."
+                                                            value={feature}
+                                                            onChange={(e) => updateFeature(index, e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        onClick={() => removeFeature(index)}
+                                                        className="w-10 h-10 rounded-lg flex items-center justify-center text-state-error/70 hover:bg-state-error/10 hover:text-state-error transition-all flex-shrink-0"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        </div>
+
+                        {/* Right: Live Preview */}
+                        <div className="w-80 flex-shrink-0">
+                            <div className="sticky top-24 flex flex-col gap-md">
+                                {/* Preview Header */}
+                                <div className="flex items-center gap-sm">
+                                    <Eye size={18} className="text-primary-blue" />
+                                    <span className="text-body-medium-bold text-text-primary font-inter">
+                                        {isEditing ? 'LIVE PREVIEW' : 'Card Preview'}
+                                    </span>
+                                </div>
+
+                                {/* Preview Card */}
+                                <div className="rounded-2xl border-2 border-primary-blue/60 bg-gradient-to-b from-white/10 to-white/5 p-lg">
+                                    <div className="flex flex-col gap-sm">
+                                        <h3 className="text-body-large-bold text-primary-blue font-inter">
+                                            {packageName || 'Campus Legend'}
+                                        </h3>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-heading-small text-text-primary font-inter font-bold">
+                                                {previewPrice}
+                                            </span>
+                                            <span className="text-body-extra-small text-text-secondary font-inter">/ {previewDuration}</span>
+                                        </div>
                                         <p className="text-body-extra-small text-text-secondary font-inter leading-relaxed">
-                                            {isEditing
-                                                ? 'Changes made here will take effect immediately for all new purchases. Existing active boosts will retain their original parameters until expiry.'
-                                                : 'This preview shows exactly how business accounts will see this package in their dashboard selection screen.'}
+                                            {description || (isEditing
+                                                ? 'Best balance of reach and duration for weekly promos.'
+                                                : 'Dominate the university feed with maximum visibility and engagement.')}
                                         </p>
+                                        <div className="flex flex-col gap-xs mt-sm">
+                                            {previewFeatures.length > 0 ? (
+                                                previewFeatures.map((f, i) => (
+                                                    <div key={i} className="flex items-center gap-xs">
+                                                        <CheckCircle2 size={14} className="text-state-success flex-shrink-0" />
+                                                        <span className="text-body-small text-text-primary font-inter">{f}</span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <>
+                                                    <div className="flex items-center gap-xs">
+                                                        <CheckCircle2 size={14} className="text-state-success" />
+                                                        <span className="text-body-small text-text-primary font-inter">Priority feed placement</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-xs">
+                                                        <CheckCircle2 size={14} className="text-state-success" />
+                                                        <span className="text-body-small text-text-primary font-inter">Reach 5,000+ students</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-xs">
+                                                        <CheckCircle2 size={14} className="text-state-success" />
+                                                        <span className="text-body-small text-text-primary font-inter">Verified sponsor badge</span>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                        <Button variant="primary" size="small" fullWidth className="mt-md">
+                                            Select {packageName || 'Package'}
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {/* Tip Card */}
+                                <div className="rounded-2xl bg-white/5 border border-white/10 p-md">
+                                    <div className="flex items-start gap-sm">
+                                        <div className="w-8 h-8 rounded-full bg-primary-blue/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <Info size={16} className="text-primary-blue" />
+                                        </div>
+                                        <div>
+                                            <p className="text-body-small-bold text-text-primary font-inter mb-xs">
+                                                {isEditing ? 'Editing Tips' : 'Visibility Tip'}
+                                            </p>
+                                            <p className="text-body-extra-small text-text-secondary font-inter leading-relaxed">
+                                                {isEditing
+                                                    ? 'Changes made here will take effect immediately for all new purchases. Existing active boosts will retain their original parameters until expiry.'
+                                                    : 'This preview shows exactly how business accounts will see this package in their dashboard selection screen.'}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </MainLayout>
+            </MainLayout>
+        </>
     );
 };
 
