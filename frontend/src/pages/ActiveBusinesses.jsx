@@ -3,6 +3,8 @@ import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Select from '../components/common/Select';
 import { mockRequests } from '../data/mockData';
+import { Search, RotateCcw } from 'lucide-react';
+import Input from '../components/common/Input';
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
 
@@ -45,6 +47,7 @@ const categoryColors = {
     'Self Employee': 'bg-primary-blue/20 text-primary-blue border border-primary-blue/30',
     'Boarding': 'bg-state-warning/20 text-state-warning border border-state-warning/30',
     'Food & Cafe': 'bg-state-error/20 text-state-error border border-state-error/30',
+    'Clubs & Society': 'bg-primary-accent/20 text-primary-accent border border-primary-accent/30',
 };
 
 const businesses = [
@@ -84,13 +87,29 @@ const businesses = [
         status: 'Active',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=GreenLeaf',
     },
+    {
+        id: 5,
+        name: 'University Chess Club',
+        email: 'chess@uom.lk',
+        category: 'Clubs & Society',
+        registrationDate: 'Jan 10, 2026',
+        status: 'Active',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ChessClub',
+    },
 ];
 
 const categoryOptions = [
     { value: 'all', label: 'All Categories' },
-    { value: 'self-employee', label: 'Self Employee' },
-    { value: 'boarding', label: 'Boarding' },
-    { value: 'food', label: 'Food & Cafe' },
+    { value: 'Self Employee', label: 'Self Employee' },
+    { value: 'Boarding', label: 'Boarding' },
+    { value: 'Food & Cafe', label: 'Food & Cafe' },
+    { value: 'Clubs & Society', label: 'Clubs & Society' },
+];
+
+const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'Active', label: '● Active' },
+    { value: 'Inactive', label: '● Inactive' },
 ];
 
 // ─── Table column layout (using CSS grid template) ───────────────────────────
@@ -100,13 +119,29 @@ const COLS = '2fr 1fr 1.2fr 1fr 1fr';
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
 const ActiveBusinesses = () => {
-    const [filterCategory, setFilterCategory] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeFilter, setActiveFilter] = useState('All Businesses');
+    const [categoryFilter, setCategoryFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
 
-    const filtered = businesses.filter(
-        (b) =>
-            filterCategory === 'all' ||
-            b.category.toLowerCase().replace(/[\s&]+/g, '-').replace('--', '-') === filterCategory
-    );
+    const handleResetFilters = () => {
+        setSearchQuery('');
+        setActiveFilter('All Businesses');
+        setCategoryFilter('all');
+        setStatusFilter('all');
+    };
+
+    const filtered = businesses.filter((b) => {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = b.name.toLowerCase().includes(query) ||
+            b.category.toLowerCase().includes(query) ||
+            b.email.toLowerCase().includes(query);
+
+        const matchesCategory = categoryFilter === 'all' || b.category === categoryFilter;
+        const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
+
+        return matchesSearch && matchesCategory && matchesStatus;
+    });
 
     return (
         <MainLayout
@@ -137,19 +172,65 @@ const ActiveBusinesses = () => {
             </div>
 
             {/* ── Business Directory Header ─────────────────────── */}
-            <div className="flex items-center justify-between mb-md">
-                <h2 className="text-heading-small text-text-primary">Business Directory</h2>
-                <div className="flex items-center gap-sm text-text-secondary text-body-small">
-                    <span>≡</span>
-                    <span>Filter Category</span>
-                    <div className="w-44">
-                        <Select
-                            options={categoryOptions}
-                            value={filterCategory}
-                            onChange={(e) => setFilterCategory(e.target.value)}
-                        />
-                    </div>
+            <div className="flex items-start justify-between mb-lg">
+                <div>
+                    <h2 className="text-heading-small text-text-primary">Business Directory</h2>
+                    <p className="text-body-small text-text-secondary mt-xs">
+                        Monitor and manage platform-affiliated businesses.
+                    </p>
                 </div>
+                <div className="w-72">
+                    <Input
+                        placeholder="Search by business, email or category..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        icon={Search}
+                        className="!gap-0"
+                    />
+                </div>
+            </div>
+
+            {/* ── Filters Row ───────────────────────────────────── */}
+            <div className="flex items-center gap-md mb-md">
+                {/* Tab: All Businesses */}
+                <button
+                    onClick={() => setActiveFilter('All Businesses')}
+                    className={`px-lg py-sm rounded-xl text-body-small-bold font-inter border transition-all ${activeFilter === 'All Businesses'
+                        ? 'bg-primary-blue/20 text-primary-blue border-primary-blue/50'
+                        : 'border-white/10 text-text-secondary hover:text-text-primary hover:bg-white/5'
+                        }`}
+                >
+                    All Businesses
+                </button>
+
+                {/* Category Filter */}
+                <div className="w-64">
+                    <Select
+                        options={categoryOptions}
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                    />
+                </div>
+
+                {/* Status Filter */}
+                <div className="w-40">
+                    <Select
+                        options={statusOptions}
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    />
+                </div>
+
+                <div className="flex-1" />
+
+                {/* Reset */}
+                <button
+                    onClick={handleResetFilters}
+                    className="flex items-center gap-xs text-body-small-bold text-state-error hover:text-state-error/80 transition-colors"
+                >
+                    <RotateCcw size={14} />
+                    Reset Filters
+                </button>
             </div>
 
             {/* ── Business Directory Table ──────────────────────── */}
