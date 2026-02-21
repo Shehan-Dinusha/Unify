@@ -337,7 +337,7 @@ const BoostPackageForm = () => {
                                                     onChange={(e) => setDurationValue(e.target.value)}
                                                 />
                                                 <Select
-                                                    label=" "
+                                                    label={'\u00A0'}
                                                     value={durationUnit}
                                                     options={durationUnitOptions}
                                                     onChange={(e) => setDurationUnit(e.target.value)}
