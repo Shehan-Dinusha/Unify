@@ -49,13 +49,9 @@ const ForgotPasswordForm = () => {
         <div className="flex flex-col items-center gap-6">
           <div className="w-16 h-16 bg-primary-blue/10 rounded-2xl flex items-center justify-center overflow-hidden">
             <img 
-              src="icon_forgot_password.svg" 
+              src="/icon_forgot_password.svg" 
               alt="Forgot Password" 
               className="w-8 h-8 object-contain"
-              onError={(e) => {
-                e.target.onerror = null; 
-                e.target.src = "https://cdn.pixabay.com/photo/2017/01/13/01/22/key-1976110_1280.png"; // Fallback placeholder if SVG fails completely
-              }}
             />
           </div>
           <div className="w-full flex flex-col gap-2 text-center">
