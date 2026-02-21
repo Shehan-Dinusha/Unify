@@ -14,8 +14,8 @@ const AuthenticationHeader = () => {
               className="w-10 h-10 object-contain"
             />
             <div className="flex flex-col leading-none">
-              <h1 className="text-white text-2xl font-bold">Unify</h1>
-              <p className="text-text-secondary text-xs font-medium">
+              <h1 className="text-white text-heading-small font-bold">Unify</h1>
+              <p className="text-text-secondary text-body-extra-small font-medium">
                 University Social & Learning Platform
               </p>
             </div>
@@ -23,12 +23,12 @@ const AuthenticationHeader = () => {
 
           {/* Right Section: Sign In Link */}
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 text-base font-bold font-inter hidden sm:inline">
+            <span className="text-text-secondary text-body-medium font-bold hidden sm:inline">
               Already have an account?
             </span>
             <Link
               to="/login"
-              className="text-primary-blue text-base font-bold font-inter hover:underline"
+              className="text-primary-blue text-body-medium-bold hover:underline"
             >
               Sign in
             </Link>
@@ -40,3 +40,4 @@ const AuthenticationHeader = () => {
 };
 
 export default AuthenticationHeader;
+

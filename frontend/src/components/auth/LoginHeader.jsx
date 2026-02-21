@@ -14,8 +14,8 @@ const LandingHeader = () => {
           />
 
           <div className="flex flex-col leading-none">
-            <h1 className="text-white text-2xl font-bold">Unify</h1>
-            <p className="text-text-secondary text-xs font-medium">
+            <h1 className="text-white text-heading-small font-bold">Unify</h1>
+            <p className="text-text-secondary text-body-extra-small font-medium">
               University Social & Learning Platform
             </p>
           </div>

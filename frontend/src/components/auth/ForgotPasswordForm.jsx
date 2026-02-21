@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Mail } from "lucide-react";
+import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
 
@@ -43,39 +44,40 @@ const ForgotPasswordForm = () => {
   };
 
   return (
-    <div className="w-[480px] bg-white/10 rounded-3xl p-1 px-8 py-10 shadow-[0px_8px_32px_0px_rgba(31,38,135,0.37)] border border-white/10 backdrop-blur-md">
-      <div className="flex flex-col items-center gap-10 mb-8">
-        {/* Icon and Title */}
+    <Card variant="card" className="w-full max-w-[480px]">
+      <div className="flex flex-col gap-10">
         <div className="flex flex-col items-center gap-6">
           <div className="w-16 h-16 bg-primary-blue/10 rounded-2xl flex items-center justify-center overflow-hidden">
             <img 
-              src="/icon_forgot_password.svg" 
+              src="icon_forgot_password.svg" 
               alt="Forgot Password" 
               className="w-8 h-8 object-contain"
+              onError={(e) => {
+                e.target.onerror = null; 
+                e.target.src = "https://cdn.pixabay.com/photo/2017/01/13/01/22/key-1976110_1280.png"; // Fallback placeholder if SVG fails completely
+              }}
             />
           </div>
-          <div className="w-full inline-flex flex-col justify-center items-center gap-2">
-            <div className="self-stretch text-center justify-center text-white text-3xl text-heading-medium leading-9">
+          <div className="w-full flex flex-col gap-2 text-center">
+            <h2 className="text-white text-heading-medium">
               Forgot Password?
-            </div>
-            <div className="self-stretch text-center justify-center text-slate-400 text-body-small leading-5 px-4">
+            </h2>
+            <p className="text-text-secondary text-body-small px-4">
               No worries, it happens. Enter your email or phone number below and we'll send you an OTP to reset your password.
-            </div>
+            </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
+        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-8">
           <Input
             label="Email or Phone number"
             placeholder="Enter your email or Phone Number"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             error={errors.identifier}
-            className="text-white"
             icon={Mail}
           />
 
-          {/* General Error Message */}
           {errors.form && (
             <div className="text-state-error text-sm text-center bg-state-error/10 p-2 rounded-lg">
               {errors.form}
@@ -95,9 +97,10 @@ const ForgotPasswordForm = () => {
           </div>
         </form>
       </div>
-    </div>
+    </Card>
   );
 };
 
 export default ForgotPasswordForm;
+
 
