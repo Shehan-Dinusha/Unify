@@ -327,6 +327,7 @@ const AdminDashboard = () => {
     const [activeRange, setActiveRange] = useState('This Month');
     const [chartIdx, setChartIdx] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(true);
+    const [isHovered, setIsHovered] = useState(false);
     const autoPlayRef = useRef(null);
     const moderationTotal = moderationData.resolved + moderationData.reviewing + moderationData.pending;
 
@@ -338,11 +339,13 @@ const AdminDashboard = () => {
     // Auto-play: advance chart every 5 seconds
     const resetAutoPlay = useCallback(() => {
         if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+        if (isHovered) return; // Don't start interval if hovering
+
         autoPlayRef.current = setInterval(() => {
             setIsTransitioning(true);
             setChartIdx((prev) => prev + 1);
         }, 5000);
-    }, []);
+    }, [isHovered]);
 
     useEffect(() => {
         resetAutoPlay();
@@ -470,7 +473,11 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-3 gap-md">
 
                 {/* ── Left: Chart Carousel (2 cols) ────── */}
-                <div className="col-span-2">
+                <div
+                    className="col-span-2"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                >
                     <Card variant="container">
                         {/* Header with arrows */}
                         <div className="flex items-start justify-between mb-md">
