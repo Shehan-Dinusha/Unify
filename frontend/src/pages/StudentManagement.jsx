@@ -4,7 +4,7 @@ import Card from '../components/common/Card';
 import Input from '../components/common/Input';
 import Select from '../components/common/Select';
 import Button from '../components/common/Button';
-import { Search, MessageSquare, RotateCcw, TrendingUp, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Search, RotateCcw, TrendingUp, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { mockRequests } from '../data/mockData';
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
@@ -226,8 +226,8 @@ const StudentManagement = () => {
                         {/* Status */}
                         <div>
                             <span className={`inline-flex items-center gap-xs text-body-small-bold px-sm py-xs rounded-lg ${student.status === 'Active'
-                                    ? 'text-state-success bg-state-success/10 border border-state-success/30'
-                                    : 'text-state-error bg-state-error/10 border border-state-error/30'
+                                ? 'text-state-success bg-state-success/10 border border-state-success/30'
+                                : 'text-state-error bg-state-error/10 border border-state-error/30'
                                 }`}>
                                 <span className={`w-1.5 h-1.5 rounded-full ${student.status === 'Active' ? 'bg-state-success' : 'bg-state-error'
                                     }`} />
@@ -239,13 +239,10 @@ const StudentManagement = () => {
                         <span className="text-body-small text-text-secondary">{student.lastActive}</span>
 
                         {/* Actions */}
-                        <div className="flex items-center justify-end gap-sm">
-                            <button className="p-sm rounded-lg hover:bg-white/5 transition-colors text-text-secondary hover:text-text-primary">
-                                <MessageSquare size={16} />
-                            </button>
-                            <Button variant="secondary" size="small">
+                        <div className="flex items-center justify-end">
+                            <button className="px-md py-xs rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue hover:shadow-lg hover:shadow-primary-blue/25 transition-all duration-200">
                                 View Profile
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 ))}
