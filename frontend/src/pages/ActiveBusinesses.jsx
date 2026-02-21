@@ -120,16 +120,18 @@ const ActiveBusinesses = () => {
                     <Card
                         key={i}
                         variant="container"
-                        className="hover:border-primary-blue/30 transition-colors"
+                        className="hover:border-primary-blue/30 transition-colors h-44 relative"
                     >
-                        <div className="flex items-start justify-between mb-sm">
-                            <p className="text-body-small-bold text-text-secondary">{tile.title}</p>
-                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
-                                <span className="text-lg">{tile.icon}</span>
-                            </div>
+                        <div className={`absolute top-lg left-lg w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
+                            <span className="text-lg">{tile.icon}</span>
                         </div>
-                        <p className="text-heading-medium text-text-primary mt-sm">{tile.value}</p>
-                        <p className={`text-body-extra-small mt-xs ${tile.changeClass}`}>{tile.change}</p>
+                        <div className="absolute top-[72px] left-lg right-lg">
+                            <p className="text-body-small-bold text-text-secondary truncate">{tile.title}</p>
+                        </div>
+                        <div className="absolute top-[94px] left-lg right-lg">
+                            <p className="text-heading-medium text-text-primary">{tile.value}</p>
+                            <p className={`text-body-extra-small mt-xs ${tile.changeClass} truncate`}>{tile.change}</p>
+                        </div>
                     </Card>
                 ))}
             </div>
@@ -205,8 +207,8 @@ const ActiveBusinesses = () => {
                         </div>
 
                         {/* Action */}
-                        <div className="text-right">
-                            <button className="text-body-small-bold text-primary-blue hover:underline transition-all">
+                        <div className="flex items-center justify-end">
+                            <button className="px-md py-xs rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue hover:shadow-lg hover:shadow-primary-blue/25 transition-all duration-200">
                                 View Profile
                             </button>
                         </div>
