@@ -63,9 +63,9 @@ const statusOptions = [
     { value: 'suspended', label: '● Suspended' },
 ];
 
-// ─── Stat Footer Cards ──────────────────────────────────────────────────────
+// ─── Stat Tiles ─────────────────────────────────────────────────────────────
 
-const footerStats = [
+const studentStats = [
     {
         icon: TrendingUp,
         iconBg: 'bg-state-success/20',
@@ -123,6 +123,22 @@ const StudentManagement = () => {
             pageTitle="Student Management"
             verificationCount={mockRequests.length}
         >
+            {/* ── Top Stats Row ─────────────────────────────────── */}
+            <div className="grid grid-cols-3 gap-md mb-lg">
+                {studentStats.map((stat, i) => (
+                    <Card key={i} variant="container" className={`${stat.cardBg} h-32 flex items-center`}>
+                        <div className="flex items-center gap-md">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.iconBg}`}>
+                                <stat.icon size={24} className={stat.iconColor} />
+                            </div>
+                            <div>
+                                <span className="text-heading-small text-text-primary">{stat.value}</span>
+                                <p className="text-body-small text-text-secondary">{stat.label}</p>
+                            </div>
+                        </div>
+                    </Card>
+                ))}
+            </div>
             {/* ── Header Row ────────────────────────────────────── */}
             <div className="flex items-start justify-between mb-lg">
                 <div>
@@ -248,22 +264,7 @@ const StudentManagement = () => {
                 ))}
             </div>
 
-            {/* ── Footer Stats ──────────────────────────────────── */}
-            <div className="grid grid-cols-3 gap-md">
-                {footerStats.map((stat, i) => (
-                    <Card key={i} variant="container" className={`${stat.cardBg}`}>
-                        <div className="flex items-center gap-md">
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.iconBg}`}>
-                                <stat.icon size={24} className={stat.iconColor} />
-                            </div>
-                            <div>
-                                <span className="text-heading-small text-text-primary">{stat.value}</span>
-                                <p className="text-body-small text-text-secondary">{stat.label}</p>
-                            </div>
-                        </div>
-                    </Card>
-                ))}
-            </div>
+
         </MainLayout>
     );
 };
