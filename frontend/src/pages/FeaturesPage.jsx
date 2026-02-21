@@ -36,37 +36,37 @@ const FeaturesPage = () => {
     {
       title: "Real-Time Chat",
       description: "Communicate seamlessly within your clubs.Share updates, coordinate events, and keep members informed in one dedicated space.",
-      icon: "/icon_realtime_chat.svg",
+      icon: "icon_realtime_chat.svg",
       iconBg: "bg-pink-500/10",
     },
     {
       title: "Post Boosting",
       description: "Maximize your reach by boosting posts, events, and marketplace listings to a wider campus audience.",
-      icon: "/icon_post_boosting.svg",
+      icon: "icon_post_boosting.svg",
       iconBg: "bg-pink-500/10",
     },
     {
       title: "Lost & Found",
       description: "Easily report lost items or browse found objects. Our system helps reunite students with belongings efficiently.",
-      icon: "/icon_lost_and_found.svg",
+      icon: "icon_lost_and_found.svg",
       iconBg: "bg-pink-500/10",
     },
     {
       title: "Marketplace",
       description: "Buy and sell textbooks, electronics, and dorm essentials securely within the trusted campus community.",
-      icon: "/icon_marketplace.svg",
+      icon: "icon_marketplace.svg",
       iconBg: "bg-pink-500/10",
     },
     {
       title: "Wallet System",
       description: "Experience a secure, integrated digital wallet for all your campus transactions, payments, and transfers.",
-      icon: "/icon_wallet_system.svg",
+      icon: "icon_wallet_system.svg",
       iconBg: "bg-pink-500/10",
     },
     {
       title: "Learning Materials",
       description: "Access a vast library of shared notes, study guides, and learning materials to enhance your  performance.",
-      icon: "/icon_learning_materials.svg",
+      icon: "icon_learning_materials.svg",
       iconBg: "bg-pink-500/10",
     },
   ];

@@ -25,7 +25,7 @@ const AboutPage = () => {
           <FeatureCard
             icon={
               <img
-                src="/icon_verified_students.svg"
+                src="icon_verified_students.svg"
                 alt="Verified Students"
                 className="w-full h-full"
               />
@@ -38,7 +38,7 @@ const AboutPage = () => {
           <FeatureCard
             icon={
               <img
-                src="/icon_secure_platform.svg"
+                src="icon_secure_platform.svg"
                 alt="Secure Platform"
                 className="w-full h-full"
               />
@@ -51,7 +51,7 @@ const AboutPage = () => {
           <FeatureCard
             icon={
               <img
-                src="/icon_all_in_one_hub.svg"
+                src="icon_all_in_one_hub.svg"
                 alt="All-in-One Hub"
                 className="w-full h-full"
               />
