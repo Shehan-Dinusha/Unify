@@ -1,160 +1,162 @@
-import React, { useState } from 'react';
-import { X, AlertTriangle, Lock, CheckCircle, BadgeX, FileX } from 'lucide-react';
-import Button from './Button';
-import Input from './Input';
+import React, { useState } from "react";
+import {
+  X,
+  AlertTriangle,
+  Lock,
+  CheckCircle,
+  BadgeX,
+  FileX,
+} from "lucide-react";
+import Button from "./Button";
+import Input from "./Input";
+import Card from "./Card";
 
 const RevokePrivilegesModal = ({ isOpen, onClose, onConfirm }) => {
-    const [step, setStep] = useState('confirm'); // 'confirm' | 'success'
-    const [password, setPassword] = useState('');
+  const [step, setStep] = useState("confirm"); // 'confirm' | 'success'
+  const [password, setPassword] = useState("");
 
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
-    const handleConfirm = () => {
-        // In real app, validate password via API
-        setStep('success');
-        if (onConfirm) onConfirm();
-    };
+  const handleConfirm = () => {
+    // In real app, validate password via API
+    setStep("success");
+    if (onConfirm) onConfirm();
+  };
 
-    const handleClose = () => {
-        setStep('confirm');
-        setPassword('');
-        onClose();
-    };
+  const handleClose = () => {
+    setStep("confirm");
+    setPassword("");
+    onClose();
+  };
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div
-                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-                onClick={step === 'confirm' ? handleClose : undefined}
-            />
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
+      {step === "confirm" && (
+        <Card
+          variant="card"
+          padding="p-0"
+          className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
+        >
+          {/* Close button */}
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 p-2 rounded-lg text-text-secondary hover:text-white hover:bg-white/5 transition-colors z-10"
+          >
+            <X className="w-5 h-5" />
+          </button>
 
-            {/* ── STEP 1: Confirm Revoke ── */}
-            {step === 'confirm' && (
-                <div className="relative w-full max-w-sm bg-gray-900 rounded-3xl border border-white/10 shadow-custom-shadow animate-in fade-in zoom-in duration-200 overflow-hidden">
-                    {/* Close button */}
-                    <button
-                        onClick={handleClose}
-                        className="absolute top-4 right-4 p-1 rounded-lg text-text-secondary hover:text-white hover:bg-white/10 transition-colors z-10"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
+          <div className="p-8 pb-6 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
+              <AlertTriangle className="w-8 h-8 text-state-error" />
+            </div>
 
-                    {/* Body */}
-                    <div className="p-8 flex flex-col gap-6">
-                        {/* Header row: icon + title */}
-                        <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 bg-red-500/10 rounded-full border border-red-500/20 flex items-center justify-center shrink-0">
-                                <AlertTriangle className="w-6 h-6 text-red-400" />
-                            </div>
-                            <div className="flex flex-col gap-1 pt-1">
-                                <h3 className="text-white text-body-medium-bold font-bold font-inter">Revoke Privileges?</h3>
-                                <p className="text-text-secondary text-body-small font-inter">This action cannot be undone.</p>
-                            </div>
-                        </div>
+            <h2 className="text-xl font-bold text-white mb-3">
+              Revoke Privileges?
+            </h2>
+            <p className="text-text-secondary text-sm leading-relaxed mb-6">
+              You are about to remove your{" "}
+              <span className="text-white font-bold">Batch Representative</span>{" "}
+              status. You will immediately{" "}
+              <span className="text-state-error font-bold">lose access</span> to
+              the rep dashboard, student verification tools, and club management
+              features.
+            </p>
 
-                        {/* Description */}
-                        <p className="text-slate-300 text-body-small leading-5 font-inter">
-                            You are about to remove your <span className="font-bold">Batch Representative</span> status.
-                            You will immediately <span className="font-bold">lose access</span> to the rep dashboard,
-                            student verification tools, and club management features.
-                        </p>
+            <div className="w-full text-left">
+              <label className="text-text-secondary text-sm font-bold block mb-2">
+                Enter Password to Confirm
+              </label>
+              <Input
+                icon={Lock}
+                type="password"
+                placeholder="Account password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          </div>
 
-                        {/* Password field */}
-                        <div className="flex flex-col gap-2">
-                            <label className="text-text-secondary text-body-small font-bold font-inter">
-                                Enter Password to Confirm
-                            </label>
-                            <Input
-                                icon={Lock}
-                                type="password"
-                                placeholder="Account password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
+          <div className="p-6 pt-2 bg-transparent flex gap-4">
+            <Button
+              onClick={handleClose}
+              className="flex-1 bg-white/5 hover:bg-white/10 text-text-secondary h-11 border-none font-medium transition-colors"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              variant="danger"
+              className="flex-1 h-11 shadow-lg shadow-state-error/20 font-semibold"
+              disabled={!password}
+            >
+              Confirm Removal
+            </Button>
+          </div>
 
-                        {/* Actions */}
-                        <div className="flex gap-3 pt-2">
-                            <Button
-                                variant="outline"
-                                size="small"
-                                fullWidth
-                                onClick={handleClose}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant="danger"
-                                size="small"
-                                fullWidth
-                                onClick={handleConfirm}
-                            >
-                                Confirm Removal
-                            </Button>
-                        </div>
-                    </div>
+          <div className="px-6 py-3 bg-dark-3/50 border-t border-white/5 flex items-center justify-center gap-1.5">
+            <Lock className="w-3 h-3 text-text-secondary" />
+            <span className="text-text-secondary text-xs">
+              Requires Admin approval to reinstate
+            </span>
+          </div>
+        </Card>
+      )}
 
-                    {/* Footer note */}
-                    <div className="px-6 py-3 bg-gray-800 border-t border-white/5 flex items-center justify-center gap-1.5">
-                        <Lock className="w-3 h-3 text-text-secondary" />
-                        <span className="text-text-secondary text-body-extra-small font-inter">
-                            Requires Admin approval to reinstate
-                        </span>
-                    </div>
-                </div>
-            )}
+      {step === "success" && (
+        <Card
+          variant="card"
+          padding="p-0"
+          className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
+        >
+          <div className="p-8 pb-6 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
+              <CheckCircle className="w-8 h-8 text-state-success" />
+            </div>
 
-            {/* ── STEP 2: Role Removed Success ── */}
-            {step === 'success' && (
-                <div className="relative w-full max-w-sm bg-gray-900 rounded-3xl border border-white/10 shadow-custom-shadow animate-in fade-in zoom-in duration-200 overflow-hidden">
-                    <div className="p-8 flex flex-col items-center gap-8">
-                        {/* Icon + heading */}
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="w-16 h-16 bg-green-500/10 rounded-full border border-green-500/20 flex items-center justify-center">
-                                <CheckCircle className="w-9 h-9 text-green-400" />
-                            </div>
-                            <div className="flex flex-col items-center gap-1 text-center">
-                                <h3 className="text-white text-heading-small font-bold font-inter">Role Removed</h3>
-                                <p className="text-gray-300 text-body-small font-inter leading-5">
-                                    You have successfully removed yourself as a Batch Representative.
-                                </p>
-                            </div>
-                        </div>
+            <h2 className="text-xl font-bold text-white mb-3">Role Removed</h2>
+            <p className="text-text-secondary text-sm leading-relaxed mb-6">
+              You have successfully removed yourself as a Batch Representative.
+            </p>
 
-                        {/* Access changes card */}
-                        <div className="w-full p-5 bg-dark-4 rounded-2xl border border-white/5 flex flex-col gap-3">
-                            <p className="text-text-secondary text-body-small font-bold font-inter">Access Changes</p>
-                            <ul className="flex flex-col gap-3">
-                                <li className="flex items-center gap-3">
-                                    <BadgeX className="w-4 h-4 text-text-secondary shrink-0" />
-                                    <span className="text-text-secondary text-body-small font-inter">Representative badge removed from profile</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <Lock className="w-4 h-4 text-text-secondary shrink-0" />
-                                    <span className="text-text-secondary text-body-small font-inter">Administrative tools access revoked</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <FileX className="w-4 h-4 text-text-secondary shrink-0" />
-                                    <span className="text-text-secondary text-body-small font-inter">Document management disabled</span>
-                                </li>
-                            </ul>
-                        </div>
+            <div className="w-full p-4 bg-dark-4 rounded-xl border border-white/5 flex flex-col gap-3 text-left">
+              <p className="text-white text-sm font-bold">Access Changes</p>
+              <ul className="flex flex-col gap-3">
+                <li className="flex items-center gap-3">
+                  <BadgeX className="w-4 h-4 text-text-secondary shrink-0" />
+                  <span className="text-text-secondary text-sm">
+                    Representative badge removed from profile
+                  </span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Lock className="w-4 h-4 text-text-secondary shrink-0" />
+                  <span className="text-text-secondary text-sm">
+                    Administrative tools access revoked
+                  </span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <FileX className="w-4 h-4 text-text-secondary shrink-0" />
+                  <span className="text-text-secondary text-sm">
+                    Document management disabled
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
 
-                        {/* Done button */}
-                        <Button
-                            variant="primary"
-                            size="small"
-                            fullWidth
-                            onClick={handleClose}
-                        >
-                            Done
-                        </Button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+          <div className="p-6 pt-2 w-full">
+            <Button
+              variant="primary"
+              fullWidth
+              className="h-11 shadow-lg shadow-primary-blue/20 font-semibold"
+              onClick={handleClose}
+            >
+              Done
+            </Button>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
 };
 
 export default RevokePrivilegesModal;
