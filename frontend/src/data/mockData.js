@@ -103,6 +103,90 @@ export const mockVerified = [
   },
 ];
 
+export const mockBoostPackages = [
+  {
+    id: 'pkg-001',
+    name: 'Starter',
+    price: 1000,
+    duration: '24 Hours',
+    durationValue: 24,
+    durationUnit: 'Hours',
+    badge: 'No Badge',
+    description: 'Perfect for quick announcements or flash sales.',
+    features: ['Standard Visibility', 'Basic Analytics', 'Feed Placement'],
+    status: 'live',
+  },
+  {
+    id: 'pkg-002',
+    name: 'Growth',
+    price: 2000,
+    duration: '24 Hours',
+    durationValue: 24,
+    durationUnit: 'Hours',
+    badge: 'Most Popular',
+    description: 'Best balance of reach and duration for weekly promos.',
+    features: ['2x Audience Reach', 'Top of Category', 'Detailed Analytics', 'Priority Support'],
+    status: 'live',
+  },
+  {
+    id: 'pkg-003',
+    name: 'Dominate',
+    price: 4000,
+    duration: '7 Days',
+    durationValue: 7,
+    durationUnit: 'Days',
+    badge: 'Premium',
+    description: 'Maximize brand with a full week campaign.',
+    features: ['Max Reach Potential', 'Top of Feed Placement', 'Highlighted Gold Border', 'CRM Integration'],
+    status: 'live',
+  },
+];
+
+export const mockBoostLogs = [
+  {
+    id: 'log-001',
+    type: 'package_updated',
+    title: "Benefits updated for 'Growth' tier",
+    description: "'Detailed Analytics' included in feature set",
+    time: 'Yesterday, 4:12 PM',
+  },
+  {
+    id: 'log-002',
+    type: 'package_updated',
+    title: "Price adjustment: 'Dominate' package",
+    description: 'Updated from LKR 20,000 to LKR 22,500',
+    time: '2 hours ago',
+  },
+];
+
+export const mockFullDocument = {
+    id: 1,
+    name: "Annual Budget Proposal.pdf",
+    size: "2.4 MB",
+    date: "Uploaded Today",
+    type: "pdf",
+    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" // Example S3-like URL
+};
+
+export const mockBatchRepDocuments = [
+    {
+        id: 1,
+        name: "Batch_rep.pdf",
+        type: "pdf",
+        size: "3.2 MB",
+        date: "Uploaded Today",
+        url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+        id: 2,
+        name: "Batch_rep.csv",
+        type: "csv",
+        size: "12 KB",
+        date: "Uploaded Today",
+        url: "" // No preview for CSV
+    }
+];
+
 const mockPosts = [
   {
     id: 1,

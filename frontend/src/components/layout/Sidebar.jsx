@@ -1,34 +1,34 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Rss, Bell, MessageSquare, PackageSearch, Store, GraduationCap, 
-  LayoutDashboard, ShieldAlert, UserX, Zap, UserCheck, 
-  ShoppingCart, ClipboardList, LogOut 
+import {
+  Rss, Bell, MessageSquare, PackageSearch, Store, GraduationCap,
+  LayoutDashboard, ShieldAlert, UserX, Zap, UserCheck,
+  ShoppingCart, ClipboardList, LogOut
 } from 'lucide-react';
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({ icon: Icon, iconSrc, label, badge, active = false, isDanger = false, path }) => {
   const baseStyles = "w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 cursor-pointer group";
-  
-  const activeStyles = active 
-    ? "bg-primary-blue shadow-custom text-text-primary" 
-    : isDanger 
-      ? "text-state-error hover:bg-state-error/10" 
+
+  const activeStyles = active
+    ? "bg-primary-blue shadow-custom text-text-primary"
+    : isDanger
+      ? "text-state-error hover:bg-state-error/10"
       : "text-text-secondary hover:bg-white/5 hover:text-text-primary";
 
   const navigate = useNavigate();
 
   return (
-    <div 
+    <div
       className={`${baseStyles} ${activeStyles}`}
       onClick={() => path && navigate(path)}
     >
       <div className="flex items-center gap-md">
         {iconSrc ? (
-          <img 
-            src={iconSrc} 
-            alt={label} 
-            className={`w-[22px] h-[22px] object-contain transition-transform group-hover:scale-110 ${active ? 'brightness-200 contrast-200' : 'opacity-70 group-hover:opacity-100'}`} 
+          <img
+            src={iconSrc}
+            alt={label}
+            className={`w-[22px] h-[22px] object-contain transition-transform group-hover:scale-110 ${active ? 'brightness-200 contrast-200' : 'opacity-70 group-hover:opacity-100'}`}
           />
         ) : (
           <Icon size={22} className={active ? "text-text-primary" : "group-hover:scale-110 transition-transform"} />
@@ -63,7 +63,7 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
     admin: {
       title: "Admin Dashboard",
       links: [
-        { iconSrc: "/icon_dashboard.svg", label: "Dashboard", path: "/" },
+        { iconSrc: "/icon_dashboard.svg", label: "Dashboard", path: "/", childPaths: ["/revenue-overview", "/active-businesses", "/student-management"] },
         { iconSrc: "/icon_report_moderation.svg", label: "Report Moderation", badge: 3, path: "/report-moderation" },
         { iconSrc: "/icon_suspended_users.svg", label: "Suspended Users", badge: 3, path: "/suspended-users" },
         { iconSrc: "/icon_boost_controller.svg", label: "Boost Controller", path: "/boost-controller" },
@@ -94,7 +94,7 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
 
   return (
     <aside className="w-72 h-screen bg-dark-1 border-r border-white/10 flex flex-col justify-between items-start sticky top-0">
-      
+
       {/* Brand & Dynamic Navigation */}
       <div className="w-full p-md flex flex-col gap-lg">
         <div className="p-sm flex items-center gap-md">
@@ -109,7 +109,7 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
 
         <nav className="flex flex-col gap-xs w-full">
           {currentConfig.links.map((link, index) => (
-            <SidebarItem key={index} {...link} active={pathname === link.path} />
+            <SidebarItem key={index} {...link} active={pathname === link.path || (link.childPaths && link.childPaths.includes(pathname))} />
           ))}
         </nav>
       </div>
@@ -117,14 +117,14 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
       {/* Account Section */}
       <div className="w-full px-md pb-md flex flex-col gap-md">
         <div className="h-px bg-white/10 w-full" />
-        
+
         <SidebarItem iconSrc="/icon_log_out.svg" label="Log Out" isDanger />
 
         <div className="w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md hover:bg-white/10 transition-colors cursor-pointer group">
-          <img 
-            className="w-10 h-10 rounded-full object-cover border border-white/20 group-hover:border-primary-blue transition-colors" 
-            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
-            alt="Avatar" 
+          <img
+            className="w-10 h-10 rounded-full object-cover border border-white/20 group-hover:border-primary-blue transition-colors"
+            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+            alt="Avatar"
           />
           <div className="overflow-hidden">
             <h4 className="text-text-primary text-body-medium-bold font-inter truncate">{user.name}</h4>
