@@ -11,7 +11,7 @@ const NewsFeed = () => {
 
   const user = {
     name: "Alex Johnson",
-    role: "student"
+    role: "student",
   };
 
   useEffect(() => {
@@ -23,24 +23,18 @@ const NewsFeed = () => {
       if (targetRef) {
         // Add a slight delay to ensure rendering is complete before scrolling
         setTimeout(() => {
-          targetRef.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetRef.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 100);
       }
     }
   }, [location.state]);
 
   return (
-    <MainLayout
-      user={user}
-      pageTitle="News Feed"
-      verificationCount={0}
-    >
+    <MainLayout user={user} pageTitle="News Feed" verificationCount={0}>
       <div className="flex flex-col gap-8 w-full max-w-3xl mx-auto">
-
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
-
-          <Link to="/announcements">
+          <Link to="/new-announcements">
             <StatsCard
               iconSrc="/icon_new_announcement.svg"
               iconAlt="Announcements"
@@ -50,7 +44,7 @@ const NewsFeed = () => {
             />
           </Link>
 
-          <Link to="/marketplace">
+          <Link to="/marketplace-items">
             <StatsCard
               iconSrc="/icon_marketplace.svg"
               iconAlt="Marketplace"
@@ -60,7 +54,7 @@ const NewsFeed = () => {
             />
           </Link>
 
-          <Link to="/events">
+          <Link to="/events-today">
             <StatsCard
               iconSrc="/icon_event_today.svg"
               iconAlt="Events"
@@ -70,16 +64,12 @@ const NewsFeed = () => {
               value="10"
             />
           </Link>
-
         </div>
 
         {/* Posts Section */}
         <div className="flex flex-col gap-6 w-full">
           {mockPosts.map((post) => (
-            <div
-              key={post.id}
-              ref={(el) => (postRefs.current[post.id] = el)}
-            >
+            <div key={post.id} ref={(el) => (postRefs.current[post.id] = el)}>
               <PostCard
                 author={post.author}
                 authorInitial={post.authorInitial}
@@ -95,7 +85,6 @@ const NewsFeed = () => {
             </div>
           ))}
         </div>
-
       </div>
     </MainLayout>
   );
