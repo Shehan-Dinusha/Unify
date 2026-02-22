@@ -1,11 +1,22 @@
-import { createBrowserRouter } from 'react-router-dom';
+import React from 'react';
+import { createBrowserRouter, Outlet } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import VerificationQueue from '../pages/VerificationQueue';
 import AdminDashboard from '../pages/AdminDashboard';
 import RevenueOverview from '../pages/RevenueOverview';
 import ActiveBusinesses from '../pages/ActiveBusinesses';
 import StudentManagement from '../pages/StudentManagement';
+import BoostController from '../pages/BoostController';
+import BoostPackageForm from '../pages/BoostPackageForm';
+import { BoostPackageProvider } from '../context/BoostPackageContext';
+import ClubVerification from '../pages/ClubVerification';
+import BatchRepVerification from '../pages/BatchRepVerification';
 import { mockRequests } from '../data/mockData';
+import Marketplace from '../pages/Marketplace';
+import Club from "../pages/Club";
+import ClubProduct from "../pages/ClubProduct";
+import Boarding from "../pages/Boarding";
+
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout user={{ name: "Alex Johnson", role: "admin" }} pageTitle={title} verificationCount={verificationCount}>
@@ -21,39 +32,74 @@ const PlaceholderPage = ({ title, verificationCount }) => (
   </MainLayout>
 );
 
+// Root layout wraps every route in the BoostPackageProvider
+const RootLayout = () => (
+  <BoostPackageProvider>
+    <Outlet />
+  </BoostPackageProvider>
+);
+
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <AdminDashboard />,
-  },
-  {
-    path: '/verification-queue',
-    element: <VerificationQueue />,
-  },
-  {
-    path: '/revenue-overview',
-    element: <RevenueOverview />,
-  },
-  {
-    path: '/active-businesses',
-    element: <ActiveBusinesses />,
-  },
-  {
-    path: '/student-management',
-    element: <StudentManagement />,
-  },
-  { path: '/news-feed', element: <PlaceholderPage title="News Feed" verificationCount={mockRequests.length} /> },
-  { path: '/notifications', element: <PlaceholderPage title="Notifications" verificationCount={mockRequests.length} /> },
-  { path: '/messages', element: <PlaceholderPage title="Messages" verificationCount={mockRequests.length} /> },
-  { path: '/lost-and-found', element: <PlaceholderPage title="Lost & Found" verificationCount={mockRequests.length} /> },
-  { path: '/marketplace', element: <PlaceholderPage title="Marketplace" verificationCount={mockRequests.length} /> },
-  { path: '/learning', element: <PlaceholderPage title="Learning" verificationCount={mockRequests.length} /> },
-  { path: '/report-moderation', element: <PlaceholderPage title="Report Moderation" verificationCount={mockRequests.length} /> },
-  { path: '/suspended-users', element: <PlaceholderPage title="Suspended Users" verificationCount={mockRequests.length} /> },
-  { path: '/boost-controller', element: <PlaceholderPage title="Boost Controller" verificationCount={mockRequests.length} /> },
-  { path: '/my-products', element: <PlaceholderPage title="My Products" verificationCount={mockRequests.length} /> },
-  { path: '/order-history', element: <PlaceholderPage title="Order History" verificationCount={mockRequests.length} /> },
-  { path: '/order-dashboard', element: <PlaceholderPage title="Order Dashboard" verificationCount={mockRequests.length} /> },
+    element: <RootLayout />,
+    children: [
+      {
+        path: '/',
+        element: <AdminDashboard />,
+      },
+      {
+        path: '/verification-queue',
+        element: <VerificationQueue />,
+      },
+      {
+        path: '/boost-controller',
+        element: <BoostController />,
+      },
+      {
+        path: '/boost-controller/new',
+        element: <BoostPackageForm />,
+      },
+      {
+        path: '/boost-controller/edit/:id',
+        element: <BoostPackageForm />,
+      },
+      {
+        path: '/club-verification',
+        element: <ClubVerification />,
+      },
+      {
+        path: '/batch-rep-verification',
+        element: <BatchRepVerification />,
+      },
+      {
+      path: '/revenue-overview',
+      element: <RevenueOverview />,
+      },
+      {
+        path: '/active-businesses',
+        element: <ActiveBusinesses />,
+      },
+      {
+        path: '/student-management',
+        element: <StudentManagement />,
+      },
+
+      { path: '/news-feed', element: <PlaceholderPage title="News Feed" verificationCount={mockRequests.length} /> },
+      { path: '/notifications', element: <PlaceholderPage title="Notifications" verificationCount={mockRequests.length} /> },
+      { path: '/messages', element: <PlaceholderPage title="Messages" verificationCount={mockRequests.length} /> },
+      { path: '/lost-and-found', element: <PlaceholderPage title="Lost & Found" verificationCount={mockRequests.length} /> },
+      { path: '/marketplace', element: <Marketplace /> },
+      { path: "/marketplace/club", element: <Club /> },
+      { path: "/marketplace/club/product", element: <ClubProduct /> },
+      { path: "/marketplace/boarding", element: <Boarding /> },
+      { path: '/learning', element: <PlaceholderPage title="Learning" verificationCount={mockRequests.length} /> },
+      { path: '/report-moderation', element: <PlaceholderPage title="Report Moderation" verificationCount={mockRequests.length} /> },
+      { path: '/suspended-users', element: <PlaceholderPage title="Suspended Users" verificationCount={mockRequests.length} /> },
+      { path: '/boost-controller', element: <PlaceholderPage title="Boost Controller" verificationCount={mockRequests.length} /> },
+      { path: '/my-products', element: <PlaceholderPage title="My Products" verificationCount={mockRequests.length} /> },
+      { path: '/order-history', element: <PlaceholderPage title="Order History" verificationCount={mockRequests.length} /> },
+      { path: '/order-dashboard', element: <PlaceholderPage title="Order Dashboard" verificationCount={mockRequests.length} /> },
+  ]}
 ]);
 
 export default router;

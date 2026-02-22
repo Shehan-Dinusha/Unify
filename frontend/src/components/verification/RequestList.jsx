@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import StatsCard from '../common/StatsCard';
 
 const RequestList = ({ requests, onVerify, onReject }) => {
+    const navigate = useNavigate();
     const [filter, setFilter] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -12,6 +14,14 @@ const RequestList = ({ requests, onVerify, onReject }) => {
         const matchesSearch = req.name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesFilter && matchesSearch;
     });
+
+    const handleView = (req) => {
+        if (req.type === 'Club') {
+            navigate('/club-verification');
+        } else if (req.type === 'Batch Rep') {
+            navigate('/batch-rep-verification');
+        }
+    };
 
     return (
         <div className="flex flex-col gap-xl w-full max-w-[1122px]">
@@ -90,7 +100,12 @@ const RequestList = ({ requests, onVerify, onReject }) => {
             {/* Request List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
                 {filteredRequests.map((req) => (
-                    <Card key={req.id} variant="container" className="h-full hover:bg-white/5 transition-colors">
+                    <Card 
+                        key={req.id} 
+                        variant="container" 
+                        className="h-full hover:bg-white/5 transition-colors cursor-pointer group"
+                        onClick={() => handleView(req)}
+                    >
                         <div className="flex flex-col gap-lg h-full">
                             {/* Header Section */}
                             <div className="flex justify-between items-start">
@@ -129,8 +144,14 @@ const RequestList = ({ requests, onVerify, onReject }) => {
                                         <p className="text-text-secondary text-body-extra-small">{req.fileSize}</p>
                                     </div>
                                 </div>
-                                <button className="flex-shrink-0 text-text-secondary hover:text-primary-blue transition-colors">
-                                    <img src="/icon_view.svg" alt="View" className="w-5 h-5 opacity-50 hover:opacity-100" />
+                                <button 
+                                    className="flex-shrink-0 text-text-secondary hover:text-primary-blue transition-colors"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleView(req);
+                                    }}
+                                >
+                                    <img src="/icon_view.svg" alt="View" className="w-5 h-5 opacity-50 group-hover:opacity-100 transition-opacity" />
                                 </button>
                             </div>
 
@@ -139,14 +160,20 @@ const RequestList = ({ requests, onVerify, onReject }) => {
                                 <Button 
                                     variant="dangerOutline" 
                                     className="h-[42px] border-state-error/30 text-state-error hover:bg-state-error/10 hover:border-state-error/50"
-                                    onClick={() => onReject(req)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onReject(req);
+                                    }}
                                 >
                                     Reject
                                 </Button>
                                 <Button 
                                     variant="primary" 
                                     className="h-[42px] shadow-none bg-primary-blue hover:bg-primary-blue/90"
-                                    onClick={() => onVerify(req)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onVerify(req);
+                                    }}
                                 >
                                     Verify
                                 </Button>
