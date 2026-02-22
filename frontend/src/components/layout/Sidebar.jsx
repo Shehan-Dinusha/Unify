@@ -63,7 +63,7 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
     admin: {
       title: "Admin Dashboard",
       links: [
-        { iconSrc: "/icon_dashboard.svg", label: "Dashboard", path: "/" },
+        { iconSrc: "/icon_dashboard.svg", label: "Dashboard", path: "/", childPaths: ["/revenue-overview", "/active-businesses", "/student-management"] },
         { iconSrc: "/icon_report_moderation.svg", label: "Report Moderation", badge: 3, path: "/report-moderation" },
         { iconSrc: "/icon_suspended_users.svg", label: "Suspended Users", badge: 3, path: "/suspended-users" },
         { iconSrc: "/icon_boost_controller.svg", label: "Boost Controller", path: "/boost-controller" },
@@ -93,7 +93,7 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
   const currentConfig = roleConfigs[user.role.toLowerCase()] || roleConfigs.student;
 
   return (
-    <aside className="w-72 h-screen bg-dark-1 border-r border-white/10 flex flex-col justify-between items-start sticky top-0 shrink-0">
+    <aside className="w-72 h-screen bg-dark-1 border-r border-white/10 flex flex-col justify-between items-start sticky top-0">
 
       {/* Brand & Dynamic Navigation */}
       <div className="w-full p-md flex flex-col gap-lg">
@@ -109,7 +109,7 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
 
         <nav className="flex flex-col gap-xs w-full">
           {currentConfig.links.map((link, index) => (
-            <SidebarItem key={index} {...link} active={pathname === link.path} />
+            <SidebarItem key={index} {...link} active={pathname === link.path || (link.childPaths && link.childPaths.includes(pathname))} />
           ))}
         </nav>
       </div>
