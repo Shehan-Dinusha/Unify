@@ -12,6 +12,10 @@ import { BoostPackageProvider } from '../context/BoostPackageContext';
 import ClubVerification from '../pages/ClubVerification';
 import BatchRepVerification from '../pages/BatchRepVerification';
 import { mockRequests } from '../data/mockData';
+import NewsFeed from '../pages/NewsFeed';
+import MarketplaceItems from '../pages/MarketplaceItems';
+import EventsToday from '../pages/EventsToday';
+import NewAnnouncements from '../pages/NewAnnouncements';
 import Marketplace from '../pages/Marketplace';
 import Club from "../pages/Club";
 import ClubProduct from "../pages/ClubProduct";
@@ -83,8 +87,10 @@ const router = createBrowserRouter([
         path: '/student-management',
         element: <StudentManagement />,
       },
-
-      { path: '/news-feed', element: <PlaceholderPage title="News Feed" verificationCount={mockRequests.length} /> },
+      {
+      path: '/news-feed',
+      element: <NewsFeed />,
+      },
       { path: '/notifications', element: <PlaceholderPage title="Notifications" verificationCount={mockRequests.length} /> },
       { path: '/messages', element: <PlaceholderPage title="Messages" verificationCount={mockRequests.length} /> },
       { path: '/lost-and-found', element: <PlaceholderPage title="Lost & Found" verificationCount={mockRequests.length} /> },
