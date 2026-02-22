@@ -10,3 +10,30 @@
     @apply bg-dark-1 text-text-primary antialiased;
   }
 }
+
+/* Hide scrollbar utility (optional) */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Dual Range Slider Fix */
+.dual-range-input {
+  pointer-events: none;
+}
+
+.dual-range-input::-webkit-slider-thumb {
+  pointer-events: auto;
+}
+
+.dual-range-input::-moz-range-thumb {
+  pointer-events: auto;
+}
+
+.dual-range-input::-ms-thumb {
+  pointer-events: auto;
+}
