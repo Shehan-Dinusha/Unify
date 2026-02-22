@@ -58,48 +58,104 @@ export const mockRequests = [
 
 export const mockVerified = [
   {
-      id: 101,
-      name: "Robotics Club",
-      type: "Club",
-      verifiedDate: "Sep 12, 2023",
-      avatar: "https://placehold.co/56x56",
-      email: "robotics@unify.com"
+    id: 101,
+    name: "Robotics Club",
+    type: "Club",
+    verifiedDate: "Sep 12, 2023",
+    avatar: "https://placehold.co/56x56",
+    email: "robotics@unify.com"
   },
   {
-      id: 102,
-      name: "ABC Perera",
-      type: "Batch Rep",
-      verifiedDate: "Sep 12, 2023",
-      avatar: "https://placehold.co/56x56",
-      degree: "Bsc.(Hons) IT",
-      batch: "Batch '23",
-      email: "abc.perera@unify.com"
+    id: 102,
+    name: "ABC Perera",
+    type: "Batch Rep",
+    verifiedDate: "Sep 12, 2023",
+    avatar: "https://placehold.co/56x56",
+    degree: "Bsc.(Hons) IT",
+    batch: "Batch '23",
+    email: "abc.perera@unify.com"
   },
   {
-      id: 103,
-      name: "Music Club",
-      type: "Club",
-      verifiedDate: "Aug 20, 2023",
-      avatar: "https://placehold.co/56x56",
-      email: "music@unify.com"
+    id: 103,
+    name: "Music Club",
+    type: "Club",
+    verifiedDate: "Aug 20, 2023",
+    avatar: "https://placehold.co/56x56",
+    email: "music@unify.com"
   },
   {
-      id: 104,
-      name: "Sarah Jones",
-      type: "Batch Rep",
-      verifiedDate: "Oct 05, 2023",
-      avatar: "https://placehold.co/56x56",
-      degree: "Bsc.(Hons) SE",
-      batch: "Batch '24",
-      email: "sarah.j@unify.com"
+    id: 104,
+    name: "Sarah Jones",
+    type: "Batch Rep",
+    verifiedDate: "Oct 05, 2023",
+    avatar: "https://placehold.co/56x56",
+    degree: "Bsc.(Hons) SE",
+    batch: "Batch '24",
+    email: "sarah.j@unify.com"
   },
-   {
-      id: 105,
-      name: "IEEE Student Branch",
-      type: "Club",
-      verifiedDate: "Jan 15, 2023",
-      avatar: "https://placehold.co/56x56",
-      email: "ieee@unify.com"
+  {
+    id: 105,
+    name: "IEEE Student Branch",
+    type: "Club",
+    verifiedDate: "Jan 15, 2023",
+    avatar: "https://placehold.co/56x56",
+    email: "ieee@unify.com"
+  },
+];
+
+export const mockBoostPackages = [
+  {
+    id: 'pkg-001',
+    name: 'Starter',
+    price: 1000,
+    duration: '24 Hours',
+    durationValue: 24,
+    durationUnit: 'Hours',
+    badge: 'No Badge',
+    description: 'Perfect for quick announcements or flash sales.',
+    features: ['Standard Visibility', 'Basic Analytics', 'Feed Placement'],
+    status: 'live',
+  },
+  {
+    id: 'pkg-002',
+    name: 'Growth',
+    price: 2000,
+    duration: '24 Hours',
+    durationValue: 24,
+    durationUnit: 'Hours',
+    badge: 'Most Popular',
+    description: 'Best balance of reach and duration for weekly promos.',
+    features: ['2x Audience Reach', 'Top of Category', 'Detailed Analytics', 'Priority Support'],
+    status: 'live',
+  },
+  {
+    id: 'pkg-003',
+    name: 'Dominate',
+    price: 4000,
+    duration: '7 Days',
+    durationValue: 7,
+    durationUnit: 'Days',
+    badge: 'Premium',
+    description: 'Maximize brand with a full week campaign.',
+    features: ['Max Reach Potential', 'Top of Feed Placement', 'Highlighted Gold Border', 'CRM Integration'],
+    status: 'live',
+  },
+];
+
+export const mockBoostLogs = [
+  {
+    id: 'log-001',
+    type: 'package_updated',
+    title: "Benefits updated for 'Growth' tier",
+    description: "'Detailed Analytics' included in feature set",
+    time: 'Yesterday, 4:12 PM',
+  },
+  {
+    id: 'log-002',
+    type: 'package_updated',
+    title: "Price adjustment: 'Dominate' package",
+    description: 'Updated from LKR 20,000 to LKR 22,500',
+    time: '2 hours ago',
   },
 ];
 

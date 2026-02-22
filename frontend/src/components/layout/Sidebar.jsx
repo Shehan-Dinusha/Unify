@@ -109,7 +109,7 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
 
         <nav className="flex flex-col gap-xs w-full">
           {currentConfig.links.map((link, index) => (
-            <SidebarItem key={index} {...link} active={pathname === link.path} />
+            <SidebarItem key={index} {...link} active={link.path === '/' ? pathname === '/' : pathname.startsWith(link.path)} />
           ))}
         </nav>
       </div>
