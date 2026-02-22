@@ -5,6 +5,7 @@ import { mockRequests } from '../data/mockData';
 import Marketplace from '../pages/Marketplace';
 import Club from "../pages/Club";
 import ClubProduct from "../pages/ClubProduct";
+import Boarding from "../pages/Boarding";
 
 
 const PlaceholderPage = ({ title, verificationCount }) => (
@@ -38,6 +39,7 @@ const router = createBrowserRouter([
   { path: '/marketplace', element: <Marketplace /> },
   { path: "/marketplace/club", element: <Club /> },
   { path: "/marketplace/club/product", element: <ClubProduct /> },
+  { path: "/marketplace/boarding", element: <Boarding /> },
   { path: '/learning', element: <PlaceholderPage title="Learning" verificationCount={mockRequests.length} /> },
   { path: '/report-moderation', element: <PlaceholderPage title="Report Moderation" verificationCount={mockRequests.length} /> },
   { path: '/suspended-users', element: <PlaceholderPage title="Suspended Users" verificationCount={mockRequests.length} /> },

@@ -20,3 +20,20 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Dual Range Slider Fix */
+.dual-range-input {
+  pointer-events: none;
+}
+
+.dual-range-input::-webkit-slider-thumb {
+  pointer-events: auto;
+}
+
+.dual-range-input::-moz-range-thumb {
+  pointer-events: auto;
+}
+
+.dual-range-input::-ms-thumb {
+  pointer-events: auto;
+}

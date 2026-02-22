@@ -78,10 +78,6 @@ const ClubProduct = () => {
                             {/* Price row */}
                             <div className="mt-md flex items-center gap-md flex-wrap">
                                 <span className="text-heading-small text-primary-blue">{product.priceNow}</span>
-                                <span className="text-body-medium text-text-tertiary line-through">{product.priceOld}</span>
-                                <span className="px-sm py-xs rounded-full bg-state-success/15 border border-state-success/25 text-state-success text-body-extra-small-bold">
-                                    {product.saveLabel}
-                                </span>
                             </div>
 
                             {/* Description */}
@@ -124,7 +120,6 @@ const ClubProduct = () => {
                                     <p className="text-body-extra-small-bold text-text-tertiary tracking-widest">SIZE:</p>
                                     <p className="text-body-extra-small-bold text-text-primary">{activeSize}</p>
                                 </div>
-                                <button className="text-primary-blue text-body-small-bold hover:underline">Size Guide</button>
                             </div>
 
                             <div className="mt-sm flex gap-sm flex-wrap">
@@ -136,8 +131,8 @@ const ClubProduct = () => {
                                             type="button"
                                             onClick={() => setActiveSize(s)}
                                             className={`h-10 px-lg rounded-full border transition-all text-body-small-bold ${active
-                                                    ? "bg-primary-blue/15 border-primary-blue text-primary-blue"
-                                                    : "bg-white/5 border-white/10 text-text-tertiary hover:border-white/20 hover:text-text-primary"
+                                                ? "bg-primary-blue/15 border-primary-blue text-primary-blue"
+                                                : "bg-white/5 border-white/10 text-text-tertiary hover:border-white/20 hover:text-text-primary"
                                                 }`}
                                         >
                                             {s}
@@ -176,8 +171,7 @@ const ClubProduct = () => {
                                     Buy Now
                                 </Button>
                             </div>
-
-                            <p className="mt-md text-body-small text-text-tertiary">{product.pickupNote}</p>
+                            <div className="mt-md text-body-small text-text-tertiary"><p className="text-center">{product.pickupNote}</p></div>
                         </div>
                     </div>
                 </div>

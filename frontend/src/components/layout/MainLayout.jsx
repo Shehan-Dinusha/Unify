@@ -19,7 +19,7 @@ const MainLayout = ({ children, user, pageTitle, headerRight, verificationCount 
         <Header title={pageTitle} rightContent={headerRight} />
 
         {/* Page Content */}
-        <main className="p-lg flex-1 overflow-y-auto overflow-x-hidden">
+        <main className="p-lg flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
           {children}
         </main>
       </div>

@@ -26,6 +26,7 @@ const Marketplace = () => {
                         image={cat.image}
                         onClick={() => {
                             if (cat.id === "cat-merch") navigate("/marketplace/club");
+                            if (cat.id === "cat-boardings") navigate("/marketplace/boarding");
                         }}
                     />
                 ))}

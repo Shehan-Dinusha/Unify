@@ -1,10 +1,5 @@
-import React, { useState } from "react";
-import {
-    Zap,
-    Bookmark,
-    Flag,
-    Megaphone,
-} from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Send } from "lucide-react";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import { useNavigate } from "react-router-dom";
@@ -47,6 +42,76 @@ const ActionBtn = ({ icon: Icon, svgSrc, label, count, showBoth, activeColor = "
     </button>
 );
 
+/* ─── Comment Section ────────────────────────────────────────── */
+const CommentSection = ({ postComments, onAddComment }) => {
+    const [text, setText] = useState("");
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, []);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const trimmed = text.trim();
+        if (!trimmed) return;
+        onAddComment(trimmed);
+        setText("");
+    };
+
+    return (
+        <div className="mt-4 border-t border-white/10 pt-4 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+            {/* Existing comments */}
+            {postComments.length > 0 && (
+                <div className="flex flex-col gap-3 max-h-56 overflow-y-auto pr-1 scrollbar-hide">
+                    {postComments.map((c) => (
+                        <div key={c.id} className="flex gap-3 items-start">
+                            <img
+                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.seed || c.user)}`}
+                                alt={c.user}
+                                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5"
+                            />
+                            <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-[13px] font-semibold text-text-primary">{c.user}</span>
+                                    <span className="text-[11px] text-text-tertiary">{c.time}</span>
+                                </div>
+                                <p className="text-[13px] text-text-secondary leading-relaxed">{c.text}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Input */}
+            <form onSubmit={handleSubmit} className="flex items-center gap-2">
+                <img
+                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me"
+                    alt="You"
+                    className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0"
+                />
+                <div className="flex-1 flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 gap-2 focus-within:border-primary/50 transition-colors">
+                    <input
+                        ref={inputRef}
+                        type="text"
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
+                        placeholder="Write a comment…"
+                        className="flex-1 bg-transparent text-[13px] text-text-primary placeholder:text-text-tertiary outline-none"
+                    />
+                    <button
+                        type="submit"
+                        disabled={!text.trim()}
+                        className="text-primary disabled:text-text-tertiary transition-colors"
+                    >
+                        <Send size={16} strokeWidth={2} />
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
 /* ─── Card component ─────────────────────────────────────────── */
 const ClubPostCard = ({ post }) => {
     const navigate = useNavigate();
@@ -55,14 +120,25 @@ const ClubPostCard = ({ post }) => {
     const [saved, setSaved] = useState(false);
     const [reported, setReported] = useState(false);
     const [adActive, setAdActive] = useState(false);
-    const [comments, setComments] = useState(post.stats?.comments ?? 0);
-    const [boosts, setBoosts] = useState(post.stats?.boosts ?? 0);
+    const [commentOpen, setCommentOpen] = useState(false);
+    const [postComments, setPostComments] = useState(post.comments ?? []);
     const [likes, setLikes] = useState(post.stats?.likes ?? 0);
 
-    const toggleBoost = () => { setBoosted(p => !p); setBoosts(n => boosted ? n - 1 : n + 1); };
+    const toggleBoost = () => { setBoosted(p => !p); };
     const toggleSave = () => setSaved(p => !p);
     const toggleReport = () => setReported(p => !p);
     const toggleAd = () => setAdActive(p => !p);
+
+    const handleAddComment = (text) => {
+        const newComment = {
+            id: `new-${Date.now()}`,
+            user: "You",
+            seed: "Me",
+            time: "just now",
+            text,
+        };
+        setPostComments(prev => [...prev, newComment]);
+    };
 
     return (
         <Card variant="card" padding="p-0" className="overflow-hidden">
@@ -71,9 +147,11 @@ const ClubPostCard = ({ post }) => {
                 <img src={post.image} alt={post.clubName} className="w-full h-full object-cover" />
 
                 {/* Price pill */}
-                <div className="absolute bottom-md left-md bg-dark-1/70 backdrop-blur-md border border-white/10 rounded-full px-md py-sm">
-                    <span className="text-body-small-bold text-text-primary">{post.price}</span>
-                </div>
+                {post.price && (
+                    <div className="absolute bottom-md left-md bg-dark-1/70 backdrop-blur-md border border-white/10 rounded-full px-md py-sm">
+                        <span className="text-body-small-bold text-text-primary">{post.price}</span>
+                    </div>
+                )}
             </div>
 
             {/* Content */}
@@ -112,12 +190,13 @@ const ClubPostCard = ({ post }) => {
 
                     {/* Comment */}
                     <ActionBtn
-                        svgSrc="/icon_comment_marketplace.svg"
                         label="Comment"
-                        count={comments}
+                        svgSrc="/icon_comment_marketplace.svg"
+                        count={postComments.length}
                         showBoth
                         activeColor="text-blue-400"
-                        onClick={() => setComments(n => n + 1)}
+                        active={commentOpen}
+                        onClick={() => setCommentOpen(o => !o)}
                     />
 
                     {/* Boost */}
@@ -147,6 +226,14 @@ const ClubPostCard = ({ post }) => {
                         onClick={toggleReport}
                     />
                 </div>
+
+                {/* ── Comment section (toggles open) ─────────────────── */}
+                {commentOpen && (
+                    <CommentSection
+                        postComments={postComments}
+                        onAddComment={handleAddComment}
+                    />
+                )}
 
                 {/* Buy now */}
                 <div className="mt-lg pt-md border-t border-white/10 flex items-end justify-end">
