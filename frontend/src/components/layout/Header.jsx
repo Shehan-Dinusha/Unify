@@ -8,22 +8,15 @@ const Header = ({ title = "News Feed", rightContent }) => {
         </h2>
       </div>
 
-      {/* Action Icons / Search Slot */}
+      {/* Action Icons / Search Slot*/}
       <div className="flex items-center gap-4">
         {rightContent ? (
           rightContent
         ) : (
           <div className="flex items-center gap-2">
-            {/*Default Search Icon Toggle*/}
-            <button
-              className="p-2 relative flex items-center justify-center shrink-0 hover:bg-white/5 rounded-full transition-colors"
-              onClick={() => console.log("Search")}
-            >
-              <img
-                src="/icon_search.svg"
-                alt="Search"
-                className="w-6 h-6 opacity-70"
-              />
+
+            <button className="p-2 relative flex items-center justify-center shrink-0 hover:bg-white/5 rounded-full transition-colors" onClick={() => console.log('Search')}>
+              <img src="/icon_search.svg" alt="Search" className="w-6 h-6 opacity-70" />
             </button>
           </div>
         )}
