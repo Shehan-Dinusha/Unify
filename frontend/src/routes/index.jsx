@@ -2,6 +2,10 @@ import React from 'react';
 import { createBrowserRouter, Outlet } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import VerificationQueue from '../pages/VerificationQueue';
+import AdminDashboard from '../pages/AdminDashboard';
+import RevenueOverview from '../pages/RevenueOverview';
+import ActiveBusinesses from '../pages/ActiveBusinesses';
+import StudentManagement from '../pages/StudentManagement';
 import BoostController from '../pages/BoostController';
 import BoostPackageForm from '../pages/BoostPackageForm';
 import { BoostPackageProvider } from '../context/BoostPackageContext';
@@ -41,7 +45,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <PlaceholderPage title="Dashboard" verificationCount={mockRequests.length} />,
+        element: <AdminDashboard />,
       },
       {
         path: '/verification-queue',
@@ -67,6 +71,18 @@ const router = createBrowserRouter([
         path: '/batch-rep-verification',
         element: <BatchRepVerification />,
       },
+      {
+      path: '/revenue-overview',
+      element: <RevenueOverview />,
+      },
+      {
+        path: '/active-businesses',
+        element: <ActiveBusinesses />,
+      },
+      {
+        path: '/student-management',
+        element: <StudentManagement />,
+      },
 
       { path: '/news-feed', element: <PlaceholderPage title="News Feed" verificationCount={mockRequests.length} /> },
       { path: '/notifications', element: <PlaceholderPage title="Notifications" verificationCount={mockRequests.length} /> },
@@ -83,6 +99,7 @@ const router = createBrowserRouter([
       { path: '/my-products', element: <PlaceholderPage title="My Products" verificationCount={mockRequests.length} /> },
       { path: '/order-history', element: <PlaceholderPage title="Order History" verificationCount={mockRequests.length} /> },
       { path: '/order-dashboard', element: <PlaceholderPage title="Order Dashboard" verificationCount={mockRequests.length} /> },
+  ]}
 ]);
 
 export default router;
