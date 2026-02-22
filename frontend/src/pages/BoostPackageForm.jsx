@@ -128,17 +128,7 @@ const BoostPackageForm = () => {
     const previewDuration = `${durationValue} ${durationUnit}`;
     const previewFeatures = features.filter((f) => f.trim() !== '');
 
-    // Header actions
-    const headerActions = (
-        <div className="flex items-center gap-md">
-            <Button variant="secondary" size="small" onClick={handleDiscard}>
-                Discard Changes
-            </Button>
-            <Button variant="primary" size="small" onClick={handleSaveClick}>
-                Save Changes
-            </Button>
-        </div>
-    );
+
 
     return (
         <>
@@ -246,20 +236,29 @@ const BoostPackageForm = () => {
             <MainLayout
                 user={{ name: 'Alex Johnson', role: 'admin' }}
                 pageTitle="Package Configuration"
-                headerRight={headerActions}
                 verificationCount={mockRequests.length}
             >
                 <div className="flex flex-col gap-lg">
-                    {/* Page Title */}
-                    <div>
-                        <h1 className="text-heading-small text-text-primary font-inter">
-                            {isEditing ? 'Edit Boost Package' : 'Create New Boost Package'}
-                        </h1>
-                        <p className="text-body-small text-text-secondary font-inter mt-1">
-                            {isEditing
-                                ? `Modify details for the '${existingPackage?.name}' boost tier.`
-                                : 'Define a new advertising tier for businesses.'}
-                        </p>
+                    {/* Page Title + Actions */}
+                    <div className="flex items-start justify-between">
+                        <div>
+                            <h1 className="text-heading-small text-text-primary font-inter">
+                                {isEditing ? 'Edit Boost Package' : 'Create New Boost Package'}
+                            </h1>
+                            <p className="text-body-small text-text-secondary font-inter mt-1">
+                                {isEditing
+                                    ? `Modify details for the '${existingPackage?.name}' boost tier.`
+                                    : 'Define a new advertising tier for businesses.'}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-md">
+                            <Button variant="secondary" size="medium" onClick={handleDiscard}>
+                                Discard Changes
+                            </Button>
+                            <Button variant="primary" size="medium" onClick={handleSaveClick}>
+                                Save Changes
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Main Content: Form + Preview */}
