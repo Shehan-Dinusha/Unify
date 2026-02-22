@@ -4,7 +4,7 @@ import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import { login } from "../../services/authService";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
   const [identifier, setIdentifier] = useState("");
@@ -23,7 +23,8 @@ const LoginForm = () => {
     if (!identifier) {
       tempErrors.identifier = "Email or Phone Number is required";
     } else if (!emailRegex.test(identifier) && !phoneRegex.test(identifier)) {
-      tempErrors.identifier = "Please enter a valid email or 10-digit phone number";
+      tempErrors.identifier =
+        "Please enter a valid email or 10-digit phone number";
     }
 
     if (!password) {
@@ -123,7 +124,12 @@ const LoginForm = () => {
             <span className="text-text-secondary text-body-medium">
               Don't have an account?
             </span>
-            <Button variant="link" size="small" className="text-body-medium-bold">
+            <Button
+              variant="link"
+              size="small"
+              className="text-body-medium-bold"
+              onClick={() => navigate("/register")}
+            >
               Create Account
             </Button>
           </div>
@@ -134,4 +140,3 @@ const LoginForm = () => {
 };
 
 export default LoginForm;
-

@@ -7,6 +7,8 @@ const OtpForm = ({ email, onVerify, onBack }) => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(299); // 04:59 = 299 seconds
   const [loading, setLoading] = useState(false);
+  const isEmail = email?.includes("@");
+  const contactType = isEmail ? "email" : "phone number";
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -62,9 +64,11 @@ const OtpForm = ({ email, onVerify, onBack }) => {
             <Timer className="text-primary-blue w-8 h-8" />
           </div>
           <div className="flex flex-col gap-2">
-            <h2 className="text-white text-heading-small">Verification Code</h2>
+            <h2 className="text-white text-heading-medium">
+              Verification Code
+            </h2>
             <p className="text-text-secondary text-body-small px-4 leading-relaxed max-w-[360px]">
-              Please enter the 6-digit code sent to your email or phone
+              Please enter the 6-digit code sent to your {contactType}
             </p>
           </div>
         </div>
@@ -107,7 +111,7 @@ const OtpForm = ({ email, onVerify, onBack }) => {
 
             <div className="flex flex-col items-center gap-4">
               <p className="text-text-secondary text-body-small">
-                Didn't receive the email?{" "}
+                Didn't receive the {isEmail ? "email" : "code"}?{" "}
                 <button
                   type="button"
                   className="text-primary-blue hover:underline body-small-bold"
@@ -125,7 +129,7 @@ const OtpForm = ({ email, onVerify, onBack }) => {
                 onClick={onBack}
               >
                 <ArrowLeft size={16} />
-                Wrong email address?
+                Wrong {contactType}?
               </button>
             </div>
           </div>

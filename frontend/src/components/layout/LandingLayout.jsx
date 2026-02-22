@@ -1,7 +1,6 @@
 import React from "react";
-import LoginHeader from '../auth/LoginHeader';
+import LoginHeader from "../auth/LoginHeader";
 import LandingFooter from "../LandingFooter";
-import ScrollToTop from '../common/ScrollToTop';
 
 const LandingLayout = ({ children, Header = LoginHeader }) => {
   return (
@@ -12,8 +11,6 @@ const LandingLayout = ({ children, Header = LoginHeader }) => {
 
       {/* Header */}
       <Header />
-
-      <ScrollToTop />
 
       {/* Page Content */}
       <main className="flex-1 flex flex-col px-8 lg:px-28 relative z-10 w-full pt-20">
