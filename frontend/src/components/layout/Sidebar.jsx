@@ -93,7 +93,7 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
   const currentConfig = roleConfigs[user.role.toLowerCase()] || roleConfigs.student;
 
   return (
-    <aside className="w-72 h-screen bg-dark-1 border-r border-white/10 flex flex-col justify-between items-start sticky top-0">
+    <aside className="w-72 h-screen bg-dark-1 border-r border-white/10 flex flex-col justify-between items-start sticky top-0 shrink-0">
 
       {/* Brand & Dynamic Navigation */}
       <div className="w-full p-md flex flex-col gap-lg">

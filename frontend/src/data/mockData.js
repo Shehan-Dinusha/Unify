@@ -158,3 +158,31 @@ export const mockBoostLogs = [
     time: '2 hours ago',
   },
 ];
+
+export const mockFullDocument = {
+    id: 1,
+    name: "Annual Budget Proposal.pdf",
+    size: "2.4 MB",
+    date: "Uploaded Today",
+    type: "pdf",
+    url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" // Example S3-like URL
+};
+
+export const mockBatchRepDocuments = [
+    {
+        id: 1,
+        name: "Batch_rep.pdf",
+        type: "pdf",
+        size: "3.2 MB",
+        date: "Uploaded Today",
+        url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+    },
+    {
+        id: 2,
+        name: "Batch_rep.csv",
+        type: "csv",
+        size: "12 KB",
+        date: "Uploaded Today",
+        url: "" // No preview for CSV
+    }
+];
