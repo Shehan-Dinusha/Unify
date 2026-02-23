@@ -77,6 +77,8 @@ export const mockUserReviews = [
     rating: 5,
     content:
       "Absolutely love this spot for studying. The wifi is fast, and the coffee is reasonably priced for students. It gets a bit crowded\naround lunch, but mornings are perfect. Highly recommend the bagel sandwich!",
+    helpfulCount: 15,
+    notHelpfulCount: 2,
   },
   {
     id: "usr-rev-2",
@@ -87,6 +89,16 @@ export const mockUserReviews = [
     rating: 4,
     content:
       "Great location right next to the engineering block. The landlord is responsive to issues. However, the sound insulation between\nrooms isn't the best, so bring headphones if you need quiet.",
+    helpfulCount: 4,
+    notHelpfulCount: 0,
+    ownerReply: {
+      author: {
+        name: "Greenwood Management",
+        avatar: "https://placehold.co/36x36",
+      },
+      content:
+        "Thank you for your feedback! We are currently looking into adding soundproofing panels to the walls to improve the experience.",
+    },
   },
   {
     id: "usr-rev-3",
@@ -97,6 +109,8 @@ export const mockUserReviews = [
     rating: 3,
     content:
       "Sarah is extremely knowledgeable in Calculus, no doubt. She helped me understand integrals well. The reason for the lower rating\nis that she cancelled our session twice last minute. Hard to rely on if you have an exam coming up soon.",
+    helpfulCount: 1,
+    notHelpfulCount: 5,
   },
   {
     id: "usr-rev-4",
@@ -107,5 +121,66 @@ export const mockUserReviews = [
     rating: 2,
     content:
       "Took my laptop in for a screen replacement. They said 2 days, but it took a week. When I got it back, the webcam wasn't\nconnected properly. Had to go back again. Not the best experience.",
+  },
+];
+
+export const mockBusinessReviewMetrics = {
+  averageRating: 4.8,
+  totalReviews: 128,
+  distribution: [
+    { stars: 5, percentage: 75, count: 96 },
+    { stars: 4, percentage: 15, count: 19 },
+    { stars: 3, percentage: 5, count: 6 },
+    { stars: 2, percentage: 3, count: 4 },
+    { stars: 1, percentage: 2, count: 3 },
+  ],
+};
+
+export const mockReceivedReviews = [
+  {
+    id: "r-rev-1",
+    author: {
+      name: "Alex Chen",
+      avatar: "https://placehold.co/40x40",
+    },
+    createdAt: "2 hours ago",
+    rating: 5,
+    content:
+      "The study area in this cafe is absolutely perfect. The wifi is fast and reliable, and the atmosphere is quiet enough to focus but lively\nenough not to feel isolated. Highly recommend the cold brew!",
+    helpfulCount: 12,
+    hasOwnerReplied: false,
+    ownerReply: null,
+  },
+  {
+    id: "r-rev-2",
+    author: {
+      name: "Sarah Jenkins",
+      avatar: "https://placehold.co/40x40",
+    },
+    createdAt: "Yesterday",
+    rating: 4,
+    content:
+      "Great food but the service was a bit slow during lunch rush. The burger was amazing though.",
+    helpfulCount: 0,
+    hasOwnerReplied: true,
+    ownerReply: {
+      content:
+        "Thanks for the feedback Sarah! We're training two new staff members this week to help speed things up during lunch. Glad you\nenjoyed the burger!",
+      createdAt: "Just now",
+    },
+  },
+  {
+    id: "r-rev-3",
+    author: {
+      name: "Marcus Johnson",
+      avatar: "https://placehold.co/40x40",
+    },
+    createdAt: "3 days ago",
+    rating: 2,
+    content:
+      "The hot water in the showers has been inconsistent for the last two days. It's really frustrating especially in the mornings.",
+    helpfulCount: 0,
+    hasOwnerReplied: false,
+    ownerReply: null,
   },
 ];
