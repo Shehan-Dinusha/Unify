@@ -1,70 +1,103 @@
-import React from 'react';
-import { Search, Menu } from 'lucide-react';
+import React, { useState } from "react";
+import { Menu, X } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import Button from "./common/Button";
 
-import Button from './common/Button';
-
-const NavLink = ({ label, href = "#", active = false }) => (
-  <a 
-    href={href}
-    className={`text-sm font-bold font-inter transition-colors duration-200 ${
-      active ? 'text-white' : 'text-text-secondary hover:text-white'
+const NavLink = ({ label, href = "#", active = false, onClick }) => (
+  <Link
+    to={href}
+    onClick={onClick}
+    className={`text-sm font-semibold transition-colors duration-200 ${
+      active ? "text-white" : "text-text-secondary hover:text-white"
     }`}
   >
     {label}
-  </a>
+  </Link>
 );
 
-
-
 const LandingHeader = () => {
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const navItems = [
-    { label: "Home", active: true },
-    { label: "About Us" },
-    { label: "Features" },
-    { label: "Support" },
-    { label: "Pricing" },
+    { label: "Home", href: "/" },
+    { label: "About Us", href: "/about" },
+    { label: "Features", href: "/features" },
+    { label: "Support", href: "/support" },
+    { label: "Pricing", href: "/pricing" },
   ];
 
   return (
-    <header className="w-full sticky top-0 z-50 bg-gradient-to-b from-dark-1/90 to-dark-2/80 border-b border-primary-blue/20 backdrop-blur-md">
-      <div className="max-w-[1440px] mx-auto h-20 px-8 lg:px-20 flex justify-between items-center">
-        
+    <header className="w-full fixed top-0 left-0 z-50 bg-gradient-to-b from-dark-1 to-dark-2 border-b border-white/10 backdrop-blur-md">
+      <div className="max-w-[1440px] mx-auto h-20 px-8 lg:px-28 flex justify-between items-center bg-dark-1/80 backdrop-blur-sm lg:bg-transparent lg:backdrop-blur-none transition-all duration-300">
         {/* Logo Section */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="w-12 h-10 bg-white rounded flex items-center justify-center shadow-custom overflow-hidden">
-             {/* Using a stylized 'U' for the white logo block */}
-            <img src="/Unify_logo_White.svg" alt="Unify Logo" className="w-full h-full object-contain p-2 filter invert" />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-white text-3xl font-bold font-inter leading-none">Unify</h1>
-            <p className="text-text-secondary text-[10px] font-bold font-inter uppercase tracking-tighter">
-              University Social & Learning
+        <Link 
+          to="/" 
+          className="flex items-center gap-3 shrink-0"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          <img
+            src="/icon_unify_logo.svg"
+            alt="Unify Logo"
+            className="w-10 h-10 object-contain"
+          />
+
+          <div className="flex flex-col leading-none">
+            <h1 className="text-white text-2xl font-bold">Unify</h1>
+            <p className="text-text-secondary text-xs font-medium">
+              University Social & Learning Platform
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-10">
           {navItems.map((item, index) => (
-            <NavLink key={index} {...item} />
+            <NavLink
+              key={index}
+              {...item}
+              active={location.pathname === item.href}
+            />
           ))}
         </nav>
 
-        {/* Right Actions */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" icon={Search} iconOnly onClick={() => console.log('Search')} />
-          
-          {/* Mobile Menu Toggle */}
-          <div className="md:hidden">
-            <Button variant="ghost" icon={Menu} iconOnly onClick={() => console.log('Menu')} />
-          </div>
-
-          {/* Optional: Get Started Button (fits your style) */}
-          <div className="hidden lg:block">
-            <Button variant="primary" size="medium">Join Now</Button>
-          </div>
+        {/* Right Actions - Mobile Menu Toggle */}
+        <div className="flex items-center gap-4 lg:hidden">
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+          >
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
         </div>
+      </div>
 
+      {/* Mobile Menu Overlay */}
+      <div 
+        className={`lg:hidden absolute top-20 left-0 w-full bg-dark-1 border-b border-white/10 shadow-xl transition-all duration-300 ease-in-out overflow-hidden ${
+          isMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <nav className="flex flex-col p-6 gap-6">
+          {navItems.map((item, index) => (
+            <Link
+              key={index}
+              to={item.href}
+              onClick={() => setIsMenuOpen(false)}
+              className={`text-lg font-medium ${
+                location.pathname === item.href 
+                  ? "text-primary-blue" 
+                  : "text-white hover:text-primary-blue transition-colors"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </header>
   );
