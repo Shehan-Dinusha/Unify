@@ -60,3 +60,52 @@ export const mockReviews = [
     },
   },
 ];
+
+export const mockUserReviewSummary = {
+  totalReviews: 14,
+  averageRating: 4.2,
+  topCategory: "Food & Cafe",
+};
+
+export const mockUserReviews = [
+  {
+    id: "usr-rev-1",
+    targetName: "The Daily Grind Cafe",
+    targetAvatar: "https://placehold.co/48x48",
+    category: "Food & Cafe",
+    createdAt: "Rated on Oct 24, 2023",
+    rating: 5,
+    content:
+      "Absolutely love this spot for studying. The wifi is fast, and the coffee is reasonably priced for students. It gets a bit crowded\naround lunch, but mornings are perfect. Highly recommend the bagel sandwich!",
+  },
+  {
+    id: "usr-rev-2",
+    targetName: "Greenwood Boarding House",
+    targetAvatar: "https://placehold.co/48x48",
+    category: "Boarding",
+    createdAt: "Rated on Sep 12, 2023",
+    rating: 4,
+    content:
+      "Great location right next to the engineering block. The landlord is responsive to issues. However, the sound insulation between\nrooms isn't the best, so bring headphones if you need quiet.",
+  },
+  {
+    id: "usr-rev-3",
+    targetName: "Sarah Jenkins - Calculus Tutor",
+    targetAvatar: "https://placehold.co/48x48",
+    category: "Freelance Services",
+    createdAt: "Rated on Aug 30, 2023",
+    rating: 3,
+    content:
+      "Sarah is extremely knowledgeable in Calculus, no doubt. She helped me understand integrals well. The reason for the lower rating\nis that she cancelled our session twice last minute. Hard to rely on if you have an exam coming up soon.",
+  },
+  {
+    id: "usr-rev-4",
+    targetName: "TechFix Campus Repairs",
+    targetAvatar: "https://placehold.co/48x48",
+    category: "Tech Services",
+    createdAt: "Rated on Jul 15, 2023",
+    rating: 2,
+    content:
+      "Took my laptop in for a screen replacement. They said 2 days, but it took a week. When I got it back, the webcam wasn't\nconnected properly. Had to go back again. Not the best experience.",
+  },
+];
