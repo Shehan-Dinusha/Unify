@@ -25,6 +25,7 @@ import Marketplace from "../pages/Marketplace";
 import Club from "../pages/Club";
 import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
+import MarketplaceReviews from "../pages/MarketplaceReviews";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout
@@ -163,14 +164,72 @@ const router = createBrowserRouter([
       { path: "/marketplace/club", element: <Club /> },
       { path: "/marketplace/club/product", element: <ClubProduct /> },
       { path: "/marketplace/boarding", element: <Boarding /> },
-      { path: '/learning', element: <PlaceholderPage title="Learning" verificationCount={mockRequests.length} /> },
-      { path: '/report-moderation', element: <PlaceholderPage title="Report Moderation" verificationCount={mockRequests.length} /> },
-      { path: '/suspended-users', element: <PlaceholderPage title="Suspended Users" verificationCount={mockRequests.length} /> },
-      { path: '/boost-controller', element: <PlaceholderPage title="Boost Controller" verificationCount={mockRequests.length} /> },
-      { path: '/my-products', element: <PlaceholderPage title="My Products" verificationCount={mockRequests.length} /> },
-      { path: '/order-history', element: <PlaceholderPage title="Order History" verificationCount={mockRequests.length} /> },
-      { path: '/order-dashboard', element: <PlaceholderPage title="Order Dashboard" verificationCount={mockRequests.length} /> },
-    ]
-  }]);
+      { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
+      {
+        path: "/learning",
+        element: (
+          <PlaceholderPage
+            title="Learning"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+      {
+        path: "/report-moderation",
+        element: (
+          <PlaceholderPage
+            title="Report Moderation"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+      {
+        path: "/suspended-users",
+        element: (
+          <PlaceholderPage
+            title="Suspended Users"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+      {
+        path: "/boost-controller",
+        element: (
+          <PlaceholderPage
+            title="Boost Controller"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+      {
+        path: "/my-products",
+        element: (
+          <PlaceholderPage
+            title="My Products"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+      {
+        path: "/order-history",
+        element: (
+          <PlaceholderPage
+            title="Order History"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+      {
+        path: "/order-dashboard",
+        element: (
+          <PlaceholderPage
+            title="Order Dashboard"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+    ],
+  },
+]);
 
 export default router;
