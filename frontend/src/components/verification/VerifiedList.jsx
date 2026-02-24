@@ -30,9 +30,9 @@ const VerifiedList = () => {
   };
 
   return (
-    <div className="flex flex-col gap-xl w-full max-w-[1122px]">
+    <div className="flex flex-col gap-4 sm:gap-xl w-full max-w-[1122px]">
       {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+      <div className="grid grid-cols-3 gap-2 md:gap-lg">
         <StatsCard
           iconSrc="/icon_verified_clubs.svg"
           iconAlt="Verified Clubs"
@@ -64,11 +64,11 @@ const VerifiedList = () => {
       <Card variant="container" className="">
         <div className="flex flex-col md:flex-row justify-between items-center gap-md">
           {/* Search */}
-          <div className="relative w-full md:w-96 pl-2">
+          <div className="relative w-full md:w-96 pl-2 md:pl-0">
             <img
               src="/icon_search.svg"
               alt="Search"
-              className="absolute left-6 top-1/2 -translate-y-1/2 w-[18px] h-[18px] opacity-50"
+              className="absolute left-6 md:left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] opacity-50"
             />
             <input
               type="text"
@@ -80,11 +80,11 @@ const VerifiedList = () => {
           </div>
 
           {/* Filters */}
-          <div className="flex items-center gap-sm w-full md:w-auto overflow-x-auto pb-xs md:pb-0 pr-2">
+          <div className="flex items-center gap-sm w-full md:w-auto overflow-x-auto scrollbar-hide pb-xs md:pb-0 px-2 md:px-0 scroll-smooth">
             <Button
               size="small"
               variant={filter === "All" ? "primary" : "secondary"}
-              className={`h-9 whitespace-nowrap ${filter !== "All" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
+              className={`h-8 sm:h-9 text-xs px-3 sm:px-4 whitespace-nowrap ${filter !== "All" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
               onClick={() => setFilter("All")}
             >
               All Verified
@@ -92,7 +92,7 @@ const VerifiedList = () => {
             <Button
               size="small"
               variant={filter === "Club" ? "primary" : "secondary"}
-              className={`h-9 whitespace-nowrap ${filter !== "Club" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
+              className={`h-8 sm:h-9 text-xs px-3 sm:px-4 whitespace-nowrap ${filter !== "Club" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
               onClick={() => setFilter("Club")}
             >
               Clubs
@@ -100,7 +100,7 @@ const VerifiedList = () => {
             <Button
               size="small"
               variant={filter === "Batch Rep" ? "primary" : "secondary"}
-              className={`h-9 whitespace-nowrap ${filter !== "Batch Rep" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
+              className={`h-8 sm:h-9 text-xs px-3 sm:px-4 whitespace-nowrap ${filter !== "Batch Rep" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
               onClick={() => setFilter("Batch Rep")}
             >
               Batch Reps

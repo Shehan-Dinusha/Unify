@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import StatsCard from "../common/StatsCard";
 
 const RequestList = ({ requests, onVerify, onReject }) => {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -15,10 +17,18 @@ const RequestList = ({ requests, onVerify, onReject }) => {
     return matchesFilter && matchesSearch;
   });
 
+  const handleView = (req) => {
+    if (req.type === "Club") {
+      navigate("/club-verification");
+    } else if (req.type === "Batch Rep") {
+      navigate("/batch-rep-verification");
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-xl w-full max-w-[1122px]">
+    <div className="flex flex-col gap-4 sm:gap-xl w-full max-w-[1122px]">
       {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+      <div className="grid grid-cols-3 gap-2 md:gap-lg">
         <StatsCard
           iconSrc="/icon_total_pending.svg"
           iconAlt="Pending"
@@ -48,11 +58,11 @@ const RequestList = ({ requests, onVerify, onReject }) => {
       <Card variant="container" className="">
         <div className="flex flex-col md:flex-row justify-between items-center gap-md">
           {/* Search */}
-          <div className="relative w-full md:w-96">
+          <div className="relative w-full md:w-96 pl-2 md:pl-0">
             <img
               src="/icon_search.svg"
               alt="Search"
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] opacity-50"
+              className="absolute left-6 md:left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] opacity-50"
             />
             <input
               type="text"
@@ -64,11 +74,11 @@ const RequestList = ({ requests, onVerify, onReject }) => {
           </div>
 
           {/* Filters */}
-          <div className="flex items-center gap-sm w-full md:w-auto overflow-x-auto pb-xs md:pb-0">
+          <div className="flex items-center gap-sm w-full md:w-auto overflow-x-auto scrollbar-hide pb-xs md:pb-0 px-2 md:px-0 scroll-smooth">
             <Button
               size="small"
               variant={filter === "All" ? "primary" : "secondary"}
-              className={`h-9 whitespace-nowrap ${filter !== "All" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
+              className={`h-8 sm:h-9 text-xs px-3 sm:px-4 whitespace-nowrap ${filter !== "All" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
               onClick={() => setFilter("All")}
             >
               All Requests
@@ -76,7 +86,7 @@ const RequestList = ({ requests, onVerify, onReject }) => {
             <Button
               size="small"
               variant={filter === "Club" ? "primary" : "secondary"}
-              className={`h-9 whitespace-nowrap ${filter !== "Club" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
+              className={`h-8 sm:h-9 text-xs px-3 sm:px-4 whitespace-nowrap ${filter !== "Club" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
               onClick={() => setFilter("Club")}
             >
               Clubs
@@ -84,7 +94,7 @@ const RequestList = ({ requests, onVerify, onReject }) => {
             <Button
               size="small"
               variant={filter === "Batch Rep" ? "primary" : "secondary"}
-              className={`h-9 whitespace-nowrap ${filter !== "Batch Rep" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
+              className={`h-8 sm:h-9 text-xs px-3 sm:px-4 whitespace-nowrap ${filter !== "Batch Rep" ? "bg-dark-4 text-text-secondary border border-white/10" : ""}`}
               onClick={() => setFilter("Batch Rep")}
             >
               Batch Reps
@@ -99,7 +109,8 @@ const RequestList = ({ requests, onVerify, onReject }) => {
           <Card
             key={req.id}
             variant="container"
-            className="h-full hover:bg-white/5 transition-colors"
+            className="h-full hover:bg-white/5 transition-colors cursor-pointer group"
+            onClick={() => handleView(req)}
           >
             <div className="flex flex-col gap-lg h-full">
               {/* Header Section */}
@@ -111,10 +122,10 @@ const RequestList = ({ requests, onVerify, onReject }) => {
                     className="w-12 h-12 rounded-full border border-white/10 object-cover"
                   />
                   <div>
-                    <h3 className="text-body-medium-bold text-text-primary">
+                    <h3 className="text-body-medium-bold text-text-primary px-1">
                       {req.name}
                     </h3>
-                    <div className="flex items-center gap-sm mt-1">
+                    <div className="flex items-center flex-wrap gap-1 md:gap-sm mt-1">
                       <span
                         className={`px-sm py-xs rounded text-body-extra-small-bold font-inter ${
                           req.type === "Club"
@@ -170,11 +181,17 @@ const RequestList = ({ requests, onVerify, onReject }) => {
                     </p>
                   </div>
                 </div>
-                <button className="flex-shrink-0 text-text-secondary hover:text-primary-blue transition-colors">
+                <button
+                  className="flex-shrink-0 text-text-secondary hover:text-primary-blue transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleView(req);
+                  }}
+                >
                   <img
                     src="/icon_view.svg"
                     alt="View"
-                    className="w-5 h-5 opacity-50 hover:opacity-100"
+                    className="w-5 h-5 opacity-50 group-hover:opacity-100 transition-opacity"
                   />
                 </button>
               </div>
@@ -184,14 +201,20 @@ const RequestList = ({ requests, onVerify, onReject }) => {
                 <Button
                   variant="dangerOutline"
                   className="h-[42px] border-state-error/30 text-state-error hover:bg-state-error/10 hover:border-state-error/50"
-                  onClick={() => onReject(req)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onReject(req);
+                  }}
                 >
                   Reject
                 </Button>
                 <Button
                   variant="primary"
                   className="h-[42px] shadow-none bg-primary-blue hover:bg-primary-blue/90"
-                  onClick={() => onVerify(req)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onVerify(req);
+                  }}
                 >
                   Verify
                 </Button>

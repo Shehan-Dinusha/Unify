@@ -15,7 +15,6 @@ import {
   ShoppingCart,
   ClipboardList,
   LogOut,
-  X,
 } from "lucide-react";
 
 // Sub-component for individual Nav Items
@@ -95,7 +94,16 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
     admin: {
       title: "Admin Dashboard",
       links: [
-        { iconSrc: "/icon_dashboard.svg", label: "Dashboard", path: "/" },
+        {
+          iconSrc: "/icon_dashboard.svg",
+          label: "Dashboard",
+          path: "/admin",
+          childPaths: [
+            "/revenue-overview",
+            "/active-businesses",
+            "/student-management",
+          ],
+        },
         {
           iconSrc: "/icon_report_moderation.svg",
           label: "Report Moderation",
@@ -150,43 +158,39 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
 
   return (
     <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar Content */}
       <aside
-        className={`
-        fixed lg:sticky top-0 left-0 z-[70]
-        w-72 h-screen bg-dark-1 border-r border-white/10 
-        flex flex-col justify-between items-start 
-        transition-transform duration-300 ease-in-out
-        ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-      `}
+        className={`w-72 h-screen bg-dark-1 border-r border-white/10 flex flex-col justify-between items-start 
+          fixed md:sticky top-0 left-0 z-50 transform transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+        `}
       >
         {/* Brand & Dynamic Navigation */}
-        <div className="w-full p-md flex flex-col gap-lg">
-          <div className="p-sm flex items-center justify-between">
-            <div className="flex items-center gap-md">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-custom overflow-hidden">
-                <img
-                  src="/icon_unify_logo.svg"
-                  alt="Unify Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div className="overflow-hidden">
-                <h1 className="text-text-primary text-2xl font-bold font-inter leading-tight">
-                  Unify
-                </h1>
-                <p className="text-text-tertiary text-body-extra-small font-normal font-inter truncate">
-                  {currentConfig.title}
-                </p>
-              </div>
+        <div className="w-full p-lg md:p-md flex flex-col gap-lg">
+          <div className="p-sm flex items-center gap-md">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-custom overflow-hidden">
+              <img
+                src="/icon_unify_logo.svg"
+                alt="Unify Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
-
-            {/* Mobile Close Button */}
-            <button
-              onClick={onClose}
-              className="lg:hidden p-2 hover:bg-white/5 rounded-xl transition-colors text-text-secondary"
-            >
-              <X size={20} />
-            </button>
+            <div className="overflow-hidden">
+              <h1 className="text-text-primary text-2xl font-bold font-inter leading-tight">
+                Unify
+              </h1>
+              <p className="text-text-tertiary text-body-extra-small font-normal font-inter truncate">
+                {currentConfig.title}
+              </p>
+            </div>
           </div>
 
           <nav className="flex flex-col gap-xs w-full">
@@ -194,7 +198,10 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
               <SidebarItem
                 key={index}
                 {...link}
-                active={pathname === link.path}
+                active={
+                  pathname === link.path ||
+                  (link.childPaths && link.childPaths.includes(pathname))
+                }
               />
             ))}
           </nav>
