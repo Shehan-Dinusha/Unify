@@ -1,28 +1,77 @@
-import React, { useState } from "react";
-import { Heart, MessageSquare, Bookmark, Flag, MapPin, Send } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { MapPin, Send } from "lucide-react";
 
-// Sample existing comments for each post
-const sampleComments = [
-  {
-    id: 1,
-    author: "Sarah Miller",
-    authorInitial: "SM",
-    time: "2h ago",
-    text: "That looks delicious! Is it available on the regular menu or is it a special?",
-    likes: 0,
-    isLiked: false,
-  },
-  {
-    id: 2,
-    author: "Mark Thompson",
-    authorInitial: "MT",
-    time: "4h ago",
-    text: "The location is actually super convenient, just a 2-minute walk from the main entrance.",
-    likes: 1,
-    isLiked: true,
-  },
-];
+/* ─── Comment Section (from ClubPostCard) ───────────────────── */
+const CommentSection = ({ postComments, onAddComment }) => {
+  const [text, setText] = useState("");
+  const inputRef = useRef(null);
 
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    onAddComment(trimmed);
+    setText("");
+  };
+
+  return (
+    <div className="mt-4 border-t border-white/10 pt-4 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+      {/* Existing comments */}
+      {postComments.length > 0 && (
+        <div className="flex flex-col gap-3 max-h-56 overflow-y-auto pr-1 scrollbar-hide">
+          {postComments.map((c) => (
+            <div key={c.id} className="flex gap-3 items-start">
+              <img
+                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.seed || c.user)}`}
+                alt={c.user}
+                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5"
+              />
+              <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[13px] font-semibold text-text-primary">{c.user}</span>
+                  <span className="text-[11px] text-text-tertiary">{c.time}</span>
+                </div>
+                <p className="text-[13px] text-text-secondary leading-relaxed">{c.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <form onSubmit={handleSubmit} className="flex items-center gap-2">
+        <img
+          src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me"
+          alt="You"
+          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0"
+        />
+        <div className="flex-1 flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 gap-2 focus-within:border-primary-blue/50 transition-colors">
+          <input
+            ref={inputRef}
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Write a comment…"
+            className="flex-1 bg-transparent text-[13px] text-text-primary placeholder:text-text-tertiary outline-none"
+          />
+          <button
+            type="submit"
+            disabled={!text.trim()}
+            className="text-primary-blue disabled:text-text-tertiary transition-colors"
+          >
+            <Send size={16} strokeWidth={2} />
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+/* ─── PostCard ───────────────────────────────────────────────── */
 const PostCard = ({
   author,
   authorInitial,
@@ -38,10 +87,22 @@ const PostCard = ({
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
   const [showComments, setShowComments] = useState(false);
-  const [commentsList, setCommentsList] = useState(
-    sampleComments.map(c => ({ ...c }))
-  );
-  const [newComment, setNewComment] = useState("");
+  const [postComments, setPostComments] = useState([
+    {
+      id: 1,
+      user: "Sarah Miller",
+      seed: "SarahMiller",
+      time: "2h ago",
+      text: "That looks delicious! Is it available on the regular menu or is it a special?",
+    },
+    {
+      id: 2,
+      user: "Mark Thompson",
+      seed: "MarkThompson",
+      time: "4h ago",
+      text: "The location is actually super convenient, just a 2-minute walk from the main entrance.",
+    },
+  ]);
   const [commentCount, setCommentCount] = useState(comments);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -54,43 +115,17 @@ const PostCard = ({
     setShowComments(!showComments);
   };
 
-  const handleAddComment = () => {
-    if (newComment.trim() === "") return;
-    const comment = {
-      id: Date.now(),
-      author: "You",
-      authorInitial: "Y",
-      time: "Just now",
-      text: newComment.trim(),
-      likes: 0,
-      isLiked: false,
+  const handleAddComment = (text) => {
+    const newComment = {
+      id: `new-${Date.now()}`,
+      user: "You",
+      seed: "Me",
+      time: "just now",
+      text,
     };
-    setCommentsList([comment, ...commentsList]);
-    setNewComment("");
+    setPostComments((prev) => [...prev, newComment]);
     setCommentCount(commentCount + 1);
   };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleAddComment();
-    }
-  };
-
-  const toggleCommentLike = (commentId) => {
-    setCommentsList(
-      commentsList.map((c) =>
-        c.id === commentId
-          ? { ...c, isLiked: !c.isLiked, likes: c.isLiked ? c.likes - 1 : c.likes + 1 }
-          : c
-      )
-    );
-  };
-
-  // Show only first 2 comments, rest behind "View more"
-  const [showAllComments, setShowAllComments] = useState(false);
-  const visibleComments = showAllComments ? commentsList : commentsList.slice(0, 2);
-  const hiddenCount = commentsList.length - 2;
 
   return (
     <div className="w-full bg-[#1A2634] rounded-[24px] overflow-hidden border border-white/5 font-inter text-white">
@@ -159,123 +194,53 @@ const PostCard = ({
           {/* Like */}
           <button
             onClick={toggleLike}
-            className={`flex items-center justify-center gap-2 py-2 hover:bg-white/5 rounded-lg transition-colors ${isLiked ? 'text-state-info' : ''}`}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isLiked ? 'text-state-info' : ''}`}
           >
-            <Heart
-              size={18}
-              className={`transition-colors ${isLiked ? 'fill-state-info text-state-info' : 'group-hover:text-primary-blue'}`}
-            />
-            <span>{likeCount}</span>
-            <span className="hidden sm:inline ml-1">Like</span>
+            <div className="flex items-center gap-1.5">
+              <img src="/icon_like_marketplace.svg" alt="Like" className={`w-5 h-5 ${isLiked ? 'brightness-150' : 'opacity-70'}`} />
+              <span>{likeCount}</span>
+            </div>
+            <span className="text-[11px]">Like</span>
           </button>
 
-          {/* Comments */}
+          {/* Comment */}
           <button
             onClick={toggleComments}
-            className={`flex items-center justify-center gap-2 py-2 hover:bg-white/5 rounded-lg transition-colors group ${showComments ? 'text-state-info' : ''}`}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${showComments ? 'text-state-info' : ''}`}
           >
-            <MessageSquare size={18} className={`transition-colors ${showComments ? 'text-state-info' : 'group-hover:text-primary-blue'}`} />
-            <span>{commentCount}</span>
-            <span className="hidden sm:inline ml-1">Comments</span>
+            <div className="flex items-center gap-1.5">
+              <img src="/icon_comment_marketplace.svg" alt="Comment" className={`w-5 h-5 ${showComments ? 'brightness-150' : 'opacity-70'}`} />
+              <span>{commentCount}</span>
+            </div>
+            <span className="text-[11px]">Comment</span>
           </button>
 
           {/* Save */}
           <button
             onClick={() => setIsSaved(!isSaved)}
-            className={`flex items-center justify-center gap-2 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? 'text-state-info' : ''}`}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? 'text-state-info' : ''}`}
           >
-            <Bookmark
-              size={18}
-              className={`transition-colors ${isSaved ? 'fill-state-info text-state-info' : 'group-hover:text-primary-blue'}`}
-            />
-            <span className="hidden sm:inline">{isSaved ? 'Saved' : 'Save'}</span>
+            <div className="flex items-center gap-1.5">
+              <img src="/icon_save_marketplace.svg" alt="Save" className={`w-5 h-5 ${isSaved ? 'brightness-150' : 'opacity-70'}`} />
+            </div>
+            <span className="text-[11px]">{isSaved ? 'Saved' : 'Save'}</span>
           </button>
 
           {/* Report */}
-          <button className="flex items-center justify-center gap-2 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error">
-            <Flag size={18} className="group-hover:text-state-error transition-colors" />
-            <span className="hidden sm:inline">Report</span>
+          <button className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error">
+            <div className="flex items-center gap-1.5">
+              <img src="/icon_report_marketplace.svg" alt="Report" className="w-5 h-5 opacity-70 group-hover:opacity-100" />
+            </div>
+            <span className="text-[11px]">Report</span>
           </button>
         </div>
 
-        {/* Comment Section */}
+        {/* Comment Section (ClubPostCard style) */}
         {showComments && (
-          <div className="flex flex-col gap-4 mt-2 animate-in slide-in-from-top-2">
-
-            {/* Comment Input */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#7551FF] flex items-center justify-center text-white text-body-small-bold shrink-0">
-                Y
-              </div>
-              <div className="flex-1 flex items-center bg-[#0F1923] rounded-full border border-white/10 px-4 py-2.5">
-                <input
-                  type="text"
-                  placeholder="Write a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="flex-1 bg-transparent text-sm text-white placeholder-[#94A3B8] outline-none"
-                />
-                <button
-                  onClick={handleAddComment}
-                  className="ml-2 text-state-info hover:text-primary-blue transition-colors"
-                >
-                  <Send size={18} />
-                </button>
-              </div>
-            </div>
-
-            {/* Comments List */}
-            {visibleComments.map((comment) => (
-              <div key={comment.id} className="flex gap-3">
-                {/* Avatar */}
-                <div className="w-10 h-10 rounded-full bg-[#2A3A4A] flex items-center justify-center text-white text-body-small-bold shrink-0">
-                  {comment.authorInitial}
-                </div>
-
-                {/* Comment Body */}
-                <div className="flex-1 flex flex-col gap-1.5">
-                  {/* Comment Bubble */}
-                  <div className="bg-[#0F1923] rounded-2xl px-4 py-3 border border-white/5">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm font-bold text-[#E2E8F0]">{comment.author}</p>
-                      <span className="text-[11px] text-[#94A3B8]">{comment.time}</span>
-                    </div>
-                    <p className="text-sm text-[#94A3B8] leading-relaxed">{comment.text}</p>
-                  </div>
-
-                  {/* Comment Actions */}
-                  <div className="flex items-center gap-4 px-2">
-                    <button
-                      onClick={() => toggleCommentLike(comment.id)}
-                      className={`text-xs font-semibold transition-colors ${comment.isLiked ? 'text-state-info' : 'text-[#94A3B8] hover:text-state-info'}`}
-                    >
-                      {comment.isLiked ? 'Liked' : 'Like'}
-                    </button>
-                    <button className="text-xs font-semibold text-[#94A3B8] hover:text-primary-blue transition-colors">
-                      Reply
-                    </button>
-                    {comment.likes > 0 && (
-                      <div className="ml-auto flex items-center gap-1 text-state-info">
-                        <Heart size={12} className="fill-state-info" />
-                        <span className="text-xs">{comment.likes}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* View More Comments */}
-            {!showAllComments && hiddenCount > 0 && (
-              <button
-                onClick={() => setShowAllComments(true)}
-                className="text-sm text-[#94A3B8] hover:text-primary-blue transition-colors text-center py-2"
-              >
-                View {hiddenCount} more comment{hiddenCount > 1 ? 's' : ''}
-              </button>
-            )}
-          </div>
+          <CommentSection
+            postComments={postComments}
+            onAddComment={handleAddComment}
+          />
         )}
 
       </div>
