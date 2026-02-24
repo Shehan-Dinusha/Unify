@@ -26,6 +26,9 @@ import Club from "../pages/Club";
 import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
 import NotFound from "../pages/NotFound";
+import MarketplaceReviews from "../pages/MarketplaceReviews";
+import MyReviewHistory from "../pages/MyReviewHistory";
+import ReceivedReviews from "../pages/ReceivedReviews";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout
@@ -165,6 +168,9 @@ const router = createBrowserRouter([
       { path: "/marketplace/club", element: <Club /> },
       { path: "/marketplace/club/product", element: <ClubProduct /> },
       { path: "/marketplace/boarding", element: <Boarding /> },
+      { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
+      { path: "/profile/reviews", element: <MyReviewHistory /> },
+      { path: "/business/reviews", element: <ReceivedReviews /> },
       {
         path: "/learning",
         element: (
