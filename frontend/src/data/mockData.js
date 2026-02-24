@@ -297,3 +297,54 @@ const mockPosts = [
 ];
 
 export default mockPosts;
+
+export const mockLostAndFoundItems = [
+  {
+    id: 1,
+    type: "lost",
+    title: "Hydroflask Blue 32oz",
+    location: "Science Hall, Room 304",
+    time: "2 days ago",
+    image: "/lost_post_img1.jpg",
+  },
+  {
+    id: 2,
+    type: "found",
+    title: "MacBook Charger",
+    location: "Science Hall, Room 304",
+    time: "2 days ago",
+    image: "/found_post_img1.jpg",
+  },
+  {
+    id: 3,
+    type: "lost",
+    title: "Hydroflask Blue 32oz",
+    location: "Science Hall, Room 304",
+    time: "2 days ago",
+    image: "/lost_post_img2.jpg",
+  },
+  {
+    id: 4,
+    type: "found",
+    title: "Hydroflask Blue 32oz",
+    location: "Science Hall, Room 304",
+    time: "2 days ago",
+    image: "/lost_post_img3.jpg",
+  },
+  {
+    id: 5,
+    type: "lost",
+    title: "Door Keys (Room 201)",
+    location: "Science Hall, Room 304",
+    time: "2 days ago",
+    image: "/found_post_img2.jpg",
+  },
+  {
+    id: 6,
+    type: "found",
+    title: "Hydroflask Blue 32oz",
+    location: "Science Hall, Room 304",
+    time: "2 days ago",
+    image: "/lost_post_img1.jpg",
+  },
+];

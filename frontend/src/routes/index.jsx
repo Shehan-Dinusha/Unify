@@ -25,6 +25,7 @@ import Marketplace from "../pages/Marketplace";
 import Club from "../pages/Club";
 import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
+import LostAndFound from "../pages/LostAndFound";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout
@@ -152,12 +153,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/lost-and-found",
-        element: (
-          <PlaceholderPage
-            title="Lost & Found"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <LostAndFound />,
       },
       { path: "/marketplace", element: <Marketplace /> },
       { path: "/marketplace/club", element: <Club /> },
