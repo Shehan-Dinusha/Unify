@@ -1,10 +1,26 @@
-import React from "react";
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 const Input = React.forwardRef(
   (
-    { label, error, icon: Icon, rightElement, className = "", ...props },
+    {
+      label,
+      error,
+      icon: Icon,
+      rightElement,
+      className = "",
+      showPasswordToggle,
+      type,
+      ...props
+    },
     ref,
   ) => {
+    const [showPassword, setShowPassword] = useState(false);
+
+    const isPassword = type === "password";
+    const inputType =
+      isPassword && showPasswordToggle && showPassword ? "text" : type;
+
     return (
       <div className={`flex flex-col gap-1.5 w-full ${className}`}>
         {label && (
@@ -22,13 +38,14 @@ const Input = React.forwardRef(
 
           <input
             ref={ref}
+            type={inputType}
             className={`
             w-full h-12 rounded-2xl bg-white/5 border outline-none transition-all
             font-inter text-sm text-text-primary placeholder:text-text-tertiary
             shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)]
             autofill:shadow-[inset_0_0_0px_1000px_#1B2735] autofill:text-fill-white
             ${Icon ? "pl-12" : "px-4"}
-            ${rightElement ? "pr-12" : "pr-4"}
+            ${rightElement || (isPassword && showPasswordToggle) ? "pr-12" : "pr-4"}
             ${
               error
                 ? "border-state-error/50 focus:border-state-error"
@@ -38,9 +55,19 @@ const Input = React.forwardRef(
             {...props}
           />
 
-          {rightElement && (
+          {(rightElement || (isPassword && showPasswordToggle)) && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-white transition-colors cursor-pointer z-10 flex items-center justify-center">
-              {rightElement}
+              {isPassword && showPasswordToggle ? (
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="flex items-center justify-center"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              ) : (
+                rightElement
+              )}
             </div>
           )}
         </div>

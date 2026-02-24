@@ -1,30 +1,24 @@
 import React, { useState } from "react";
-import { Lock, Eye, EyeOff, RotateCcw } from "lucide-react";
+import { Lock, RotateCcw } from "lucide-react";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
+import { validatePassword } from "../../utils/validation";
 
 const ResetPasswordForm = ({ onReset }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const validate = () => {
     let tempErrors = {};
-    const uppercaseRegex = /[A-Z]/;
-    const numberRegex = /[0-9]/;
 
     if (!password) {
       tempErrors.password = "Password is required";
-    } else {
-      if (password.length < 8)
-        tempErrors.password = "Min 8 characters required";
-      else if (!uppercaseRegex.test(password))
-        tempErrors.password = "At least one uppercase required";
-      else if (!numberRegex.test(password))
-        tempErrors.password = "At least one number required";
+    } else if (!validatePassword(password)) {
+      tempErrors.password =
+        "Password must be at least 8 characters and include uppercase, lowercase, and a number";
     }
 
     if (!confirmPassword) {
@@ -73,29 +67,30 @@ const ResetPasswordForm = ({ onReset }) => {
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
           <Input
             label="New Password"
-            type={showPassword ? "text" : "password"}
+            type="password"
+            showPasswordToggle
             placeholder="Enter your Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (errors.password)
+                setErrors((prev) => ({ ...prev, password: undefined }));
+            }}
             error={errors.password}
             icon={Lock}
-            rightElement={
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="flex items-center justify-center text-slate-400 hover:text-white transition-colors"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            }
           />
 
           <Input
             label="Confirm new password"
             type="password"
+            showPasswordToggle
             placeholder="Re-enter your Password"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) => {
+              setConfirmPassword(e.target.value);
+              if (errors.confirmPassword)
+                setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+            }}
             error={errors.confirmPassword}
             icon={Lock}
           />

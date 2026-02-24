@@ -5,6 +5,7 @@ import Input from "../common/Input";
 import Button from "../common/Button";
 import Select from "../common/Select";
 import DatePicker from "../common/DatePicker";
+import { validateNIC, validateDOB } from "../../utils/validation";
 
 const BoardingDetailsForm = ({ onNext }) => {
   const genderOptions = [
@@ -29,9 +30,20 @@ const BoardingDetailsForm = ({ onNext }) => {
     if (!formData.firstName.trim())
       newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!formData.nic.trim()) newErrors.nic = "NIC is required";
+
+    if (!formData.nic.trim()) {
+      newErrors.nic = "NIC is required";
+    } else if (!validateNIC(formData.nic)) {
+      newErrors.nic = "Please enter a valid NIC number";
+    }
+
     if (!formData.gender) newErrors.gender = "Gender is required";
-    if (!formData.dob) newErrors.dob = "Date of birth is required";
+
+    if (!formData.dob) {
+      newErrors.dob = "Date of birth is required";
+    } else if (!validateDOB(formData.dob)) {
+      newErrors.dob = "Please select a valid date of birth";
+    }
 
     if (!formData.addresses[0].street.trim())
       newErrors.street = "Street address is required";
@@ -157,6 +169,7 @@ const BoardingDetailsForm = ({ onNext }) => {
               value={formData.dob}
               onChange={handleChange}
               error={errors.dob}
+              maxDate={new Date()}
             />
           </div>
 

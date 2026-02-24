@@ -15,6 +15,7 @@ const DatePicker = ({
   error,
   value,
   onChange,
+  maxDate,
   placeholder = "Select Date",
   className = "",
   ...props
@@ -103,23 +104,34 @@ const DatePicker = ({
 
     // Current month days
     const selectedDate = value ? new Date(value) : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const max = maxDate ? new Date(maxDate) : null;
+    if (max) max.setHours(0, 0, 0, 0);
+
     for (let i = 1; i <= daysInMonth; i++) {
+      const dateAtDay = new Date(currentYear, currentMonth, i);
       const isSelected =
         selectedDate &&
         selectedDate.getDate() === i &&
         selectedDate.getMonth() === currentMonth &&
         selectedDate.getFullYear() === currentYear;
 
+      const isDisabled = max && dateAtDay > max;
+
       calendarDays.push(
         <button
           key={i}
           type="button"
+          disabled={isDisabled}
           onClick={() => handleDateSelect(i)}
           className={`p-2 text-center text-xs rounded-lg transition-colors
             ${
               isSelected
                 ? "bg-primary-blue text-white font-bold"
-                : "text-text-secondary hover:bg-white/10 hover:text-white"
+                : isDisabled
+                  ? "text-text-tertiary/20 cursor-not-allowed"
+                  : "text-text-secondary hover:bg-white/10 hover:text-white"
             }
           `}
         >

@@ -23,6 +23,7 @@ const Select = React.forwardRef(
   ) => {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef(null);
+    const { disabled } = props;
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -42,6 +43,7 @@ const Select = React.forwardRef(
     const selectedOption = options.find((opt) => opt.value === value);
 
     const handleSelect = (option) => {
+      if (disabled) return;
       // Simulate an event object for compatibility with standard handleChange functions
       onChange({
         target: {
@@ -77,7 +79,8 @@ const Select = React.forwardRef(
           <button
             type="button"
             ref={ref}
-            onClick={() => setIsOpen(!isOpen)}
+            disabled={disabled}
+            onClick={() => !disabled && setIsOpen(!isOpen)}
             className={`
             w-full h-12 flex items-center justify-between rounded-2xl bg-white/5 border outline-none transition-all
             font-inter text-sm text-left
@@ -85,11 +88,13 @@ const Select = React.forwardRef(
             ${Icon ? "pl-12" : "px-4"}
             pr-12
             ${
-              error
-                ? "border-state-error/50"
-                : isOpen
-                  ? "border-primary-blue/50 bg-white/10"
-                  : "border-white/10 group-hover:border-white/20"
+              disabled
+                ? "opacity-50 cursor-not-allowed border-white/5 bg-transparent"
+                : error
+                  ? "border-state-error/50"
+                  : isOpen
+                    ? "border-primary-blue/50 bg-white/10"
+                    : "border-white/10 group-hover:border-white/20"
             }
             ${selectedOption ? "text-text-primary" : "text-text-tertiary"}
           `}
@@ -103,13 +108,13 @@ const Select = React.forwardRef(
           <div
             className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-200 ${
               isOpen ? "text-primary-blue rotate-180" : "text-text-tertiary"
-            }`}
+            } ${disabled ? "opacity-30" : ""}`}
           >
             <ChevronDown size={18} />
           </div>
 
           {/* Custom Dropdown Panel */}
-          {isOpen && (
+          {isOpen && !disabled && (
             <div className="absolute top-[calc(100%+8px)] left-0 w-full z-50 bg-dark-2 border border-white/10 rounded-2xl shadow-xl overflow-hidden py-2 animate-in fade-in zoom-in-95 duration-150">
               {options.length > 0 ? (
                 options.map((option) => (

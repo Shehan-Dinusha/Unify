@@ -5,24 +5,54 @@ import Input from "../common/Input";
 import Button from "../common/Button";
 import Select from "../common/Select";
 import { Camera, GraduationCap, MapPin, Plus } from "lucide-react";
+import { validateDOB } from "../../utils/validation";
 
 const StudentDetailsForm = ({ onNext }) => {
+  const facultyOptions = [
+    { value: "it", label: "IT" },
+    { value: "engineering", label: "Engineering" },
+    { value: "business", label: "Business" },
+  ];
+
+  const facultyData = {
+    it: {
+      departments: [
+        { value: "it", label: "Information Technology" },
+        { value: "ds", label: "Data Science" },
+      ],
+      degrees: [
+        { value: "bsc_it", label: "BSc Information Technology" },
+        { value: "msc_ds", label: "MSc Data Science" },
+      ],
+    },
+    engineering: {
+      departments: [
+        { value: "cse", label: "Computer Science and Engineering" },
+        { value: "ee", label: "Electrical Engineering" },
+        { value: "me", label: "Mechanical Engineering" },
+        { value: "ce", label: "Civil Engineering" },
+      ],
+      degrees: [
+        { value: "bsc_eng", label: "BSc Engineering" },
+        { value: "meng", label: "MEng" },
+      ],
+    },
+    business: {
+      departments: [
+        { value: "ba", label: "Business Administration" },
+        { value: "acc", label: "Accounting and Finance" },
+      ],
+      degrees: [
+        { value: "bba", label: "Bachelor of Business Administration" },
+        { value: "mba", label: "Master of Business Administration" },
+      ],
+    },
+  };
+
   const genderOptions = [
     { value: "male", label: "Male" },
     { value: "female", label: "Female" },
     { value: "other", label: "Other" },
-  ];
-
-  const departmentOptions = [
-    { value: "it", label: "IT" },
-    { value: "cm", label: "CM" },
-    { value: "ids", label: "IDS" },
-  ];
-
-  const degreeOptions = [
-    { value: "it", label: "IT" },
-    { value: "ai", label: "AI" },
-    { value: "itm", label: "ITM" },
   ];
 
   const batchOptions = [
@@ -57,13 +87,23 @@ const StudentDetailsForm = ({ onNext }) => {
     if (!formData.regNumber.trim())
       newErrors.regNumber = "Registration number is required";
     if (!formData.gender) newErrors.gender = "Gender is required";
-    if (!formData.dob) newErrors.dob = "Date of birth is required";
+
+    if (!formData.dob) {
+      newErrors.dob = "Date of birth is required";
+    } else if (!validateDOB(formData.dob)) {
+      newErrors.dob = "Please select a valid date of birth";
+    }
 
     if (!formData.addresses[0].street.trim())
       newErrors.street = "Street address is required";
     if (!formData.addresses[0].city.trim()) newErrors.city = "City is required";
     if (!formData.addresses[0].postalCode.trim())
       newErrors.postalCode = "Postal code is required";
+
+    if (!formData.faculty) newErrors.faculty = "Faculty is required";
+    if (!formData.department) newErrors.department = "Department is required";
+    if (!formData.degree) newErrors.degree = "Degree is required";
+    if (!formData.batch) newErrors.batch = "Batch is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -77,11 +117,26 @@ const StudentDetailsForm = ({ onNext }) => {
     formData.dob &&
     formData.addresses[0].street.trim() &&
     formData.addresses[0].city.trim() &&
-    formData.addresses[0].postalCode.trim();
+    formData.addresses[0].postalCode.trim() &&
+    formData.faculty &&
+    formData.department &&
+    formData.degree &&
+    formData.batch;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "faculty") {
+      setFormData((prev) => ({
+        ...prev,
+        faculty: value,
+        department: "",
+        degree: "",
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -188,6 +243,7 @@ const StudentDetailsForm = ({ onNext }) => {
               value={formData.dob}
               onChange={handleChange}
               error={errors.dob}
+              maxDate={new Date()}
             />
           </div>
 
@@ -269,12 +325,14 @@ const StudentDetailsForm = ({ onNext }) => {
             />
           </div>
 
-          <Input
+          <Select
             label="Faculty"
             name="faculty"
-            placeholder="e.g. Engineering"
             value={formData.faculty}
             onChange={handleChange}
+            options={facultyOptions}
+            placeholder="Select Faculty"
+            error={errors.faculty}
           />
 
           <Select
@@ -282,8 +340,14 @@ const StudentDetailsForm = ({ onNext }) => {
             name="department"
             value={formData.department}
             onChange={handleChange}
-            options={departmentOptions}
-            placeholder="Select Department"
+            options={
+              formData.faculty ? facultyData[formData.faculty].departments : []
+            }
+            placeholder={
+              formData.faculty ? "Select Department" : "Select Faculty first"
+            }
+            disabled={!formData.faculty}
+            error={errors.department}
           />
 
           <Select
@@ -291,8 +355,14 @@ const StudentDetailsForm = ({ onNext }) => {
             name="degree"
             value={formData.degree}
             onChange={handleChange}
-            options={degreeOptions}
-            placeholder="Select Degree"
+            options={
+              formData.faculty ? facultyData[formData.faculty].degrees : []
+            }
+            placeholder={
+              formData.faculty ? "Select Degree" : "Select Faculty first"
+            }
+            disabled={!formData.faculty}
+            error={errors.degree}
           />
 
           <Select
@@ -302,6 +372,7 @@ const StudentDetailsForm = ({ onNext }) => {
             onChange={handleChange}
             options={batchOptions}
             placeholder="Select Batch"
+            error={errors.batch}
           />
 
           <div className="md:col-span-2 pt-8">

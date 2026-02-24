@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Mail, Lock, ArrowLeft } from "lucide-react";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
+import { validatePassword } from "../../utils/validation";
 
 const StudentRegisterForm = ({ onNext, onBack }) => {
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -26,8 +26,9 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
 
     if (!password) {
       tempErrors.password = "Password is required";
-    } else if (password.length < 8) {
-      tempErrors.password = "Password must be at least 8 characters";
+    } else if (!validatePassword(password)) {
+      tempErrors.password =
+        "Password must be at least 8 characters and include uppercase, lowercase, and a number";
     }
 
     if (!confirmPassword) {
@@ -80,7 +81,11 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
                 label="University Email"
                 placeholder="email@uom.lk"
                 value={contact}
-                onChange={(e) => setContact(e.target.value)}
+                onChange={(e) => {
+                  setContact(e.target.value);
+                  if (errors.contact)
+                    setErrors((prev) => ({ ...prev, contact: undefined }));
+                }}
                 error={errors.contact}
                 icon={Mail}
               />
@@ -93,29 +98,33 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
 
             <Input
               label="Password"
-              type={showPassword ? "text" : "password"}
+              type="password"
+              showPasswordToggle
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password)
+                  setErrors((prev) => ({ ...prev, password: undefined }));
+              }}
               error={errors.password}
               icon={Lock}
-              rightElement={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="text-text-tertiary hover:text-white transition-colors"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              }
             />
 
             <Input
               label="Re-enter Password"
               type="password"
+              showPasswordToggle
               placeholder="Re-enter your password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (errors.confirmPassword)
+                  setErrors((prev) => ({
+                    ...prev,
+                    confirmPassword: undefined,
+                  }));
+              }}
               error={errors.confirmPassword}
               icon={Lock}
             />
