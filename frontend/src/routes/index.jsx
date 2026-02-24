@@ -25,6 +25,7 @@ import Marketplace from "../pages/Marketplace";
 import Club from "../pages/Club";
 import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
+import NotFound from "../pages/NotFound";
 import MarketplaceReviews from "../pages/MarketplaceReviews";
 import MyReviewHistory from "../pages/MyReviewHistory";
 import ReceivedReviews from "../pages/ReceivedReviews";
@@ -58,14 +59,15 @@ const RootLayout = () => (
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <NotFound />,
     children: [
       {
         path: "/",
-        element: <AdminDashboard />,
+        element: <LandingHome />,
       },
       {
-        path: "/landing",
-        element: <LandingHome />,
+        path: "/admin",
+        element: <AdminDashboard />,
       },
       {
         path: "/about",
