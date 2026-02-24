@@ -97,7 +97,7 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
         {
           iconSrc: "/icon_dashboard.svg",
           label: "Dashboard",
-          path: "/",
+          path: "/admin",
           childPaths: [
             "/revenue-overview",
             "/active-businesses",

@@ -185,7 +185,7 @@ const ClubVerification = () => {
               <p className="text-text-secondary text-sm text-center mb-4 leading-relaxed font-bold px-4">
                 {submissionStatus === "pending" && (
                   <>
-                    Your document have been submitted and are currently <br />
+                    Your document has been submitted and is currently <br />
                     under review by the administration. You will be notified via
                     email once the process is complete.
                   </>
@@ -346,7 +346,7 @@ const ClubVerification = () => {
 
         {/* Back Link */}
         <Link
-          to="/"
+          to="/admin"
           className="flex items-center gap-2 text-text-secondary hover:text-white transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
