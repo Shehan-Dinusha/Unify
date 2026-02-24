@@ -26,7 +26,6 @@ const StudentDetailsForm = ({ onNext }) => {
   ];
 
   const batchOptions = [
-    { value: "20", label: "Batch 20" },
     { value: "21", label: "Batch 21" },
     { value: "22", label: "Batch 22" },
     { value: "23", label: "Batch 23" },
@@ -112,7 +111,11 @@ const StudentDetailsForm = ({ onNext }) => {
   };
 
   return (
-    <Card variant="card" className="w-full max-w-[680px] p-2 sm:p-4">
+    <Card
+      variant="card"
+      className="w-full max-w-[680px] p-2 sm:p-4"
+      overflow="overflow-visible"
+    >
       <div className="flex flex-col gap-10">
         <div className="flex flex-col items-center gap-3 text-center px-4">
           <h1 className="text-white text-heading-medium font-bold font-inter leading-tight">
@@ -145,7 +148,7 @@ const StudentDetailsForm = ({ onNext }) => {
           <Input
             label="First Name"
             name="firstName"
-            placeholder="Enter Full Name"
+            placeholder="Enter First Name"
             value={formData.firstName}
             onChange={handleChange}
             error={errors.firstName}
