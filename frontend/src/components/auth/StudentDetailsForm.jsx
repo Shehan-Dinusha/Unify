@@ -3,6 +3,7 @@ import DatePicker from "../common/DatePicker";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
+import ImageUpload from "../common/ImageUpload";
 import Select from "../common/Select";
 import { Camera, GraduationCap, MapPin, Plus } from "lucide-react";
 import { validateDOB } from "../../utils/validation";
@@ -11,6 +12,8 @@ const StudentDetailsForm = ({ onNext }) => {
   const facultyOptions = [
     { value: "it", label: "IT" },
     { value: "engineering", label: "Engineering" },
+    { value: "medicine", label: "Medicine" },
+    { value: "architecture", label: "Architecture" },
     { value: "business", label: "Business" },
   ];
 
@@ -18,33 +21,112 @@ const StudentDetailsForm = ({ onNext }) => {
     it: {
       departments: [
         { value: "it", label: "Information Technology" },
-        { value: "ds", label: "Data Science" },
+        { value: "cm", label: "Computational Mathematics" },
+        { value: "ids", label: "Interdisciplinary Studies" },
       ],
       degrees: [
-        { value: "bsc_it", label: "BSc Information Technology" },
-        { value: "msc_ds", label: "MSc Data Science" },
+        { value: "bsc_it", label: "BSc (Hons) in Information Technology" },
+        { value: "bsc_ai", label: "BSc (Hons) in Artificial Intelligence" },
+        {
+          value: "bsc_itm",
+          label: "BSc (Hons) in Information Technology Management",
+        },
       ],
     },
     engineering: {
       departments: [
+        { value: "civil", label: "Civil Engineering" },
+        { value: "mechanical", label: "Mechanical Engineering" },
+        { value: "electrical", label: "Electrical Engineering" },
+        {
+          value: "entc",
+          label: "Electronic and Telecommunication Engineering",
+        },
         { value: "cse", label: "Computer Science and Engineering" },
-        { value: "ee", label: "Electrical Engineering" },
-        { value: "me", label: "Mechanical Engineering" },
-        { value: "ce", label: "Civil Engineering" },
+        { value: "chemical", label: "Chemical and Process Engineering" },
+        { value: "materials", label: "Materials Science and Engineering" },
+        { value: "earth", label: "Earth Resources Engineering" },
+        { value: "textile", label: "Textile and Clothing Technology" },
+        { value: "transport", label: "Transport and Logistics Management" },
       ],
       degrees: [
-        { value: "bsc_eng", label: "BSc Engineering" },
-        { value: "meng", label: "MEng" },
+        { value: "bsc_civil", label: "BSc Eng (Hons) in Civil Engineering" },
+        {
+          value: "bsc_mechanical",
+          label: "BSc Eng (Hons) in Mechanical Engineering",
+        },
+        {
+          value: "bsc_electrical",
+          label: "BSc Eng (Hons) in Electrical Engineering",
+        },
+        {
+          value: "bsc_entc",
+          label:
+            "BSc Eng (Hons) in Electronic and Telecommunication Engineering",
+        },
+        {
+          value: "bsc_cse",
+          label: "BSc Eng (Hons) in Computer Science and Engineering",
+        },
+        {
+          value: "bsc_chemical",
+          label: "BSc Eng (Hons) in Chemical and Process Engineering",
+        },
+        {
+          value: "bsc_materials",
+          label: "BSc Eng (Hons) in Materials Science and Engineering",
+        },
+        {
+          value: "bsc_earth",
+          label: "BSc Eng (Hons) in Earth Resources Engineering",
+        },
+        {
+          value: "bsc_textile",
+          label: "BSc Eng (Hons) in Textile and Clothing Technology",
+        },
+        {
+          value: "bsc_transport",
+          label: "BSc Eng (Hons) in Transport and Logistics Management",
+        },
+      ],
+    },
+    medicine: {
+      departments: [{ value: "medicine", label: "Medicine" }],
+      degrees: [{ value: "bsc_medicine", label: "BSc (Hons) in Medicine" }],
+    },
+    architecture: {
+      departments: [
+        { value: "archi", label: "Architecture" },
+        { value: "tcp", label: "Town and Country Planning" },
+        { value: "be", label: "Building Economics" },
+        { value: "id", label: "Integrated Design" },
+      ],
+      degrees: [
+        { value: "bsc_archi", label: "BSc (Hons) in Architecture" },
+        { value: "bsc_tcp", label: "BSc (Hons) in Town and Country Planning" },
+        {
+          value: "bsc_fmbe",
+          label: "BSc (Hons) in Facilities Management and Building Economics",
+        },
+        { value: "bdes_design", label: "BDes (Hons) in Design" },
       ],
     },
     business: {
-      departments: [
-        { value: "ba", label: "Business Administration" },
-        { value: "acc", label: "Accounting and Finance" },
-      ],
+      departments: [{ value: "im", label: "Industrial Management" }],
       degrees: [
-        { value: "bba", label: "Bachelor of Business Administration" },
-        { value: "mba", label: "Master of Business Administration" },
+        {
+          value: "bbsc_hons",
+          label: "Bachelor of Business Science Honours (BBSc Hons)",
+        },
+        {
+          value: "bsc_ba",
+          label: "Bachelor of Science Honours in Business Analytics",
+        },
+        {
+          value: "bsc_itm",
+          label:
+            "Bachelor of Science Honours in Information Technology and Management",
+        },
       ],
     },
   };
@@ -75,6 +157,7 @@ const StudentDetailsForm = ({ onNext }) => {
     department: "",
     degree: "",
     batch: "",
+    profileImage: null,
   });
 
   const [errors, setErrors] = useState({});
@@ -142,6 +225,10 @@ const StudentDetailsForm = ({ onNext }) => {
     }
   };
 
+  const handleImageChange = (file) => {
+    setFormData((prev) => ({ ...prev, profileImage: file }));
+  };
+
   const handleAddressChange = (index, field, value) => {
     const newAddresses = [...formData.addresses];
     newAddresses[index][field] = value;
@@ -181,20 +268,10 @@ const StudentDetailsForm = ({ onNext }) => {
           </p>
         </div>
 
-        <div className="flex flex-col items-center gap-2">
-          <div className="relative w-16 h-16 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center group cursor-pointer hover:border-primary-blue/50 transition-colors">
-            <Camera
-              size={20}
-              className="text-text-tertiary group-hover:text-primary-blue transition-colors"
-            />
-            <div className="absolute bottom-0 right-0 w-6 h-6 bg-primary-blue rounded-full flex items-center justify-center border-2 border-dark-1">
-              <Camera size={10} className="text-white" />
-            </div>
-          </div>
-          <span className="text-text-tertiary text-body-extra-small">
-            Upload Photo (Optional)
-          </span>
-        </div>
+        <ImageUpload
+          onChange={handleImageChange}
+          label="Upload Photo (Optional)"
+        />
 
         <form
           onSubmit={handleSubmit}

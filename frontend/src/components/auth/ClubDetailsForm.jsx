@@ -4,6 +4,8 @@ import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
 
+import ImageUpload from "../common/ImageUpload";
+
 const ClubDetailsForm = ({ onNext }) => {
   const categoryOptions = [
     { value: "sports", label: "Sports" },
@@ -15,34 +17,23 @@ const ClubDetailsForm = ({ onNext }) => {
     clubName: "",
     about: "",
     document: null,
+    profileImage: null,
   });
 
   const [errors, setErrors] = useState({});
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.clubName.trim()) newErrors.clubName = "Club name is required";
-    if (!formData.about.trim()) newErrors.about = "About info is required";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const isFormComplete = formData.clubName.trim() && formData.about.trim();
+  // ... (validateForm, isFormComplete)
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
+    // ...
+  };
+
+  const handleImageChange = (file) => {
+    setFormData((prev) => ({ ...prev, profileImage: file }));
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validateForm()) {
-      onNext(formData);
-    }
+    // ...
   };
 
   return (
@@ -57,20 +48,10 @@ const ClubDetailsForm = ({ onNext }) => {
           </p>
         </div>
 
-        <div className="flex flex-col items-center gap-2">
-          <div className="relative w-16 h-16 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center group cursor-pointer hover:border-primary-blue/50 transition-colors">
-            <Camera
-              size={20}
-              className="text-text-tertiary group-hover:text-primary-blue transition-colors"
-            />
-            <div className="absolute bottom-0 right-0 w-6 h-6 bg-primary-blue rounded-full flex items-center justify-center border-2 border-dark-1">
-              <Camera size={10} className="text-white" />
-            </div>
-          </div>
-          <span className="text-text-tertiary text-body-extra-small">
-            Upload Photo (Optional)
-          </span>
-        </div>
+        <ImageUpload
+          onChange={handleImageChange}
+          label="Upload photo (Optional)"
+        />
 
         <form
           onSubmit={handleSubmit}

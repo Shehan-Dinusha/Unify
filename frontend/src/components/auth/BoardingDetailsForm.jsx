@@ -5,6 +5,7 @@ import Input from "../common/Input";
 import Button from "../common/Button";
 import Select from "../common/Select";
 import DatePicker from "../common/DatePicker";
+import ImageUpload from "../common/ImageUpload";
 import { validateNIC, validateDOB } from "../../utils/validation";
 
 const BoardingDetailsForm = ({ onNext }) => {
@@ -21,6 +22,7 @@ const BoardingDetailsForm = ({ onNext }) => {
     gender: "",
     dob: "",
     addresses: [{ street: "", city: "", postalCode: "" }],
+    profileImage: null,
   });
 
   const [errors, setErrors] = useState({});
@@ -73,6 +75,10 @@ const BoardingDetailsForm = ({ onNext }) => {
     }
   };
 
+  const handleImageChange = (file) => {
+    setFormData((prev) => ({ ...prev, profileImage: file }));
+  };
+
   const handleAddressChange = (index, field, value) => {
     const newAddresses = [...formData.addresses];
     newAddresses[index][field] = value;
@@ -108,20 +114,10 @@ const BoardingDetailsForm = ({ onNext }) => {
           </p>
         </div>
 
-        <div className="flex flex-col items-center gap-2">
-          <div className="relative w-16 h-16 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center group cursor-pointer hover:border-primary-blue/50 transition-colors">
-            <Camera
-              size={20}
-              className="text-text-tertiary group-hover:text-primary-blue transition-colors"
-            />
-            <div className="absolute bottom-0 right-0 w-6 h-6 bg-primary-blue rounded-full flex items-center justify-center border-2 border-dark-1">
-              <Camera size={10} className="text-white" />
-            </div>
-          </div>
-          <span className="text-text-tertiary text-body-extra-small">
-            Upload Photo (Optional)
-          </span>
-        </div>
+        <ImageUpload
+          onChange={handleImageChange}
+          label="Upload Photo (Optional)"
+        />
 
         <form
           onSubmit={handleSubmit}

@@ -115,30 +115,32 @@ const Select = React.forwardRef(
 
           {/* Custom Dropdown Panel */}
           {isOpen && !disabled && (
-            <div className="absolute top-[calc(100%+8px)] left-0 w-full z-50 bg-dark-2 border border-white/10 rounded-2xl shadow-xl overflow-hidden py-2 animate-in fade-in zoom-in-95 duration-150">
-              {options.length > 0 ? (
-                options.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handleSelect(option)}
-                    className={`
-                      w-full px-4 py-3 text-sm text-left transition-colors
-                      ${
-                        value === option.value
-                          ? "bg-primary-blue/20 text-white font-bold"
-                          : "text-text-secondary hover:bg-white/5 hover:text-white"
-                      }
-                    `}
-                  >
-                    {option.label}
-                  </button>
-                ))
-              ) : (
-                <div className="px-4 py-2 text-xs text-text-tertiary italic">
-                  No options available
-                </div>
-              )}
+            <div className="absolute top-[calc(100%+8px)] left-0 w-full z-50 bg-dark-2 border border-white/10 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+              <div className="max-h-60 overflow-y-auto py-2 custom-scrollbar">
+                {options.length > 0 ? (
+                  options.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => handleSelect(option)}
+                      className={`
+                        w-full px-4 py-3 text-sm text-left transition-colors
+                        ${
+                          value === option.value
+                            ? "bg-primary-blue/20 text-white font-bold"
+                            : "text-text-secondary hover:bg-white/5 hover:text-white"
+                        }
+                      `}
+                    >
+                      {option.label}
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-xs text-text-tertiary italic">
+                    No options available
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

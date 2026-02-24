@@ -40,4 +40,3 @@ const AuthenticationHeader = () => {
 };
 
 export default AuthenticationHeader;
-
