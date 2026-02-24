@@ -6,6 +6,12 @@ import VerificationQueue from "./pages/VerificationQueue";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import LandingHome from "./pages/LandingHome";
+import AboutPage from "./pages/AboutPage";
+import FeaturesPage from "./pages/FeaturesPage";
+import PricingPage from "./pages/PricingPage";
+import SupportPage from "./pages/SupportPage";
+import AdminDashboard from "./pages/AdminDashboard";
 import { mockRequests } from "./data/mockData";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
@@ -34,15 +40,12 @@ function App() {
     <BrowserRouter>
       <ScrollToTop />
       <Routes>
-        <Route
-          path="/"
-          element={
-            <PlaceholderPage
-              title="Dashboard"
-              verificationCount={verificationCount}
-            />
-          }
-        />
+        <Route path="/" element={<LandingHome />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/support" element={<SupportPage />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
