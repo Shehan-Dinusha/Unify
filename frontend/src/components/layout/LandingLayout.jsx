@@ -13,7 +13,7 @@ const LandingLayout = ({ children, Header = LoginHeader }) => {
       <Header />
 
       {/* Page Content */}
-      <main className="flex-1 flex flex-col px-8 lg:px-28 relative z-10 w-full pt-20">
+      <main className="flex-1 flex flex-col px-4 md:px-8 lg:px-28 relative z-10 w-full pt-16">
         {children}
       </main>
 

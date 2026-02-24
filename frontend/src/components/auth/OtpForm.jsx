@@ -75,7 +75,7 @@ const OtpForm = ({ email, onVerify, onBack }) => {
 
         <div className="flex flex-col items-center gap-8 w-full">
           {/* OTP Input Fields */}
-          <div className="flex gap-2 sm:gap-3 justify-center w-full">
+          <div className="flex gap-1.5 sm:gap-3 justify-center w-full">
             {otp.map((digit, index) => (
               <input
                 key={index}

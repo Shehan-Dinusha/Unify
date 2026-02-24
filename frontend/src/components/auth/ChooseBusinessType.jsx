@@ -42,7 +42,7 @@ const ChooseBusinessType = ({ onSelect, onBack }) => {
     <div className="w-full max-w-[1000px] flex flex-col items-center gap-16 pb-8 pt-0">
       {/* Header Section */}
       <div className="flex flex-col items-center gap-4 text-center px-4">
-        <h1 className="text-white text-heading-large font-black font-inter tracking-tight leading-tight">
+        <h1 className="text-white text-3xl md:text-heading-large font-black font-inter tracking-tight leading-tight">
           Welcome to Unify.
           <br />
           Let's get you set up.
@@ -54,7 +54,7 @@ const ChooseBusinessType = ({ onSelect, onBack }) => {
       </div>
 
       {/* Grid Container */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full items-stretch px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full items-stretch px-4">
         {businessTypes.map((type) => (
           <button
             key={type.id}

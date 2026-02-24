@@ -19,10 +19,10 @@ const ChooseMainType = ({ onNext }) => {
   ];
 
   return (
-    <div className="w-full max-w-[1200px] flex flex-col items-center gap-16 pb-8 pt-10">
+    <div className="w-full max-w-[1200px] flex flex-col items-center gap-16 pb-8 pt-4">
       {/* Header Section */}
       <div className="flex flex-col items-center gap-4 text-center px-4">
-        <h1 className="text-white text-heading-large font-black font-inter tracking-tight leading-tight">
+        <h1 className="text-white text-3xl md:text-heading-large font-black font-inter tracking-tight leading-tight">
           Choose Your Path.
         </h1>
         <p className="text-text-secondary text-body-large-bold max-w-[600px] leading-relaxed">
@@ -32,7 +32,7 @@ const ChooseMainType = ({ onNext }) => {
       </div>
 
       {/* Cards Container */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full items-stretch px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 w-full items-stretch px-4">
         {/* Student Account Card */}
         <Card
           variant="card"

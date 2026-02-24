@@ -120,18 +120,16 @@ const LoginForm = () => {
             {loading ? "Signing In..." : "Sign In"}
           </Button>
 
-          <div className="flex justify-center items-center gap-1">
+          <div className="flex flex-wrap justify-center items-center gap-1 text-center">
             <span className="text-text-secondary text-body-medium">
               Don't have an account?
             </span>
-            <Button
-              variant="link"
-              size="small"
-              className="text-body-medium-bold"
-              onClick={() => navigate("/register")}
+            <Link
+              to="/register"
+              className="text-primary-blue text-body-medium-bold hover:underline"
             >
               Create Account
-            </Button>
+            </Link>
           </div>
         </form>
       </div>

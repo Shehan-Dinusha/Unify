@@ -61,7 +61,7 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
     <div className="flex flex-col items-center justify-center w-full max-w-[1200px] mx-auto">
       {/* Title Section - Outside Card */}
       <div className="text-center mb-10 w-full px-6">
-        <h1 className="text-white text-heading-large mb-7">
+        <h1 className="text-white text-2xl md:text-heading-large mb-7">
           Create your Unify Student Account
         </h1>
         <p className="text-text-secondary text-body-large-bold">
@@ -147,7 +147,7 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
 
       {/* Footer Section - Outside Card */}
       <div className="mt-8 text-center w-full">
-        <p className="text-text-secondary text-body-small whitespace-nowrap">
+        <p className="text-text-secondary text-body-small">
           By clicking continue, You agree to our Terms of Service and Privacy
           Policy.
         </p>
