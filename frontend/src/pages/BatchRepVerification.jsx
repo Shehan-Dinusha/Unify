@@ -381,16 +381,11 @@ const BatchRepVerification = () => {
 
         {/* Back Link - Reduced margin */}
         <Link
-          to="/"
+          to="/admin"
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group mt-1"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm font-bold">
-            Back to{" "}
-            {submissionStatus === "idle" || submissionStatus === "declined"
-              ? "Profile"
-              : "Dashboard"}
-          </span>
+          <span className="text-sm font-bold">Back to Profile</span>
         </Link>
       </div>
 
