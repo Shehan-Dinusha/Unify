@@ -190,8 +190,8 @@ export const mockBatchRepDocuments = [
 const mockPosts = [
   {
     id: 1,
-    author: "Jane D.",
-    authorInitial: "JD",
+    author: "Millenium Hotel",
+    authorInitial: "MH",
     time: "5h ago",
     title: "Millenium",
     location: "0.2 km from Central Library",
