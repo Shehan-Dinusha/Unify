@@ -105,7 +105,11 @@ const ClubVerification = () => {
 
       <div className="flex flex-col items-center gap-6 z-10 w-full max-w-2xl">
         {/* Glass Card */}
-        <Card variant="card" className="w-full max-w-[600px]" padding="p-8">
+        <Card
+          variant="card"
+          className="w-full max-w-[600px]"
+          padding="p-4 sm:p-8"
+        >
           <div className="text-center mb-6">
             {/* Icon - only show when not idle */}
             {submissionStatus !== "idle" && config && (
@@ -117,7 +121,7 @@ const ClubVerification = () => {
             )}
 
             {/* Title */}
-            <h1 className="text-heading-medium text-white mb-2">
+            <h1 className="text-xl sm:text-heading-medium font-bold text-white mb-2">
               Club Verification
             </h1>
 
@@ -358,7 +362,7 @@ const ClubVerification = () => {
             padding="p-0"
             className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
           >
-            <div className="p-8 pb-6 flex flex-col items-center text-center">
+            <div className="p-6 sm:p-8 sm:pb-6 flex flex-col items-center text-center">
               <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
                 <AlertCircle className="w-8 h-8 text-state-error" />
               </div>
@@ -376,7 +380,7 @@ const ClubVerification = () => {
               </p>
             </div>
 
-            <div className="p-6 pt-2 bg-transparent flex gap-4">
+            <div className="p-4 sm:p-6 sm:pt-2 bg-transparent flex gap-4">
               <Button
                 onClick={() => setShowWithdrawModal(false)}
                 className="flex-1 bg-white/5 hover:bg-white/10 text-text-secondary h-11 border-none font-medium transition-colors"
@@ -411,7 +415,7 @@ const ClubVerification = () => {
       />
 
       {/* DEBUG: Temporary controls to visualize states */}
-      <div className="absolute bottom-4 right-4 flex gap-2 z-50 bg-black/50 p-2 rounded-lg backdrop-blur-sm border border-white/10">
+      <div className="absolute bottom-4 right-4 flex flex-wrap justify-end max-w-[calc(100vw-32px)] sm:max-w-none gap-2 z-50 bg-black/50 p-2 rounded-lg backdrop-blur-sm border border-white/10">
         <button
           onClick={() => setSubmissionStatus("idle")}
           className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
