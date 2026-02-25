@@ -1,8 +1,16 @@
-import React, { useState } from "react";
-import { Star, ThumbsUp, ThumbsDown, ChevronDown, Trash2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  Star,
+  ThumbsUp,
+  ThumbsDown,
+  ChevronDown,
+  Trash2,
+  Heart,
+} from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import LoadMoreButton from "../components/common/LoadMoreButton";
 import { mockReviews, mockReviewSummary } from "../data/mockReviewData";
 import {
   DeleteReviewModal,
@@ -62,7 +70,10 @@ const CheckCircleIcon = () => (
 
 const RatingSummary = ({ summary }) => {
   return (
-    <Card variant="card" className="w-96 h-[470px] flex flex-col justify-start">
+    <Card
+      variant="card"
+      className="w-full lg:w-96 h-auto lg:h-[470px] flex flex-col justify-start"
+    >
       <h3 className="text-white text-xl font-bold font-inter mb-6">
         Rating Summary
       </h3>
@@ -102,9 +113,8 @@ const RatingSummary = ({ summary }) => {
 
 const HasReviewedCard = () => {
   return (
-    <div className="w-[560px] h-[470px] relative bg-white/10 rounded-3xl">
-      <div className="w-[560px] h-[470px] left-0 top-0 absolute bg-transparent rounded-3xl shadow-[0px_8px_32px_0px_rgba(31,38,135,0.37)] outline outline-1 outline-offset-[-1px] outline-white/20" />
-      <div className="w-96 left-[88px] top-[115px] absolute inline-flex flex-col justify-center items-center">
+    <div className="w-full lg:w-[560px] h-auto lg:h-[470px] py-12 lg:py-0 relative bg-white/10 rounded-3xl flex flex-col justify-center items-center shadow-[0px_8px_32px_0px_rgba(31,38,135,0.37)] outline outline-1 outline-offset-[-1px] outline-white/20">
+      <div className="w-full max-w-96 flex flex-col justify-center items-center px-4">
         <div className="w-16 h-20 pb-6 flex flex-col justify-center items-center">
           <div className="w-16 h-16 bg-blue-600/10 rounded-full inline-flex justify-center items-center">
             <div className="text-blue-500">
@@ -120,9 +130,9 @@ const HasReviewedCard = () => {
         <div className="w-full max-w-96 px-1.5 flex flex-col justify-center items-center mb-8">
           <p className="text-center justify-center text-gray-400 text-base font-normal font-inter leading-5 m-0">
             You have already submitted a review for this
-            <br />
+            <br className="hidden sm:block" />
             service. You can manage or delete your existing
-            <br />
+            <br className="hidden sm:block" />
             review below.
           </p>
         </div>
@@ -165,7 +175,7 @@ const WriteReview = ({ onSubmit }) => {
   return (
     <Card
       variant="card"
-      className="w-[560px] h-[470px] flex flex-col justify-between"
+      className="w-full lg:w-[560px] h-auto lg:h-[470px] min-h-[470px] flex flex-col justify-between"
     >
       <div>
         <h3 className="text-white text-xl font-bold font-inter mb-2">
@@ -202,7 +212,7 @@ const WriteReview = ({ onSubmit }) => {
         </div>
       </div>
 
-      <div className="pt-4 border-t border-blue-500/20 flex justify-between items-center mt-2">
+      <div className="pt-4 border-t border-blue-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mt-2">
         <label className="flex items-center gap-2 cursor-pointer group">
           <div className="relative flex items-center justify-center">
             <input
@@ -232,7 +242,7 @@ const WriteReview = ({ onSubmit }) => {
           </span>
         </label>
         <Button
-          className="w-48 shadow-[0_4px_6px_-4px_rgba(43,140,238,0.25),0_10px_15px_-3px_rgba(43,140,238,0.25)] flex justify-center items-center gap-2 disabled:bg-gray-600 disabled:text-gray-400 disabled:shadow-none"
+          className="w-full sm:w-48 shadow-[0_4px_6px_-4px_rgba(43,140,238,0.25),0_10px_15px_-3px_rgba(43,140,238,0.25)] flex justify-center items-center gap-2 disabled:bg-gray-600 disabled:text-gray-400 disabled:shadow-none"
           disabled={rating === 0}
           onClick={() => onSubmit({ rating, review, isAnonymous })}
         >
@@ -282,7 +292,7 @@ const ReviewCard = ({ review, onDelete }) => {
       className="w-full max-w-[1000px]"
       id={review.isOwn ? "own-review" : undefined}
     >
-      <div className="flex justify-between items-start mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
         <div className="flex items-center gap-3">
           {review.author.avatar ? (
             <img
@@ -323,40 +333,52 @@ const ReviewCard = ({ review, onDelete }) => {
       </p>
 
       {!review.isOwn ? (
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost-hoverless"
-            className="!p-0 !h-auto flex items-center gap-1.5"
-            onClick={handleHelpful}
-          >
-            <ThumbsUp
-              className={`w-4 h-4 stroke-[2.5] transition-colors ${feedback === "helpful" ? "text-primary-blue fill-primary-blue/20" : "text-zinc-400"}`}
-            />
-            <span
-              className={`text-xs font-bold font-inter leading-5 transition-colors ${feedback === "helpful" ? "text-primary-blue" : "text-zinc-400"}`}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-2 sm:mt-0">
+          <div className="flex flex-wrap items-center gap-4">
+            <Button
+              variant="ghost-hoverless"
+              className="!p-0 !h-auto flex items-center gap-1.5"
+              onClick={handleHelpful}
             >
-              Helpful {helpfulCount > 0 && `(${helpfulCount})`}
-            </span>
-          </Button>
-          <Button
-            variant="ghost-hoverless"
-            className="!p-0 !h-auto flex items-center gap-1.5"
-            onClick={handleNotHelpful}
-          >
-            <ThumbsDown
-              className={`w-4 h-4 stroke-[2.5] transition-colors ${feedback === "not_helpful" ? "text-state-error fill-state-error/20" : "text-zinc-400"}`}
-            />
-            <span
-              className={`text-xs font-bold font-inter leading-5 transition-colors ${feedback === "not_helpful" ? "text-state-error" : "text-zinc-400"}`}
+              <ThumbsUp
+                className={`w-4 h-4 stroke-[2.5] transition-colors ${feedback === "helpful" ? "text-primary-blue fill-primary-blue/20" : "text-zinc-400"}`}
+              />
+              <span
+                className={`text-xs font-bold font-inter leading-5 transition-colors ${feedback === "helpful" ? "text-primary-blue" : "text-zinc-400"}`}
+              >
+                Helpful {helpfulCount > 0 && `(${helpfulCount})`}
+              </span>
+            </Button>
+            <Button
+              variant="ghost-hoverless"
+              className="!p-0 !h-auto flex items-center gap-1.5"
+              onClick={handleNotHelpful}
             >
-              Not Helpful {notHelpfulCount > 0 && `(${notHelpfulCount})`}
-            </span>
-          </Button>
+              <ThumbsDown
+                className={`w-4 h-4 stroke-[2.5] transition-colors ${feedback === "not_helpful" ? "text-state-error fill-state-error/20" : "text-zinc-400"}`}
+              />
+              <span
+                className={`text-xs font-bold font-inter leading-5 transition-colors ${feedback === "not_helpful" ? "text-state-error" : "text-zinc-400"}`}
+              >
+                Not Helpful {notHelpfulCount > 0 && `(${notHelpfulCount})`}
+              </span>
+            </Button>
+          </div>
+
+          {/* Static Owner Liked Badge */}
+          {review.isLikedByOwner && (
+            <div className="flex items-center gap-1.5 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
+              <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+              <span className="text-[10px] font-bold font-inter text-red-500 uppercase tracking-wide">
+                Liked by Owner
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="pt-4 border-t border-blue-500/20 flex justify-start items-center">
           <button
-            className="w-36 h-12 bg-red-400/5 hover:bg-red-400/10 transition-colors rounded-2xl outline outline-2 outline-offset-[-2px] outline-red-400 flex justify-center items-center gap-2 overflow-hidden"
+            className="w-full sm:w-36 h-12 bg-red-400/5 hover:bg-red-400/10 transition-colors rounded-2xl outline outline-2 outline-offset-[-2px] outline-red-400 flex justify-center items-center gap-2 overflow-hidden"
             onClick={() => onDelete && onDelete(review.id)}
           >
             <Trash2 className="w-4 h-4 text-red-400" />
@@ -384,23 +406,6 @@ const ReviewCard = ({ review, onDelete }) => {
                   Owner
                 </span>
               </div>
-              <button className="text-red-400 hover:text-red-300 transition-colors p-1">
-                <svg
-                  width="14"
-                  height="12"
-                  viewBox="0 0 14 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7.00015 11.1508L6.15432 10.3817C3.14432 7.65583 1.16682 5.865 1.16682 3.66667C1.16682 1.86417 2.57848 0.458328 4.37515 0.458328C5.39598 0.458328 6.37598 0.936662 7.00015 1.68916C7.62432 0.936662 8.60432 0.458328 9.62515 0.458328C11.4218 0.458328 12.8335 1.86417 12.8335 3.66667C12.8335 5.865 10.856 7.65583 7.84598 10.3875L7.00015 11.1508Z"
-                    stroke="currentColor"
-                    strokeWidth="1.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
             </div>
             <p className="text-slate-300 text-sm font-normal font-inter leading-5">
               {review.ownerReply.content}
@@ -467,6 +472,12 @@ const MarketplaceReviews = () => {
   const [reviews, setReviews] = useState(mockReviews);
   const [reviewToDelete, setReviewToDelete] = useState(null);
   const [showDeletedModal, setShowDeletedModal] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(5);
+
+  useEffect(() => {
+    setVisibleCount(5);
+  }, [sortBy]);
+
   const sortOptions = [
     "Most Relevant",
     "Newest",
@@ -559,9 +570,9 @@ const MarketplaceReviews = () => {
       {showDeletedModal && (
         <ReviewDeletedModal onClose={() => setShowDeletedModal(false)} />
       )}
-      <div className="max-w-[1024px] mx-auto py-8 flex flex-col items-center gap-16">
+      <div className="w-full max-w-[1024px] mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-0 flex flex-col items-center gap-8 lg:gap-16">
         {/* Top Section */}
-        <div className="flex justify-center items-stretch gap-12 w-full">
+        <div className="flex flex-col lg:flex-row justify-center items-stretch gap-6 lg:gap-12 w-full">
           <RatingSummary summary={currentSummary} />
           {hasSubmitted ? (
             <HasReviewedCard />
@@ -573,17 +584,17 @@ const MarketplaceReviews = () => {
         {/* Reviews List Section */}
         <div className="w-full max-w-[1000px] flex flex-col gap-6">
           {/* Header */}
-          <div className="pb-4 border-b border-gray-800 flex justify-between items-center w-full">
-            <h2 className="text-white text-xl font-bold font-inter">
+          <div className="pb-4 border-b border-gray-800 flex justify-between items-center w-full gap-4">
+            <h2 className="text-white text-lg sm:text-xl font-bold font-inter whitespace-nowrap">
               {summaryReviewsCount} Reviews
             </h2>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm font-bold font-inter">
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+              <span className="hidden sm:inline text-gray-400 text-sm font-bold font-inter">
                 Sort by:
               </span>
               <div className="relative">
                 <div
-                  className="w-40 h-11 bg-white/5 rounded-2xl outline outline-1 outline-white/10 shadow-[inner_0px_2px_4px_1px_rgba(0,0,0,0.05)] flex items-center justify-between px-4 cursor-pointer hover:bg-white/10 transition-colors"
+                  className="w-32 sm:w-40 h-11 bg-white/5 rounded-2xl outline outline-1 outline-white/10 shadow-[inner_0px_2px_4px_1px_rgba(0,0,0,0.05)] flex items-center justify-between px-3 sm:px-4 cursor-pointer hover:bg-white/10 transition-colors"
                   onClick={() => setIsSortOpen(!isSortOpen)}
                 >
                   <span className="text-white text-sm font-inter whitespace-nowrap overflow-hidden text-ellipsis">
@@ -620,7 +631,7 @@ const MarketplaceReviews = () => {
 
           {/* Cards */}
           <div className="flex flex-col items-center gap-6 w-full">
-            {sortedReviews.map((review) => (
+            {sortedReviews.slice(0, visibleCount).map((review) => (
               <ReviewCard
                 key={review.id}
                 review={review}
@@ -630,16 +641,12 @@ const MarketplaceReviews = () => {
           </div>
 
           {/* Load More Button */}
-          <Button
-            variant="ghost-hoverless"
-            className="mt-4 flex items-center justify-center gap-2 group w-full"
-          >
-            <span className="text-slate-400 text-sm font-bold font-inter group-hover:text-white transition-colors">
-              Load more Reviews
-            </span>
-            <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
-          </Button>
-          <div className="pb-10"></div>
+          <LoadMoreButton
+            visibleCount={visibleCount}
+            totalCount={sortedReviews.length}
+            onClick={() => setVisibleCount((prev) => prev + 5)}
+            itemName="Reviews"
+          />
         </div>
       </div>
     </MainLayout>

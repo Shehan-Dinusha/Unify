@@ -23,6 +23,7 @@ export const mockReviews = [
     content:
       "Great place to study! The wifi is super fast and there are plenty of outlets. The coffee is decent, maybe a bit pricey for student budget, but the atmosphere makes up for it. Can get crowded around noon though.",
     helpfulCount: 12,
+    isLikedByOwner: true,
   },
   {
     id: "rev-2",
@@ -59,6 +60,20 @@ export const mockReviews = [
         "Hi Jessica, thanks for your feedback. We apologize for the wait! We are currently training new staff to speed things up during the lunch rush. Hope to see you again soon.",
     },
   },
+  // Add 9 more mock reviews to test pagination
+  ...Array.from({ length: 9 }).map((_, i) => ({
+    id: `rev-gen-${i + 4}`,
+    author: {
+      name: `Generated User ${i + 4}`,
+      role: "Student",
+      avatar: "https://placehold.co/40x40",
+    },
+    createdAt: `${i + 3} weeks ago`,
+    rating: (i % 5) + 1,
+    content: `This is an automatically generated review for testing pagination. It has a rating of ${(i % 5) + 1} stars. The quick brown fox jumps over the lazy dog.`,
+    helpfulCount: i,
+    isOwn: false,
+  })),
 ];
 
 export const mockUserReviewSummary = {
@@ -79,6 +94,7 @@ export const mockUserReviews = [
       "Absolutely love this spot for studying. The wifi is fast, and the coffee is reasonably priced for students. It gets a bit crowded\naround lunch, but mornings are perfect. Highly recommend the bagel sandwich!",
     helpfulCount: 15,
     notHelpfulCount: 2,
+    isLikedByOwner: true,
   },
   {
     id: "usr-rev-2",
@@ -122,6 +138,18 @@ export const mockUserReviews = [
     content:
       "Took my laptop in for a screen replacement. They said 2 days, but it took a week. When I got it back, the webcam wasn't\nconnected properly. Had to go back again. Not the best experience.",
   },
+  // Add 9 more mock reviews to test pagination
+  ...Array.from({ length: 9 }).map((_, i) => ({
+    id: `usr-rev-gen-${i + 5}`,
+    targetName: `Generated Service ${i + 5}`,
+    targetAvatar: "https://placehold.co/48x48",
+    category: "Services",
+    createdAt: `Rated on Jan ${i + 1}, 2024`,
+    rating: (i % 5) + 1,
+    content: `This is an automatically generated user review for testing pagination. Rating: ${(i % 5) + 1} stars.`,
+    helpfulCount: i,
+    notHelpfulCount: 0,
+  })),
 ];
 
 export const mockBusinessReviewMetrics = {
@@ -150,6 +178,7 @@ export const mockReceivedReviews = [
     helpfulCount: 12,
     hasOwnerReplied: false,
     ownerReply: null,
+    isLikedByOwner: true,
   },
   {
     id: "r-rev-2",
@@ -183,4 +212,18 @@ export const mockReceivedReviews = [
     hasOwnerReplied: false,
     ownerReply: null,
   },
+  // Add 9 more mock reviews to test pagination
+  ...Array.from({ length: 9 }).map((_, i) => ({
+    id: `r-rev-gen-${i + 4}`,
+    author: {
+      name: `Generated Reviewer ${i + 4}`,
+      avatar: "https://placehold.co/40x40",
+    },
+    createdAt: `${i + 4} days ago`,
+    rating: (i % 5) + 1,
+    content: `This is an automatically generated received review for testing pagination. Rating: ${(i % 5) + 1} stars.`,
+    helpfulCount: i,
+    hasOwnerReplied: false,
+    ownerReply: null,
+  })),
 ];
