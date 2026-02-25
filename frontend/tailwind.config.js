@@ -46,7 +46,7 @@ export default {
         ],
         "heading-large": [
           "48px",
-          { lineHeight: "25px", letterSpacing: "-0.003em", fontWeight: "700" },
+          { lineHeight: "56px", letterSpacing: "-0.003em", fontWeight: "700" },
         ],
         "heading-medium": [
           "30px",
