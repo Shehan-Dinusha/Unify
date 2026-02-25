@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Star,
   ThumbsUp,
@@ -10,6 +10,7 @@ import {
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import LoadMoreButton from "../components/common/LoadMoreButton";
 import { mockReviews, mockReviewSummary } from "../data/mockReviewData";
 import {
   DeleteReviewModal,
@@ -471,6 +472,12 @@ const MarketplaceReviews = () => {
   const [reviews, setReviews] = useState(mockReviews);
   const [reviewToDelete, setReviewToDelete] = useState(null);
   const [showDeletedModal, setShowDeletedModal] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(5);
+
+  useEffect(() => {
+    setVisibleCount(5);
+  }, [sortBy]);
+
   const sortOptions = [
     "Most Relevant",
     "Newest",
@@ -624,7 +631,7 @@ const MarketplaceReviews = () => {
 
           {/* Cards */}
           <div className="flex flex-col items-center gap-6 w-full">
-            {sortedReviews.map((review) => (
+            {sortedReviews.slice(0, visibleCount).map((review) => (
               <ReviewCard
                 key={review.id}
                 review={review}
@@ -634,16 +641,12 @@ const MarketplaceReviews = () => {
           </div>
 
           {/* Load More Button */}
-          <Button
-            variant="ghost-hoverless"
-            className="mt-4 flex items-center justify-center gap-2 group w-full"
-          >
-            <span className="text-slate-400 text-sm font-bold font-inter group-hover:text-white transition-colors">
-              Load more Reviews
-            </span>
-            <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
-          </Button>
-          <div className="pb-10"></div>
+          <LoadMoreButton
+            visibleCount={visibleCount}
+            totalCount={sortedReviews.length}
+            onClick={() => setVisibleCount((prev) => prev + 5)}
+            itemName="Reviews"
+          />
         </div>
       </div>
     </MainLayout>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronDown,
   ThumbsUp,
@@ -10,6 +10,7 @@ import {
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import LoadMoreButton from "../components/common/LoadMoreButton";
 import StarRating from "../components/common/StarRating";
 import {
   ReportReviewModal,
@@ -239,6 +240,12 @@ const ReceivedReviews = () => {
     setIsSuccessModalOpen(true);
   };
 
+  const [visibleCount, setVisibleCount] = useState(5);
+
+  useEffect(() => {
+    setVisibleCount(5);
+  }, [activeTab, sortBy]);
+
   const filteredReviews = mockReceivedReviews.filter((review) => {
     if (activeTab === "Unreplied") return !review.hasOwnerReplied;
     if (activeTab === "5 stars") return review.rating === 5;
@@ -379,7 +386,7 @@ const ReceivedReviews = () => {
 
         {/* Review Cards List */}
         <div className="flex flex-col gap-4">
-          {filteredReviews.map((review) => (
+          {filteredReviews.slice(0, visibleCount).map((review) => (
             <ReceivedReviewCard
               key={review.id}
               review={review}
@@ -389,17 +396,12 @@ const ReceivedReviews = () => {
         </div>
 
         {/* Load More Button */}
-        <div className="py-6 flex justify-center items-center pb-12">
-          <Button
-            variant="ghost-hoverless"
-            className="flex items-center gap-2 group"
-          >
-            <span className="text-gray-400 text-sm font-bold font-inter group-hover:text-white transition-colors">
-              Load more Reviews
-            </span>
-            <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
-          </Button>
-        </div>
+        <LoadMoreButton
+          visibleCount={visibleCount}
+          totalCount={filteredReviews.length}
+          onClick={() => setVisibleCount((prev) => prev + 5)}
+          itemName="Reviews"
+        />
       </div>
     </MainLayout>
   );
