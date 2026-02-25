@@ -133,24 +133,21 @@ export const ReportSuccessModal = ({ isOpen, onClose }) => {
         variant="card"
         className="w-full max-w-[440px] !p-0 overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
       >
-        <div className="p-8 pb-6 flex flex-col items-center relative overflow-hidden">
+        <div className="p-6 sm:p-8 pb-4 sm:pb-6 flex flex-col items-center relative overflow-hidden">
           {/* Success Icon */}
-          <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
-            <div className="w-8 h-8 flex items-center justify-center text-state-success">
-              <Check className="w-8 h-8 stroke-[3]" />
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 ring-4 ring-state-success/5">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-state-success">
+              <Check className="w-6 h-6 sm:w-8 sm:h-8 stroke-[3]" />
             </div>
           </div>
 
           {/* Text */}
-          <h2 className="text-xl font-bold text-white mb-3">
+          <h2 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3 text-center">
             Review reported successfully!
           </h2>
-          <div className="text-text-secondary text-sm leading-relaxed mb-4 text-center">
-            Thank you for your report. Administrators will
-            <br />
-            review this content against our guidelines
-            <br />
-            shortly.
+          <div className="text-text-secondary text-sm leading-relaxed mb-4 text-center px-2">
+            Thank you for your report. Administrators will review this content
+            against our guidelines shortly.
           </div>
         </div>
 

@@ -13,7 +13,7 @@ import StarRating from "../components/common/StarRating";
 const ReviewHistoryCard = ({ review, onDelete }) => {
   return (
     <Card variant="container" className="w-full">
-      <div className="flex justify-between items-start mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
         <div className="flex items-center gap-3">
           <img
             className="w-10 h-10 rounded-full object-cover"
@@ -84,7 +84,7 @@ const ReviewHistoryCard = ({ review, onDelete }) => {
       <div className="pt-4 border-t border-blue-500/20 flex justify-start items-center">
         <Button
           variant="ghost-hoverless"
-          className="w-36 h-12 bg-red-400/5 hover:bg-red-400/10 transition-colors rounded-2xl outline outline-2 outline-offset-[-2px] outline-red-400 flex justify-center items-center gap-2 overflow-hidden !p-0 hover:opacity-100"
+          className="w-full sm:w-36 h-12 bg-red-400/5 hover:bg-red-400/10 transition-colors rounded-2xl outline outline-2 outline-offset-[-2px] outline-red-400 flex justify-center items-center gap-2 overflow-hidden !p-0 hover:opacity-100"
           onClick={() => onDelete && onDelete(review.id)}
         >
           <Trash2 className="w-4 h-4 text-red-400" />
@@ -158,9 +158,9 @@ const MyReviewHistory = () => {
       )}
 
       {/* Main Container mirroring the visual design structure */}
-      <div className="w-[928px] mx-auto mt-8 relative">
+      <div className="w-full max-w-[928px] mx-auto mt-4 sm:mt-8 px-4 sm:px-6 lg:px-0 relative">
         {/* Header Section */}
-        <div className="flex flex-col gap-6 mb-[43px]">
+        <div className="flex flex-col gap-6 mb-8 sm:mb-[43px]">
           <div className="flex flex-col gap-2">
             <h1 className="text-white text-3xl font-bold font-inter leading-9 m-0">
               My Review History
@@ -171,13 +171,13 @@ const MyReviewHistory = () => {
           </div>
 
           {/* KPI Cards */}
-          <div className="flex gap-3 h-28">
+          <div className="flex flex-col sm:flex-row gap-3 h-auto sm:h-28">
             <Card
               variant="container"
-              className="flex-1 h-full shadow-none"
+              className="flex-1 min-h-[112px] sm:min-h-0 sm:h-full shadow-none flex flex-col justify-center pl-6 sm:pl-0 sm:block relative"
               padding="p-0"
             >
-              <div className="absolute top-[25px] left-[24.5px] flex flex-col">
+              <div className="flex flex-col sm:absolute sm:top-[25px] sm:left-[24.5px]">
                 <span className="text-gray-400 text-sm font-bold font-inter leading-5 mb-2">
                   Total Reviews
                 </span>
@@ -189,11 +189,11 @@ const MyReviewHistory = () => {
 
             <Card
               variant="container"
-              className="flex-1 h-full shadow-none"
+              className="flex-1 min-h-[112px] sm:min-h-0 sm:h-full shadow-none flex flex-col justify-center px-6 sm:px-0 sm:block relative"
               padding="p-0"
             >
-              <div className="absolute top-[25px] left-[25px] flex flex-col w-full pr-6">
-                <span className="text-gray-400 text-sm font-bold font-inter leading-5 mb-2">
+              <div className="flex flex-col w-full sm:absolute sm:top-[25px] sm:left-[25px] sm:pr-6">
+                <span className="text-gray-400 text-sm font-bold font-inter leading-5 mb-2 whitespace-nowrap overflow-hidden text-ellipsis">
                   Avg Rating Given
                 </span>
                 <div className="flex items-center gap-2">
@@ -215,11 +215,11 @@ const MyReviewHistory = () => {
 
             <Card
               variant="container"
-              className="flex-1 h-full shadow-none"
+              className="flex-1 min-h-[112px] sm:min-h-0 sm:h-full shadow-none flex flex-col justify-center px-6 sm:px-0 sm:block relative overflow-hidden"
               padding="p-0"
             >
-              <div className="absolute top-[25px] left-[25px] flex flex-col w-full pr-6 overflow-hidden">
-                <span className="text-gray-400 text-sm font-bold font-inter leading-5 mb-2">
+              <div className="flex flex-col w-full overflow-hidden sm:absolute sm:top-[25px] sm:left-[25px] sm:pr-6">
+                <span className="text-gray-400 text-sm font-bold font-inter leading-5 mb-2 whitespace-nowrap overflow-hidden text-ellipsis">
                   Top Category
                 </span>
                 <span className="text-blue-500 text-3xl font-bold font-lexend leading-9 truncate w-full">
@@ -231,8 +231,8 @@ const MyReviewHistory = () => {
         </div>
 
         {/* Filter & Sort Bar */}
-        <div className="w-full h-14 py-2 flex justify-between items-center mb-8">
-          <div className="flex items-center gap-2 overflow-hidden">
+        <div className="w-full py-2 flex items-center justify-between gap-2 sm:gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide flex-1 sm:flex-auto">
             {tabs.map((tab) => (
               <Button
                 size="small"
@@ -298,16 +298,16 @@ const MyReviewHistory = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400 text-sm font-bold font-inter">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            <span className="hidden sm:inline-block text-gray-400 text-sm font-bold font-inter">
               Sort by:
             </span>
             <div className="relative">
               <div
-                className="w-40 h-11 bg-white/5 rounded-2xl outline outline-1 outline-white/10 shadow-[inner_0px_2px_4px_1px_rgba(0,0,0,0.05)] flex items-center justify-between px-4 cursor-pointer hover:bg-white/10 transition-colors"
+                className="w-10 sm:w-40 h-9 sm:h-11 bg-white/5 sm:rounded-2xl rounded-xl outline outline-1 outline-white/10 shadow-[inner_0px_2px_4px_1px_rgba(0,0,0,0.05)] flex items-center justify-center sm:justify-between px-0 sm:px-4 cursor-pointer hover:bg-white/10 transition-colors"
                 onClick={() => setIsSortOpen(!isSortOpen)}
               >
-                <span className="text-white text-sm font-inter whitespace-nowrap overflow-hidden text-ellipsis">
+                <span className="hidden sm:block text-white text-sm font-inter whitespace-nowrap overflow-hidden text-ellipsis">
                   {sortBy}
                 </span>
                 <ChevronDown
@@ -318,7 +318,7 @@ const MyReviewHistory = () => {
               </div>
 
               {isSortOpen && (
-                <div className="absolute top-full mt-2 w-40 bg-gray-800 rounded-xl outline outline-1 outline-white/10 shadow-lg overflow-hidden z-10 right-0">
+                <div className="absolute top-full mt-2 w-40 sm:w-40 right-0 bg-gray-800 rounded-xl outline outline-1 outline-white/10 shadow-lg overflow-hidden z-20">
                   {sortOptions.map((option) => (
                     <div
                       key={option}
