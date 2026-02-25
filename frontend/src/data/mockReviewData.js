@@ -23,6 +23,7 @@ export const mockReviews = [
     content:
       "Great place to study! The wifi is super fast and there are plenty of outlets. The coffee is decent, maybe a bit pricey for student budget, but the atmosphere makes up for it. Can get crowded around noon though.",
     helpfulCount: 12,
+    isLikedByOwner: true,
   },
   {
     id: "rev-2",
@@ -79,6 +80,7 @@ export const mockUserReviews = [
       "Absolutely love this spot for studying. The wifi is fast, and the coffee is reasonably priced for students. It gets a bit crowded\naround lunch, but mornings are perfect. Highly recommend the bagel sandwich!",
     helpfulCount: 15,
     notHelpfulCount: 2,
+    isLikedByOwner: true,
   },
   {
     id: "usr-rev-2",
@@ -150,6 +152,7 @@ export const mockReceivedReviews = [
     helpfulCount: 12,
     hasOwnerReplied: false,
     ownerReply: null,
+    isLikedByOwner: true,
   },
   {
     id: "r-rev-2",

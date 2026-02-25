@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Star, ThumbsUp, ThumbsDown, ChevronDown, Trash2 } from "lucide-react";
+import {
+  Star,
+  ThumbsUp,
+  ThumbsDown,
+  ChevronDown,
+  Trash2,
+  Heart,
+} from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
@@ -325,35 +332,47 @@ const ReviewCard = ({ review, onDelete }) => {
       </p>
 
       {!review.isOwn ? (
-        <div className="flex flex-wrap items-center gap-4 mt-2 sm:mt-0">
-          <Button
-            variant="ghost-hoverless"
-            className="!p-0 !h-auto flex items-center gap-1.5"
-            onClick={handleHelpful}
-          >
-            <ThumbsUp
-              className={`w-4 h-4 stroke-[2.5] transition-colors ${feedback === "helpful" ? "text-primary-blue fill-primary-blue/20" : "text-zinc-400"}`}
-            />
-            <span
-              className={`text-xs font-bold font-inter leading-5 transition-colors ${feedback === "helpful" ? "text-primary-blue" : "text-zinc-400"}`}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-2 sm:mt-0">
+          <div className="flex flex-wrap items-center gap-4">
+            <Button
+              variant="ghost-hoverless"
+              className="!p-0 !h-auto flex items-center gap-1.5"
+              onClick={handleHelpful}
             >
-              Helpful {helpfulCount > 0 && `(${helpfulCount})`}
-            </span>
-          </Button>
-          <Button
-            variant="ghost-hoverless"
-            className="!p-0 !h-auto flex items-center gap-1.5"
-            onClick={handleNotHelpful}
-          >
-            <ThumbsDown
-              className={`w-4 h-4 stroke-[2.5] transition-colors ${feedback === "not_helpful" ? "text-state-error fill-state-error/20" : "text-zinc-400"}`}
-            />
-            <span
-              className={`text-xs font-bold font-inter leading-5 transition-colors ${feedback === "not_helpful" ? "text-state-error" : "text-zinc-400"}`}
+              <ThumbsUp
+                className={`w-4 h-4 stroke-[2.5] transition-colors ${feedback === "helpful" ? "text-primary-blue fill-primary-blue/20" : "text-zinc-400"}`}
+              />
+              <span
+                className={`text-xs font-bold font-inter leading-5 transition-colors ${feedback === "helpful" ? "text-primary-blue" : "text-zinc-400"}`}
+              >
+                Helpful {helpfulCount > 0 && `(${helpfulCount})`}
+              </span>
+            </Button>
+            <Button
+              variant="ghost-hoverless"
+              className="!p-0 !h-auto flex items-center gap-1.5"
+              onClick={handleNotHelpful}
             >
-              Not Helpful {notHelpfulCount > 0 && `(${notHelpfulCount})`}
-            </span>
-          </Button>
+              <ThumbsDown
+                className={`w-4 h-4 stroke-[2.5] transition-colors ${feedback === "not_helpful" ? "text-state-error fill-state-error/20" : "text-zinc-400"}`}
+              />
+              <span
+                className={`text-xs font-bold font-inter leading-5 transition-colors ${feedback === "not_helpful" ? "text-state-error" : "text-zinc-400"}`}
+              >
+                Not Helpful {notHelpfulCount > 0 && `(${notHelpfulCount})`}
+              </span>
+            </Button>
+          </div>
+
+          {/* Static Owner Liked Badge */}
+          {review.isLikedByOwner && (
+            <div className="flex items-center gap-1.5 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
+              <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+              <span className="text-[10px] font-bold font-inter text-red-500 uppercase tracking-wide">
+                Liked by Owner
+              </span>
+            </div>
+          )}
         </div>
       ) : (
         <div className="pt-4 border-t border-blue-500/20 flex justify-start items-center">
@@ -386,23 +405,6 @@ const ReviewCard = ({ review, onDelete }) => {
                   Owner
                 </span>
               </div>
-              <button className="text-red-400 hover:text-red-300 transition-colors p-1">
-                <svg
-                  width="14"
-                  height="12"
-                  viewBox="0 0 14 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M7.00015 11.1508L6.15432 10.3817C3.14432 7.65583 1.16682 5.865 1.16682 3.66667C1.16682 1.86417 2.57848 0.458328 4.37515 0.458328C5.39598 0.458328 6.37598 0.936662 7.00015 1.68916C7.62432 0.936662 8.60432 0.458328 9.62515 0.458328C11.4218 0.458328 12.8335 1.86417 12.8335 3.66667C12.8335 5.865 10.856 7.65583 7.84598 10.3875L7.00015 11.1508Z"
-                    stroke="currentColor"
-                    strokeWidth="1.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
             </div>
             <p className="text-slate-300 text-sm font-normal font-inter leading-5">
               {review.ownerReply.content}

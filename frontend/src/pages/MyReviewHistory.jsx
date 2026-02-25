@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Star, Trash2, ChevronDown, ThumbsUp, ThumbsDown } from "lucide-react";
+import {
+  Star,
+  Trash2,
+  ChevronDown,
+  ThumbsUp,
+  ThumbsDown,
+  Heart,
+} from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
@@ -38,21 +45,33 @@ const ReviewHistoryCard = ({ review, onDelete }) => {
         {review.content}
       </p>
 
-      {/* Helpful & Not Helpful Stats */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex items-center gap-1.5">
-          <ThumbsUp className="w-4 h-4 stroke-[2.5] text-zinc-400" />
-          <span className="text-xs font-bold font-inter leading-5 text-zinc-400">
-            Helpful {review.helpfulCount > 0 && `(${review.helpfulCount})`}
-          </span>
+      {/* Helpful, Not Helpful Stats & Owner Like Badge */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <ThumbsUp className="w-4 h-4 stroke-[2.5] text-zinc-400" />
+            <span className="text-xs font-bold font-inter leading-5 text-zinc-400">
+              Helpful {review.helpfulCount > 0 && `(${review.helpfulCount})`}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <ThumbsDown className="w-4 h-4 stroke-[2.5] text-zinc-400" />
+            <span className="text-xs font-bold font-inter leading-5 text-zinc-400">
+              Not Helpful{" "}
+              {review.notHelpfulCount > 0 && `(${review.notHelpfulCount})`}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <ThumbsDown className="w-4 h-4 stroke-[2.5] text-zinc-400" />
-          <span className="text-xs font-bold font-inter leading-5 text-zinc-400">
-            Not Helpful{" "}
-            {review.notHelpfulCount > 0 && `(${review.notHelpfulCount})`}
-          </span>
-        </div>
+
+        {/* Static Owner Liked Badge */}
+        {review.isLikedByOwner && (
+          <div className="flex items-center gap-1.5 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
+            <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+            <span className="text-[10px] font-bold font-inter text-red-500 uppercase tracking-wide">
+              Liked by Owner
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Owner Reply Block */}

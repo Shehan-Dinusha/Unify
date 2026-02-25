@@ -180,7 +180,7 @@ const ReceivedReviewCard = ({ review, onReport }) => {
               />
               {isLiked && (
                 <span className="text-xs font-bold font-inter text-red-500">
-                  Liked By The Owner
+                  Liked By Owner
                 </span>
               )}
             </Button>
