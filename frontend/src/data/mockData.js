@@ -318,7 +318,7 @@ export const mockLostAndFoundItems = [
   {
     id: 3,
     type: "lost",
-    title: "Hydroflask Blue 32oz",
+    title: "Door Keys (Room 201)",
     location: "Science Hall, Room 304",
     time: "2 days ago",
     image: "/lost_post_img2.jpg",
@@ -326,7 +326,7 @@ export const mockLostAndFoundItems = [
   {
     id: 4,
     type: "found",
-    title: "Hydroflask Blue 32oz",
+    title: "iPhone 13 Pro",
     location: "Science Hall, Room 304",
     time: "2 days ago",
     image: "/lost_post_img3.jpg",
@@ -334,7 +334,7 @@ export const mockLostAndFoundItems = [
   {
     id: 5,
     type: "lost",
-    title: "Door Keys (Room 201)",
+    title: "Note Book",
     location: "Science Hall, Room 304",
     time: "2 days ago",
     image: "/found_post_img2.jpg",
@@ -342,7 +342,7 @@ export const mockLostAndFoundItems = [
   {
     id: 6,
     type: "found",
-    title: "Hydroflask Blue 32oz",
+    title: "Hydroflask Blue",
     location: "Science Hall, Room 304",
     time: "2 days ago",
     image: "/lost_post_img1.jpg",
