@@ -1,6 +1,10 @@
 import React from "react";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
+import ScrollToTop from "../components/common/ScrollToTop";
+import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
+import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import LandingHome from "../pages/LandingHome";
 import AboutPage from "../pages/AboutPage";
 import FeaturesPage from "../pages/FeaturesPage";
@@ -52,6 +56,7 @@ const PlaceholderPage = ({ title, verificationCount }) => (
 // Root layout wraps every route in the BoostPackageProvider
 const RootLayout = () => (
   <BoostPackageProvider>
+    <ScrollToTop />
     <Outlet />
   </BoostPackageProvider>
 );
@@ -64,6 +69,18 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <LandingHome />,
+      },
+      {
+        path: "/login",
+        element: <LoginPage />,
+      },
+      {
+        path: "/register",
+        element: <RegisterPage />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPasswordPage />,
       },
       {
         path: "/admin",
