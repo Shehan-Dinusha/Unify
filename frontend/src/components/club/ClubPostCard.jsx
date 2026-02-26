@@ -199,7 +199,7 @@ const ClubPostCard = ({ post }) => {
                         onClick={() => setCommentOpen(o => !o)}
                     />
 
-                    {/* Boost */}
+                    {/* Boost 
                     <ActionBtn
                         svgSrc="/icon_boost_controller.svg"
                         label="Boost"
@@ -207,7 +207,7 @@ const ClubPostCard = ({ post }) => {
                         active={boosted}
                         onClick={toggleBoost}
                     />
-
+                    */}
                     {/* Save */}
                     <ActionBtn
                         svgSrc="/icon_save_marketplace.svg"
