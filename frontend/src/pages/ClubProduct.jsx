@@ -20,6 +20,7 @@ const ClubProduct = () => {
     const [activeColor, setActiveColor] = useState(product.colors[0]?.id);
     const [activeSize, setActiveSize] = useState("S");
     const [qty, setQty] = useState(1);
+    const [isDescExpanded, setIsDescExpanded] = useState(false);
 
     const currentImg = useMemo(
         () => product.images.find((i) => i.id === activeImg) || product.images[0],
@@ -57,6 +58,9 @@ const ClubProduct = () => {
 
                         {/* RIGHT: Details */}
                         <div className="flex flex-col">
+                            {/* Mobile divider above club name */}
+                            <div className="md:hidden mb-md h-px bg-white/10" />
+
                             {/* Club line */}
                             <div className="flex items-center gap-md">
                                 <img
@@ -70,8 +74,11 @@ const ClubProduct = () => {
                                 </div>
                             </div>
 
+                            {/* Mobile divider below club name 
+                            <div className="md:hidden mt-md h-px bg-white/10" />*/}
+
                             {/* Title */}
-                            <h1 className="mt-md text-heading-large text-text-primary leading-tight">
+                            <h1 className="mt-md text-[24px] md:text-[32px] md:text-heading-large font-bold text-text-primary leading-tight">
                                 {product.title}
                             </h1>
 
@@ -81,9 +88,22 @@ const ClubProduct = () => {
                             </div>
 
                             {/* Description */}
-                            <p className="mt-md text-body-medium text-text-secondary leading-6 max-w-[640px]">
+                            <p className="hidden md:block mt-md text-body-medium text-text-secondary leading-6 max-w-[640px]">
                                 {product.description}
                             </p>
+                            <div className="md:hidden mt-md text-body-medium text-text-secondary leading-6 max-w-[640px]">
+                                <p className={!isDescExpanded ? "line-clamp-3" : ""}>
+                                    {product.description}
+                                </p>
+                                {product.description && product.description.length > 100 && (
+                                    <button
+                                        onClick={() => setIsDescExpanded(!isDescExpanded)}
+                                        className="text-white opacity-80 text-[13px] font-semibold mt-1 hover:underline"
+                                    >
+                                        {isDescExpanded ? "See less" : "See more"}
+                                    </button>
+                                )}
+                            </div>
 
                             <div className="my-lg h-px bg-white/10" />
 

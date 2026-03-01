@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 // Sub-component for individual Nav Items
-const SidebarItem = ({ icon: Icon, iconSrc, label, badge, active = false, isDanger = false, path }) => {
+const SidebarItem = ({ icon: Icon, iconSrc, label, badge, active = false, isDanger = false, path, onClick }) => {
   const baseStyles = "w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 cursor-pointer group";
 
   const activeStyles = active
@@ -21,7 +21,10 @@ const SidebarItem = ({ icon: Icon, iconSrc, label, badge, active = false, isDang
   return (
     <div
       className={`${baseStyles} ${activeStyles}`}
-      onClick={() => path && navigate(path)}
+      onClick={() => {
+        if (path) navigate(path);
+        if (onClick) onClick();
+      }}
     >
       <div className="flex items-center gap-md">
         {iconSrc ? (
@@ -44,7 +47,7 @@ const SidebarItem = ({ icon: Icon, iconSrc, label, badge, active = false, isDang
   );
 };
 
-const UnifiedSidebar = ({ user, verificationCount }) => {
+const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
   const { pathname } = useLocation();
 
   // Configuration Map for different user roles
@@ -93,46 +96,56 @@ const UnifiedSidebar = ({ user, verificationCount }) => {
   const currentConfig = roleConfigs[user.role.toLowerCase()] || roleConfigs.student;
 
   return (
-    <aside className="w-72 h-screen bg-dark-1 border-r border-white/10 flex flex-col justify-between items-start sticky top-0">
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/60 z-[60] backdrop-blur-sm transition-opacity duration-300"
+          onClick={onClose}
+        />
+      )}
 
-      {/* Brand & Dynamic Navigation */}
-      <div className="w-full p-md flex flex-col gap-lg">
-        <div className="p-sm flex items-center gap-md">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-custom overflow-hidden">
-            <img src="/icon_unify_logo.svg" alt="Unify Logo" className="w-full h-full object-contain" />
+      <aside className={`w-72 h-screen bg-dark-1 border-r border-white/10 flex flex-col justify-between items-start fixed lg:sticky top-0 left-0 z-[70] lg:z-auto transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+
+        {/* Brand & Dynamic Navigation */}
+        <div className="w-full p-md flex flex-col gap-lg">
+          <div className="p-sm flex items-center gap-md">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-custom overflow-hidden">
+              <img src="/icon_unify_logo.svg" alt="Unify Logo" className="w-full h-full object-contain" />
+            </div>
+            <div className="overflow-hidden">
+              <h1 className="text-text-primary text-2xl font-bold font-inter leading-tight">Unify</h1>
+              <p className="text-text-tertiary text-body-extra-small font-normal font-inter truncate">{currentConfig.title}</p>
+            </div>
           </div>
-          <div className="overflow-hidden">
-            <h1 className="text-text-primary text-2xl font-bold font-inter leading-tight">Unify</h1>
-            <p className="text-text-tertiary text-body-extra-small font-normal font-inter truncate">{currentConfig.title}</p>
-          </div>
+
+          <nav className="flex flex-col gap-xs w-full">
+            {currentConfig.links.map((link, index) => (
+              <SidebarItem key={index} {...link} active={pathname === link.path || (link.childPaths && link.childPaths.includes(pathname))} onClick={onClose} />
+            ))}
+          </nav>
         </div>
 
-        <nav className="flex flex-col gap-xs w-full">
-          {currentConfig.links.map((link, index) => (
-            <SidebarItem key={index} {...link} active={pathname === link.path || (link.childPaths && link.childPaths.includes(pathname))} />
-          ))}
-        </nav>
-      </div>
+        {/* Account Section */}
+        <div className="w-full px-md pb-md flex flex-col gap-md">
+          <div className="h-px bg-white/10 w-full" />
 
-      {/* Account Section */}
-      <div className="w-full px-md pb-md flex flex-col gap-md">
-        <div className="h-px bg-white/10 w-full" />
+          <SidebarItem iconSrc="/icon_log_out.svg" label="Log Out" isDanger onClick={onClose} />
 
-        <SidebarItem iconSrc="/icon_log_out.svg" label="Log Out" isDanger />
-
-        <div className="w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md hover:bg-white/10 transition-colors cursor-pointer group">
-          <img
-            className="w-10 h-10 rounded-full object-cover border border-white/20 group-hover:border-primary-blue transition-colors"
-            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
-            alt="Avatar"
-          />
-          <div className="overflow-hidden">
-            <h4 className="text-text-primary text-body-medium-bold font-inter truncate">{user.name}</h4>
-            <p className="text-text-tertiary text-body-extra-small font-normal font-inter uppercase tracking-widest">{user.displayRole || user.role}</p>
+          <div className="w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md hover:bg-white/10 transition-colors cursor-pointer group">
+            <img
+              className="w-10 h-10 rounded-full object-cover border border-white/20 group-hover:border-primary-blue transition-colors"
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+              alt="Avatar"
+            />
+            <div className="overflow-hidden">
+              <h4 className="text-text-primary text-body-medium-bold font-inter truncate">{user.name}</h4>
+              <p className="text-text-tertiary text-body-extra-small font-normal font-inter uppercase tracking-widest">{user.displayRole || user.role}</p>
+            </div>
           </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 

@@ -123,6 +123,7 @@ const ClubPostCard = ({ post }) => {
     const [commentOpen, setCommentOpen] = useState(false);
     const [postComments, setPostComments] = useState(post.comments ?? []);
     const [likes, setLikes] = useState(post.stats?.likes ?? 0);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const toggleBoost = () => { setBoosted(p => !p); };
     const toggleSave = () => setSaved(p => !p);
@@ -171,9 +172,25 @@ const ClubPostCard = ({ post }) => {
                     </div>
                 </div>
 
-                <p className="mt-md text-body-medium text-text-secondary leading-6">
+                {/* Desktop: Always show full */}
+                <p className="hidden md:block mt-md text-body-medium text-text-secondary leading-6">
                     {post.text}
                 </p>
+
+                {/* Mobile: Truncated text with toggle */}
+                <div className="md:hidden mt-md text-body-medium text-text-secondary leading-6">
+                    <p className={!isExpanded ? "line-clamp-2" : ""}>
+                        {post.text}
+                    </p>
+                    {post.text && post.text.length > 80 && (
+                        <button
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            className="text-white opacity-80 text-[13px] font-semibold mt-1 hover:underline"
+                        >
+                            {isExpanded ? "See less" : "See more"}
+                        </button>
+                    )}
+                </div>
 
                 {/* ── Action bar ─────────────────────────────────────── */}
                 <div className="mt-lg pt-md border-t border-white/10 flex items-center justify-between">
