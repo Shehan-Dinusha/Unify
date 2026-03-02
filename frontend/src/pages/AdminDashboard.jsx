@@ -171,7 +171,7 @@ const RegistrationChart = ({ data, maxVal, peakIdx, labels, yLabels, yVals, form
         <div>
             <div className="flex gap-sm items-stretch">
                 {/* Y-axis */}
-                <div className="flex flex-col justify-between text-body-extra-small text-text-secondary text-right shrink-0 pb-6" style={{ height: H }}>
+                <div className="flex flex-col justify-between text-body-extra-small text-text-secondary text-right shrink-0 pb-6" style={{ minHeight: 180 }}>
                     {yLabels.map((l) => (
                         <span key={l}>{l}</span>
                     ))}
@@ -179,7 +179,7 @@ const RegistrationChart = ({ data, maxVal, peakIdx, labels, yLabels, yVals, form
 
                 {/* Chart + X-axis */}
                 <div className="flex-1 min-w-0">
-                    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" className="w-full" style={{ height: H }}>
+                    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" className="w-full" style={{ aspectRatio: `${W}/${H}` }}>
                         <defs>
                             {/* Normal bar gradient — cool blue */}
                             <linearGradient id="barGrad" x1="0" y1="1" x2="0" y2="0">
@@ -255,7 +255,7 @@ const RegistrationChart = ({ data, maxVal, peakIdx, labels, yLabels, yVals, form
             </div>
 
             {/* Summary stats row */}
-            <div className="flex items-center gap-lg mt-md pt-md border-t border-white/5">
+            <div className="flex flex-wrap items-center gap-x-lg gap-y-sm mt-md pt-md border-t border-white/5">
                 <div className="flex items-center gap-xs">
                     <span className="text-body-extra-small text-text-secondary">{statLabel}:</span>
                     <span className="text-body-small-bold text-text-primary">{formatStat(total)}</span>
@@ -420,7 +420,7 @@ const AdminDashboard = () => {
             verificationCount={mockRequests.length}
         >
             {/* ── Top Stats Row ─────────────────────────────────── */}
-            <div className="grid grid-cols-3 gap-md mb-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-md mb-lg">
                 {statsTiles.map((tile, i) => (
                     <div
                         key={i}
@@ -441,7 +441,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* ── Platform Insights Header ──────────────────────── */}
-            <div className="flex items-center justify-between mb-md">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-md mb-md">
                 <div className="flex items-center gap-sm">
                     <span className="text-xl">✨</span>
                     <div>
@@ -470,11 +470,11 @@ const AdminDashboard = () => {
             </div>
 
             {/* ── Charts Row ────────────────────────────────────── */}
-            <div className="grid grid-cols-3 gap-md">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
 
                 {/* ── Left: Chart Carousel (2 cols) ────── */}
                 <div
-                    className="col-span-2"
+                    className="col-span-1 md:col-span-2"
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                 >
