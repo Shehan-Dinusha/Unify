@@ -39,7 +39,7 @@ const MainLayout = ({
         />
 
         {/* Page Content */}
-        <main className="p-lg flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
+        <main className="p-md md:p-lg flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
           {children}
         </main>
       </div>
