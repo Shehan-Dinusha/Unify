@@ -128,17 +128,7 @@ const BoostPackageForm = () => {
     const previewDuration = `${durationValue} ${durationUnit}`;
     const previewFeatures = features.filter((f) => f.trim() !== '');
 
-    // Header actions
-    const headerActions = (
-        <div className="flex items-center gap-md">
-            <Button variant="secondary" size="small" onClick={handleDiscard}>
-                Discard Changes
-            </Button>
-            <Button variant="primary" size="small" onClick={handleSaveClick}>
-                Save Changes
-            </Button>
-        </div>
-    );
+
 
     return (
         <>
@@ -246,24 +236,37 @@ const BoostPackageForm = () => {
             <MainLayout
                 user={{ name: 'Alex Johnson', role: 'admin' }}
                 pageTitle="Package Configuration"
-                headerRight={headerActions}
+                headerRight={null}
                 verificationCount={mockRequests.length}
             >
                 <div className="flex flex-col gap-lg">
-                    {/* Page Title */}
+                    {/* Page Title + Mobile Buttons */}
                     <div>
-                        <h1 className="text-heading-small text-text-primary font-inter">
-                            {isEditing ? 'Edit Boost Package' : 'Create New Boost Package'}
-                        </h1>
-                        <p className="text-body-small text-text-secondary font-inter mt-1">
-                            {isEditing
-                                ? `Modify details for the '${existingPackage?.name}' boost tier.`
-                                : 'Define a new advertising tier for businesses.'}
-                        </p>
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-md">
+                            <div>
+                                <h1 className="text-heading-small text-text-primary font-inter">
+                                    {isEditing ? 'Edit Boost Package' : 'Create New Boost Package'}
+                                </h1>
+                                <p className="text-body-small text-text-secondary font-inter mt-1">
+                                    {isEditing
+                                        ? `Modify details for the '${existingPackage?.name}' boost tier.`
+                                        : 'Define a new advertising tier for businesses.'}
+                                </p>
+                            </div>
+                            {/* Buttons — both desktop and mobile */}
+                            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-sm md:gap-md w-full md:w-auto">
+                                <Button variant="secondary" size="medium" onClick={handleDiscard} className="whitespace-nowrap">
+                                    Discard Changes
+                                </Button>
+                                <Button variant="primary" size="medium" onClick={handleSaveClick} className="whitespace-nowrap">
+                                    Save Changes
+                                </Button>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Main Content: Form + Preview */}
-                    <div className="flex gap-lg">
+                    <div className="flex flex-col md:flex-row gap-lg">
                         {/* Left: Form */}
                         <div className="flex-1 min-w-0">
                             <Card variant="card" padding="p-lg">
@@ -274,7 +277,7 @@ const BoostPackageForm = () => {
                                     )}
 
                                     {/* Row 1: Name + Badge/Price */}
-                                    <div className="grid grid-cols-2 gap-lg">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
                                         <Input
                                             label={isEditing ? 'PACKAGE NAME' : 'Package Title'}
                                             placeholder="eg : Campus Legend"
@@ -299,7 +302,7 @@ const BoostPackageForm = () => {
                                     </div>
 
                                     {/* Row 2: Duration + Badge/Price */}
-                                    <div className="grid grid-cols-2 gap-lg">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
                                         {isEditing ? (
                                             <Input
                                                 label="PRICE (LKR)"
@@ -329,7 +332,7 @@ const BoostPackageForm = () => {
                                             />
                                         )}
                                         {isEditing ? (
-                                            <div className="grid grid-cols-2 gap-md">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
                                                 <Input
                                                     label="DURATION"
                                                     placeholder="3"
@@ -416,7 +419,7 @@ const BoostPackageForm = () => {
                         </div>
 
                         {/* Right: Live Preview */}
-                        <div className="w-80 flex-shrink-0">
+                        <div className="w-full md:w-80 flex-shrink-0">
                             <div className="sticky top-24 flex flex-col gap-md">
                                 {/* Preview Header */}
                                 <div className="flex items-center gap-sm">
