@@ -32,7 +32,7 @@ const VerifiedList = () => {
   return (
     <div className="flex flex-col gap-4 sm:gap-xl w-full max-w-[1122px]">
       {/* Stats Row */}
-      <div className="grid grid-cols-3 gap-2 md:gap-lg">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-lg">
         <StatsCard
           iconSrc="/icon_verified_clubs.svg"
           iconAlt="Verified Clubs"
