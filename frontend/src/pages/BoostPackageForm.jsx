@@ -1,54 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import MainLayout from '../components/layout/MainLayout';
-import Card from '../components/common/Card';
-import Input from '../components/common/Input';
-import Select from '../components/common/Select';
-import Button from '../components/common/Button';
-import { useBoostPackages } from '../context/BoostPackageContext';
-import { mockRequests } from '../data/mockData';
-import { CheckCircle2, Trash2, Plus, GripVertical, Eye, Info, LayoutDashboard, Settings, Save, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import MainLayout from "../components/layout/MainLayout";
+import Card from "../components/common/Card";
+import Input from "../components/common/Input";
+import Select from "../components/common/Select";
+import Button from "../components/common/Button";
+import { useBoostPackages } from "../context/BoostPackageContext";
+import { mockRequests } from "../data/mockData";
+import {
+  CheckCircle2,
+  Trash2,
+  Plus,
+  GripVertical,
+  Eye,
+  Info,
+  LayoutDashboard,
+  Settings,
+  Save,
+  AlertTriangle,
+} from "lucide-react";
 
 const BoostPackageForm = () => {
-    const navigate = useNavigate();
-    const { id } = useParams();
-    const isEditing = !!id;
-    const { packages, addPackage, updatePackage } = useBoostPackages();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditing = !!id;
+  const { packages, addPackage, updatePackage } = useBoostPackages();
 
-    // Find existing package if editing
-    const existingPackage = isEditing
-        ? packages.find((pkg) => pkg.id === id)
-        : null;
+  // Find existing package if editing
+  const existingPackage = isEditing
+    ? packages.find((pkg) => pkg.id === id)
+    : null;
 
-    // Form state
-    const [packageName, setPackageName] = useState('');
-    const [price, setPrice] = useState('');
-    const [durationValue, setDurationValue] = useState('24');
-    const [durationUnit, setDurationUnit] = useState('Hours');
-    const [badgeType, setBadgeType] = useState('No Badge');
-    const [description, setDescription] = useState('');
-    const [features, setFeatures] = useState(['']);
+  // Form state
+  const [packageName, setPackageName] = useState("");
+  const [price, setPrice] = useState("");
+  const [durationValue, setDurationValue] = useState("24");
+  const [durationUnit, setDurationUnit] = useState("Hours");
+  const [badgeType, setBadgeType] = useState("No Badge");
+  const [description, setDescription] = useState("");
+  const [features, setFeatures] = useState([""]);
 
-    // Modal states
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [successData, setSuccessData] = useState(null);
-    const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  // Modal states
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successData, setSuccessData] = useState(null);
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
-    // Pre-fill form if editing
-    useEffect(() => {
-        if (existingPackage) {
-            setPackageName(existingPackage.name);
-            setPrice(String(existingPackage.price));
-            setDurationValue(String(existingPackage.durationValue));
-            setDurationUnit(existingPackage.durationUnit);
-            setBadgeType(existingPackage.badge);
-            setDescription(existingPackage.description);
-            setFeatures(existingPackage.features);
-        }
-    }, [existingPackage]);
+  // Pre-fill form if editing
+  useEffect(() => {
+    if (existingPackage) {
+      setPackageName(existingPackage.name);
+      setPrice(String(existingPackage.price));
+      setDurationValue(String(existingPackage.durationValue));
+      setDurationUnit(existingPackage.durationUnit);
+      setBadgeType(existingPackage.badge);
+      setDescription(existingPackage.description);
+      setFeatures(existingPackage.features);
+    }
+  }, [existingPackage]);
 
-    const addFeature = () => {
-        setFeatures([...features, '']);
+  const addFeature = () => {
+    setFeatures([...features, ""]);
+  };
+
+  const removeFeature = (index) => {
+    setFeatures(features.filter((_, i) => i !== index));
+  };
+
+  const updateFeatureText = (index, value) => {
+    const updated = [...features];
+    updated[index] = value;
+    setFeatures(updated);
+  };
+
+  // Show save confirmation first
+  const handleSaveClick = () => {
+    setShowSaveConfirm(true);
+  };
+
+  // Actually save after confirmation
+  const confirmSave = () => {
+    setShowSaveConfirm(false);
+
+    const pkgData = {
+      name: packageName || "Untitled",
+      price: Number(price) || 0,
+      duration: `${durationValue} ${durationUnit}`,
+      durationValue: Number(durationValue) || 0,
+      durationUnit,
+      badge: badgeType,
+      description: description || "No description provided.",
+      features: features.filter((f) => f.trim() !== ""),
     };
 
     const removeFeature = (index) => {
@@ -153,83 +194,55 @@ const BoostPackageForm = () => {
                             </p>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="px-8 pb-8 pt-2 flex flex-col gap-3">
-                            <button
-                                onClick={confirmSave}
-                                className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
-                            >
-                                <Save size={18} />
-                                {isEditing ? 'Yes, Update Package' : 'Yes, Save Package'}
-                            </button>
-                            <button
-                                onClick={cancelSave}
-                                className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
-                            >
-                                Cancel
-                            </button>
+                    <div className="flex flex-col gap-sm">
+                      {features.map((feature, index) => (
+                        <div key={index} className="flex items-center gap-sm">
+                          {isEditing && (
+                            <GripVertical
+                              size={18}
+                              className="text-text-secondary flex-shrink-0 cursor-grab"
+                            />
+                          )}
+                          {!isEditing && (
+                            <CheckCircle2
+                              size={18}
+                              className="text-text-secondary flex-shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center px-4 transition-all focus-within:border-primary-blue/50 focus-within:bg-white/10">
+                            <input
+                              type="text"
+                              className="w-full bg-transparent outline-none text-sm text-text-primary placeholder:text-text-tertiary font-inter"
+                              placeholder="Add a new feature..."
+                              value={feature}
+                              onChange={(e) =>
+                                updateFeatureText(index, e.target.value)
+                              }
+                            />
+                          </div>
+                          <button
+                            onClick={() => removeFeature(index)}
+                            className="w-10 h-10 rounded-lg flex items-center justify-center text-state-error/70 hover:bg-state-error/10 hover:text-state-error transition-all flex-shrink-0"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                         </div>
-                    </Card>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-            )}
+              </Card>
+            </div>
 
-            {/* Success Modal - Scrollable to prevent cut-off */}
-            {showSuccess && successData && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">
-                    <Card variant="card" padding="p-0" className="w-full max-w-[480px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl my-auto">
-                        <div className="p-6 sm:p-8 pb-4 sm:pb-6 flex flex-col items-center text-center">
-                            {/* Success Icon */}
-                            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 ring-4 ring-state-success/5">
-                                <CheckCircle2 size={28} className="text-state-success sm:hidden" />
-                                <CheckCircle2 size={32} className="text-state-success hidden sm:block" />
-                            </div>
-
-                            <h2 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">
-                                Package Successfully {successData.isEdit ? 'Updated' : 'Added'}
-                            </h2>
-                            <p className="text-text-secondary text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 max-w-sm">
-                                The "{successData.packageTier}" boosting package has been
-                                successfully {successData.isEdit ? 'applied to your active campaign' : 'added to your active campaign'}.
-                                Your ad visibility will increase immediately.
-                            </p>
-
-                            {/* Details Card */}
-                            <div className="w-full bg-white/5 rounded-2xl border border-white/10 p-md sm:p-lg mb-4 sm:mb-6">
-                                <div className="flex items-center justify-between py-xs sm:py-sm border-b border-white/10">
-                                    <span className="text-body-extra-small text-text-secondary font-inter">Operation ID</span>
-                                    <span className="text-body-extra-small sm:text-body-small-bold text-text-primary font-inter">{successData.operationId}</span>
-                                </div>
-                                <div className="flex items-center justify-between py-xs sm:py-sm border-b border-white/10">
-                                    <span className="text-body-extra-small text-text-secondary font-inter">Activation Date</span>
-                                    <span className="text-body-extra-small sm:text-body-small-bold text-text-primary font-inter">{successData.activationDate}</span>
-                                </div>
-                                <div className="flex items-center justify-between py-xs sm:py-sm">
-                                    <span className="text-body-extra-small text-text-secondary font-inter">Package Tier</span>
-                                    <span className="text-body-extra-small sm:text-body-small-bold text-primary-blue font-inter flex items-center gap-1">
-                                        <span>⚡</span> {successData.packageTier.toUpperCase()}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-1 sm:pt-2 flex flex-col gap-3">
-                            <button
-                                onClick={() => navigate('/')}
-                                className="w-full h-11 sm:h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
-                            >
-                                <LayoutDashboard size={18} />
-                                Return to Dashboard
-                            </button>
-                            <button
-                                onClick={() => navigate('/boost-controller')}
-                                className="w-full h-11 sm:h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
-                            >
-                                <Settings size={18} className="text-text-secondary" />
-                                Manage All Packages
-                            </button>
-                        </div>
-                    </Card>
+            {/* Right: Live Preview */}
+            <div className="w-80 flex-shrink-0">
+              <div className="sticky top-24 flex flex-col gap-md">
+                {/* Preview Header */}
+                <div className="flex items-center gap-sm">
+                  <Eye size={18} className="text-primary-blue" />
+                  <span className="text-body-medium-bold text-text-primary font-inter">
+                    {isEditing ? "LIVE PREVIEW" : "Card Preview"}
+                  </span>
                 </div>
             )}
 
@@ -498,10 +511,15 @@ const BoostPackageForm = () => {
                             </div>
                         </div>
                     </div>
+                  </div>
                 </div>
-            </MainLayout>
-        </>
-    );
+              </div>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    </>
+  );
 };
 
 export default BoostPackageForm;

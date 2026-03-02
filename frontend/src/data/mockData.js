@@ -186,3 +186,114 @@ export const mockBatchRepDocuments = [
         url: "" // No preview for CSV
     }
 ];
+
+const mockPosts = [
+  {
+    id: 1,
+    author: "Millenium Hotel",
+    authorInitial: "MH",
+    time: "5h ago",
+    title: "Millenium",
+    location: "0.2 km from Central Library",
+    description:
+      "Perfect for grad students. Quiet, private entrance, kitchenette included.",
+    image:
+      "/img_post1.jpg",
+    likes: 124,
+    comments: 10,
+    isPromoted: true,
+  },
+  {
+    id: 2,
+    author: "Robotics Club",
+    authorInitial: "RC",
+    time: "2h ago",
+    title: "Hackathon 2026 Registration Open!",
+    location: "Main Auditorium",
+    description:
+      "Teams of 4. Prizes worth Rs.50000. Don't miss this opportunity to build something amazing!",
+    image:
+      "img_post2.jpg",
+    likes: 340,
+    comments: 28,
+    isPromoted: false,
+  },
+  {
+    id: 3,
+    author: "Music Society",
+    authorInitial: "MS",
+    time: "3h ago",
+    title: "Open mic Night",
+    location: "Student Center Atrium",
+    description:
+      "Free entry for all students. Snacks provided. It's going to be a night filled with amazing performances from our talented students.",
+    image:
+      "img_post3.jpg",
+    likes: 150,
+    comments: 18,
+    isPromoted: true,
+  },
+  {
+    id: 4,
+    author: "IEEE",
+    authorInitial: "I",
+    time: "4h ago",
+    title: "Career Fair Prep Workshop",
+    location: "Lecture Hall B",
+    description:
+      "This introductory lecture will explore the foundations of computer science, including problem-solving techniques, programming basics, and real-world applications. Hosted by Prof. Alan Turing, this session is perfect for students considering a major in CS or anyone interested in understanding the technology shaping our world.",
+    image:
+      "img_post4.jpg",
+    likes: 150,
+    comments: 18,
+    isPromoted: false,
+  },
+  {
+    id: 5,
+    author: "Drama Society",
+    authorInitial: "DS",
+    time: "7h ago",
+    title: "Movie Screening: Intersteller",
+    location: "Main Auditorium",
+    description:
+      "Experience the visually stunning and thought-provoking journey through space as a team of explorers travel beyond our galaxy to save humanity. Bring your friends, relax in the auditorium, and enjoy complimentary popcorn. A short discussion will follow the screening for those who want to dive deeper into the film’s themes and science. 25th of March 5.00pm to 8.00pm",
+    image:
+      "img_post5.jpg",
+    likes: 150,
+    comments: 18,
+    isPromoted: false,
+  },
+  {
+    id: 6,
+    author: "Robotic Club",
+    authorInitial: "RC",
+    time: "7h ago",
+    title: "Hackathon 2026 Hoodie",
+    location: "",
+    description:
+      "High quality cotton blend with embroidered logo. Pre-order now to guarantee your size. Price is Rs: 2500.00",
+    image:
+      "img_post6.jpg",
+    likes: 150,
+    comments: 18,
+    isPromoted: false,
+  },
+  {
+    id: 7,
+    author: "Robotic Club",
+    authorInitial: "RC",
+    time: "7h ago",
+    title: "Calculus Early Transcendentals",
+    location: "",
+    description:
+      "High quality pages with beautifully embossed cover. Pre-order now to reserve your copy and dive into the code. Price is Rs: 1050.00",
+    image:
+      "img_post7.jpg",
+    likes: 150,
+    comments: 18,
+    isPromoted: false,
+  },
+
+];
+
+export default mockPosts;
