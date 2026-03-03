@@ -63,8 +63,8 @@ const BusinessRegisterForm = ({ onNext, onBack }) => {
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-[1200px] mx-auto">
       {/* Title Section - Outside Card */}
-      <div className="text-center mb-10 w-full px-6">
-        <h1 className="text-white text-2xl md:text-heading-large mb-5">
+      <div className="text-center mb-6 md:mb-10 w-full px-6">
+        <h1 className="text-white text-2xl md:text-heading-large font-black font-inter tracking-tight leading-tight mb-5">
           Create your Unify Business Account
         </h1>
         <p className="text-text-secondary text-body-large-bold">

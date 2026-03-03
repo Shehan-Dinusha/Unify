@@ -22,10 +22,13 @@ const ClubDetailsForm = ({ onNext }) => {
 
   const [errors, setErrors] = useState({});
 
-  // ... (validateForm, isFormComplete)
+  // Form is complete when required fields are filled
+  const isFormComplete = formData.clubName.trim() !== "" && formData.about.trim() !== "";
 
   const handleChange = (e) => {
-    // ...
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const handleImageChange = (file) => {
@@ -33,7 +36,9 @@ const ClubDetailsForm = ({ onNext }) => {
   };
 
   const handleSubmit = (e) => {
-    // ...
+    e.preventDefault();
+    if (!isFormComplete) return;
+    onNext(formData);
   };
 
   return (
@@ -84,9 +89,9 @@ const ClubDetailsForm = ({ onNext }) => {
               Document Subscription
             </label>
             <div className="relative group cursor-pointer">
-              <div className="w-full h-[52px] rounded-2xl bg-white/5 border border-white/10 px-4 flex items-center gap-3 group-hover:border-primary-blue/30 transition-all">
-                <FileText size={20} className="text-text-tertiary" />
-                <label className="bg-primary-blue/10 text-primary-blue text-body-small-bold px-4 py-1.5 rounded-lg cursor-pointer hover:bg-primary-blue/20 transition-all">
+              <div className="w-full min-h-[52px] rounded-2xl bg-white/5 border border-white/10 px-4 py-2 flex items-center gap-3 group-hover:border-primary-blue/30 transition-all">
+                <FileText size={20} className="text-text-tertiary shrink-0" />
+                <label className="bg-primary-blue/10 text-primary-blue text-body-small-bold px-4 py-1.5 rounded-lg cursor-pointer hover:bg-primary-blue/20 transition-all whitespace-nowrap shrink-0">
                   Choose File
                   <input
                     type="file"
@@ -99,7 +104,7 @@ const ClubDetailsForm = ({ onNext }) => {
                     }
                   />
                 </label>
-                <span className="text-text-secondary text-body-small truncate">
+                <span className="text-text-secondary text-body-small truncate min-w-0 flex-1">
                   {formData.document
                     ? formData.document.name
                     : "No file chosen"}

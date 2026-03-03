@@ -73,7 +73,7 @@ const ForgotPasswordPage = () => {
 
   return (
     <LandingLayout Header={AuthenticationHeader}>
-      <div className="flex-1 flex items-center justify-center py-10 px-4">
+      <div className="flex-1 flex items-center justify-center py-10 px-4 sm:px-0">
         {renderStep()}
       </div>
     </LandingLayout>

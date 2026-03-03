@@ -115,7 +115,7 @@ const RegisterPage = () => {
 
   return (
     <LandingLayout Header={AuthenticationHeader}>
-      <div className="flex-1 flex flex-col items-center justify-start md:justify-center py-6 md:py-4 px-4 min-h-screen relative z-10 pt-16 md:pt-4">
+      <div className="flex-1 flex flex-col items-center justify-center py-6 md:py-4 px-4 min-h-screen relative z-10 pt-16 md:pt-4">
         <div className="w-full flex flex-col items-center justify-center">
           {renderStep()}
         </div>

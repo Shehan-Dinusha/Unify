@@ -131,8 +131,8 @@ const SupportPage = () => {
         <div className="w-full max-w-[1280px] px-4 flex flex-col items-center gap-12 z-10">
           {/* Hero Title */}
           <div className="text-center">
-            <h1 className="text-heading-display text-white tracking-tight leading-tight">
-              How can we help you today?
+            <h1 className="text-3xl sm:text-4xl lg:text-heading-display text-white tracking-tight leading-tight font-black font-inter">
+              How can we help<br className="sm:hidden" /> you today?
             </h1>
           </div>
 
