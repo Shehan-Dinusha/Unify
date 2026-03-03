@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LandingLayout from "../components/layout/LandingLayout";
 import AuthenticationHeader from "../components/auth/AuthenticationHeader";
 import ForgotPasswordForm from "../components/auth/ForgotPasswordForm";
@@ -9,6 +9,39 @@ import SuccessMessage from "../components/auth/SuccessMessage";
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState("email");
   const [userIdentifier, setUserIdentifier] = useState("");
+
+  useEffect(() => {
+    // Strict fix to screen
+    document.body.style.overflow = "hidden";
+    document.body.style.height = "100vh";
+
+    const container = document.querySelector(".bg-app-bg");
+    const main = document.querySelector("main");
+
+    if (container) {
+      container.style.height = "100vh";
+      container.style.overflow = "hidden";
+    }
+    if (main) {
+      main.style.overflow = "hidden"; // Strictly no scroll
+      main.style.display = "flex";
+      main.style.flexDirection = "column";
+      main.style.justifyContent = "center";
+    }
+
+    // Restore on unmount
+    return () => {
+      document.body.style.overflow = "auto";
+      document.body.style.height = "auto";
+      if (container) {
+        container.style.height = "auto";
+        container.style.overflow = "visible";
+      }
+      if (main) {
+        main.style.overflow = "visible";
+      }
+    };
+  }, []);
 
   const renderStep = () => {
     switch (step) {

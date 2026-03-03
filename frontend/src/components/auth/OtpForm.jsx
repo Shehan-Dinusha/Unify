@@ -11,10 +11,41 @@ const OtpForm = ({ email, onVerify, onBack }) => {
   const contactType = isEmail ? "email" : "phone number";
 
   useEffect(() => {
+    // Strict fix to screen
+    document.body.style.overflow = "hidden";
+    document.body.style.height = "100vh";
+
+    const container = document.querySelector(".bg-app-bg");
+    const main = document.querySelector("main");
+
+    if (container) {
+      container.style.height = "100vh";
+      container.style.overflow = "hidden";
+    }
+    if (main) {
+      main.style.overflow = "hidden"; // Strictly no scroll
+      main.style.display = "flex";
+      main.style.flexDirection = "column";
+      main.style.justifyContent = "center";
+    }
+
     const interval = setInterval(() => {
       setTimer((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
-    return () => clearInterval(interval);
+
+    // Restore on unmount
+    return () => {
+      document.body.style.overflow = "auto";
+      document.body.style.height = "auto";
+      if (container) {
+        container.style.height = "auto";
+        container.style.overflow = "visible";
+      }
+      if (main) {
+        main.style.overflow = "visible";
+      }
+      clearInterval(interval);
+    };
   }, []);
 
   const formatTime = (seconds) => {
