@@ -161,29 +161,8 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
       <div className="grid grid-cols-1 md:grid-cols-[1fr_1.4fr] gap-5">
         {/* Left — Image Upload + Tip */}
         <div className="flex flex-col gap-5">
-          {/* Uploaded Thumbnails */}
-          {imagePreviews.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
-              {imagePreviews.map((src, i) => (
-                <div key={i} className="relative group rounded-xl overflow-hidden aspect-square">
-                  <img
-                    src={src}
-                    alt={`Upload ${i + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <button
-                    onClick={() => removeImage(i)}
-                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 text-white text-[11px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Upload Area */}
-          {imagePreviews.length < 5 && (
+          {/* ── No images yet — large upload area ── */}
+          {imagePreviews.length === 0 && (
             <div
               onClick={() => fileInputRef.current?.click()}
               className="flex flex-col items-center justify-center gap-3 w-full h-44 rounded-2xl border-2 border-dashed border-white/15 bg-white/5 hover:border-primary-blue/40 hover:bg-white/[0.07] transition-all cursor-pointer"
@@ -191,17 +170,62 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
               <Upload size={28} className="text-primary-blue" />
               <div className="flex flex-col items-center gap-0.5">
                 <span className="text-body-small-bold text-primary-blue">
-                  {imagePreviews.length > 0 ? "Add more images" : "Click to upload image"}
+                  Click to upload image
                 </span>
-                {imagePreviews.length > 0 && (
-                  <span className="text-[11px] text-primary-blue/70">
-                    {5 - imagePreviews.length} more allowed
-                  </span>
-                )}
               </div>
               <span className="text-[11px] text-text-tertiary">
                 PNG, JPG up to 10MB per file (Max 5)
               </span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg"
+                multiple
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </div>
+          )}
+
+          {/* ── Has images — compact row: add-btn + thumbnails ── */}
+          {imagePreviews.length > 0 && (
+            <div className="flex items-start gap-3 flex-wrap">
+              {/* Dashed "+ Add" square */}
+              {imagePreviews.length < 5 && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-[88px] h-[88px] shrink-0 rounded-xl border-2 border-dashed border-white/20 bg-white/5 hover:border-primary-blue/50 hover:bg-white/[0.08] transition-all flex flex-col items-center justify-center gap-1 cursor-pointer"
+                >
+                  <span className="text-2xl leading-none text-text-tertiary">+</span>
+                  <span className="text-body-extra-small text-text-tertiary">
+                    {5 - imagePreviews.length} left
+                  </span>
+                </button>
+              )}
+
+              {/* Thumbnails */}
+              {imagePreviews.map((src, i) => (
+                <div
+                  key={i}
+                  className="relative w-[88px] h-[88px] shrink-0 rounded-xl overflow-hidden"
+                >
+                  <img
+                    src={src}
+                    alt={`Upload ${i + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-dark-1/70 backdrop-blur-sm text-text-primary text-[11px] flex items-center justify-center hover:bg-state-error/80 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+
+              {/* Hidden file input (shared) */}
               <input
                 ref={fileInputRef}
                 type="file"
