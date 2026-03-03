@@ -27,7 +27,7 @@ const FAQItem = ({ question, answer, isOpen, onClick }) => {
 
         <div
           className={`w-full px-6 transition-all duration-300 ease-in-out overflow-hidden ${
-            isOpen ? "max-h-[200px] opacity-100 pb-6" : "max-h-0 opacity-0"
+            isOpen ? "max-h-[800px] opacity-100 pb-6" : "max-h-0 opacity-0"
           }`}
         >
           <div className="justify-center text-slate-400 text-base font-normal leading-6">
@@ -132,7 +132,8 @@ const SupportPage = () => {
           {/* Hero Title */}
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl lg:text-heading-display text-white tracking-tight leading-tight font-black font-inter">
-              How can we help<br className="sm:hidden" /> you today?
+              How can we help
+              <br className="sm:hidden" /> you today?
             </h1>
           </div>
 

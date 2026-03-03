@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Lock, RotateCcw } from "lucide-react";
 import Card from "../common/Card";
 import Input from "../common/Input";
@@ -10,39 +10,6 @@ const ResetPasswordForm = ({ onReset }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-
-  useEffect(() => {
-    // Strict fix to screen
-    document.body.style.overflow = "hidden";
-    document.body.style.height = "100vh";
-
-    const container = document.querySelector(".bg-app-bg");
-    const main = document.querySelector("main");
-
-    if (container) {
-      container.style.height = "100vh";
-      container.style.overflow = "hidden";
-    }
-    if (main) {
-      main.style.overflow = "hidden";
-      main.style.display = "flex";
-      main.style.flexDirection = "column";
-      main.style.justifyContent = "center";
-    }
-
-    // Restore on unmount
-    return () => {
-      document.body.style.overflow = "auto";
-      document.body.style.height = "auto";
-      if (container) {
-        container.style.height = "auto";
-        container.style.overflow = "visible";
-      }
-      if (main) {
-        main.style.overflow = "visible";
-      }
-    };
-  }, []);
 
   const validate = () => {
     let tempErrors = {};

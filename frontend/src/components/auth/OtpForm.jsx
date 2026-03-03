@@ -10,42 +10,13 @@ const OtpForm = ({ email, onVerify, onBack }) => {
   const isEmail = email?.includes("@");
   const contactType = isEmail ? "email" : "phone number";
 
+  const interval = React.useRef(null);
+
   useEffect(() => {
-    // Strict fix to screen
-    document.body.style.overflow = "hidden";
-    document.body.style.height = "100vh";
-
-    const container = document.querySelector(".bg-app-bg");
-    const main = document.querySelector("main");
-
-    if (container) {
-      container.style.height = "100vh";
-      container.style.overflow = "hidden";
-    }
-    if (main) {
-      main.style.overflow = "hidden";
-      main.style.display = "flex";
-      main.style.flexDirection = "column";
-      main.style.justifyContent = "center";
-    }
-
-    const interval = setInterval(() => {
+    interval.current = setInterval(() => {
       setTimer((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
-
-    // Restore on unmount
-    return () => {
-      document.body.style.overflow = "auto";
-      document.body.style.height = "auto";
-      if (container) {
-        container.style.height = "auto";
-        container.style.overflow = "visible";
-      }
-      if (main) {
-        main.style.overflow = "visible";
-      }
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval.current);
   }, []);
 
   const formatTime = (seconds) => {
@@ -141,7 +112,7 @@ const OtpForm = ({ email, onVerify, onBack }) => {
             </Button>
 
             <div className="flex flex-col items-center gap-4">
-              <p className="text-text-secondary text-body-small">
+              <p className="text-text-secondary text-body-small text-center">
                 Didn't receive the {isEmail ? "email" : "code"}?{" "}
                 <button
                   type="button"
