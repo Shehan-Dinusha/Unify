@@ -35,6 +35,7 @@ import MyReviewHistory from "../pages/MyReviewHistory";
 import ReceivedReviews from "../pages/ReceivedReviews";
 import FollowersDirectory from "../pages/FollowersDirectory";
 import Followings from "../pages/Followings";
+import BatchRepLearningDashboard from "../pages/BatchRepLearningDashboard";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout
@@ -194,12 +195,7 @@ const router = createBrowserRouter([
       { path: "/business/reviews", element: <ReceivedReviews /> },
       {
         path: "/learning",
-        element: (
-          <PlaceholderPage
-            title="Learning"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <BatchRepLearningDashboard />,
       },
       {
         path: "/report-moderation",

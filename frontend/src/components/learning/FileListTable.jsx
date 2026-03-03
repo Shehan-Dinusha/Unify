@@ -1,0 +1,115 @@
+import { Play, Edit2, Trash2 } from "lucide-react";
+import Button from "../common/Button";
+
+/**
+ * Represents the table view showing files inside a specific category (e.g., Video Files)
+ */
+const FileListTable = ({
+  categoryName = "Programming Fundamentals",
+  files = [],
+}) => {
+  return (
+    <div className="w-full bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="w-full h-12 px-5 py-3 border-b border-gray-700 flex items-center">
+        <h3 className="text-white text-sm font-bold font-inter leading-5">
+          Video Files in "{categoryName}"
+        </h3>
+      </div>
+
+      {/* Table columns */}
+      <div className="w-full bg-gray-800/50 flex">
+        <div className="w-80 px-5 py-3 flex items-center">
+          <span className="text-gray-400 text-xs font-bold font-inter leading-5 uppercase tracking-wider">
+            FILE
+          </span>
+        </div>
+        <div className="w-40 px-5 py-3 flex items-center">
+          <span className="text-gray-400 text-xs font-bold font-inter leading-5 uppercase tracking-wider">
+            UPLOADED BY
+          </span>
+        </div>
+        <div className="flex-1 px-5 py-3 flex items-center">
+          <span className="text-gray-400 text-xs font-bold font-inter leading-5 uppercase tracking-wider">
+            DATE MODIFIED
+          </span>
+        </div>
+      </div>
+
+      {/* Table rows */}
+      <div className="w-full flex flex-col">
+        {files.map((file, idx) => (
+          <div
+            key={idx}
+            className="w-full h-20 px-5 flex items-center border-t border-gray-700 hover:bg-white/5 transition-colors group cursor-pointer"
+          >
+            {/* File Column */}
+            <div className="w-80 flex items-center gap-3.5 pr-4">
+              <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center shrink-0">
+                <Play size={20} className="text-red-500 fill-red-500" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <h4 className="text-white text-sm font-bold font-inter leading-5 truncate">
+                  {file.name}
+                </h4>
+                <p className="text-gray-400 text-xs font-normal font-inter leading-5">
+                  {file.size}
+                </p>
+              </div>
+            </div>
+
+            {/* Uploader Column */}
+            <div className="w-40 flex items-center gap-2 pr-4">
+              {file.uploader.avatar ? (
+                <img
+                  src={file.uploader.avatar}
+                  alt={file.uploader.name}
+                  className="w-6 h-6 rounded-full border border-gray-700"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center border border-gray-700">
+                  <span className="text-white text-[10px] font-medium font-inter">
+                    {file.uploader.initials}
+                  </span>
+                </div>
+              )}
+              <span className="text-gray-300 text-xs font-normal font-inter leading-5 truncate">
+                {file.uploader.name}
+              </span>
+            </div>
+
+            {/* Date Column and Actions */}
+            <div className="flex-1 flex justify-between items-center">
+              <span className="text-gray-400 text-xs font-normal font-inter leading-5">
+                {file.dateModified}
+              </span>
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="small"
+                  className="!px-2 !py-2 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10"
+                >
+                  <Edit2 size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="small"
+                  className="!px-2 !py-2 text-gray-400 hover:text-red-500 transition-colors rounded hover:bg-white/10"
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {files.length === 0 && (
+          <div className="p-8 text-center text-gray-500 font-inter text-sm">
+            No files uploaded yet.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default FileListTable;
