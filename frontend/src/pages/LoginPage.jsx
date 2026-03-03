@@ -4,7 +4,6 @@ import LoginForm from "../components/auth/LoginForm";
 
 const LoginPage = () => {
   useEffect(() => {
-    // Strict fix to screen
     document.body.style.overflow = "hidden";
     document.body.style.height = "100vh";
 
@@ -16,13 +15,12 @@ const LoginPage = () => {
       container.style.overflow = "hidden";
     }
     if (main) {
-      main.style.overflow = "hidden"; // Strictly no scroll
+      main.style.overflow = "hidden";
       main.style.display = "flex";
       main.style.flexDirection = "column";
       main.style.justifyContent = "center";
     }
 
-    // Restore on unmount
     return () => {
       document.body.style.overflow = "auto";
       document.body.style.height = "auto";
@@ -38,8 +36,7 @@ const LoginPage = () => {
 
   return (
     <LandingLayout>
-      <div className="relative flex items-center justify-center min-h-[calc(100vh-80px)] px-4 sm:px-0">
-        {" "}
+      <div className="relative flex items-center justify-center sm:min-h-[calc(100vh-80px)] px-4 sm:px-0">
         {/* Adjust height for header/footer if needed */}
         <LoginForm />
       </div>

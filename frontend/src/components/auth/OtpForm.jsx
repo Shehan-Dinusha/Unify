@@ -23,7 +23,7 @@ const OtpForm = ({ email, onVerify, onBack }) => {
       container.style.overflow = "hidden";
     }
     if (main) {
-      main.style.overflow = "hidden"; // Strictly no scroll
+      main.style.overflow = "hidden";
       main.style.display = "flex";
       main.style.flexDirection = "column";
       main.style.justifyContent = "center";

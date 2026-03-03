@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LandingLayout from "../components/layout/LandingLayout";
 import AuthenticationHeader from "../components/auth/AuthenticationHeader";
 import ChooseMainType from "../components/auth/ChooseMainType";
@@ -19,6 +19,64 @@ const RegisterPage = () => {
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, [step]);
+
+  // Mobile-only body lock for the compact register step
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (step === "register" && isMobile) {
+      document.body.style.overflow = "hidden";
+      document.body.style.height = "100vh";
+
+      const container = document.querySelector(".bg-app-bg");
+      const main = document.querySelector("main");
+      if (container) {
+        container.style.height = "100vh";
+        container.style.overflow = "hidden";
+      }
+      if (main) {
+        main.style.overflow = "hidden";
+        main.style.display = "flex";
+        main.style.flexDirection = "column";
+        main.style.justifyContent = "center";
+      }
+    } else {
+      // Restore for all other steps
+      document.body.style.overflow = "";
+      document.body.style.height = "";
+      const container = document.querySelector(".bg-app-bg");
+      const main = document.querySelector("main");
+      if (container) {
+        container.style.height = "";
+        container.style.overflow = "";
+      }
+      if (main) {
+        main.style.overflow = "";
+        main.style.display = "";
+        main.style.flexDirection = "";
+        main.style.justifyContent = "";
+        main.style.paddingTop = "";
+      }
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.height = "";
+      const container = document.querySelector(".bg-app-bg");
+      const main = document.querySelector("main");
+      if (container) {
+        container.style.height = "";
+        container.style.overflow = "";
+      }
+      if (main) {
+        main.style.overflow = "";
+        main.style.display = "";
+        main.style.flexDirection = "";
+        main.style.justifyContent = "";
+        main.style.paddingTop = "";
+      }
+    };
+  }, [step]);
+
   const [mainType, setMainType] = useState(null); // student, business
   const [businessType, setBusinessType] = useState(null); // boarding, club, cafe, self-employed
   const [email, setEmail] = useState("");
@@ -115,7 +173,7 @@ const RegisterPage = () => {
 
   return (
     <LandingLayout Header={AuthenticationHeader}>
-      <div className="flex-1 flex flex-col items-center justify-center py-6 md:py-4 px-4 min-h-screen relative z-10 pt-16 md:pt-4">
+      <div className="flex-1 flex flex-col items-center justify-center py-4 sm:py-6 md:py-4 px-4 sm:min-h-screen relative z-10 sm:pt-16 md:pt-4">
         <div className="w-full flex flex-col items-center justify-center">
           {renderStep()}
         </div>

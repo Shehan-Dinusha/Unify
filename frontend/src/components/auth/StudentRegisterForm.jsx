@@ -60,11 +60,11 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-[1200px] mx-auto">
       {/* Title Section - Outside Card */}
-      <div className="text-center mb-6 md:mb-10 w-full px-6">
-        <h1 className="text-white text-2xl md:text-heading-large font-black font-inter tracking-tight leading-tight mb-7">
+      <div className="text-center mb-3 md:mb-6 lg:mb-10 w-full px-6">
+        <h1 className="text-white text-xl sm:text-2xl md:text-heading-large font-black font-inter tracking-tight leading-tight mb-2 md:mb-7">
           Create your Unify Student Account
         </h1>
-        <p className="text-text-secondary text-body-large-bold">
+        <p className="hidden sm:block text-text-secondary text-body-large-bold">
           Connect with your campus. Enter your details below.
         </p>
       </div>
@@ -146,7 +146,7 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
       </Card>
 
       {/* Footer Section - Outside Card */}
-      <div className="mt-8 text-center w-full">
+      <div className="hidden sm:block mt-8 text-center w-full">
         <p className="text-text-secondary text-body-small">
           By clicking continue, You agree to our Terms of Service and Privacy
           Policy.
