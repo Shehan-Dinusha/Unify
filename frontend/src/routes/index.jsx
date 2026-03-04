@@ -1,6 +1,10 @@
 import React from "react";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
+import ScrollToTop from "../components/common/ScrollToTop";
+import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
+import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import LandingHome from "../pages/LandingHome";
 import AboutPage from "../pages/AboutPage";
 import FeaturesPage from "../pages/FeaturesPage";
@@ -25,7 +29,13 @@ import Marketplace from "../pages/Marketplace";
 import Club from "../pages/Club";
 import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
+import LostAndFound from "../pages/LostAndFound";
 import NotFound from "../pages/NotFound";
+import MarketplaceReviews from "../pages/MarketplaceReviews";
+import MyReviewHistory from "../pages/MyReviewHistory";
+import ReceivedReviews from "../pages/ReceivedReviews";
+import FollowersDirectory from "../pages/FollowersDirectory";
+import Followings from "../pages/Followings";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout
@@ -49,6 +59,7 @@ const PlaceholderPage = ({ title, verificationCount }) => (
 // Root layout wraps every route in the BoostPackageProvider
 const RootLayout = () => (
   <BoostPackageProvider>
+    <ScrollToTop />
     <Outlet />
   </BoostPackageProvider>
 );
@@ -61,6 +72,18 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <LandingHome />,
+      },
+      {
+        path: "/login",
+        element: <LoginPage />,
+      },
+      {
+        path: "/register",
+        element: <RegisterPage />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPasswordPage />,
       },
       {
         path: "/admin",
@@ -154,17 +177,17 @@ const router = createBrowserRouter([
       },
       {
         path: "/lost-and-found",
-        element: (
-          <PlaceholderPage
-            title="Lost & Found"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <LostAndFound />,
       },
       { path: "/marketplace", element: <Marketplace /> },
       { path: "/marketplace/club", element: <Club /> },
       { path: "/marketplace/club/product", element: <ClubProduct /> },
+      { path: "/club/followers", element: <FollowersDirectory /> },
+      { path: "/student/followings", element: <Followings /> },
       { path: "/marketplace/boarding", element: <Boarding /> },
+      { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
+      { path: "/profile/reviews", element: <MyReviewHistory /> },
+      { path: "/business/reviews", element: <ReceivedReviews /> },
       {
         path: "/learning",
         element: (
