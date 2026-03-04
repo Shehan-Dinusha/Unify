@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { MapPin, Upload, Clock, Calendar, Lightbulb } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import { mockLostAndFoundItems } from "../data/mockData";
@@ -337,8 +338,22 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
 /* ─── Page ───────────────────────────────────────────────────── */
 const LostAndFound = () => {
   const [activeFilter, setActiveFilter] = useState("All");
-  // "list" | "modal" | "lostForm" | "foundForm"
-  const [view, setView] = useState("list");
+
+  // Sync view state with URL search params so the browser back button works
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get("view") || "list";
+
+  const setView = useCallback(
+    (newView) => {
+      if (newView === "list") {
+        // Going back to list — remove the param entirely
+        setSearchParams({}, { replace: false });
+      } else {
+        setSearchParams({ view: newView }, { replace: false });
+      }
+    },
+    [setSearchParams]
+  );
 
   const user = { name: "Alex Johnson", role: "student" };
 
@@ -349,15 +364,15 @@ const LostAndFound = () => {
         ? mockLostAndFoundItems.filter((i) => i.type === "lost")
         : mockLostAndFoundItems.filter((i) => i.type === "found");
 
-  /* Create Post button passed into header */
-  const headerRight = (
+  /* Create Post button — only visible on the list view */
+  const headerRight = view === "list" ? (
     <button
       onClick={() => setView("modal")}
       className="bg-primary-blue hover:brightness-110 text-white text-body-small-bold px-5 py-2 rounded-full transition-all active:scale-95"
     >
       Create Post
     </button>
-  );
+  ) : null;
 
   return (
     <MainLayout
