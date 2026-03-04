@@ -124,7 +124,7 @@ const StudentManagement = () => {
             verificationCount={mockRequests.length}
         >
             {/* ── Top Stats Row ─────────────────────────────────── */}
-            <div className="grid grid-cols-3 gap-md mb-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-md mb-lg">
                 {studentStats.map((stat, i) => (
                     <Card key={i} variant="container" className={`${stat.cardBg} h-32 flex items-center`}>
                         <div className="flex items-center gap-md">
@@ -140,14 +140,14 @@ const StudentManagement = () => {
                 ))}
             </div>
             {/* ── Header Row ────────────────────────────────────── */}
-            <div className="flex items-start justify-between mb-lg">
+            <div className="flex flex-col md:flex-row items-start md:items-start justify-between gap-md mb-lg">
                 <div>
                     <h2 className="text-heading-small text-text-primary">Student Directory</h2>
                     <p className="text-body-small text-text-secondary mt-xs">
                         Manage and monitor elite student profiles.
                     </p>
                 </div>
-                <div className="w-72">
+                <div className="w-full md:w-72">
                     <Input
                         icon={Search}
                         placeholder="Search by name, index or NIC...."
@@ -158,7 +158,7 @@ const StudentManagement = () => {
             </div>
 
             {/* ── Filters Row ───────────────────────────────────── */}
-            <div className="flex items-center gap-md mb-md">
+            <div className="flex flex-wrap items-center gap-md mb-md">
                 {/* Tab: All Students */}
                 <button
                     onClick={() => setActiveFilter('All Students')}
@@ -171,7 +171,7 @@ const StudentManagement = () => {
                 </button>
 
                 {/* Faculty Filter */}
-                <div className="w-64">
+                <div className="w-full md:w-64">
                     <Select
                         options={facultyOptions}
                         value={facultyFilter}
@@ -180,7 +180,7 @@ const StudentManagement = () => {
                 </div>
 
                 {/* Status Filter */}
-                <div className="w-40">
+                <div className="w-full md:w-40">
                     <Select
                         options={statusOptions}
                         value={statusFilter}
@@ -188,7 +188,7 @@ const StudentManagement = () => {
                     />
                 </div>
 
-                <div className="flex-1" />
+                <div className="hidden md:block flex-1" />
 
                 {/* Reset */}
                 <button
@@ -202,7 +202,7 @@ const StudentManagement = () => {
 
             {/* ── Student Table ─────────────────────────────────── */}
             {/* Raw div — same glass styling as Card container, but no inner padding wrapper */}
-            <div className="relative overflow-hidden border border-white/20 rounded-2xl bg-white/5 backdrop-blur-sm mb-lg">
+            <div className="relative overflow-hidden border border-white/20 rounded-2xl bg-white/5 backdrop-blur-sm mb-lg hidden md:block">
                 {/* Header */}
                 <div
                     className="grid gap-md px-lg py-md border-b border-white/10"
@@ -261,6 +261,50 @@ const StudentManagement = () => {
                             </button>
                         </div>
                     </div>
+                ))}
+            </div>
+
+            {/* ── Mobile Cards View ──────────────────────────────── */}
+            <div className="grid grid-cols-1 gap-md md:hidden mb-lg">
+                {filteredStudents.map((student) => (
+                    <Card
+                        key={student.id}
+                        variant="container"
+                        className="hover:bg-white/5 transition-colors"
+                    >
+                        <div className="flex flex-col gap-md">
+                            {/* Top: Avatar + Name + Status */}
+                            <div className="flex items-center gap-md">
+                                <img
+                                    src={student.avatar}
+                                    alt={student.name}
+                                    className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0"
+                                />
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-body-medium-bold text-text-primary truncate">{student.name}</p>
+                                    <p className="text-body-extra-small text-text-secondary truncate">{student.email}</p>
+                                </div>
+                                <span className={`inline-flex items-center gap-xs text-body-extra-small-bold px-sm py-xs rounded-lg shrink-0 ${student.status === 'Active'
+                                    ? 'text-state-success bg-state-success/10 border border-state-success/30'
+                                    : 'text-state-error bg-state-error/10 border border-state-error/30'
+                                    }`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${student.status === 'Active' ? 'bg-state-success' : 'bg-state-error'}`} />
+                                    {student.status}
+                                </span>
+                            </div>
+
+                            {/* Details Row */}
+                            <div className="flex items-center justify-between">
+                                <span className="text-body-small text-text-secondary">{student.faculty}</span>
+                                <span className="text-body-extra-small text-text-secondary">{student.lastActive}</span>
+                            </div>
+
+                            {/* Action */}
+                            <button className="w-full py-sm rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue transition-all duration-200 text-center">
+                                View Profile
+                            </button>
+                        </div>
+                    </Card>
                 ))}
             </div>
 

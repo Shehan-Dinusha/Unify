@@ -156,6 +156,10 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
   const currentConfig =
     roleConfigs[user.role.toLowerCase()] || roleConfigs.student;
 
+  const handleNavClick = (path) => {
+    if (onClose) onClose();
+  };
+
   return (
     <>
       {/* Mobile Overlay */}

@@ -38,6 +38,8 @@ import NotFound from "../pages/NotFound";
 import MarketplaceReviews from "../pages/MarketplaceReviews";
 import MyReviewHistory from "../pages/MyReviewHistory";
 import ReceivedReviews from "../pages/ReceivedReviews";
+import FollowersDirectory from "../pages/FollowersDirectory";
+import Followings from "../pages/Followings";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout
@@ -209,6 +211,8 @@ const router = createBrowserRouter([
       { path: "/marketplace", element: <Marketplace /> },
       { path: "/marketplace/club", element: <Club /> },
       { path: "/marketplace/club/product", element: <ClubProduct /> },
+      { path: "/club/followers", element: <FollowersDirectory /> },
+      { path: "/student/followings", element: <Followings /> },
       { path: "/marketplace/boarding", element: <Boarding /> },
       { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
       { path: "/profile/reviews", element: <MyReviewHistory /> },

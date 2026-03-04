@@ -103,7 +103,7 @@ const BoostController = () => {
             >
                 <div className="flex flex-col gap-lg">
                     {/* Title + Add Button */}
-                    <div className="flex items-start justify-between">
+                    <div className="flex flex-col md:flex-row items-start md:items-start justify-between gap-md">
                         <div>
                             <h1 className="text-heading-small text-text-primary font-inter">Ad Boosting Packages</h1>
                             <p className="text-body-small text-text-secondary font-inter mt-1">
@@ -121,13 +121,13 @@ const BoostController = () => {
                     </div>
 
                     {/* Stats Row */}
-                    <div className="grid grid-cols-4 gap-md">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-md">
                         {stats.map((stat, i) => (
                             <Card key={i} variant="container" padding="p-md">
                                 <div className="flex flex-col gap-sm">
                                     <p className="text-body-extra-small text-text-secondary font-inter">{stat.label}</p>
                                     <div className="flex items-end justify-between">
-                                        <span className="text-heading-small text-text-primary font-inter">{stat.value}</span>
+                                        <span className="text-base md:text-heading-small text-text-primary font-inter whitespace-nowrap">{stat.value}</span>
                                         <span className={`text-body-extra-small-bold font-inter ${stat.changeColor}`}>{stat.change}</span>
                                     </div>
                                 </div>
@@ -158,7 +158,7 @@ const BoostController = () => {
                         )}
 
                         {/* Cards Grid — always 3 columns */}
-                        <div className="grid grid-cols-3 gap-md">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
                             {visiblePackages.map((pkg) => (
                                 <Card
                                     key={pkg.id}
@@ -186,9 +186,8 @@ const BoostController = () => {
                                             </div>
                                         </div>
 
-                                        {/* Price */}
                                         <div className="flex items-baseline gap-1 mb-1">
-                                            <span className="text-heading-small text-text-primary font-inter font-bold">Rs. {pkg.price.toLocaleString()}</span>
+                                            <span className="text-base md:text-heading-small text-text-primary font-inter font-bold whitespace-nowrap">Rs. {pkg.price.toLocaleString()}</span>
                                             <span className="text-body-extra-small text-text-secondary font-inter">/ {pkg.duration}</span>
                                         </div>
 
@@ -239,37 +238,38 @@ const BoostController = () => {
 
                     {/* Recent Configuration Changes */}
                     <Card variant="card" padding="p-lg">
-                        <div className="flex items-center justify-between mb-lg">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-sm mb-lg">
                             <div className="flex items-center gap-sm">
                                 <Clock size={20} className="text-text-secondary" />
                                 <h3 className="text-body-large-bold text-text-primary font-inter">Recent Configuration Changes</h3>
                             </div>
-                            <button className="text-body-small-bold text-primary-blue font-inter hover:underline transition-all">
+                            <button className="text-body-small-bold text-primary-blue font-inter hover:underline transition-all hidden md:block">
                                 View All Logs
                             </button>
                         </div>
-                        <div className="flex flex-col gap-md">
+                        <div className="flex flex-col">
                             {logs.map((log) => (
                                 <div
                                     key={log.id}
-                                    className="flex items-center justify-between py-sm border-b border-white/5 last:border-0"
+                                    className="flex items-start gap-md py-md border-b border-white/5 last:border-0"
                                 >
-                                    <div className="flex items-center gap-md">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${log.type === 'package_added' ? 'bg-state-success/15' :
-                                                log.type === 'package_deleted' ? 'bg-state-error/15' :
-                                                    'bg-primary-blue/15'
-                                            }`}>
-                                            {log.type === 'package_added' && <CheckCircle2 size={18} className="text-state-success" />}
-                                            {log.type === 'package_deleted' && <Trash2 size={18} className="text-state-error" />}
-                                            {log.type === 'package_updated' && <RefreshCw size={18} className="text-primary-blue" />}
-                                            {(!['package_added', 'package_deleted', 'package_updated'].includes(log.type)) && <Clock size={18} className="text-text-secondary" />}
-                                        </div>
-                                        <div>
-                                            <p className="text-body-small-bold text-text-primary font-inter leading-tight">{log.title}</p>
-                                            <p className="text-body-extra-small text-text-secondary font-inter mt-0.5">{log.description}</p>
-                                        </div>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${log.type === 'package_added' ? 'bg-state-success/15' :
+                                            log.type === 'package_deleted' ? 'bg-state-error/15' :
+                                                'bg-primary-blue/15'
+                                        }`}>
+                                        {log.type === 'package_added' && <CheckCircle2 size={18} className="text-state-success" />}
+                                        {log.type === 'package_deleted' && <Trash2 size={18} className="text-state-error" />}
+                                        {log.type === 'package_updated' && <RefreshCw size={18} className="text-primary-blue" />}
+                                        {(!['package_added', 'package_deleted', 'package_updated'].includes(log.type)) && <Clock size={18} className="text-text-secondary" />}
                                     </div>
-                                    <span className="text-body-extra-small text-text-secondary font-inter whitespace-nowrap ml-md">{log.time}</span>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between gap-sm">
+                                            <p className="text-body-small-bold text-text-primary font-inter leading-tight">{log.title}</p>
+                                            <span className="text-body-extra-small text-text-secondary font-inter whitespace-nowrap shrink-0 hidden md:inline">{log.time}</span>
+                                        </div>
+                                        <p className="text-body-extra-small text-text-secondary font-inter mt-0.5">{log.description}</p>
+                                        <span className="text-body-extra-small text-text-tertiary font-inter mt-1 block md:hidden">{log.time}</span>
+                                    </div>
                                 </div>
                             ))}
                         </div>
