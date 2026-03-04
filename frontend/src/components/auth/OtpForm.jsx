@@ -10,11 +10,13 @@ const OtpForm = ({ email, onVerify, onBack }) => {
   const isEmail = email?.includes("@");
   const contactType = isEmail ? "email" : "phone number";
 
+  const interval = React.useRef(null);
+
   useEffect(() => {
-    const interval = setInterval(() => {
+    interval.current = setInterval(() => {
       setTimer((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
-    return () => clearInterval(interval);
+    return () => clearInterval(interval.current);
   }, []);
 
   const formatTime = (seconds) => {
@@ -110,7 +112,7 @@ const OtpForm = ({ email, onVerify, onBack }) => {
             </Button>
 
             <div className="flex flex-col items-center gap-4">
-              <p className="text-text-secondary text-body-small">
+              <p className="text-text-secondary text-body-small text-center">
                 Didn't receive the {isEmail ? "email" : "code"}?{" "}
                 <button
                   type="button"

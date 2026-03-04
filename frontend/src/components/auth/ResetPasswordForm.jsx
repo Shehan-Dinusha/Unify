@@ -45,8 +45,8 @@ const ResetPasswordForm = ({ onReset }) => {
 
   return (
     <Card variant="card" className="w-full max-w-[480px]">
-      <div className="flex flex-col gap-10">
-        <div className="flex flex-col items-center gap-6">
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col items-center gap-4">
           <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center overflow-hidden">
             <img
               src="/icon_forgot_password.svg"
@@ -58,9 +58,6 @@ const ResetPasswordForm = ({ onReset }) => {
             <h2 className="text-white text-2xl font-bold font-inter leading-8">
               Reset Password
             </h2>
-            <p className="text-gray-400 text-sm font-normal font-inter leading-5 px-4 leading-relaxed">
-              Please enter your new password to secure your Unify account.
-            </p>
           </div>
         </div>
 

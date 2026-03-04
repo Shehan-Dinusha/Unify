@@ -2,11 +2,21 @@ import React from "react";
 import LandingLayout from "../components/layout/LandingLayout";
 import { Check } from "lucide-react";
 
-const PricingCard = ({ title, price, duration, description, features, isPopular = false, bestValue = false }) => {
+const PricingCard = ({
+  title,
+  price,
+  duration,
+  description,
+  features,
+  isPopular = false,
+  bestValue = false,
+}) => {
   return (
-    <div className={`relative w-full min-h-[420px] rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 flex flex-col ${isPopular ? "outline outline-1 outline-primary-blue shadow-[0px_0px_30px_rgba(43,140,238,0.3)] bg-white/5" : "border border-white/20 hover:border-white/40 bg-white/5"}`}>
+    <div
+      className={`relative w-full min-h-[420px] rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-2 flex flex-col ${isPopular ? "outline outline-1 outline-primary-blue shadow-[0px_0px_30px_rgba(43,140,238,0.3)] bg-white/5" : "border border-white/20 hover:border-white/40 bg-white/5"}`}
+    >
       {/* Background Glass Effect - Removed absolute to fix stacking, used bg-white/5 on parent instead */}
-      
+
       {/* Content */}
       <div className="relative z-10 p-8 flex flex-col h-full">
         {/* Header */}
@@ -14,15 +24,21 @@ const PricingCard = ({ title, price, duration, description, features, isPopular 
           <h3 className="text-2xl font-bold text-white font-inter">{title}</h3>
           {bestValue && (
             <div className="bg-primary-blue/20 px-2 py-1 rounded">
-              <span className="text-primary-blue text-[10px] font-bold uppercase tracking-wide">Best Value</span>
+              <span className="text-primary-blue text-[10px] font-bold uppercase tracking-wide">
+                Best Value
+              </span>
             </div>
           )}
         </div>
 
         {/* Price */}
         <div className="flex items-baseline mb-2">
-          <span className="text-3xl font-bold text-white font-inter">Rs. {price}</span>
-          <span className="ml-2 text-primary-blue text-sm font-bold font-inter">/ {duration}</span>
+          <span className="text-3xl font-bold text-white font-inter">
+            Rs. {price}
+          </span>
+          <span className="ml-2 text-primary-blue text-sm font-bold font-inter">
+            / {duration}
+          </span>
         </div>
 
         {/* Description */}
@@ -34,10 +50,14 @@ const PricingCard = ({ title, price, duration, description, features, isPopular 
         <div className="flex flex-col gap-3">
           {features.map((feature, index) => (
             <div key={index} className="flex items-center gap-3">
-              <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${isPopular ? "bg-primary-blue" : "bg-primary-blue"}`}>
+              <div
+                className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${isPopular ? "bg-primary-blue" : "bg-primary-blue"}`}
+              >
                 <Check className="w-3 h-3 text-white" strokeWidth={3} />
               </div>
-              <span className={`text-xs font-normal font-inter ${isPopular ? "text-white" : "text-gray-400"}`}>
+              <span
+                className={`text-xs font-normal font-inter ${isPopular ? "text-white" : "text-gray-400"}`}
+              >
                 {feature}
               </span>
             </div>
@@ -55,11 +75,7 @@ const PricingPage = () => {
       price: "1000",
       duration: "24 Hours",
       description: "Perfect for quick announcements or flash sales.",
-      features: [
-        "Standard Visibility",
-        "Basic Analytics",
-        "Feed Placement"
-      ]
+      features: ["Standard Visibility", "Basic Analytics", "Feed Placement"],
     },
     {
       title: "Growth",
@@ -70,9 +86,9 @@ const PricingPage = () => {
         "2x Audience Reach",
         "Top of Category",
         "Detailed Analytics",
-        "Priority Support"
+        "Priority Support",
       ],
-      isPopular: true
+      isPopular: true,
     },
     {
       title: "Dominate",
@@ -83,10 +99,10 @@ const PricingPage = () => {
         "Max Reach Potential",
         "Top of Feed Placement",
         "Highlighted Gold Border",
-        "CRM Integration"
+        "CRM Integration",
       ],
-      bestValue: true
-    }
+      bestValue: true,
+    },
   ];
 
   return (
@@ -96,11 +112,12 @@ const PricingPage = () => {
 
         {/* Hero Section */}
         <div className="relative z-10 px-4">
-          <h1 className="text-white text-heading-display tracking-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-heading-display text-white tracking-tight leading-tight font-black font-inter">
             Simple Pricing
           </h1>
-          <p className="mt-4 text-body-large-bold text-gray-400 max-w-2xl mx-auto">
-            Choose the plan that fits your journey. From casual to professional networking.
+          <p className="mt-4 text-body-large-bold font-normal md:font-bold text-gray-400 max-w-2xl mx-auto">
+            Choose the plan that fits your journey. From casual to professional
+            networking.
           </p>
         </div>
 
