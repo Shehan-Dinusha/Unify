@@ -1,6 +1,15 @@
 import React from "react";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
+import ScrollToTop from "../components/common/ScrollToTop";
+import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
+import RegisterAccountTypePage from "../pages/RegisterAccountTypePage";
+import RegisterCredentialsPage from "../pages/RegisterCredentialsPage";
+import RegisterOtpPage from "../pages/RegisterOtpPage";
+import RegisterProfilePage from "../pages/RegisterProfilePage";
+import RegisterSuccessPage from "../pages/RegisterSuccessPage";
+import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import LandingHome from "../pages/LandingHome";
 import AboutPage from "../pages/AboutPage";
 import FeaturesPage from "../pages/FeaturesPage";
@@ -32,6 +41,12 @@ import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
 import MyOrders from "../pages/MyOrders";
 
 
+import NotFound from "../pages/NotFound";
+import MarketplaceReviews from "../pages/MarketplaceReviews";
+import MyReviewHistory from "../pages/MyReviewHistory";
+import ReceivedReviews from "../pages/ReceivedReviews";
+import FollowersDirectory from "../pages/FollowersDirectory";
+import Followings from "../pages/Followings";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout
@@ -55,6 +70,7 @@ const PlaceholderPage = ({ title, verificationCount }) => (
 // Root layout wraps every route in the BoostPackageProvider
 const RootLayout = () => (
   <BoostPackageProvider>
+    <ScrollToTop />
     <Outlet />
   </BoostPackageProvider>
 );
@@ -62,14 +78,47 @@ const RootLayout = () => (
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <NotFound />,
     children: [
       {
         path: "/",
-        element: <AdminDashboard />,
+        element: <LandingHome />,
       },
       {
-        path: "/landing",
-        element: <LandingHome />,
+        path: "/login",
+        element: <LoginPage />,
+      },
+      {
+        path: "/register",
+        element: <RegisterPage />,
+      },
+      {
+        path: "/register/account-type",
+        element: <RegisterAccountTypePage />,
+      },
+      {
+        path: "/register/credentials",
+        element: <RegisterCredentialsPage />,
+      },
+      {
+        path: "/register/otp",
+        element: <RegisterOtpPage />,
+      },
+      {
+        path: "/register/profile",
+        element: <RegisterProfilePage />,
+      },
+      {
+        path: "/register/success",
+        element: <RegisterSuccessPage />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: "/admin",
+        element: <AdminDashboard />,
       },
       {
         path: "/about",
@@ -171,19 +220,71 @@ const router = createBrowserRouter([
       { path: "/marketplace/club/product", element: <ClubProduct /> },
       { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
       { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
-      { path: "/marketplace/boarding", element: <Boarding /> },
       { path: "/marketplace/food-cafe", element: <FoodCafe /> },
       { path: "/marketplace/services", element: <Services /> },
-
-
-      { path: '/learning', element: <PlaceholderPage title="Learning" verificationCount={mockRequests.length} /> },
-      { path: '/report-moderation', element: <PlaceholderPage title="Report Moderation" verificationCount={mockRequests.length} /> },
-      { path: '/suspended-users', element: <PlaceholderPage title="Suspended Users" verificationCount={mockRequests.length} /> },
-      { path: '/boost-controller', element: <PlaceholderPage title="Boost Controller" verificationCount={mockRequests.length} /> },
-      { path: '/my-products', element: <PlaceholderPage title="My Products" verificationCount={mockRequests.length} /> },
+      { path: "/club/followers", element: <FollowersDirectory /> },
+      { path: "/student/followings", element: <Followings /> },
+      { path: "/marketplace/boarding", element: <Boarding /> },
+      { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
+      { path: "/profile/reviews", element: <MyReviewHistory /> },
+      { path: "/business/reviews", element: <ReceivedReviews /> },
+      {
+        path: "/learning",
+        element: (
+          <PlaceholderPage
+            title="Learning"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+      {
+        path: "/report-moderation",
+        element: (
+          <PlaceholderPage
+            title="Report Moderation"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+      {
+        path: "/suspended-users",
+        element: (
+          <PlaceholderPage
+            title="Suspended Users"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+      {
+        path: "/boost-controller",
+        element: (
+          <PlaceholderPage
+            title="Boost Controller"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+      {
+        path: "/my-products",
+        element: (
+          <PlaceholderPage
+            title="My Products"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
       { path: '/order-history', element: <MyOrders /> },
-      { path: '/order-dashboard', element: <PlaceholderPage title="Order Dashboard" verificationCount={mockRequests.length} /> },
-    ]
-  }]);
+      {
+        path: "/order-dashboard",
+        element: (
+          <PlaceholderPage
+            title="Order Dashboard"
+            verificationCount={mockRequests.length}
+          />
+        ),
+      },
+    ],
+  },
+]);
 
 export default router;

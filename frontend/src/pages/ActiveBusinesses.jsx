@@ -150,36 +150,50 @@ const ActiveBusinesses = () => {
             verificationCount={mockRequests.length}
         >
             {/* ── Stats Row ─────────────────────────────────────── */}
-            <div className="grid grid-cols-4 gap-md mb-lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-lg">
                 {businessStats.map((tile, i) => (
                     <Card
                         key={i}
                         variant="container"
-                        className="hover:border-primary-blue/30 transition-colors h-44 relative"
+                        className="hover:border-primary-blue/30 transition-colors h-auto md:h-44 md:relative"
                     >
-                        <div className={`absolute top-lg left-lg w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
-                            <span className="text-lg">{tile.icon}</span>
+                        {/* Desktop: absolute positioned (original) */}
+                        <div className="hidden md:block">
+                            <div className={`absolute top-lg left-lg w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
+                                <span className="text-lg">{tile.icon}</span>
+                            </div>
+                            <div className="absolute top-[72px] left-lg right-lg">
+                                <p className="text-body-small-bold text-text-secondary truncate">{tile.title}</p>
+                            </div>
+                            <div className="absolute top-[94px] left-lg right-lg">
+                                <p className="text-heading-medium text-text-primary">{tile.value}</p>
+                                <p className={`text-body-extra-small mt-xs ${tile.changeClass} truncate`}>{tile.change}</p>
+                            </div>
                         </div>
-                        <div className="absolute top-[72px] left-lg right-lg">
-                            <p className="text-body-small-bold text-text-secondary truncate">{tile.title}</p>
-                        </div>
-                        <div className="absolute top-[94px] left-lg right-lg">
-                            <p className="text-heading-medium text-text-primary">{tile.value}</p>
-                            <p className={`text-body-extra-small mt-xs ${tile.changeClass} truncate`}>{tile.change}</p>
+                        {/* Mobile: flex-based layout */}
+                        <div className="flex flex-col gap-sm md:hidden">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
+                                <span className="text-lg">{tile.icon}</span>
+                            </div>
+                            <p className="text-body-small-bold text-text-secondary">{tile.title}</p>
+                            <div>
+                                <p className="text-heading-medium text-text-primary">{tile.value}</p>
+                                <p className={`text-body-extra-small mt-xs ${tile.changeClass}`}>{tile.change}</p>
+                            </div>
                         </div>
                     </Card>
                 ))}
             </div>
 
             {/* ── Business Directory Header ─────────────────────── */}
-            <div className="flex items-start justify-between mb-lg">
+            <div className="flex flex-col md:flex-row items-start md:items-start justify-between gap-md mb-lg">
                 <div>
                     <h2 className="text-heading-small text-text-primary">Business Directory</h2>
                     <p className="text-body-small text-text-secondary mt-xs">
                         Monitor and manage platform-affiliated businesses.
                     </p>
                 </div>
-                <div className="w-72">
+                <div className="w-full md:w-72">
                     <Input
                         placeholder="Search by business, email or category..."
                         value={searchQuery}
@@ -191,7 +205,7 @@ const ActiveBusinesses = () => {
             </div>
 
             {/* ── Filters Row ───────────────────────────────────── */}
-            <div className="flex items-center gap-md mb-md">
+            <div className="flex flex-wrap items-center gap-md mb-md">
                 {/* Tab: All Businesses */}
                 <button
                     onClick={() => setActiveFilter('All Businesses')}
@@ -204,7 +218,7 @@ const ActiveBusinesses = () => {
                 </button>
 
                 {/* Category Filter */}
-                <div className="w-64">
+                <div className="w-full md:w-64">
                     <Select
                         options={categoryOptions}
                         value={categoryFilter}
@@ -213,7 +227,7 @@ const ActiveBusinesses = () => {
                 </div>
 
                 {/* Status Filter */}
-                <div className="w-40">
+                <div className="w-full md:w-40">
                     <Select
                         options={statusOptions}
                         value={statusFilter}
@@ -221,7 +235,7 @@ const ActiveBusinesses = () => {
                     />
                 </div>
 
-                <div className="flex-1" />
+                <div className="hidden md:block flex-1" />
 
                 {/* Reset */}
                 <button
@@ -235,7 +249,7 @@ const ActiveBusinesses = () => {
 
             {/* ── Business Directory Table ──────────────────────── */}
             {/* Use a raw styled div — Card's inner wrapper adds padding we don't want for a table */}
-            <div className="relative overflow-hidden border border-white/20 rounded-2xl bg-white/5 backdrop-blur-sm">
+            <div className="relative overflow-hidden border border-white/20 rounded-2xl bg-white/5 backdrop-blur-sm hidden md:block">
 
                 {/* Table Header */}
                 <div
@@ -294,6 +308,49 @@ const ActiveBusinesses = () => {
                             </button>
                         </div>
                     </div>
+                ))}
+            </div>
+
+            {/* ── Mobile Cards View ──────────────────────────────── */}
+            <div className="grid grid-cols-1 gap-md md:hidden">
+                {filtered.map((biz) => (
+                    <Card
+                        key={biz.id}
+                        variant="container"
+                        className="hover:bg-white/5 transition-colors"
+                    >
+                        <div className="flex flex-col gap-md">
+                            {/* Top: Avatar + Name */}
+                            <div className="flex items-center gap-md">
+                                <img
+                                    src={biz.avatar}
+                                    alt={biz.name}
+                                    className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0"
+                                />
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-body-medium-bold text-text-primary truncate">{biz.name}</p>
+                                    <p className="text-body-extra-small text-text-secondary truncate">{biz.email}</p>
+                                </div>
+                                <div className="flex items-center gap-xs">
+                                    <div className="w-2 h-2 rounded-full bg-state-success shrink-0" />
+                                    <span className="text-body-extra-small text-state-success">{biz.status}</span>
+                                </div>
+                            </div>
+
+                            {/* Details */}
+                            <div className="flex items-center justify-between">
+                                <span className={`inline-flex px-sm py-xs rounded-lg text-body-extra-small-bold whitespace-nowrap ${categoryColors[biz.category] || 'bg-white/10 text-text-secondary'}`}>
+                                    {biz.category}
+                                </span>
+                                <span className="text-body-extra-small text-text-secondary">{biz.registrationDate}</span>
+                            </div>
+
+                            {/* Action */}
+                            <button className="w-full py-sm rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue transition-all duration-200 text-center">
+                                View Profile
+                            </button>
+                        </div>
+                    </Card>
                 ))}
             </div>
         </MainLayout>

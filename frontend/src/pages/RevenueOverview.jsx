@@ -207,32 +207,46 @@ const RevenueOverview = () => {
             verificationCount={mockRequests.length}
         >
             {/* ── Stats Row ─────────────────────────────────────── */}
-            <div className="grid grid-cols-4 gap-md mb-lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-lg">
                 {statsTiles.map((tile, i) => (
                     <Card
                         key={i}
                         variant="container"
-                        className="hover:border-primary-blue/30 transition-colors h-44 relative"
+                        className="hover:border-primary-blue/30 transition-colors h-auto md:h-44 md:relative"
                     >
-                        <div className={`absolute top-lg left-lg w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
-                            <span className="text-lg">{tile.icon}</span>
+                        {/* Desktop: absolute positioned (original) */}
+                        <div className="hidden md:block">
+                            <div className={`absolute top-lg left-lg w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
+                                <span className="text-lg">{tile.icon}</span>
+                            </div>
+                            <div className="absolute top-[72px] left-lg right-lg">
+                                <p className="text-body-small-bold text-text-secondary truncate">{tile.title}</p>
+                            </div>
+                            <div className="absolute top-[94px] left-lg right-lg">
+                                <p className="text-heading-medium text-text-primary">{tile.value}</p>
+                                <p className={`text-body-extra-small mt-xs ${tile.changeClass} truncate`}>{tile.change}</p>
+                            </div>
                         </div>
-                        <div className="absolute top-[72px] left-lg right-lg">
-                            <p className="text-body-small-bold text-text-secondary truncate">{tile.title}</p>
-                        </div>
-                        <div className="absolute top-[94px] left-lg right-lg">
-                            <p className="text-heading-medium text-text-primary">{tile.value}</p>
-                            <p className={`text-body-extra-small mt-xs ${tile.changeClass} truncate`}>{tile.change}</p>
+                        {/* Mobile: flex-based layout */}
+                        <div className="flex flex-col gap-sm md:hidden">
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
+                                <span className="text-lg">{tile.icon}</span>
+                            </div>
+                            <p className="text-body-small-bold text-text-secondary">{tile.title}</p>
+                            <div>
+                                <p className="text-lg font-bold text-text-primary whitespace-nowrap">{tile.value}</p>
+                                <p className={`text-body-extra-small mt-xs ${tile.changeClass}`}>{tile.change}</p>
+                            </div>
                         </div>
                     </Card>
                 ))}
             </div>
 
             {/* ── Charts Row ────────────────────────────────────── */}
-            <div className="grid grid-cols-5 gap-md">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-md">
 
                 {/* Revenue Trajectory — 3 cols */}
-                <div className="col-span-3">
+                <div className="col-span-1 md:col-span-3">
                     <Card variant="container">
                         {/* Title + Legend */}
                         <div className="flex items-start justify-between mb-sm">
@@ -290,7 +304,7 @@ const RevenueOverview = () => {
                 </div>
 
                 {/* Revenue Breakdown — 2 cols */}
-                <div className="col-span-2">
+                <div className="col-span-1 md:col-span-2">
                     <Card variant="container" className="h-full">
                         <h3 className="text-body-large-bold text-text-primary">Revenue Breakdown</h3>
                         <p className="text-body-extra-small text-text-secondary mt-xs mb-lg">
