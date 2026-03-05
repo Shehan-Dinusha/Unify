@@ -22,6 +22,8 @@ import ActiveBusinesses from "../pages/ActiveBusinesses";
 import StudentManagement from "../pages/StudentManagement";
 import BoostController from "../pages/BoostController";
 import BoostPackageForm from "../pages/BoostPackageForm";
+import ReportModeration from "../pages/ReportModeration";
+import ReportDetail from "../pages/ReportDetail";
 import { BoostPackageProvider } from "../context/BoostPackageContext";
 import ClubVerification from "../pages/ClubVerification";
 import BatchRepVerification from "../pages/BatchRepVerification";
@@ -228,12 +230,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/report-moderation",
-        element: (
-          <PlaceholderPage
-            title="Report Moderation"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <ReportModeration />,
+      },
+      {
+        path: "/report-moderation/:id",
+        element: <ReportDetail />,
       },
       {
         path: "/suspended-users",
