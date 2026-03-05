@@ -34,6 +34,7 @@ import Marketplace from "../pages/Marketplace";
 import Club from "../pages/Club";
 import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
+import LostAndFound from "../pages/LostAndFound";
 import FoodCafe from "../pages/FoodCafe";
 import Services from "../pages/Services";
 import ClubCheckout from "../pages/ClubCheckout";
@@ -208,12 +209,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/lost-and-found",
-        element: (
-          <PlaceholderPage
-            title="Lost & Found"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <LostAndFound />,
       },
       { path: "/marketplace", element: <Marketplace /> },
       { path: "/marketplace/club", element: <Club /> },
