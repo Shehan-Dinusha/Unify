@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
@@ -12,6 +13,7 @@ const Pill = ({ children }) => (
 );
 
 const ClubProduct = () => {
+    const navigate = useNavigate();
     const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
 
     const product = mockClubProduct;
@@ -30,7 +32,7 @@ const ClubProduct = () => {
     return (
         <MainLayout user={user} pageTitle="Club" verificationCount={0}>
             <Card variant="card" padding="p-0" className="overflow-hidden">
-                <div className="p-2xl">
+                <div className="p-md md:p-2xl">
                     <div className="grid grid-cols-1 lg:grid-cols-[520px_1fr] gap-2xl">
                         {/* LEFT: Gallery */}
                         <div>
@@ -38,7 +40,7 @@ const ClubProduct = () => {
                                 <img src={currentImg.src} alt={currentImg.alt} className="w-full h-full object-cover" />
                             </div>
 
-                            <div className="mt-lg flex gap-md">
+                            <div className="mt-lg flex gap-md overflow-x-auto scrollbar-hide md:overflow-x-visible">
                                 {product.images.map((img) => {
                                     const active = img.id === activeImg;
                                     return (
@@ -46,7 +48,7 @@ const ClubProduct = () => {
                                             key={img.id}
                                             type="button"
                                             onClick={() => setActiveImg(img.id)}
-                                            className={`w-20 h-20 rounded-2xl overflow-hidden border transition-all ${active ? "border-primary-blue shadow-custom" : "border-white/10 hover:border-white/20"
+                                            className={`w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-2xl overflow-hidden border transition-all ${active ? "border-primary-blue shadow-custom" : "border-white/10 hover:border-white/20"
                                                 } bg-white/5`}
                                         >
                                             <img src={img.src} alt={img.alt} className="w-full h-full object-cover" />
@@ -78,12 +80,12 @@ const ClubProduct = () => {
                             <div className="md:hidden mt-md h-px bg-white/10" />*/}
 
                             {/* Title */}
-                            <h1 className="mt-md text-[24px] md:text-[32px] md:text-heading-large font-bold text-text-primary leading-tight">
+                            <h1 className="mt-md text-[24px] md:text-heading-large font-bold text-text-primary md:!leading-tight">
                                 {product.title}
                             </h1>
 
                             {/* Price row */}
-                            <div className="mt-md flex items-center gap-md flex-wrap">
+                            <div className="mt-sm md:mt-md flex items-center gap-md flex-wrap">
                                 <span className="text-heading-small text-primary-blue">{product.priceNow}</span>
                             </div>
 
@@ -134,8 +136,11 @@ const ClubProduct = () => {
                                 </div>
                             </div>
 
+                            {/* Mobile divider between Color and Size */}
+                            <div className="md:hidden my-md h-px bg-white/10" />
+
                             {/* Size */}
-                            <div className="mt-lg flex items-center justify-between">
+                            <div className="mt-0 md:mt-lg flex items-center justify-between">
                                 <div className="flex items-center gap-sm">
                                     <p className="text-body-extra-small-bold text-text-tertiary tracking-widest">SIZE:</p>
                                     <p className="text-body-extra-small-bold text-text-primary">{activeSize}</p>
@@ -161,37 +166,43 @@ const ClubProduct = () => {
                                 })}
                             </div>
 
-                            {/* Qty + Buy */}
-                            <div className="mt-2xl flex items-center gap-md flex-wrap">
-                                <div className="h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center overflow-hidden">
-                                    <button
-                                        type="button"
-                                        onClick={() => setQty((q) => Math.max(1, q - 1))}
-                                        className="w-14 h-14 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
-                                    >
-                                        <Minus size={18} />
-                                    </button>
-                                    <div className="w-14 text-center text-body-medium-bold text-text-primary">{qty}</div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setQty((q) => q + 1)}
-                                        className="w-14 h-14 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
-                                    >
-                                        <Plus size={18} />
-                                    </button>
-                                </div>
+                            {/* Qty + Buy — sticky on mobile */}
+                            <div className="
+                                fixed bottom-0 left-0 right-0 z-50 p-md bg-dark-1/90 backdrop-blur-lg border-t border-white/10
+                                md:static md:z-auto md:p-0 md:bg-transparent md:backdrop-blur-none md:border-t-0 md:mt-2xl
+                            ">
+                                <div className="flex items-center gap-md flex-wrap">
+                                    <div className="h-12 md:h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center overflow-hidden">
+                                        <button
+                                            type="button"
+                                            onClick={() => setQty((q) => Math.max(1, q - 1))}
+                                            className="w-12 md:w-14 h-12 md:h-14 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
+                                        >
+                                            <Minus size={18} />
+                                        </button>
+                                        <div className="w-10 md:w-14 text-center text-body-medium-bold text-text-primary">{qty}</div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setQty((q) => q + 1)}
+                                            className="w-12 md:w-14 h-12 md:h-14 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
+                                        >
+                                            <Plus size={18} />
+                                        </button>
+                                    </div>
 
-                                <Button
-                                    variant="primary"
-                                    size="large"
-                                    className="flex-1 min-w-[260px] justify-center"
-                                    onClick={() => console.log("BUY (mock)", { activeColor, activeSize, qty })}
-                                    icon={Zap}
-                                >
-                                    Buy Now
-                                </Button>
+                                    <Button
+                                        variant="primary"
+                                        size="large"
+                                        className="flex-1 min-w-0 md:min-w-[260px] justify-center"
+                                        onClick={() => navigate("/marketplace/club/checkout")}
+                                    >
+                                        Buy Now
+                                    </Button>
+                                </div>
+                                <p className="mt-sm md:mt-md text-body-small text-text-tertiary text-left md:text-center">{product.pickupNote}</p>
                             </div>
-                            <div className="mt-md text-body-small text-text-tertiary"><p className="text-center">{product.pickupNote}</p></div>
+                            {/* Spacer on mobile so content isn't hidden behind sticky bar */}
+                            <div className="h-28 md:hidden" />
                         </div>
                     </div>
                 </div>

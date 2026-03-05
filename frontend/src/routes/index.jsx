@@ -27,6 +27,9 @@ import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
 import FoodCafe from "../pages/FoodCafe";
 import Services from "../pages/Services";
+import ClubCheckout from "../pages/ClubCheckout";
+import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
+import MyOrders from "../pages/MyOrders";
 
 
 
@@ -166,6 +169,8 @@ const router = createBrowserRouter([
       { path: "/marketplace", element: <Marketplace /> },
       { path: "/marketplace/club", element: <Club /> },
       { path: "/marketplace/club/product", element: <ClubProduct /> },
+      { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
+      { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
       { path: "/marketplace/boarding", element: <Boarding /> },
       { path: "/marketplace/food-cafe", element: <FoodCafe /> },
       { path: "/marketplace/services", element: <Services /> },
@@ -176,7 +181,7 @@ const router = createBrowserRouter([
       { path: '/suspended-users', element: <PlaceholderPage title="Suspended Users" verificationCount={mockRequests.length} /> },
       { path: '/boost-controller', element: <PlaceholderPage title="Boost Controller" verificationCount={mockRequests.length} /> },
       { path: '/my-products', element: <PlaceholderPage title="My Products" verificationCount={mockRequests.length} /> },
-      { path: '/order-history', element: <PlaceholderPage title="Order History" verificationCount={mockRequests.length} /> },
+      { path: '/order-history', element: <MyOrders /> },
       { path: '/order-dashboard', element: <PlaceholderPage title="Order Dashboard" verificationCount={mockRequests.length} /> },
     ]
   }]);
