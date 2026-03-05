@@ -4,6 +4,11 @@ import MainLayout from "../components/layout/MainLayout";
 import ScrollToTop from "../components/common/ScrollToTop";
 import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
+import RegisterAccountTypePage from "../pages/RegisterAccountTypePage";
+import RegisterCredentialsPage from "../pages/RegisterCredentialsPage";
+import RegisterOtpPage from "../pages/RegisterOtpPage";
+import RegisterProfilePage from "../pages/RegisterProfilePage";
+import RegisterSuccessPage from "../pages/RegisterSuccessPage";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import LandingHome from "../pages/LandingHome";
 import AboutPage from "../pages/AboutPage";
@@ -30,6 +35,13 @@ import Club from "../pages/Club";
 import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
 import LostAndFound from "../pages/LostAndFound";
+import FoodCafe from "../pages/FoodCafe";
+import Services from "../pages/Services";
+import ClubCheckout from "../pages/ClubCheckout";
+import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
+import MyOrders from "../pages/MyOrders";
+
+
 import NotFound from "../pages/NotFound";
 import MarketplaceReviews from "../pages/MarketplaceReviews";
 import MyReviewHistory from "../pages/MyReviewHistory";
@@ -80,6 +92,26 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <RegisterPage />,
+      },
+      {
+        path: "/register/account-type",
+        element: <RegisterAccountTypePage />,
+      },
+      {
+        path: "/register/credentials",
+        element: <RegisterCredentialsPage />,
+      },
+      {
+        path: "/register/otp",
+        element: <RegisterOtpPage />,
+      },
+      {
+        path: "/register/profile",
+        element: <RegisterProfilePage />,
+      },
+      {
+        path: "/register/success",
+        element: <RegisterSuccessPage />,
       },
       {
         path: "/forgot-password",
@@ -182,6 +214,10 @@ const router = createBrowserRouter([
       { path: "/marketplace", element: <Marketplace /> },
       { path: "/marketplace/club", element: <Club /> },
       { path: "/marketplace/club/product", element: <ClubProduct /> },
+      { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
+      { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
+      { path: "/marketplace/food-cafe", element: <FoodCafe /> },
+      { path: "/marketplace/services", element: <Services /> },
       { path: "/club/followers", element: <FollowersDirectory /> },
       { path: "/student/followings", element: <Followings /> },
       { path: "/marketplace/boarding", element: <Boarding /> },
@@ -233,15 +269,7 @@ const router = createBrowserRouter([
           />
         ),
       },
-      {
-        path: "/order-history",
-        element: (
-          <PlaceholderPage
-            title="Order History"
-            verificationCount={mockRequests.length}
-          />
-        ),
-      },
+      { path: '/order-history', element: <MyOrders /> },
       {
         path: "/order-dashboard",
         element: (

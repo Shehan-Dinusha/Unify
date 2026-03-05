@@ -7,12 +7,26 @@ export const mockBoardingFeed = [
         title: "Studio near Library",
         location: "0.2 km from Central Library",
         description:
-            "Perfect for grad students. Quiet, private entrance, kitchenette included.",
+            "Perfect for grad students. Quiet, private entrance, kitchenette included. The space is newly renovated with modern finishes and plenty of natural light.",
         price: "Rs.450/month",
         gender: "Female Only",
+        rating: 4.9,
+        reviews: 12,
+        availability: "4 people",
+        contact: "+94 77 123 4567",
+        roomType: "Private Studio",
+        amenities: "WiFi, Kitchen, AC",
+        host: {
+            name: "Jane D.",
+            joined: "January 2023",
+            verified: true,
+            avatar: "JaneD"
+        },
         images: [
-            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1400&q=80",
             "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1400&q=80",
+            "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1400&q=80",
+            "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1400&q=80",
+            "https://images.unsplash.com/photo-1522770179533-24471fcdba45?auto=format&fit=crop&w=1400&q=80",
         ],
         stats: { likes: 124, comments: 10 },
         comments: [
@@ -23,6 +37,41 @@ export const mockBoardingFeed = [
     },
     {
         id: "b2",
+        user: "Alex M.",
+        userSeed: "AlexM",
+        time: "1h ago",
+        title: "Sunny Master Bedroom",
+        location: "124 Maple Avenue, University District. 0.5 km from Engineering Dept.",
+        description:
+            "Spacious room with large windows facing south, bringing in plenty of natural light. The room comes fully furnished with a queen-sized bed, a large study desk perfect for engineering students, and a comfortable ergonomic chair. You'll share the kitchen and living area with two quiet, tidy roommates.",
+        price: "$850/mo",
+        gender: "Male Only",
+        rating: 4.8,
+        reviews: 24,
+        availability: "12 people",
+        contact: "+1 (555) 012-3456",
+        roomType: "Single Private",
+        amenities: "WiFi, Desk, AC",
+        host: {
+            name: "Alex M.",
+            joined: "September 2023",
+            verified: true,
+            avatar: "AlexM"
+        },
+        images: [
+            "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1400&q=80",
+            "https://images.unsplash.com/photo-1522770179533-24471fcdba45?auto=format&fit=crop&w=1400&q=80",
+            "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1400&q=80",
+            "https://images.unsplash.com/photo-1522770179533-24471fcdba45?auto=format&fit=crop&w=1400&q=80",
+        ],
+        stats: { likes: 215, comments: 18 },
+        comments: [
+            { id: "bc10", user: "Mark S.", seed: "MarkS", time: "30m ago", text: "Is the AC included in the rent?" },
+            { id: "bc11", user: "David L.", seed: "DavidL", time: "45m ago", text: "Looks great, when can I visit?" },
+        ],
+    },
+    {
+        id: "b3",
         user: "Kamal P.",
         userSeed: "KamalP",
         time: "1d ago",
@@ -32,6 +81,18 @@ export const mockBoardingFeed = [
             "Shared house with 3 other students. Fully furnished, wifi included. Friendly environment.",
         price: "Rs.320/month",
         gender: "Male Only",
+        rating: 4.5,
+        reviews: 8,
+        availability: "8 people",
+        contact: "+94 77 987 6543",
+        roomType: "Shared Room",
+        amenities: "WiFi, Shared Kitchen",
+        host: {
+            name: "Kamal P.",
+            joined: "October 2023",
+            verified: false,
+            avatar: "KamalP"
+        },
         images: [
             "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?auto=format&fit=crop&w=1400&q=80",
             "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1400&q=80",
@@ -44,7 +105,7 @@ export const mockBoardingFeed = [
         ],
     },
     {
-        id: "b3",
+        id: "b4",
         user: "Nisha R.",
         userSeed: "NishaR",
         time: "2d ago",
@@ -54,6 +115,18 @@ export const mockBoardingFeed = [
             "Brand new building. AC, hot water, fast broadband. Both rooms available from March 1st.",
         price: "Rs.600/month",
         gender: "Any",
+        rating: 4.7,
+        reviews: 5,
+        availability: "2 people",
+        contact: "+94 77 555 1111",
+        roomType: "Apartment",
+        amenities: "AC, Hot Water, Fast WiFi",
+        host: {
+            name: "Nisha R.",
+            joined: "August 2023",
+            verified: true,
+            avatar: "NishaR"
+        },
         images: [
             "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=1400&q=80",
             "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1400&q=80",
@@ -65,3 +138,4 @@ export const mockBoardingFeed = [
         ],
     },
 ];
+

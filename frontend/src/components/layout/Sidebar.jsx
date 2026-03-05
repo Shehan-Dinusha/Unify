@@ -41,7 +41,10 @@ const SidebarItem = ({
   return (
     <div
       className={`${baseStyles} ${activeStyles}`}
-      onClick={() => path && navigate(path)}
+      onClick={() => {
+        if (path) navigate(path);
+        if (onClick) onClick();
+      }}
     >
       <div className="flex items-center gap-md">
         {iconSrc ? (

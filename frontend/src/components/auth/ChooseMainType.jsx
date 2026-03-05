@@ -19,7 +19,7 @@ const ChooseMainType = ({ onNext }) => {
   ];
 
   return (
-    <div className="w-full max-w-[1200px] flex flex-col items-center gap-16 pb-8 pt-4">
+    <div className="w-full max-w-[1200px] flex flex-col items-center gap-8 md:gap-16 pb-8 pt-4">
       {/* Header Section */}
       <div className="flex flex-col items-center gap-4 text-center px-4">
         <h1 className="text-white text-3xl md:text-heading-large font-black font-inter tracking-tight leading-tight">
@@ -36,7 +36,7 @@ const ChooseMainType = ({ onNext }) => {
         {/* Student Account Card */}
         <Card
           variant="card"
-          padding="p-10"
+          padding="p-6 md:p-10"
           className="group h-full border-white/10 hover:border-primary-blue/40 hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)] bg-white/[0.03] transition-all duration-300"
         >
           <div className="h-full flex flex-col justify-between">
@@ -93,7 +93,7 @@ const ChooseMainType = ({ onNext }) => {
         {/* Business Account Card */}
         <Card
           variant="card"
-          padding="p-10"
+          padding="p-6 md:p-10"
           className="group h-full border-white/10 hover:border-primary-blue/40 hover:shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)] bg-white/[0.03] transition-all duration-300"
         >
           <div className="h-full flex flex-col justify-between">

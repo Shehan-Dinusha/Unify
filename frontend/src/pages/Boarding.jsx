@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import BoardingPostCard from "../components/boarding/BoardingPostCard";
 import BoardingFilters from "../components/boarding/BoardingFilters";
+import BoardingOverlay from "../components/boarding/BoardingOverlay";
 import { mockBoardingFeed } from "../data/mockBoardingData";
 
 const Boarding = () => {
     const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
     const [filters, setFilters] = useState({ minPrice: 450, maxPrice: 1200, gender: "Any" });
+    const [selectedPost, setSelectedPost] = useState(null);
 
     // Parse price string like "$450/month" → 450
     const parsePriceNum = (priceStr) => {
@@ -31,7 +33,11 @@ const Boarding = () => {
                 <div className="flex flex-col gap-2xl">
                     {filteredFeed.length > 0 ? (
                         filteredFeed.map((post) => (
-                            <BoardingPostCard key={post.id} post={post} />
+                            <BoardingPostCard
+                                key={post.id}
+                                post={post}
+                                onClick={() => setSelectedPost(post)}
+                            />
                         ))
                     ) : (
                         <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -47,8 +53,17 @@ const Boarding = () => {
                     <BoardingFilters onFilterChange={setFilters} />
                 </div>
             </div>
+
+            {/* Post Overlay */}
+            {selectedPost && (
+                <BoardingOverlay
+                    post={selectedPost}
+                    onClose={() => setSelectedPost(null)}
+                />
+            )}
         </MainLayout>
     );
 };
 
 export default Boarding;
+

@@ -1,9 +1,11 @@
+// src/components/marketplace/FoodCafeCard.jsx
+
 import React, { useState, useRef, useEffect } from "react";
 import { MapPin, Send, ChevronLeft, ChevronRight } from "lucide-react";
 import Card from "../common/Card";
 
 /* ─── Action Button ──────────────────────────────────────────── */
-const ActionBtn = ({ svgSrc, label, count, showBoth, activeColor = "text-primary", onClick, active }) => (
+const ActionBtn = ({ svgSrc, label, count, showCount, activeColor = "text-primary", onClick, active }) => (
     <button
         onClick={onClick}
         className={`
@@ -15,25 +17,16 @@ const ActionBtn = ({ svgSrc, label, count, showBoth, activeColor = "text-primary
             }
         `}
     >
-        {showBoth ? (
-            <>
-                <div className="flex items-center gap-[3px]">
-                    <img src={svgSrc} alt={label} className="w-5 h-5" />
-                    <span className="text-[12px] font-bold leading-none">{count}</span>
-                </div>
-                <span className="text-[11px] leading-none font-medium">{label}</span>
-            </>
-        ) : (
-            <>
-                <img src={svgSrc} alt={label} className="w-5 h-5" />
-                <span className="text-[11px] leading-none font-medium">{label}</span>
-            </>
-        )}
+        <div className="flex items-center gap-[3px]">
+            <img src={svgSrc} alt={label} className={`w-5 h-5 ${active ? "brightness-125" : ""}`} />
+            {showCount && <span className="text-[12px] font-bold leading-none">{count}</span>}
+        </div>
+        <span className="text-[11px] leading-none font-medium">{label}</span>
     </button>
 );
 
 /* ─── Image Carousel ─────────────────────────────────────────── */
-const ImageCarousel = ({ images, title, price }) => {
+const ImageCarousel = ({ images, title }) => {
     const [idx, setIdx] = useState(0);
     const prev = (e) => { e.stopPropagation(); setIdx(i => (i - 1 + images.length) % images.length); };
     const next = (e) => { e.stopPropagation(); setIdx(i => (i + 1) % images.length); };
@@ -46,13 +39,6 @@ const ImageCarousel = ({ images, title, price }) => {
                 alt={title}
                 className="w-full h-full object-cover transition-opacity duration-300"
             />
-
-            {/* Price pill overlay */}
-            {price && (
-                <div className="absolute bottom-md left-md bg-dark-1/70 backdrop-blur-md border border-white/10 rounded-full px-md py-sm z-10">
-                    <span className="text-body-small-bold text-text-primary">{price}</span>
-                </div>
-            )}
 
             {/* Nav arrows */}
             {images.length > 1 && (
@@ -130,7 +116,7 @@ const CommentSection = ({ postComments, onAddComment }) => {
                         placeholder="Write a comment…"
                         className="flex-1 bg-transparent text-[13px] text-text-primary placeholder:text-text-tertiary outline-none"
                     />
-                    <button type="submit" disabled={!text.trim()} className="text-primary disabled:text-text-tertiary transition-colors">
+                    <button type="submit" disabled={!text.trim()} className="text-primary-blue disabled:text-text-tertiary transition-colors">
                         <Send size={16} strokeWidth={2} />
                     </button>
                 </div>
@@ -140,11 +126,10 @@ const CommentSection = ({ postComments, onAddComment }) => {
 };
 
 /* ─── Main Card ──────────────────────────────────────────────── */
-const BoardingPostCard = ({ post, onClick }) => {
+const FoodCafeCard = ({ post, onClick }) => {
     const [liked, setLiked] = useState(false);
     const [likes, setLikes] = useState(post.stats?.likes ?? 0);
     const [saved, setSaved] = useState(false);
-    const [boosted, setBoosted] = useState(false);
     const [reported, setReported] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);
     const [postComments, setPostComments] = useState(post.comments ?? []);
@@ -156,46 +141,40 @@ const BoardingPostCard = ({ post, onClick }) => {
     };
 
     return (
-        <Card variant="card" padding="p-0" className="overflow-hidden cursor-pointer group" onClick={onClick}>
+        <Card variant="card" padding="p-0" className="overflow-hidden" onClick={onClick}>
             {/* Image carousel */}
-            <ImageCarousel images={post.images} title={post.title} price={post.price} />
+            <ImageCarousel images={post.images} title={post.title} />
 
             {/* Content */}
-            <div className="p-lg">
+            <div className="p-lg ">
                 {/* Author row */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <img
                             src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.userSeed)}`}
                             alt={post.user}
-                            className="w-9 h-9 rounded-full border border-white/20"
+                            className="w-10 h-10 rounded-full border border-white/20"
                         />
                         <div>
-                            <p className="text-body-medium-bold text-text-primary group-hover:text-primary-blue transition-colors">{post.user}</p>
+                            <p className="text-body-medium-bold text-text-primary group-hover:text-primary-blue transition-colors font-bold">{post.user}</p>
                             <p className="text-body-small text-text-tertiary">{post.time}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Title 
-                <h3 className="text-body-large-bold text-text-primary mb-1 group-hover:text-primary-blue transition-colors line-clamp-1">{post.title}</h3>
+                <h3 className="text-heading-small text-text-primary mb-1 group-hover:text-primary-blue transition-colors font-bold">{post.title}</h3>
                 */}
-
-                {/* Location */}
+                {/* Location 
                 <div className="flex items-center gap-1 mb-2">
-                    <MapPin size={13} className="text-text-tertiary flex-shrink-0" />
-                    <span className="text-[13px] text-text-tertiary line-clamp-1">{post.location}</span>
-                </div>
+                    <MapPin size={14} className="text-text-tertiary flex-shrink-0" />
+                    <span className="text-[14px] text-text-tertiary line-clamp-1">{post.location}</span>
+                </div>*/}
 
                 {/* Description */}
-                <p className="text-body-medium text-text-secondary leading-6 mb-1 line-clamp-2">
+                <p className="text-body-medium text-text-secondary leading-6 mb-4 line-clamp-2">
                     {post.description}
                 </p>
-
-                {/* Gender tag */}
-                <span className="inline-block mt-1 mb-3 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/8 border border-white/10 text-text-tertiary">
-                    {post.gender}
-                </span>
 
                 {/* Action bar */}
                 <div className="pt-md border-t border-white/10 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
@@ -203,8 +182,8 @@ const BoardingPostCard = ({ post, onClick }) => {
                         svgSrc="/icon_like_marketplace.svg"
                         label="Like"
                         count={likes}
-                        showBoth
-                        activeColor="text-green-400"
+                        showCount
+                        activeColor="text-red-500"
                         active={liked}
                         onClick={() => { setLiked(p => !p); setLikes(n => liked ? n - 1 : n + 1); }}
                     />
@@ -212,29 +191,22 @@ const BoardingPostCard = ({ post, onClick }) => {
                         svgSrc="/icon_comment_marketplace.svg"
                         label="Comments"
                         count={postComments.length}
-                        showBoth
-                        activeColor="text-blue-400"
+                        showCount
+                        activeColor="text-blue-500"
                         active={commentOpen}
                         onClick={() => setCommentOpen(o => !o)}
                     />
-                    {/*<ActionBtn
-                        svgSrc="/icon_boost_controller.svg"
-                        label="Boost"
-                        activeColor="text-yellow-400"
-                        active={boosted}
-                        onClick={() => setBoosted(p => !p)}
-                    />*/}
                     <ActionBtn
                         svgSrc="/icon_save_marketplace.svg"
                         label="Save"
-                        activeColor="text-purple-400"
+                        activeColor="text-yellow-500"
                         active={saved}
                         onClick={() => setSaved(p => !p)}
                     />
                     <ActionBtn
                         svgSrc="/icon_report_marketplace.svg"
                         label="Report"
-                        activeColor="text-red-400"
+                        activeColor="text-orange-500"
                         active={reported}
                         onClick={() => setReported(p => !p)}
                     />
@@ -251,5 +223,4 @@ const BoardingPostCard = ({ post, onClick }) => {
     );
 };
 
-
-export default BoardingPostCard;
+export default FoodCafeCard;
