@@ -6,8 +6,8 @@ import { useNavigate } from "react-router-dom";
 const PopularPostCard = ({ post }) => {
     const navigate = useNavigate();
     return (
-        <section className="w-[420px] shrink-0 hover:brightness-110 transition-all active:scale-[0.99]" onClick={() => navigate("/marketplace/club/product")} >
-            <div className="w-full h-[360px] rounded-2xl overflow-hidden border border-white/10 bg-white/5 bg-gradient-to-t from-emerald-600/20 to-transparent ">
+        <section className="w-full shrink-0 flex flex-col hover:brightness-110 transition-all active:scale-[0.99]" onClick={() => navigate("/marketplace/club/product")} >
+            <div className="w-full aspect-[7/6] sm:aspect-auto sm:h-[360px] rounded-2xl overflow-hidden border border-white/10 bg-white/5 bg-gradient-to-t from-emerald-600/20 to-transparent ">
                 <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
             </div>
 
