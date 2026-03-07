@@ -13,8 +13,30 @@ import {
 } from "../data/mockData";
 
 const BatchRepLearningDashboard = () => {
+  const [semesters, setSemesters] = useState(mockSemesters);
   const [activeSemesterId, setActiveSemesterId] = useState("sem1");
   const [activeModuleId, setActiveModuleId] = useState("mod1");
+
+  const handleAddModule = (newModule) => {
+    setSemesters((prevSemesters) =>
+      prevSemesters.map((sem) => {
+        if (sem.id === newModule.semester) {
+          return {
+            ...sem,
+            modules: [
+              ...(sem.modules || []),
+              {
+                id: `mod-${Date.now()}`,
+                name: newModule.title,
+                code: newModule.code,
+              },
+            ],
+          };
+        }
+        return sem;
+      }),
+    );
+  };
 
   return (
     <MainLayout
@@ -59,10 +81,11 @@ const BatchRepLearningDashboard = () => {
           {/* Left Column (Sticky Sidebar) */}
           <div className="w-full lg:w-60 shrink-0 sticky top-0 z-10 flex flex-col gap-2">
             <ModuleSidebar
-              semesters={mockSemesters}
+              semesters={semesters}
               activeSemesterId={activeSemesterId}
               activeModuleId={activeModuleId}
               onSelectModule={setActiveModuleId}
+              onAddModule={handleAddModule}
             />
           </div>
 

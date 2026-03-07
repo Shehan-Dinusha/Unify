@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Folder, FolderOpen, ChevronRight, Plus } from "lucide-react";
 import Button from "../common/Button";
+import AddModuleModal from "./AddModuleModal";
 
 /**
  * Renders the left sidebar for Semesters and Modules
@@ -10,10 +11,12 @@ const ModuleSidebar = ({
   activeSemesterId,
   activeModuleId,
   onSelectModule,
+  onAddModule,
 }) => {
   const [expandedSemesters, setExpandedSemesters] = useState([
     activeSemesterId,
   ]);
+  const [isAddModuleOpen, setIsAddModuleOpen] = useState(false);
 
   const toggleSemester = (id) => {
     setExpandedSemesters((prev) =>
@@ -67,6 +70,7 @@ const ModuleSidebar = ({
                           key={mod.id}
                           variant="ghost-hoverless"
                           onClick={() => onSelectModule(mod.id)}
+                          title={mod.name}
                           className={`!w-full !px-2.5 !py-1.5 flex items-center justify-start gap-2 !rounded-md overflow-hidden text-left transition-colors !h-auto ${
                             isActive
                               ? "bg-blue-900/10 text-white"
@@ -95,6 +99,7 @@ const ModuleSidebar = ({
       <div className="absolute bottom-0 left-0 w-full p-2 bg-slate-800 border-t border-gray-700">
         <Button
           variant="ghost-hoverless"
+          onClick={() => setIsAddModuleOpen(true)}
           className="!w-full !px-2.5 !py-2 !rounded-lg outline outline-1 outline-indigo-500/40 flex justify-start items-center text-left gap-2 hover:bg-slate-700/50 transition-colors !h-auto"
         >
           <Plus size={14} className="text-gray-400" />
@@ -103,6 +108,21 @@ const ModuleSidebar = ({
           </span>
         </Button>
       </div>
+
+      <AddModuleModal
+        isOpen={isAddModuleOpen}
+        onClose={() => setIsAddModuleOpen(false)}
+        onSave={(data) => {
+          if (onAddModule) {
+            onAddModule(data);
+          }
+          setIsAddModuleOpen(false);
+          // Auto-expand the semester where the module was added so it is visible immediately
+          if (!expandedSemesters.includes(data.semester)) {
+            setExpandedSemesters((prev) => [...prev, data.semester]);
+          }
+        }}
+      />
     </div>
   );
 };
