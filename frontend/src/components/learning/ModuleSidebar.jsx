@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Folder, FolderOpen, ChevronRight, Plus } from "lucide-react";
+import { Folder, FolderOpen, ChevronRight, Plus, Eye } from "lucide-react";
 import Button from "../common/Button";
 import AddModuleModal from "./AddModuleModal";
+import SemesterVisibilityModal from "./SemesterVisibilityModal";
 
 /**
  * Renders the left sidebar for Semesters and Modules
@@ -17,11 +18,10 @@ const ModuleSidebar = ({
     activeSemesterId,
   ]);
   const [isAddModuleOpen, setIsAddModuleOpen] = useState(false);
+  const [visibilitySemester, setVisibilitySemester] = useState(null);
 
   const toggleSemester = (id) => {
-    setExpandedSemesters((prev) =>
-      prev.includes(id) ? prev.filter((sId) => sId !== id) : [...prev, id],
-    );
+    setExpandedSemesters((prev) => (prev.includes(id) ? [] : [id]));
   };
 
   return (
@@ -36,28 +36,43 @@ const ModuleSidebar = ({
                 <Button
                   variant="ghost-hoverless"
                   onClick={() => toggleSemester(semester.id)}
-                  className={`!w-full !px-2.5 !py-1.5 !rounded-lg flex items-center justify-start text-left gap-2 transition-colors !h-auto ${
+                  className={`!w-full !px-2.5 !py-1.5 !rounded-lg flex items-center justify-between text-left gap-2 transition-colors !h-auto group ${
                     isExpanded ? "bg-blue-900/20" : "hover:bg-slate-700/50"
                   }`}
                 >
-                  <ChevronRight
-                    size={16}
-                    className={`text-gray-400 shrink-0 transition-transform ${
-                      isExpanded ? "rotate-90" : ""
-                    }`}
-                  />
-                  {isExpanded ? (
-                    <FolderOpen size={16} className="text-white shrink-0" />
-                  ) : (
-                    <Folder size={16} className="text-gray-400 shrink-0" />
-                  )}
-                  <span
-                    className={`text-sm font-bold font-inter leading-5 truncate w-full text-left ${
-                      isExpanded ? "text-white" : "text-gray-400"
-                    }`}
+                  <div className="flex items-center gap-2 overflow-hidden w-full">
+                    <ChevronRight
+                      size={16}
+                      className={`text-gray-400 shrink-0 transition-transform ${
+                        isExpanded ? "rotate-90" : ""
+                      }`}
+                    />
+                    {isExpanded ? (
+                      <FolderOpen size={16} className="text-white shrink-0" />
+                    ) : (
+                      <Folder size={16} className="text-gray-400 shrink-0" />
+                    )}
+                    <span
+                      className={`text-sm font-bold font-inter leading-5 truncate w-full text-left ${
+                        isExpanded ? "text-white" : "text-gray-400"
+                      }`}
+                    >
+                      {semester.name}
+                    </span>
+                  </div>
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setVisibilitySemester(semester);
+                    }}
+                    className="p-1 hover:bg-white/10 rounded-md shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Visibility Settings"
                   >
-                    {semester.name}
-                  </span>
+                    <Eye
+                      size={16}
+                      className="text-gray-400 hover:text-white transition-colors"
+                    />
+                  </div>
                 </Button>
 
                 {/* Modules List */}
@@ -117,10 +132,53 @@ const ModuleSidebar = ({
             onAddModule(data);
           }
           setIsAddModuleOpen(false);
-          // Auto-expand the semester where the module was added so it is visible immediately
-          if (!expandedSemesters.includes(data.semester)) {
-            setExpandedSemesters((prev) => [...prev, data.semester]);
-          }
+          // Set only the new semester to be open
+          setExpandedSemesters([data.semester]);
+        }}
+      />
+
+      <SemesterVisibilityModal
+        isOpen={!!visibilitySemester}
+        onClose={() => setVisibilitySemester(null)}
+        semesterName={visibilitySemester?.name}
+        availableBatches={[
+          {
+            id: "b25",
+            short: "'25",
+            name: "Batch 25",
+            colorBg: "bg-orange-900/30",
+            colorText: "text-orange-400",
+          },
+          {
+            id: "b24",
+            short: "'24",
+            name: "Batch 24",
+            colorBg: "bg-indigo-900/30",
+            colorText: "text-indigo-400",
+          },
+          {
+            id: "b23",
+            short: "'23",
+            name: "Batch 23",
+            colorBg: "bg-emerald-900/30",
+            colorText: "text-emerald-400",
+          },
+          {
+            id: "b22",
+            short: "'22",
+            name: "Batch 22",
+            colorBg: "bg-indigo-900/30",
+            colorText: "text-indigo-400",
+          },
+        ]}
+        // Default visibility is none by default per requirements.
+        currentVisibility={[]}
+        onSaveVisibility={(data) => {
+          console.log(
+            `Saving visibility for ${visibilitySemester?.name}:`,
+            data,
+          );
+          setVisibilitySemester(null);
         }}
       />
     </div>
