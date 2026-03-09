@@ -1,5 +1,7 @@
 import { FolderOpen, Upload, Edit2, Plus } from "lucide-react";
 import Button from "../common/Button";
+import { useState } from "react";
+import UploadMaterialModal from "./UploadMaterialModal";
 
 /**
  * Renders the top header for the selected module showing details and access
@@ -12,6 +14,8 @@ const ModuleHeader = ({
   lastUpdated = "2 hours ago",
   isPublic = true,
 }) => {
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
   return (
     <div className="w-full p-5 bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col gap-3.5">
       <div className="w-full flex justify-between items-start">
@@ -81,7 +85,7 @@ const ModuleHeader = ({
             variant="primary"
             size="small"
             className="!bg-indigo-500 hover:!bg-indigo-600 shadow-[0_8.8px_13.2px_-2.6px_rgba(59,130,246,0.30)] !rounded-lg flex items-center gap-2 h-10 !px-3.5"
-            onClick={() => console.log("Upload")}
+            onClick={() => setIsUploadModalOpen(true)}
           >
             <Upload size={14} className="text-white" />
             <span className="text-white font-medium">Upload File</span>
@@ -102,6 +106,12 @@ const ModuleHeader = ({
           </span>
         </div>
       </div>
+
+      <UploadMaterialModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        moduleName={moduleName}
+      />
     </div>
   );
 };
