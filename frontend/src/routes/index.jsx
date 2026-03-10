@@ -22,9 +22,15 @@ import ActiveBusinesses from "../pages/ActiveBusinesses";
 import StudentManagement from "../pages/StudentManagement";
 import BoostController from "../pages/BoostController";
 import BoostPackageForm from "../pages/BoostPackageForm";
+import ReportModeration from "../pages/ReportModeration";
+import ReportDetail from "../pages/ReportDetail";
 import { BoostPackageProvider } from "../context/BoostPackageContext";
 import ClubVerification from "../pages/ClubVerification";
 import BatchRepVerification from "../pages/BatchRepVerification";
+import SuspendedUsers from "../pages/SuspendedUsers";
+import SuspendedUserProfile from "../pages/SuspendedUserProfile";
+import SuspendedUserReactivation from "../pages/SuspendedUserReactivation";
+import SuspendedUserSuccess from "../pages/SuspendedUserSuccess";
 import { mockRequests } from "../data/mockData";
 import NewsFeed from "../pages/NewsFeed";
 import MarketplaceItems from "../pages/MarketplaceItems";
@@ -235,21 +241,27 @@ const router = createBrowserRouter([
       },
       {
         path: "/report-moderation",
-        element: (
-          <PlaceholderPage
-            title="Report Moderation"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <ReportModeration />,
+      },
+      {
+        path: "/report-moderation/:id",
+        element: <ReportDetail />,
       },
       {
         path: "/suspended-users",
-        element: (
-          <PlaceholderPage
-            title="Suspended Users"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <SuspendedUsers />,
+      },
+      {
+        path: "/suspended-users/:id",
+        element: <SuspendedUserProfile />,
+      },
+      {
+        path: "/suspended-users/:id/reactivate",
+        element: <SuspendedUserReactivation />,
+      },
+      {
+        path: "/suspended-users/:id/success",
+        element: <SuspendedUserSuccess />,
       },
       {
         path: "/boost-controller",

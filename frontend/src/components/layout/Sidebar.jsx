@@ -118,6 +118,7 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
           label: "Suspended Users",
           badge: 3,
           path: "/suspended-users",
+          childPaths: ["/suspended-users"],
         },
         {
           iconSrc: "/icon_boost_controller.svg",
@@ -207,7 +208,7 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
                 {...link}
                 active={
                   pathname === link.path ||
-                  (link.childPaths && link.childPaths.includes(pathname))
+                  (link.childPaths && link.childPaths.some(cp => pathname.startsWith(cp)))
                 }
               />
             ))}
