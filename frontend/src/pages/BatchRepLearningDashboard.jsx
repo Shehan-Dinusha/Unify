@@ -11,11 +11,27 @@ import {
   mockLearningFiles,
   mockCurrentUser,
 } from "../data/mockData";
+import { ModuleActionSuccessModal } from "../components/common/ModuleActionModals";
 
 const BatchRepLearningDashboard = () => {
   const [semesters, setSemesters] = useState(mockSemesters);
   const [activeSemesterId, setActiveSemesterId] = useState("sem1");
   const [activeModuleId, setActiveModuleId] = useState("mod1");
+
+  // Success Modal States
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [actionModuleName, setActionModuleName] = useState("");
+
+  // Compute Active Module Data derived from state
+  const activeSemesterInfo = semesters.find(
+    (sem) =>
+      sem.modules && sem.modules.some((mod) => mod.id === activeModuleId),
+  );
+
+  const activeModuleData = activeSemesterInfo?.modules.find(
+    (mod) => mod.id === activeModuleId,
+  );
 
   const handleAddModule = (newModule) => {
     setSemesters((prevSemesters) =>
@@ -29,6 +45,7 @@ const BatchRepLearningDashboard = () => {
                 id: `mod-${Date.now()}`,
                 name: newModule.title,
                 code: newModule.code,
+                degrees: newModule.visibility,
               },
             ],
           };
@@ -36,6 +53,68 @@ const BatchRepLearningDashboard = () => {
         return sem;
       }),
     );
+    setActionModuleName(newModule.title);
+    setShowSuccessModal(true);
+  };
+
+  const handleEditModule = (editedData) => {
+    setSemesters((prevSemesters) => {
+      // First, remove the module from wherever it currently is
+      let updatedSemesters = prevSemesters.map((sem) => ({
+        ...sem,
+        modules: sem.modules
+          ? sem.modules.filter((mod) => mod.id !== activeModuleId)
+          : [],
+      }));
+
+      // Then, add the updated module to its new semester Destination
+      updatedSemesters = updatedSemesters.map((sem) => {
+        if (
+          sem.name === editedData.semester ||
+          sem.id === editedData.semester
+        ) {
+          return {
+            ...sem,
+            modules: [
+              ...(sem.modules || []),
+              {
+                id: activeModuleId, // keep same ID
+                name: editedData.title,
+                code: editedData.code,
+                degrees: editedData.visibility,
+              },
+            ],
+          };
+        }
+        return sem;
+      });
+
+      return updatedSemesters;
+    });
+
+    setActionModuleName(editedData.title);
+    setShowSuccessModal(true);
+  };
+
+  const handleDeleteModule = () => {
+    setActionModuleName(activeModuleData?.name || "Module");
+
+    setSemesters((prevSemesters) =>
+      prevSemesters.map((sem) => ({
+        ...sem,
+        modules: sem.modules
+          ? sem.modules.filter((mod) => mod.id !== activeModuleId)
+          : [],
+      })),
+    );
+
+    // We defer clearing the active module ID until the modal is closed so UI doesn't immediately snap behind the modal
+    setShowDeleteModal(true);
+  };
+
+  const closeDeleteModal = () => {
+    setShowDeleteModal(false);
+    setActiveModuleId(null);
   };
 
   return (
@@ -91,14 +170,57 @@ const BatchRepLearningDashboard = () => {
 
           {/* Main Content Area */}
           <div className="flex-1 w-full flex flex-col items-start gap-5 min-w-0">
-            <ModuleHeader />
-            <CategoryGrid />
-            <FileListTable files={mockLearningFiles} />
+            {activeModuleData ? (
+              <>
+                <ModuleHeader
+                  moduleName={activeModuleData?.name}
+                  moduleCode={activeModuleData?.code || "N/A"}
+                  semesterName={activeSemesterInfo?.name}
+                  degrees={activeModuleData?.degrees || ["Bsc.(Hons) IT"]}
+                  onEditSave={handleEditModule}
+                  onDelete={handleDeleteModule}
+                />
+                <CategoryGrid />
+                <FileListTable files={mockLearningFiles} />
+              </>
+            ) : (
+              <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="48"
+                  height="48"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mb-4 opacity-50"
+                >
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+                <p>Select a module from the sidebar to view details</p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Full width Batch Rep Team */}
         <BatchRepTeam />
+
+        <ModuleActionSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          moduleName={actionModuleName}
+        />
+
+        <ModuleActionSuccessModal
+          isOpen={showDeleteModal}
+          onClose={closeDeleteModal}
+          moduleName={actionModuleName}
+          isDelete={true}
+        />
       </div>
     </MainLayout>
   );

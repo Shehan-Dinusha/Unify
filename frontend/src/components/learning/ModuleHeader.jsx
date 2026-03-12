@@ -2,6 +2,7 @@ import { FolderOpen, Upload, Edit2, Plus } from "lucide-react";
 import Button from "../common/Button";
 import { useState } from "react";
 import UploadMaterialModal from "./UploadMaterialModal";
+import EditModuleModal from "./EditModuleModal";
 
 /**
  * Renders the top header for the selected module showing details and access
@@ -13,8 +14,11 @@ const ModuleHeader = ({
   degrees = ["Bsc.(Hons) IT", "Bsc.(Hons) AI"],
   lastUpdated = "2 hours ago",
   isPublic = true,
+  onEditSave,
+  onDelete,
 }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   return (
     <div className="w-full p-5 bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col gap-3.5">
@@ -58,15 +62,6 @@ const ModuleHeader = ({
                   </span>
                 </div>
               ))}
-              <div
-                className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors cursor-pointer"
-                onClick={() => console.log("Add Degree")}
-              >
-                <Plus size={14} />
-                <span className="text-xs font-bold font-inter leading-5">
-                  Add
-                </span>
-              </div>
             </div>
           </div>
         </div>
@@ -77,7 +72,7 @@ const ModuleHeader = ({
             variant="ghost"
             size="small"
             className="!px-3 !rounded-lg border border-gray-700 bg-transparent hover:bg-slate-700/50 h-10"
-            onClick={() => console.log("Edit")}
+            onClick={() => setIsEditModalOpen(true)}
           >
             <Edit2 size={16} className="text-gray-400" />
           </Button>
@@ -111,6 +106,29 @@ const ModuleHeader = ({
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         moduleName={moduleName}
+      />
+
+      <EditModuleModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={(data) => {
+          if (onEditSave) {
+            onEditSave(data);
+          }
+          setIsEditModalOpen(false);
+        }}
+        onDelete={() => {
+          if (onDelete) {
+            onDelete();
+          }
+          setIsEditModalOpen(false);
+        }}
+        initialData={{
+          moduleName,
+          moduleCode,
+          semesterName,
+          degrees,
+        }}
       />
     </div>
   );
