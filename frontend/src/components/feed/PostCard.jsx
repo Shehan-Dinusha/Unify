@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Send } from "lucide-react";
+import { MapPin, Send, Heart, MessageCircle } from "lucide-react";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
 const CommentSection = ({ postComments, onAddComment }) => {
@@ -194,10 +194,10 @@ const PostCard = ({
           {/* Like */}
           <button
             onClick={toggleLike}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isLiked ? 'text-state-info' : ''}`}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isLiked ? 'text-primary-blue' : ''}`}
           >
             <div className="flex items-center gap-1.5">
-              <img src="/icon_like_marketplace.svg" alt="Like" className={`w-5 h-5 ${isLiked ? 'brightness-150' : 'opacity-70'}`} />
+              <Heart size={20} className={isLiked ? "fill-current" : ""} strokeWidth={isLiked ? 0 : 1.8} />
               <span>{likeCount}</span>
             </div>
             <span className="text-[11px]">Like</span>
@@ -206,10 +206,10 @@ const PostCard = ({
           {/* Comment */}
           <button
             onClick={toggleComments}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${showComments ? 'text-state-info' : ''}`}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${showComments ? 'text-primary-blue' : ''}`}
           >
             <div className="flex items-center gap-1.5">
-              <img src="/icon_comment_marketplace.svg" alt="Comment" className={`w-5 h-5 ${showComments ? 'brightness-150' : 'opacity-70'}`} />
+              <MessageCircle size={20} strokeWidth={1.8} />
               <span>{commentCount}</span>
             </div>
             <span className="text-[11px]">Comment</span>
