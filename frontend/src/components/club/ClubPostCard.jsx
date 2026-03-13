@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send } from "lucide-react";
+import { Send, Heart, MessageCircle } from "lucide-react";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import { useNavigate } from "react-router-dom";
 
 /* ─── Single pushable action button ─────────────────────────── */
-const ActionBtn = ({ icon: Icon, svgSrc, label, count, showBoth, activeColor = "text-primary", onClick, active }) => (
+const ActionBtn = ({ icon: Icon, svgSrc, label, count, showBoth, activeColor = "text-primary", onClick, active, fillActive = false }) => (
     <button
         onClick={onClick}
         className={`
@@ -23,7 +23,7 @@ const ActionBtn = ({ icon: Icon, svgSrc, label, count, showBoth, activeColor = "
                 <div className="flex items-center gap-[3px]">
                     {svgSrc
                         ? <img src={svgSrc} alt={label} className="w-5 h-5" />
-                        : <Icon size={20} strokeWidth={1.8} />
+                        : <Icon size={20} className={active && fillActive ? "fill-current" : ""} strokeWidth={active && fillActive ? 0 : 1.8} />
                     }
                     <span className="text-[12px] font-bold leading-none">{count}</span>
                 </div>
@@ -32,7 +32,7 @@ const ActionBtn = ({ icon: Icon, svgSrc, label, count, showBoth, activeColor = "
             : <>
                 {svgSrc
                     ? <img src={svgSrc} alt={label} className="w-5 h-5" />
-                    : <Icon size={20} strokeWidth={1.8} />
+                    : <Icon size={20} className={active && fillActive ? "fill-current" : ""} strokeWidth={active && fillActive ? 0 : 1.8} />
                 }
                 <span className="text-[11px] leading-none font-medium">
                     {count !== undefined ? count : label}
@@ -119,7 +119,7 @@ const ClubPostCard = ({ post }) => {
     const [boosted, setBoosted] = useState(false);
     const [saved, setSaved] = useState(false);
     const [reported, setReported] = useState(false);
-    const [adActive, setAdActive] = useState(false);
+    const [liked, setLiked] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);
     const [postComments, setPostComments] = useState(post.comments ?? []);
     const [likes, setLikes] = useState(post.stats?.likes ?? 0);
@@ -127,7 +127,6 @@ const ClubPostCard = ({ post }) => {
     const toggleBoost = () => { setBoosted(p => !p); };
     const toggleSave = () => setSaved(p => !p);
     const toggleReport = () => setReported(p => !p);
-    const toggleAd = () => setAdActive(p => !p);
 
     const handleAddComment = (text) => {
         const newComment = {
@@ -179,22 +178,23 @@ const ClubPostCard = ({ post }) => {
                 <div className="mt-lg pt-md border-t border-white/10 flex items-center justify-between">
                     {/* Like */}
                     <ActionBtn
-                        svgSrc="/icon_like_marketplace.svg"
+                        icon={Heart}
                         label="Like"
                         count={likes}
                         showBoth
-                        activeColor="text-green-400"
-                        active={adActive}
-                        onClick={() => { toggleAd(); setLikes(n => adActive ? n - 1 : n + 1); }}
+                        activeColor="text-primary-blue"
+                        active={liked}
+                        fillActive={true}
+                        onClick={() => { setLiked(p => !p); setLikes(n => liked ? n - 1 : n + 1); }}
                     />
 
                     {/* Comment */}
                     <ActionBtn
+                        icon={MessageCircle}
                         label="Comment"
-                        svgSrc="/icon_comment_marketplace.svg"
                         count={postComments.length}
                         showBoth
-                        activeColor="text-blue-400"
+                        activeColor="text-primary-blue"
                         active={commentOpen}
                         onClick={() => setCommentOpen(o => !o)}
                     />
