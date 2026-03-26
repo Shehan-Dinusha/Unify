@@ -9,6 +9,8 @@ import {
   mockRequests,
   mockSemesters,
   mockLearningFiles,
+  mockModuleCategories,
+  mockCategoryFiles,
   mockCurrentUser,
 } from "../data/mockData";
 import { ModuleActionSuccessModal } from "../components/common/ModuleActionModals";
@@ -17,6 +19,16 @@ const BatchRepLearningDashboard = () => {
   const [semesters, setSemesters] = useState(mockSemesters);
   const [activeSemesterId, setActiveSemesterId] = useState("sem1");
   const [activeModuleId, setActiveModuleId] = useState("mod1");
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  React.useEffect(() => {
+    const categoriesForModule = mockModuleCategories[activeModuleId] || [];
+    if (categoriesForModule.length > 0) {
+      setSelectedCategory(categoriesForModule[0]);
+    } else {
+      setSelectedCategory(null);
+    }
+  }, [activeModuleId]);
 
   // Success Modal States
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -180,8 +192,18 @@ const BatchRepLearningDashboard = () => {
                   onEditSave={handleEditModule}
                   onDelete={handleDeleteModule}
                 />
-                <CategoryGrid />
-                <FileListTable files={mockLearningFiles} />
+                
+                <CategoryGrid 
+                  key={activeModuleId}
+                  initialCategories={mockModuleCategories[activeModuleId] || []}
+                  selectedCategoryId={selectedCategory?.id}
+                  onCategoryClick={setSelectedCategory} 
+                />
+                <FileListTable 
+                  categoryName={selectedCategory ? selectedCategory.title : "All Files"} 
+                  categories={mockModuleCategories[activeModuleId] || []}
+                  files={selectedCategory ? (mockCategoryFiles[selectedCategory.id] || []) : mockLearningFiles} 
+                />
               </>
             ) : (
               <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">

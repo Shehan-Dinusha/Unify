@@ -349,4 +349,40 @@ export const mockCurrentUser = {
   displayRole: "Batch Rep",
 };
 
+export const mockModuleCategories = {
+  "mod1": [
+    { id: "mod1-1", title: "Notes", fileCount: 12, iconName: "FileText" },
+    { id: "mod1-2", title: "Videos", fileCount: 8, iconName: "Play" },
+    { id: "mod1-3", title: "Additional", fileCount: 5, iconName: "Layers" },
+  ],
+  "mod2": [
+    { id: "mod2-1", title: "Past Papers", fileCount: 10, iconName: "Target" },
+    { id: "mod2-2", title: "Lab Reports", fileCount: 4, iconName: "BookOpen" },
+  ]
+};
+
+const generateMockFiles = (categoryName, count) => {
+  return Array.from({ length: count }).map((_, i) => ({
+    id: `${categoryName.toLowerCase().replace(/\s+/g, '-')}-${i + 1}`,
+    name: `${categoryName} - File ${i + 1}`,
+    size: `${Math.floor(Math.random() * 50) + 1} MB`,
+    categoryId: "",
+    uploader: {
+      name: i % 2 === 0 ? "Alex M." : "Sarah K.",
+      avatar: i % 2 === 0 
+        ? "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex"
+        : "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
+    },
+    dateModified: i === 0 ? "Today, 10:24 AM" : `Oct ${10 + (i % 20)}, 2024`,
+  }));
+};
+
+export const mockCategoryFiles = {
+  "mod1-1": generateMockFiles("Notes", 12),
+  "mod1-2": generateMockFiles("Videos", 8),
+  "mod1-3": generateMockFiles("Additional", 5),
+  "mod2-1": generateMockFiles("Past Papers", 10),
+  "mod2-2": generateMockFiles("Lab Reports", 4),
+};
+
 export default mockPosts;

@@ -1,19 +1,37 @@
+import React, { useState } from "react";
 import { Play, Edit2, Trash2 } from "lucide-react";
 import Button from "../common/Button";
+import { EditMaterialModal, DeleteMaterialModal } from "./MaterialActionModals";
 
 /**
  * Represents the table view showing files inside a specific category (e.g., Video Files)
  */
 const FileListTable = ({
   categoryName = "Programming Fundamentals",
-  files = [],
+  categories = [],
+  files: initialFiles = [],
 }) => {
+  const [files, setFiles] = useState(initialFiles);
+  const [editingFile, setEditingFile] = useState(null);
+  const [deletingFile, setDeletingFile] = useState(null);
+
+  React.useEffect(() => {
+    setFiles(initialFiles);
+  }, [initialFiles]);
+
+  const handleEditSave = (updatedFile) => {
+    setFiles(files.map(f => f.id === updatedFile.id ? updatedFile : f));
+  };
+
+  const handleDeleteConfirm = (fileToDelete) => {
+    setFiles(files.filter(f => f.id !== fileToDelete.id));
+  };
   return (
     <div className="w-full bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="w-full h-12 px-5 py-3 border-b border-gray-700 flex items-center">
         <h3 className="text-white text-sm font-bold font-inter leading-5">
-          Video Files in "{categoryName}"
+          Files in "{categoryName}"
         </h3>
       </div>
 
@@ -37,11 +55,11 @@ const FileListTable = ({
       </div>
 
       {/* Table rows */}
-      <div className="w-full flex flex-col">
+      <div className="w-full flex flex-col overflow-y-auto max-h-[320px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full border-b border-transparent">
         {files.map((file, idx) => (
           <div
             key={idx}
-            className="w-full h-20 px-5 flex items-center border-t border-gray-700 hover:bg-white/5 transition-colors group cursor-pointer"
+            className="shrink-0 w-full h-20 px-5 flex items-center border-t border-gray-700 hover:bg-white/5 transition-colors group cursor-pointer"
           >
             {/* File Column */}
             <div className="w-80 flex items-center gap-3.5 pr-4">
@@ -87,14 +105,16 @@ const FileListTable = ({
                 <Button
                   variant="ghost"
                   size="small"
-                  className="!px-2 !py-2 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10"
+                  onClick={(e) => { e.stopPropagation(); setEditingFile(file); }}
+                  className="!px-2 !py-2 text-gray-400 hover:text-white transition-colors rounded hover:bg-white/10 relative z-10"
                 >
                   <Edit2 size={16} />
                 </Button>
                 <Button
                   variant="ghost"
                   size="small"
-                  className="!px-2 !py-2 text-gray-400 hover:text-red-500 transition-colors rounded hover:bg-white/10"
+                  onClick={(e) => { e.stopPropagation(); setDeletingFile(file); }}
+                  className="!px-2 !py-2 text-gray-400 hover:text-red-500 transition-colors rounded hover:bg-white/10 relative z-10"
                 >
                   <Trash2 size={16} />
                 </Button>
@@ -108,6 +128,21 @@ const FileListTable = ({
           </div>
         )}
       </div>
+
+      <EditMaterialModal 
+        isOpen={!!editingFile} 
+        onClose={() => setEditingFile(null)} 
+        file={editingFile} 
+        categories={categories}
+        onSave={handleEditSave}
+      />
+
+      <DeleteMaterialModal 
+        isOpen={!!deletingFile} 
+        onClose={() => setDeletingFile(null)} 
+        file={deletingFile} 
+        onDelete={handleDeleteConfirm}
+      />
     </div>
   );
 };
