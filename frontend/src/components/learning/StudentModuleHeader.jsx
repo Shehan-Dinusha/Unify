@@ -15,7 +15,7 @@ const StudentModuleHeader = ({
     <div className="self-stretch flex flex-col justify-start items-start gap-2.5 w-full">
       {/* Breadcrumbs */}
       <div className="self-stretch inline-flex justify-start items-start w-full">
-        <div className="self-stretch flex justify-start items-center">
+        <div className="self-stretch flex flex-wrap justify-start items-center gap-y-1">
           <div className="justify-center text-gray-400 text-xs font-normal font-inter leading-5">
             {batchName}
           </div>
@@ -31,7 +31,7 @@ const StudentModuleHeader = ({
             <ChevronRight size={16} className="text-gray-400" />
           </div>
           <div className="pl-2 inline-flex flex-col justify-start items-start">
-            <div className="px-2 py-0.5 bg-white/10 rounded flex flex-col justify-start items-start">
+            <div className="px-2 py-0.5 bg-white/10 rounded flex flex-col justify-start items-start mt-0.5 sm:mt-0">
               <div className="justify-center text-white text-xs font-normal font-inter leading-5">
                 {moduleCode}
               </div>
@@ -41,13 +41,13 @@ const StudentModuleHeader = ({
       </div>
 
       {/* Main Header Area */}
-      <div className="self-stretch pb-5 border-b-[1px] border-white/5 inline-flex justify-between items-end w-full">
+      <div className="self-stretch pb-5 border-b-[1px] border-white/5 inline-flex justify-between items-end w-full mt-1 sm:mt-0">
         <div className="w-full inline-flex flex-col justify-start items-start gap-2">
           <div className="self-stretch inline-flex justify-start items-center gap-2.5">
             <div className="inline-flex flex-col justify-start items-start">
-              <Server size={32} className="text-indigo-500" />
+              <Server size={28} className="text-indigo-500 sm:w-8 sm:h-8" />
             </div>
-            <div className="justify-center text-white text-3xl font-bold font-inter leading-9">
+            <div className="justify-center text-white text-2xl sm:text-3xl font-bold font-inter leading-8 sm:leading-9">
               {moduleName}
             </div>
           </div>

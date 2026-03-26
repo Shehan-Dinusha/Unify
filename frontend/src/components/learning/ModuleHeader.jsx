@@ -21,8 +21,8 @@ const ModuleHeader = ({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   return (
-    <div className="w-full p-5 bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col gap-3.5">
-      <div className="w-full flex justify-between items-start">
+    <div className="w-full p-4 sm:p-5 bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col gap-3.5">
+      <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-4">
         <div className="flex flex-col gap-2">
           {/* Title */}
           <div className="flex items-center gap-2">

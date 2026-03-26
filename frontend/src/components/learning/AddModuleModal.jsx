@@ -77,7 +77,7 @@ const AddModuleModal = ({ isOpen, onClose, onSave }) => {
         className="w-full max-w-[670px] !p-0 flex flex-col relative overflow-visible outline outline-1 outline-offset-[-1px] outline-white/20 shadow-[0px_8px_32px_0px_rgba(31,38,135,0.37)] animate-in fade-in zoom-in duration-200 bg-white/10"
       >
         {/* Header */}
-        <div className="px-8 pt-8 pb-4 relative flex flex-col items-start gap-1">
+        <div className="px-4 sm:px-8 pt-8 pb-4 relative flex flex-col items-start gap-1">
           <button
             onClick={onClose}
             className="absolute top-6 right-6 w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
@@ -93,7 +93,7 @@ const AddModuleModal = ({ isOpen, onClose, onSave }) => {
         </div>
 
         {/* Content */}
-        <div className="px-8 py-4 flex flex-col gap-6 w-full max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+        <div className="px-4 sm:px-8 py-4 flex flex-col gap-6 w-full max-h-[60vh] sm:max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
           <Input
             label="Module Title"
             placeholder="e.g. Advanced Calculus II"
@@ -222,7 +222,7 @@ const AddModuleModal = ({ isOpen, onClose, onSave }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-8 py-6 border-t border-slate-700 flex justify-end items-center gap-4 mt-auto rounded-b-3xl">
+        <div className="px-4 sm:px-8 py-6 border-t border-slate-700 flex justify-end items-center gap-4 mt-auto rounded-b-3xl">
           <Button
             variant="ghost-hoverless"
             onClick={onClose}

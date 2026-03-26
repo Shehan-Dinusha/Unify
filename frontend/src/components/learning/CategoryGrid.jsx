@@ -78,7 +78,7 @@ const CategoryCard = ({
 
   return (
     <div
-      className={`relative w-full h-[84px] p-3.5 rounded-xl shadow-sm outline flex items-start gap-3.5 transition-all group cursor-pointer ${
+      className={`relative w-full h-[84px] p-2.5 sm:p-3.5 rounded-xl shadow-sm outline flex items-start gap-2.5 sm:gap-3.5 transition-all group cursor-pointer ${
         isSelected
           ? "bg-slate-700 outline-2 outline-blue-500"
           : "bg-slate-800 outline-1 outline-slate-700 hover:bg-slate-700/50"
@@ -106,7 +106,7 @@ const CategoryCard = ({
             e.stopPropagation();
             setShowMenu(!showMenu);
           }}
-          className="p-1 rounded-md text-gray-400 hover:text-white hover:bg-slate-700 transition-colors"
+          className={`p-1 rounded-md text-gray-400 hover:text-white hover:bg-slate-700 transition-colors ${showMenu ? "opacity-100" : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100"}`}
         >
           <MoreVertical size={16} />
         </button>
@@ -210,7 +210,7 @@ const CategoryGrid = ({
 
   return (
     <>
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
         {categories.map((cat, idx) => (
           <CategoryCard
             key={cat.id}

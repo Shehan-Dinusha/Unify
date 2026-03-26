@@ -36,7 +36,7 @@ const StudentFileRecord = ({ file, onClick }) => {
   const { icon, bg } = getFileIconConfig(file.name, file.type);
   
   return (
-    <div onClick={() => onClick?.(file)} className="w-full p-3.5 bg-slate-800 rounded-xl outline outline-1 outline-offset-[-0.91px] outline-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:bg-slate-700/50 transition-colors cursor-pointer group">
+    <div onClick={() => onClick?.(file)} className="w-full p-3 sm:p-3.5 bg-slate-800 rounded-xl outline outline-1 outline-offset-[-0.91px] outline-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 hover:bg-slate-700/50 transition-colors cursor-pointer group">
       <div className="flex justify-start items-center gap-3.5 min-w-0 flex-1">
         <div className={`w-11 h-11 shrink-0 rounded-lg outline outline-1 outline-offset-[-0.91px] flex justify-center items-center ${bg}`}>
           {icon}

@@ -27,7 +27,7 @@ const ModuleSidebar = ({
   };
 
   return (
-    <div className={`w-full lg:w-60 h-[calc(100vh-165px)] min-h-[400px] bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col overflow-hidden relative ${className}`}>
+    <div className={`w-full lg:w-60 h-auto lg:h-[calc(100vh-165px)] lg:min-h-[400px] bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col overflow-hidden relative ${className}`}>
       <div className="flex-1 overflow-y-auto p-2 pb-[60px] no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {title && (
           <div className="w-full pl-2.5 pt-2 flex flex-col justify-start items-start pb-2">
@@ -73,7 +73,11 @@ const ModuleSidebar = ({
                         e.stopPropagation();
                         setVisibilitySemester(semester);
                       }}
-                      className="p-1 hover:bg-white/10 rounded-md shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className={`p-1 hover:bg-white/10 rounded-md shrink-0 transition-opacity ${
+                        isExpanded
+                          ? "opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+                          : "opacity-0 group-hover:opacity-100"
+                      }`}
                       title="Visibility Settings"
                     >
                       <Eye

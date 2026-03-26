@@ -170,7 +170,7 @@ const BatchRepLearningDashboard = () => {
         {/* Dashboard Layout */}
         <div className="w-full flex flex-col lg:flex-row items-start gap-5 mb-5">
           {/* Left Column (Sticky Sidebar) */}
-          <div className="w-full lg:w-60 shrink-0 sticky top-0 z-10 flex flex-col gap-2">
+          <div className="w-full lg:w-60 shrink-0 lg:sticky lg:top-[28px] z-10 flex flex-col gap-2">
             <ModuleSidebar
               semesters={semesters}
               activeSemesterId={activeSemesterId}

@@ -24,7 +24,7 @@ const StudentCategoryCard = ({ category, idx, isSelected, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className={`p-5 rounded-xl outline outline-1 outline-offset-[-0.91px] flex flex-col justify-between items-start cursor-pointer hover:bg-slate-700/50 transition-colors w-full ${
+      className={`p-4 sm:p-5 rounded-xl outline outline-1 outline-offset-[-0.91px] flex flex-col justify-between items-start cursor-pointer hover:bg-slate-700/50 transition-colors w-full ${
         isSelected ? "outline-blue-500 bg-slate-700" : "outline-white/5 " + bg
       }`}
     >

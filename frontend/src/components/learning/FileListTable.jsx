@@ -27,16 +27,16 @@ const FileListTable = ({
     setFiles(files.filter(f => f.id !== fileToDelete.id));
   };
   return (
-    <div className="w-full bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col overflow-hidden">
+    <div className="w-full bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col overflow-x-auto">
       {/* Header */}
-      <div className="w-full h-12 px-5 py-3 border-b border-gray-700 flex items-center">
+      <div className="w-full min-w-[700px] h-12 px-5 py-3 border-b border-gray-700 flex items-center">
         <h3 className="text-white text-sm font-bold font-inter leading-5">
           Files in "{categoryName}"
         </h3>
       </div>
 
       {/* Table columns */}
-      <div className="w-full bg-gray-800/50 flex">
+      <div className="w-full min-w-[700px] bg-gray-800/50 flex">
         <div className="w-80 px-5 py-3 flex items-center">
           <span className="text-gray-400 text-xs font-bold font-inter leading-5 uppercase tracking-wider">
             FILE
@@ -55,7 +55,7 @@ const FileListTable = ({
       </div>
 
       {/* Table rows */}
-      <div className="w-full flex flex-col overflow-y-auto max-h-[320px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full border-b border-transparent">
+      <div className="w-full min-w-[700px] flex flex-col overflow-y-auto max-h-[320px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-transparent hover:[&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full border-b border-transparent">
         {files.map((file, idx) => (
           <div
             key={idx}
@@ -101,7 +101,7 @@ const FileListTable = ({
               <span className="text-gray-400 text-xs font-normal font-inter leading-5">
                 {file.dateModified}
               </span>
-              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex items-center gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button
                   variant="ghost"
                   size="small"

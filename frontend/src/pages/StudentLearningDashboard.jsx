@@ -69,9 +69,9 @@ const StudentLearningDashboard = () => {
     >
       <div className="w-full relative pb-20 mt-0">
         {/* Dashboard Layout */}
-        <div className="w-full flex flex-col lg:flex-row items-start gap-6 mb-5 pt-7">
-          {/* Left Column (Sticky Sidebar) */}
-          <div className="w-full lg:w-64 shrink-0 sticky top-[28px] z-10 flex flex-col gap-3.5">
+        <div className="w-full flex flex-col lg:flex-row items-start gap-6 mb-5 pt-4 lg:pt-7">
+          {/* Left Column (Sticky Sidebar on Desktop) */}
+          <div className="w-full lg:w-64 shrink-0 lg:sticky lg:top-[28px] z-10 flex flex-col gap-3.5">
             {/* Faculty Info Card matching the design snippet */}
             <div className="w-full p-3.5 bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-white/5 flex flex-col justify-start items-start shrink-0">
               <div className="w-full flex justify-start items-center gap-2.5">
@@ -99,12 +99,12 @@ const StudentLearningDashboard = () => {
               onSelectModule={setActiveModuleId}
               readOnly={true}
               title="Course Structure"
-              className="!w-full outline-white/5 !h-[calc(100vh-250px)] min-h-[400px]"
+              className="!w-full outline-white/5 lg:!h-[calc(100vh-250px)] lg:min-h-[400px]"
             />
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 w-full flex flex-col items-start gap-6 min-w-0 pr-2 pb-7">
+          <div className="flex-1 w-full flex flex-col items-start gap-6 min-w-0 pr-0 lg:pr-2 pb-7">
             {activeModuleData ? (
               <>
                 <StudentModuleHeader
