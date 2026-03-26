@@ -36,6 +36,7 @@ import ReceivedReviews from "../pages/ReceivedReviews";
 import FollowersDirectory from "../pages/FollowersDirectory";
 import Followings from "../pages/Followings";
 import BatchRepLearningDashboard from "../pages/BatchRepLearningDashboard";
+import StudentLearningDashboard from "../pages/StudentLearningDashboard";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout
@@ -196,6 +197,10 @@ const router = createBrowserRouter([
       {
         path: "/learning",
         element: <BatchRepLearningDashboard />,
+      },
+      {
+        path: "/student-learning",
+        element: <StudentLearningDashboard />,
       },
       {
         path: "/report-moderation",

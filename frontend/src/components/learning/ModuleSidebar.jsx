@@ -12,7 +12,9 @@ const ModuleSidebar = ({
   activeSemesterId,
   activeModuleId,
   onSelectModule,
-  onAddModule,
+  readOnly = false,
+  title,
+  className = "",
 }) => {
   const [expandedSemesters, setExpandedSemesters] = useState([
     activeSemesterId,
@@ -25,8 +27,13 @@ const ModuleSidebar = ({
   };
 
   return (
-    <div className="w-full lg:w-60 h-[calc(100vh-165px)] min-h-[400px] bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col overflow-hidden relative">
+    <div className={`w-full lg:w-60 h-[calc(100vh-165px)] min-h-[400px] bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col overflow-hidden relative ${className}`}>
       <div className="flex-1 overflow-y-auto p-2 pb-[60px] no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        {title && (
+          <div className="w-full pl-2.5 pt-2 flex flex-col justify-start items-start pb-2">
+            <div className="justify-center text-gray-500 text-[9px] font-bold font-inter uppercase leading-3 tracking-wide">{title}</div>
+          </div>
+        )}
         <div className="flex flex-col gap-1">
           {semesters.map((semester) => {
             const isExpanded = expandedSemesters.includes(semester.id);
@@ -60,19 +67,21 @@ const ModuleSidebar = ({
                       {semester.name}
                     </span>
                   </div>
-                  <div
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setVisibilitySemester(semester);
-                    }}
-                    className="p-1 hover:bg-white/10 rounded-md shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Visibility Settings"
-                  >
-                    <Eye
-                      size={16}
-                      className="text-gray-400 hover:text-white transition-colors"
-                    />
-                  </div>
+                  {!readOnly && (
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setVisibilitySemester(semester);
+                      }}
+                      className="p-1 hover:bg-white/10 rounded-md shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Visibility Settings"
+                    >
+                      <Eye
+                        size={16}
+                        className="text-gray-400 hover:text-white transition-colors"
+                      />
+                    </div>
+                  )}
                 </Button>
 
                 {/* Modules List */}
@@ -110,19 +119,20 @@ const ModuleSidebar = ({
         </div>
       </div>
 
-      {/* Add Module Button Pinned to Bottom */}
-      <div className="absolute bottom-0 left-0 w-full p-2 bg-slate-800 border-t border-gray-700">
-        <Button
-          variant="ghost-hoverless"
-          onClick={() => setIsAddModuleOpen(true)}
-          className="!w-full !px-2.5 !py-2 !rounded-lg outline outline-1 outline-indigo-500/40 flex justify-start items-center text-left gap-2 hover:bg-slate-700/50 transition-colors !h-auto"
-        >
-          <Plus size={14} className="text-gray-400" />
-          <span className="text-gray-400 text-xs font-bold font-inter leading-5">
-            Add Module
-          </span>
-        </Button>
-      </div>
+      {!readOnly && (
+        <div className="absolute bottom-0 left-0 w-full p-2 bg-slate-800 border-t border-gray-700">
+          <Button
+            variant="ghost-hoverless"
+            onClick={() => setIsAddModuleOpen(true)}
+            className="!w-full !px-2.5 !py-2 !rounded-lg outline outline-1 outline-indigo-500/40 flex justify-start items-center text-left gap-2 hover:bg-slate-700/50 transition-colors !h-auto"
+          >
+            <Plus size={14} className="text-gray-400" />
+            <span className="text-gray-400 text-xs font-bold font-inter leading-5">
+              Add Module
+            </span>
+          </Button>
+        </div>
+      )}
 
       <AddModuleModal
         isOpen={isAddModuleOpen}
