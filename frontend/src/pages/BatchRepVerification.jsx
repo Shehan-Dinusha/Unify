@@ -15,7 +15,7 @@ import {
   FileType,
   Trash2,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import FileUpload from "../components/common/FileUpload";
@@ -24,6 +24,7 @@ import RevokePrivilegesModal from "../components/common/RevokePrivilegesModal";
 import { mockBatchRepDocuments } from "../data/mockData";
 
 const BatchRepVerification = () => {
+  const navigate = useNavigate();
   const [submissionStatus, setSubmissionStatus] = useState("idle"); // 'idle' | 'pending' | 'approved' | 'declined'
   const [submittedFile, setSubmittedFile] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -41,11 +42,16 @@ const BatchRepVerification = () => {
 
   const handleSubmit = () => {
     if (submittedFile) {
+      // Mark as submitted so the profile banner switches to 'See Verification Status'
+      localStorage.setItem("unify_student_rep_submitted", "true");
       setSubmissionStatus("pending");
+      // Navigate back to profile after a brief moment so the user sees the pending state
+      setTimeout(() => navigate("/profile?role=student"), 800);
     }
   };
 
   const handleWithdrawConfirm = () => {
+    localStorage.removeItem("unify_student_rep_submitted");
     setSubmissionStatus("idle");
     setSubmittedFile(null);
     setShowWithdrawModal(false);
@@ -381,7 +387,7 @@ const BatchRepVerification = () => {
 
         {/* Back Link - Reduced margin */}
         <Link
-          to="/admin"
+          to="/profile?role=student"
           className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group mt-1"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -447,31 +453,46 @@ const BatchRepVerification = () => {
       <RevokePrivilegesModal
         isOpen={showRevokeModal}
         onClose={() => setShowRevokeModal(false)}
-        onConfirm={() => setSubmissionStatus("idle")}
+        onConfirm={() => {
+          localStorage.removeItem("unify_student_rep_submitted");
+          setSubmissionStatus("idle");
+        }}
       />
 
       {/* DEBUG: Temporary controls to visualize states */}
       <div className="absolute bottom-4 right-4 flex flex-wrap justify-end max-w-[calc(100vw-32px)] sm:max-w-none gap-2 z-50 bg-black/50 p-2 rounded-lg backdrop-blur-sm border border-white/10">
         <button
-          onClick={() => setSubmissionStatus("idle")}
+          onClick={() => {
+            localStorage.removeItem("unify_student_rep_submitted");
+            setSubmissionStatus("idle");
+          }}
           className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
         >
           Idle
         </button>
         <button
-          onClick={() => setSubmissionStatus("pending")}
+          onClick={() => {
+            localStorage.setItem("unify_student_rep_submitted", "true");
+            setSubmissionStatus("pending");
+          }}
           className="px-3 py-1 bg-amber-900/50 hover:bg-amber-900/70 text-amber-400 text-xs rounded border border-amber-500/30 transition-colors"
         >
           Pending
         </button>
         <button
-          onClick={() => setSubmissionStatus("approved")}
+          onClick={() => {
+            localStorage.setItem("unify_student_rep_submitted", "true");
+            setSubmissionStatus("approved");
+          }}
           className="px-3 py-1 bg-green-900/50 hover:bg-green-900/70 text-green-400 text-xs rounded border border-green-500/30 transition-colors"
         >
           Approved
         </button>
         <button
-          onClick={() => setSubmissionStatus("declined")}
+          onClick={() => {
+            localStorage.setItem("unify_student_rep_submitted", "true");
+            setSubmissionStatus("declined");
+          }}
           className="px-3 py-1 bg-red-900/50 hover:bg-red-900/70 text-red-400 text-xs rounded border border-red-500/30 transition-colors"
         >
           Declined

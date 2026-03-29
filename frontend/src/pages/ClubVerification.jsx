@@ -11,7 +11,7 @@ import {
   Eye,
   Download,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import FileUpload from "../components/common/FileUpload";
@@ -19,6 +19,7 @@ import DocumentPreviewModal from "../components/common/DocumentPreviewModal";
 import { mockFullDocument } from "../data/mockData";
 
 const ClubVerification = () => {
+  const navigate = useNavigate();
   const [submissionStatus, setSubmissionStatus] = useState("idle"); // 'idle' | 'pending' | 'approved' | 'declined'
   const [submittedFile, setSubmittedFile] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -35,12 +36,17 @@ const ClubVerification = () => {
   const handleSubmit = () => {
     if (submittedFile) {
       console.log("Submitting file:", submittedFile.name);
+      // Mark as submitted so the profile banner switches to 'See Verification Status'
+      localStorage.setItem("unify_club_verification_submitted", "true");
       setSubmissionStatus("pending");
+      // Navigate back to profile after a brief moment
+      setTimeout(() => navigate("/profile?role=club_society"), 800);
     }
   };
 
   const handleWithdrawConfirm = () => {
     console.log("Withdrawing application");
+    localStorage.removeItem("unify_club_verification_submitted");
     setSubmissionStatus("idle");
     setSubmittedFile(null);
     setShowWithdrawModal(false);
@@ -346,11 +352,11 @@ const ClubVerification = () => {
 
         {/* Back Link */}
         <Link
-          to="/admin"
+          to="/profile?role=club_society"
           className="flex items-center gap-2 text-text-secondary hover:text-white transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm">Back to Dashboard</span>
+          <span className="text-sm">Back to Profile</span>
         </Link>
       </div>
 
@@ -417,25 +423,37 @@ const ClubVerification = () => {
       {/* DEBUG: Temporary controls to visualize states */}
       <div className="absolute bottom-4 right-4 flex flex-wrap justify-end max-w-[calc(100vw-32px)] sm:max-w-none gap-2 z-50 bg-black/50 p-2 rounded-lg backdrop-blur-sm border border-white/10">
         <button
-          onClick={() => setSubmissionStatus("idle")}
+          onClick={() => {
+            localStorage.removeItem("unify_club_verification_submitted");
+            setSubmissionStatus("idle");
+          }}
           className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
         >
           Idle
         </button>
         <button
-          onClick={() => setSubmissionStatus("pending")}
+          onClick={() => {
+            localStorage.setItem("unify_club_verification_submitted", "true");
+            setSubmissionStatus("pending");
+          }}
           className="px-3 py-1 bg-amber-900/50 hover:bg-amber-900/70 text-amber-400 text-xs rounded border border-amber-500/30 transition-colors"
         >
           Pending
         </button>
         <button
-          onClick={() => setSubmissionStatus("approved")}
+          onClick={() => {
+            localStorage.setItem("unify_club_verification_submitted", "true");
+            setSubmissionStatus("approved");
+          }}
           className="px-3 py-1 bg-green-900/50 hover:bg-green-900/70 text-green-400 text-xs rounded border border-green-500/30 transition-colors"
         >
           Approved
         </button>
         <button
-          onClick={() => setSubmissionStatus("declined")}
+          onClick={() => {
+            localStorage.setItem("unify_club_verification_submitted", "true");
+            setSubmissionStatus("declined");
+          }}
           className="px-3 py-1 bg-red-900/50 hover:bg-red-900/70 text-red-400 text-xs rounded border border-red-500/30 transition-colors"
         >
           Declined

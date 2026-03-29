@@ -16,6 +16,7 @@ import {
   ClipboardList,
   LogOut,
 } from "lucide-react";
+import LogoutModal from "../profile/modals/LogoutModal";
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({
@@ -26,6 +27,7 @@ const SidebarItem = ({
   active = false,
   isDanger = false,
   path,
+  onClick,
 }) => {
   const baseStyles =
     "w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 cursor-pointer group";
@@ -80,6 +82,8 @@ const SidebarItem = ({
 
 const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
 
   // Configuration Map for different user roles
   const roleConfigs = {
@@ -219,7 +223,12 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
         <div className="w-full px-md pb-md flex flex-col gap-md">
           <div className="h-px bg-white/10 w-full" />
 
-          <SidebarItem iconSrc="/icon_log_out.svg" label="Log Out" isDanger />
+          <SidebarItem
+            iconSrc="/icon_log_out.svg"
+            label="Log Out"
+            isDanger
+            onClick={() => setShowLogoutModal(true)}
+          />
 
           <div className="w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md hover:bg-white/10 transition-colors cursor-pointer group">
             <img
@@ -238,6 +247,19 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
           </div>
         </div>
       </aside>
+
+      {/* Logout Modal */}
+      {showLogoutModal && (
+        <LogoutModal
+          onClose={() => setShowLogoutModal(false)}
+          onConfirm={() => {
+            setShowLogoutModal(false);
+            // Mock logout: clear tokens if any and redirect to login
+            console.log("Logging out...");
+            navigate("/login");
+          }}
+        />
+      )}
     </>
   );
 };

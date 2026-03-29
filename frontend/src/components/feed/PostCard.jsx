@@ -136,6 +136,7 @@ const PostCard = ({
             src={image}
             alt="post"
             className="w-full h-full object-cover"
+            loading="lazy"
           />
         </div>
       )}
