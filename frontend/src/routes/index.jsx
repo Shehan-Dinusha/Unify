@@ -25,6 +25,7 @@ import BoostPackageForm from "../pages/BoostPackageForm";
 import ReportModeration from "../pages/ReportModeration";
 import ReportDetail from "../pages/ReportDetail";
 import { BoostPackageProvider } from "../context/BoostPackageContext";
+import { SavedPostsProvider } from "../context/SavedPostsContext";
 import ClubVerification from "../pages/ClubVerification";
 import BatchRepVerification from "../pages/BatchRepVerification";
 import SuspendedUsers from "../pages/SuspendedUsers";
@@ -46,6 +47,7 @@ import Services from "../pages/Services";
 import ClubCheckout from "../pages/ClubCheckout";
 import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
 import MyOrders from "../pages/MyOrders";
+import MySavedPosts from "../pages/MySavedPosts";
 
 
 import NotFound from "../pages/NotFound";
@@ -76,10 +78,12 @@ const PlaceholderPage = ({ title, verificationCount }) => (
 
 // Root layout wraps every route in the BoostPackageProvider
 const RootLayout = () => (
-  <BoostPackageProvider>
-    <ScrollToTop />
-    <Outlet />
-  </BoostPackageProvider>
+  <SavedPostsProvider>
+    <BoostPackageProvider>
+      <ScrollToTop />
+      <Outlet />
+    </BoostPackageProvider>
+  </SavedPostsProvider>
 );
 
 const router = createBrowserRouter([
@@ -282,6 +286,7 @@ const router = createBrowserRouter([
         ),
       },
       { path: '/order-history', element: <MyOrders /> },
+      { path: '/my-saved-posts', element: <MySavedPosts /> },
       {
         path: "/order-dashboard",
         element: (
