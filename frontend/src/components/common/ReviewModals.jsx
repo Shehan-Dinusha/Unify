@@ -50,7 +50,7 @@ export const AddReviewModal = ({ onClose, onConfirm }) => {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Tell us about your experience!"
-              className="w-full h-32 bg-white/5 border border-white/10 rounded-[20px] p-md text-white text-sm placeholder:text-text-tertiary outline-none focus:border-state-warning/30 transition-all resize-none shadow-inner"
+              className="w-full h-32 bg-white/5 border border-white/10 rounded-[20px] p-md text-white text-base md:text-sm placeholder:text-text-tertiary outline-none focus:border-state-warning/30 transition-all resize-none shadow-inner"
             />
           </div>
 

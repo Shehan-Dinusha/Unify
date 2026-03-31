@@ -127,21 +127,38 @@ const OwnProfilePage = () => {
     displayRole: roleDisplayNames[profile.role] || profile.role,
   };
 
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [switchOpen, setSwitchOpen] = useState(false);
+  // URL-based Modal state
+  const activeModal = searchParams.get("modal");
+  const deleteOpen = activeModal === "delete";
+  const switchOpen = activeModal === "switch";
 
   const handleEditProfile = () => navigate(`/profile/edit?role=${activeRole}`);
   const handleSecurity = () => navigate(`/profile/security?role=${activeRole}`);
-  const handleSwitchAccount = () => setSwitchOpen(true);
-  const handleDeleteAccount = () => setDeleteOpen(true);
+
+  // Opening modals adds to history
+  const handleSwitchAccount = () =>
+    navigate(`/profile?role=${activeRole}&modal=switch`);
+  const handleDeleteAccount = () =>
+    navigate(`/profile?role=${activeRole}&modal=delete`);
+
+  // Closing modals goes back in history (closing the modal)
+  const closeModal = () => navigate(-1);
+
   const handleConfirmDelete = () => {
-    setDeleteOpen(false);
+    // Clear modal param on confirm
+    navigate(`/profile?role=${activeRole}`, { replace: true });
     // TODO: call DELETE /api/profile when backend is ready
   };
 
+  const getPageTitle = () => {
+    if (switchOpen) return "Switch account";
+    if (deleteOpen) return "Delete account";
+    return "Profile";
+  };
+
   return (
-    <MainLayout user={user} pageTitle="Profile" verificationCount={0}>
-      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-x-lg gap-y-md text-start">
+    <MainLayout user={user} pageTitle={getPageTitle()} verificationCount={0}>
+      <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md text-start px-1 md:px-0">
         {/* Row 1, Col 1 — Profile Card */}
         <ProfileHeader profile={profile} className="h-full" />
 
@@ -149,7 +166,7 @@ const OwnProfilePage = () => {
         <OwnerViewSwitch profile={profile} />
 
         {/* Row 2 — Account Settings (Full Width) */}
-        <div className="md:col-span-2 flex flex-col gap-lg">
+        <div className="md:col-span-2 flex flex-col gap-4 md:gap-lg">
           <AccountSettingsSection
             onEditProfile={handleEditProfile}
             onSecurity={handleSecurity}
@@ -162,13 +179,13 @@ const OwnProfilePage = () => {
       {/* Modals */}
       {deleteOpen && (
         <DeleteAccountModal
-          onClose={() => setDeleteOpen(false)}
+          onClose={closeModal}
           onConfirm={handleConfirmDelete}
         />
       )}
       {switchOpen && (
         <SwitchAccountModal
-          onClose={() => setSwitchOpen(false)}
+          onClose={closeModal}
           currentUser={user}
         />
       )}

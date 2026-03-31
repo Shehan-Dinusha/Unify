@@ -13,14 +13,14 @@ const RecentPostsSection = ({ posts = [] }) => {
   const visiblePosts = showAll ? posts : posts.slice(0, 2);
 
   return (
-    <div className="flex flex-col gap-md">
+    <div className="flex flex-col gap-4 md:gap-md">
       {/* Title */}
-      <h3 className="text-body-large-bold text-text-primary px-xs">
-        Recent Post
+      <h3 className="text-base md:text-body-large-bold text-text-primary px-1 md:px-xs">
+        Recent Posts
       </h3>
 
       {/* Posts List */}
-      <div className="flex flex-col gap-lg">
+      <div className="flex flex-col gap-4 md:gap-lg">
         {visiblePosts.map((post) => (
           <PostCard key={post.id} {...post} />
         ))}
@@ -28,10 +28,10 @@ const RecentPostsSection = ({ posts = [] }) => {
 
       {/* Show More toggle */}
       {posts.length > 2 && (
-        <div className="flex justify-center mt-2">
+        <div className="flex justify-center mt-3 md:mt-2">
           <button
             onClick={() => setShowAll(!showAll)}
-            className="text-body-small-bold text-primary-blue hover:text-primary-blue/80 transition-colors"
+            className="text-[13px] md:text-body-small-bold text-primary-blue hover:text-primary-blue/80 transition-colors font-semibold"
           >
             {showAll ? "Show less" : "Show more"}
           </button>

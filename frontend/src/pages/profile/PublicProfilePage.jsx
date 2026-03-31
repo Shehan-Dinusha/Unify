@@ -317,7 +317,7 @@ const PublicProfilePage = () => {
 
   return (
     <MainLayout user={sidebarUser} pageTitle="Profile" verificationCount={0}>
-      <div className="w-full max-w-5xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto px-1 md:px-0">
         <PublicViewSwitch profile={profile} />
       </div>
     </MainLayout>

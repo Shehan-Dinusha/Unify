@@ -69,9 +69,17 @@ const EditProfilePage = () => {
   };
 
   return (
-    <MainLayout user={user} pageTitle="Settings" verificationCount={0}>
-      <div className="w-full flex flex-col items-center justify-center py-6 px-4">
+    <MainLayout user={user} pageTitle="Edit info" verificationCount={0}>
+      <div className="w-full flex flex-col items-center justify-start pt-4 md:pt-10 px-4 min-h-full">
         {renderForm()}
+
+        {/* Back link - Mobile Only */}
+        <button
+          onClick={() => navigate(`/profile?role=${activeRole}`)}
+          className="md:hidden mt-10 mb-6 flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors text-body-small"
+        >
+          ← Back to Profile
+        </button>
       </div>
     </MainLayout>
   );

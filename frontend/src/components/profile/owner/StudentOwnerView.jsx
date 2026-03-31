@@ -68,36 +68,37 @@ const StudentOwnerView = () => {
   ];
 
   return (
-    <div className="flex flex-col gap-lg">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-md items-stretch">
+    <div className="flex flex-col gap-4 md:gap-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-md items-stretch">
         {cards.map((card, idx) => (
           <ProfileDashboardCard key={idx} {...card} />
         ))}
       </div>
 
       {/* Become a Rep Banner */}
-      <div className="w-full rounded-2xl border border-white/10 bg-white/5 p-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-md">
-        <div className="flex flex-col gap-xs">
-          <h3 className="text-body-large-bold text-text-primary">
+      <div className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 md:p-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-md">
+        <div className="flex flex-col gap-1 md:gap-xs text-start">
+          <h3 className="text-base md:text-body-large-bold text-text-primary">
             Become a Rep
           </h3>
-          <p className="text-body-small text-text-secondary max-w-xs">
+          <p className="text-[12px] md:text-body-small text-text-secondary max-w-xs leading-relaxed">
             {submitted
               ? "Your verification document is under review."
               : "Verify as a Batch Representative to access leadership tools."}
           </p>
         </div>
-        <div className="flex items-center gap-sm">
+        <div className="flex items-center gap-2 md:gap-sm w-full sm:w-auto justify-between sm:justify-start">
           <Button
             variant="outline"
             size="small"
+            className="flex-1 sm:flex-initial text-[12px] md:text-body-small py-1.5 md:py-2"
             onClick={handleVerificationClick}
           >
-            {submitted ? "See Verification Status" : "Start Verification"}
+            {submitted ? "See Status" : "Start Verification"}
           </Button>
-          <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
             <ShieldCheck
-              size={18}
+              size={17}
               className={submitted ? "text-state-success" : "text-primary-blue"}
             />
           </div>

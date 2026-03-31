@@ -85,23 +85,23 @@ const SecurityPage = () => {
 
   return (
     <MainLayout user={user} pageTitle="Security & Password" verificationCount={0}>
-      <div className="w-full flex flex-col items-center justify-center py-6 px-4">
-        <Card variant="card" className="w-full max-w-[480px]">
-          <div className="flex flex-col gap-6">
+      <div className="w-full flex flex-col items-center justify-start pt-4 md:pt-10 px-4 min-h-full">
+        <Card variant="card" className="w-full max-w-md md:max-w-[480px] p-4 md:p-lg">
+          <div className="flex flex-col gap-4 md:gap-6">
             {/* Header */}
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center overflow-hidden">
+            <div className="flex flex-col items-center gap-3 md:gap-4">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center overflow-hidden">
                 <img
                   src="/icon_forgot_password.svg"
                   alt="Security"
-                  className="w-7 h-9 object-contain"
+                  className="w-6 h-8 md:w-7 md:h-9 object-contain"
                 />
               </div>
               <div className="w-full flex flex-col gap-1 text-center">
-                <h2 className="text-white text-2xl font-bold font-inter leading-8">
+                <h2 className="text-white text-xl md:text-2xl font-bold font-inter leading-tight md:leading-8">
                   Security & Password
                 </h2>
-                <p className="text-text-secondary text-body-small">
+                <p className="text-text-secondary text-[12px] md:text-body-small">
                   Keep your account safe by using a strong, unique password.
                 </p>
               </div>
@@ -180,10 +180,10 @@ const SecurityPage = () => {
           </div>
         </Card>
 
-        {/* Back link */}
+        {/* Back link - Mobile Only */}
         <button
           onClick={() => navigate(`/profile?role=${activeRole}`)}
-          className="mt-5 flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors text-body-small"
+          className="md:hidden mt-8 flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors text-body-small"
         >
           ← Back to Profile
         </button>

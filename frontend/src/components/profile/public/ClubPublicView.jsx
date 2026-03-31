@@ -14,14 +14,14 @@ const ClubPublicView = ({ profile }) => {
   const [showReviewModal, setShowReviewModal] = useState(false);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-x-lg gap-y-md items-start">
+    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md items-start text-start">
       {/* Left — Profile Card */}
       <div className="md:row-span-1">
         <ProfileHeader profile={profile} />
       </div>
 
       {/* Right — Top Sections */}
-      <div className="flex flex-col gap-md">
+      <div className="flex flex-col gap-4 md:gap-md">
         {/* Rating */}
         <ReviewsSection
           rating={profile?.rating || 4.2}
@@ -30,7 +30,7 @@ const ClubPublicView = ({ profile }) => {
         />
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-md">
+        <div className="grid grid-cols-2 gap-3 md:gap-md">
           {[
             { label: "Followers", value: profile?.followerCount || 142 },
             { label: "Following", value: profile?.followingCount || 56 },
@@ -38,13 +38,13 @@ const ClubPublicView = ({ profile }) => {
             <Card
               key={idx}
               variant="container"
-              padding="p-md"
-              className="flex flex-col items-center justify-center text-center gap-xs"
+              padding="p-4 md:p-md"
+              className="flex flex-col items-center justify-center text-center gap-1 md:gap-xs"
             >
-              <span className="text-heading-small text-text-primary font-bold block leading-none">
+              <span className="text-xl md:text-heading-small text-text-primary font-bold block leading-none">
                 {stat.value}
               </span>
-              <span className="text-body-extra-small text-text-secondary uppercase tracking-wider">
+              <span className="text-[10px] md:text-body-extra-small text-text-secondary uppercase tracking-wider font-medium">
                 {stat.label}
               </span>
             </Card>
@@ -53,7 +53,7 @@ const ClubPublicView = ({ profile }) => {
       </div>
 
       {/* Bottom Row — Full Width Sections */}
-      <div className="md:col-span-2 flex flex-col gap-md">
+      <div className="md:col-span-2 flex flex-col gap-4 md:gap-md">
         {/* About */}
         <AboutSection
           description={

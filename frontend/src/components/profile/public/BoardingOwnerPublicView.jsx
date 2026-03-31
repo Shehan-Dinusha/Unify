@@ -15,14 +15,14 @@ const BoardingOwnerPublicView = ({ profile }) => {
   const [showReviewModal, setShowReviewModal] = useState(false);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-x-lg gap-y-md items-start">
+    <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md items-start text-start">
       {/* Left — Profile Card */}
       <div className="md:row-span-1">
         <ProfileHeader profile={profile} />
       </div>
 
       {/* Right — Top Sections */}
-      <div className="flex flex-col gap-md">
+      <div className="flex flex-col gap-4 md:gap-md">
         {/* Rating */}
         <ReviewsSection
           rating={profile?.rating || 4.5}
@@ -47,7 +47,7 @@ const BoardingOwnerPublicView = ({ profile }) => {
       </div>
 
       {/* Bottom Row — Full Width Sections */}
-      <div className="md:col-span-2 flex flex-col gap-md">
+      <div className="md:col-span-2 flex flex-col gap-4 md:gap-md">
         {/* About */}
         <AboutSection
           description={

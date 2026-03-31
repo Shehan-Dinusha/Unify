@@ -20,11 +20,11 @@ const ProfileHeader = ({ profile, className = "" }) => {
     `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
 
   return (
-    <Card variant="container" padding="p-md" className={className}>
+    <Card variant="container" padding="p-4 md:p-md" className={className}>
       {/* Inner wrapper — centers everything both axes */}
-      <div className="flex flex-col items-center justify-center text-center gap-3 h-full">
+      <div className="flex flex-col items-center justify-center text-center gap-2 md:gap-3 h-full">
         {/* Avatar */}
-        <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary-blue/30 shadow-lg flex-shrink-0">
+        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-primary-blue/30 shadow-lg flex-shrink-0">
           <img
             src={avatarSrc}
             alt={name}
@@ -33,27 +33,27 @@ const ProfileHeader = ({ profile, className = "" }) => {
         </div>
 
         {/* Name */}
-        <h2 className="text-heading-small text-text-primary font-bold leading-tight">
+        <h2 className="text-[17px] md:text-heading-small text-text-primary font-bold leading-tight">
           {name}
         </h2>
 
         {/* Subtitle */}
         {subtitle && (
-          <p className="text-body-small text-text-secondary leading-snug -mt-1">
+          <p className="text-[12px] md:text-body-small text-text-secondary leading-snug -mt-0.5 md:-mt-1">
             {subtitle}
           </p>
         )}
 
         {/* Badge */}
         {badge && (
-          <span className="inline-block px-3 py-1 rounded-full border border-primary-blue/40 text-primary-blue text-body-extra-small-bold bg-primary-blue/10">
+          <span className="inline-block px-2.5 py-0.5 md:px-3 md:py-1 rounded-full border border-primary-blue/40 text-primary-blue text-[10px] md:text-body-extra-small-bold bg-primary-blue/10">
             {badge}
           </span>
         )}
 
         {/* Description */}
         {description && (
-          <p className="text-body-extra-small text-text-tertiary leading-relaxed max-w-[200px]">
+          <p className="text-[11px] md:text-body-extra-small text-text-tertiary leading-relaxed max-w-[180px] md:max-w-[200px]">
             {description}
           </p>
         )}

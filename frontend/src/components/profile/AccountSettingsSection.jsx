@@ -47,11 +47,11 @@ const AccountSettingsSection = ({
   ];
 
   return (
-    <div className="flex flex-col gap-md">
+    <div className="flex flex-col gap-3 md:gap-md text-start">
       {/* Section Header */}
-      <div className="flex items-center gap-sm">
-        <UserCog size={20} className="text-primary-blue" />
-        <h2 className="text-heading-small text-text-primary font-bold">
+      <div className="flex items-center gap-2 md:gap-sm">
+        <UserCog size={18} className="text-primary-blue" />
+        <h2 className="text-base md:text-heading-small text-text-primary font-bold">
           Account Settings
         </h2>
       </div>
@@ -64,33 +64,33 @@ const AccountSettingsSection = ({
             <button
               key={idx}
               onClick={item.action}
-              className={`w-full flex items-center gap-md p-md hover:bg-white/5 transition-colors text-left ${
+              className={`w-full flex items-center gap-3 md:gap-md p-3.5 md:p-md hover:bg-white/5 transition-colors text-left ${
                 idx !== items.length - 1 ? "border-b border-white/10" : ""
               }`}
             >
               {/* Icon bubble */}
               <div
-                className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                className={`w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
                   item.danger ? "bg-state-error/10" : "bg-white/10"
                 }`}
               >
                 <Icon
-                  size={18}
+                  size={16}
                   className={
                     item.danger ? "text-state-error" : "text-text-secondary"
                   }
                 />
               </div>
               {/* Text */}
-              <div className="flex flex-col gap-xs">
+              <div className="flex flex-col gap-1 md:gap-xs min-w-0">
                 <span
-                  className={`text-body-medium-bold ${
+                  className={`text-[13px] md:text-body-medium-bold font-bold ${
                     item.danger ? "text-state-error" : "text-text-primary"
                   }`}
                 >
                   {item.label}
                 </span>
-                <span className="text-body-extra-small text-text-secondary">
+                <span className="text-[11px] md:text-body-extra-small text-text-secondary line-clamp-1">
                   {item.desc}
                 </span>
               </div>
