@@ -46,6 +46,7 @@ import Services from "../pages/Services";
 import ClubCheckout from "../pages/ClubCheckout";
 import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
 import MyOrders from "../pages/MyOrders";
+import ChatPage from "../pages/chat/ChatPage";
 
 
 import NotFound from "../pages/NotFound";
@@ -206,12 +207,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/messages",
-        element: (
-          <PlaceholderPage
-            title="Messages"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <ChatPage />,
       },
       {
         path: "/lost-and-found",

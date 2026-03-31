@@ -8,6 +8,7 @@ const MainLayout = ({
   pageTitle,
   headerRight,
   verificationCount,
+  noPadding = false,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -39,7 +40,7 @@ const MainLayout = ({
         />
 
         {/* Page Content */}
-        <main className="p-md md:p-lg flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
+        <main className={`flex-1 overflow-hidden ${noPadding ? "" : "p-md md:p-lg overflow-y-auto overflow-x-hidden scrollbar-hide"}`}>
           {children}
         </main>
       </div>
