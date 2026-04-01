@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Send, Heart, MessageCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MapPin, Send, Heart, MessageCircle, Zap } from "lucide-react";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
 const CommentSection = ({ postComments, onAddComment }) => {
@@ -82,8 +83,10 @@ const PostCard = ({
   image,
   likes,
   comments,
-  isPromoted
+  isPromoted,
+  showBoost = false,
 }) => {
+  const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
   const [showComments, setShowComments] = useState(false);
@@ -226,13 +229,25 @@ const PostCard = ({
             <span className="text-[11px]">{isSaved ? 'Saved' : 'Save'}</span>
           </button>
 
-          {/* Report */}
-          <button className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error">
-            <div className="flex items-center gap-1.5">
-              <img src="/icon_report_marketplace.svg" alt="Report" className="w-5 h-5 opacity-70 group-hover:opacity-100" />
-            </div>
-            <span className="text-[11px]">Report</span>
-          </button>
+          {/* Report / Boost */}
+          {showBoost ? (
+            <button
+              onClick={() => navigate('/business/boost-post')}
+              className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-primary-blue/10 rounded-lg transition-colors group hover:text-primary-blue"
+            >
+              <div className="flex items-center gap-1.5">
+                <Zap size={20} strokeWidth={1.8} className="group-hover:fill-primary-blue/30" />
+              </div>
+              <span className="text-[11px]">Boost</span>
+            </button>
+          ) : (
+            <button className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error">
+              <div className="flex items-center gap-1.5">
+                <img src="/icon_report_marketplace.svg" alt="Report" className="w-5 h-5 opacity-70 group-hover:opacity-100" />
+              </div>
+              <span className="text-[11px]">Report</span>
+            </button>
+          )}
         </div>
 
         {/* Comment Section (ClubPostCard style) */}
