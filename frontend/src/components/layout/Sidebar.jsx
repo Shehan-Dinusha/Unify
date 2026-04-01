@@ -136,7 +136,7 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
     business: {
       title: "Business Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/news-feed" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed", childPaths: ["/business/boost-post"] },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
         { icon: ShoppingCart, label: "My Products", path: "/my-products" },
         { icon: ClipboardList, label: "Order History", path: "/order-history" },

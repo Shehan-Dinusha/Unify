@@ -19,7 +19,9 @@ import VerificationQueue from "../pages/VerificationQueue";
 import AdminDashboard from "../pages/AdminDashboard";
 import RevenueOverview from "../pages/RevenueOverview";
 import ActiveBusinesses from "../pages/ActiveBusinesses";
+import BusinessProfile from "../pages/BusinessProfile";
 import StudentManagement from "../pages/StudentManagement";
+import StudentUserProfile from "../pages/StudentUserProfile";
 import BoostController from "../pages/BoostController";
 import BoostPackageForm from "../pages/BoostPackageForm";
 import ReportModeration from "../pages/ReportModeration";
@@ -46,6 +48,10 @@ import Services from "../pages/Services";
 import ClubCheckout from "../pages/ClubCheckout";
 import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
 import MyOrders from "../pages/MyOrders";
+import BoostSelectPackage from "../pages/BoostSelectPackage";
+import BoostConfirmOrder from "../pages/BoostConfirmOrder";
+import BoostPostSuccess from "../pages/BoostPostSuccess";
+import BoostAnalytics from "../pages/BoostAnalytics";
 
 
 import NotFound from "../pages/NotFound";
@@ -166,6 +172,22 @@ const router = createBrowserRouter([
         element: <BoostPackageForm />,
       },
       {
+        path: "/boost-controller/analytics/:id",
+        element: <BoostAnalytics />,
+      },
+      {
+        path: "/business/boost-post",
+        element: <BoostSelectPackage />,
+      },
+      {
+        path: "/business/boost-post/confirm",
+        element: <BoostConfirmOrder />,
+      },
+      {
+        path: "/business/boost-post/success",
+        element: <BoostPostSuccess />,
+      },
+      {
         path: "/club-verification",
         element: <ClubVerification />,
       },
@@ -182,12 +204,24 @@ const router = createBrowserRouter([
         element: <ActiveBusinesses />,
       },
       {
+        path: "/active-businesses/:id",
+        element: <BusinessProfile />,
+      },
+      {
         path: "/student-management",
         element: <StudentManagement />,
       },
       {
+        path: "/student-management/:id",
+        element: <StudentUserProfile />,
+      },
+      {
         path: "/news-feed",
         element: <NewsFeed />,
+      },
+      {
+        path: "/business/news-feed",
+        element: <NewsFeed userRole="business" />,
       },
       {
         path: "/marketplace-items",
