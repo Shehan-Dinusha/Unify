@@ -8,6 +8,7 @@ const MainLayout = ({
   pageTitle,
   headerRight,
   verificationCount,
+  sidebarDisabled = false,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -27,6 +28,7 @@ const MainLayout = ({
         verificationCount={verificationCount}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        sidebarDisabled={sidebarDisabled}
       />
 
       {/* Main Content Area */}

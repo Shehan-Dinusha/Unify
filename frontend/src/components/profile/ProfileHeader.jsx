@@ -13,6 +13,7 @@ const ProfileHeader = ({ profile, className = "" }) => {
     badge = "",
     description = "",
     profileImage,
+    role,
   } = profile || {};
 
   const avatarSrc =
@@ -51,12 +52,7 @@ const ProfileHeader = ({ profile, className = "" }) => {
           </span>
         )}
 
-        {/* Description */}
-        {description && (
-          <p className="text-[11px] md:text-body-extra-small text-text-tertiary leading-relaxed max-w-[180px] md:max-w-[200px]">
-            {description}
-          </p>
-        )}
+        {/* Description — Removed for all roles as requested */}
       </div>
     </Card>
   );

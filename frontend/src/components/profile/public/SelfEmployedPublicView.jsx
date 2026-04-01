@@ -30,31 +30,17 @@ const SelfEmployedPublicView = ({ profile }) => {
           onAddReview={() => setShowReviewModal(true)}
         />
 
-        {/* Services / Facilities */}
-        <FacilitiesCard
-          title="Services Offered"
-          items={
-            profile?.facilities || [
-              "Web Development",
-              "Graphic Design",
-              "Math Tutoring",
-              "Photography",
-              "CV Writing",
-            ]
-          }
-        />
-      </div>
-
-      {/* Bottom Row — Full Width Sections */}
-      <div className="md:col-span-2 flex flex-col gap-4 md:gap-md">
-        {/* About */}
+        {/* About Section replaced Services Offered */}
         <AboutSection
           description={
             profile?.description ||
             "Offering professional support services for fellow university students."
           }
         />
+      </div>
 
+      {/* Bottom Row — Full Width Sections */}
+      <div className="md:col-span-2 mt-4 md:mt-lg flex flex-col gap-4 md:gap-md">
         {/* Recent Post Feed */}
         <RecentPostsSection posts={profile?.posts} />
       </div>

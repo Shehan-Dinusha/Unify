@@ -31,7 +31,7 @@ const BoardingOwnerOwnerView = () => {
     {
       icon: "🚀",
       iconBg: "bg-violet-500/20",
-      title: "View BoostED Posts",
+      title: "View Boosted Posts",
       description: "Track boosted posts and their performance.",
     },
   ];
@@ -39,7 +39,7 @@ const BoardingOwnerOwnerView = () => {
   return (
     <div className="flex flex-col gap-4 md:gap-lg text-start">
       {/* Dashboard Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-md items-stretch">
+      <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 md:gap-md items-stretch">
         {cards.map((card, idx) => (
           <ProfileDashboardCard key={idx} {...card} />
         ))}

@@ -30,32 +30,17 @@ const FoodCafePublicView = ({ profile }) => {
           onAddReview={() => setShowReviewModal(true)}
         />
 
-        {/* Menu / Facilities */}
-        <FacilitiesCard
-          title="Menu & Services"
-          items={
-            profile?.facilities || [
-              "Rice & Curry",
-              "Short Eats",
-              "Fresh Juices",
-              "Vegan Options",
-              "Takeaway Available",
-              "Student Discounts",
-            ]
-          }
-        />
-      </div>
-
-      {/* Bottom Row — Full Width Sections */}
-      <div className="md:col-span-2 flex flex-col gap-4 md:gap-md">
-        {/* About */}
+        {/* About Section replaced Menu/Facilities */}
         <AboutSection
           description={
             profile?.description ||
             "Serving quality meals for students near the university campus."
           }
         />
+      </div>
 
+      {/* Bottom Row — Full Width Sections */}
+      <div className="md:col-span-2 mt-4 md:mt-lg flex flex-col gap-4 md:gap-md">
         {/* Recent Post Feed */}
         <RecentPostsSection posts={profile?.posts} />
       </div>

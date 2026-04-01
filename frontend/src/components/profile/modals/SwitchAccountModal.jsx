@@ -1,6 +1,7 @@
 import React from "react";
 import { ArrowLeftRight, X, Plus } from "lucide-react";
 import Button from "../../common/Button";
+import Card from "../../common/Card";
 
 /**
  * SwitchAccountModal — shows linked accounts and allows switching.
@@ -38,9 +39,11 @@ const SwitchAccountModal = ({ onClose, currentUser }) => {
       {/* Backdrop */}
       <div className="absolute inset-0 bg-dark-1/80 backdrop-blur-md" />
 
-      {/* Modal */}
-      <div
-        className="relative w-full max-w-md bg-dark-2 border border-white/10 rounded-3xl p-xl shadow-custom-shadow animate-in fade-in zoom-in-95 duration-200"
+      {/* Modal - Forcing solid dark background and removing all glassmorphic effects to match 3rd screenshot */}
+      <Card
+        variant="card"
+        className="w-full max-w-md !bg-dark-2 !backdrop-blur-none !border-white/10 !shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+        padding="p-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}
@@ -96,7 +99,7 @@ const SwitchAccountModal = ({ onClose, currentUser }) => {
         <Button variant="outline" fullWidth icon={Plus}>
           Add Another Account
         </Button>
-      </div>
+      </Card>
     </div>
   );
 };

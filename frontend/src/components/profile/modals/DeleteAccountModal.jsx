@@ -1,6 +1,7 @@
 import React from "react";
 import { Trash2, X } from "lucide-react";
 import Button from "../../common/Button";
+import Card from "../../common/Card";
 
 /**
  * DeleteAccountModal — confirmation dialog for permanent account deletion.
@@ -17,9 +18,11 @@ const DeleteAccountModal = ({ onClose, onConfirm }) => {
       {/* Backdrop */}
       <div className="absolute inset-0 bg-dark-1/80 backdrop-blur-md" />
 
-      {/* Modal */}
-      <div
-        className="relative w-full max-w-md bg-dark-2 border border-white/10 rounded-3xl p-xl shadow-custom-shadow animate-in fade-in zoom-in-95 duration-200"
+      {/* Modal - Forcing solid dark background and removing all glassmorphic effects to match 3rd screenshot */}
+      <Card
+        variant="card"
+        className="w-full max-w-md !bg-dark-2 !backdrop-blur-none !border-white/10 !shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+        padding="p-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}
@@ -57,7 +60,7 @@ const DeleteAccountModal = ({ onClose, onConfirm }) => {
             Cancel
           </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

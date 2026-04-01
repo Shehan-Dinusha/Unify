@@ -14,6 +14,7 @@ const AccountSettingsSection = ({
   onSecurity,
   onSwitchAccount,
   onDeleteAccount,
+  disabled = false,
 }) => {
   const items = [
     {
@@ -47,7 +48,11 @@ const AccountSettingsSection = ({
   ];
 
   return (
-    <div className="flex flex-col gap-3 md:gap-md text-start">
+    <div
+      className={`flex flex-col gap-3 md:gap-md text-start transition-all duration-300 ${
+        disabled ? "pointer-events-none opacity-50" : ""
+      }`}
+    >
       {/* Section Header */}
       <div className="flex items-center gap-2 md:gap-sm">
         <UserCog size={18} className="text-primary-blue" />
@@ -67,6 +72,7 @@ const AccountSettingsSection = ({
               className={`w-full flex items-center gap-3 md:gap-md p-3.5 md:p-md hover:bg-white/5 transition-colors text-left ${
                 idx !== items.length - 1 ? "border-b border-white/10" : ""
               }`}
+              disabled={disabled}
             >
               {/* Icon bubble */}
               <div

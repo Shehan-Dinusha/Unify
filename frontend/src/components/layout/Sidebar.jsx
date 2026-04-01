@@ -28,9 +28,15 @@ const SidebarItem = ({
   isDanger = false,
   path,
   onClick,
+  disabled = false,
 }) => {
-  const baseStyles =
-    "w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 cursor-pointer group";
+  const navigate = useNavigate();
+
+  const baseStyles = `w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 ${
+    disabled
+      ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
+      : "cursor-pointer group"
+  }`;
 
   const activeStyles = active
     ? "bg-primary-blue shadow-custom text-text-primary"
@@ -38,16 +44,14 @@ const SidebarItem = ({
       ? "text-state-error hover:bg-state-error/10"
       : "text-text-secondary hover:bg-white/5 hover:text-text-primary";
 
-  const navigate = useNavigate();
+  const handleClick = () => {
+    if (disabled) return;
+    if (path) navigate(path);
+    if (onClick) onClick();
+  };
 
   return (
-    <div
-      className={`${baseStyles} ${activeStyles}`}
-      onClick={() => {
-        if (path) navigate(path);
-        if (onClick) onClick();
-      }}
-    >
+    <div className={`${baseStyles} ${activeStyles}`} onClick={handleClick}>
       <div className="flex items-center gap-md">
         {iconSrc ? (
           <img
@@ -80,7 +84,13 @@ const SidebarItem = ({
   );
 };
 
-const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
+const UnifiedSidebar = ({
+  user,
+  verificationCount,
+  isOpen,
+  onClose,
+  sidebarDisabled = false,
+}) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
@@ -161,6 +171,9 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
     },
   };
 
+  const isClub = user.role?.toLowerCase() === "club_society" || user.role?.toLowerCase() === "club";
+  const shouldDisableNav = sidebarDisabled && isClub;
+
   const currentConfig =
     roleConfigs[user.role.toLowerCase()] || roleConfigs.student;
 
@@ -210,9 +223,11 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
               <SidebarItem
                 key={index}
                 {...link}
+                disabled={shouldDisableNav}
                 active={
                   pathname === link.path ||
-                  (link.childPaths && link.childPaths.some(cp => pathname.startsWith(cp)))
+                  (link.childPaths &&
+                    link.childPaths.some((cp) => pathname.startsWith(cp)))
                 }
               />
             ))}
@@ -230,7 +245,13 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
             onClick={() => setShowLogoutModal(true)}
           />
 
-          <div className="w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md hover:bg-white/10 transition-colors cursor-pointer group">
+          <div
+            className={`w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md transition-colors group ${
+              shouldDisableNav
+                ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
+                : "hover:bg-white/10 cursor-pointer"
+            }`}
+          >
             <img
               className="w-10 h-10 rounded-full object-cover border border-white/20 group-hover:border-primary-blue transition-colors"
               src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}

@@ -19,10 +19,12 @@ const ProfileDashboardCard = ({
   description,
   path,
   onClick,
+  disabled = false,
 }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
+    if (disabled) return;
     if (onClick) return onClick();
     if (path) navigate(path);
   };
@@ -30,8 +32,12 @@ const ProfileDashboardCard = ({
   return (
     <Card
       variant="container"
-      className="cursor-pointer hover:border-primary-blue/30 hover:bg-white/10 transition-all duration-200 group h-auto min-h-0 md:h-full md:min-h-[140px]"
-      padding="p-4 md:p-md"
+      className={`transition-all duration-200 group h-full min-h-0 md:min-h-[140px] ${
+        disabled
+          ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
+          : "cursor-pointer hover:border-primary-blue/30 hover:bg-white/10"
+      }`}
+      padding="p-3 md:p-md"
       onClick={handleClick}
     >
       <div className="flex flex-col gap-2.5 md:gap-sm h-full text-start">
@@ -47,7 +53,7 @@ const ProfileDashboardCard = ({
             {title}
           </h3>
           {description && (
-            <p className="text-[11px] md:text-body-extra-small text-text-secondary leading-relaxed">
+            <p className="hidden md:block text-[11px] md:text-body-extra-small text-text-secondary leading-relaxed">
               {description}
             </p>
           )}

@@ -25,7 +25,13 @@ import { mockBatchRepDocuments } from "../data/mockData";
 
 const BatchRepVerification = () => {
   const navigate = useNavigate();
-  const [submissionStatus, setSubmissionStatus] = useState("idle"); // 'idle' | 'pending' | 'approved' | 'declined'
+  const [submissionStatus, setSubmissionStatus] = useState(() => {
+    const status = localStorage.getItem("unify_student_rep_status");
+    if (status === "PENDING") return "pending";
+    if (status === "APPROVED") return "approved";
+    if (status === "REJECTED") return "declined";
+    return "idle";
+  }); // 'idle' | 'pending' | 'approved' | 'declined'
   const [submittedFile, setSubmittedFile] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -42,6 +48,8 @@ const BatchRepVerification = () => {
 
   const handleSubmit = () => {
     if (submittedFile) {
+      // Sync with global status
+      localStorage.setItem("unify_student_rep_status", "PENDING");
       // Mark as submitted so the profile banner switches to 'See Verification Status'
       localStorage.setItem("unify_student_rep_submitted", "true");
       setSubmissionStatus("pending");
@@ -51,6 +59,7 @@ const BatchRepVerification = () => {
   };
 
   const handleWithdrawConfirm = () => {
+    localStorage.setItem("unify_student_rep_status", "NOT_SUBMITTED");
     localStorage.removeItem("unify_student_rep_submitted");
     setSubmissionStatus("idle");
     setSubmittedFile(null);
@@ -454,6 +463,7 @@ const BatchRepVerification = () => {
         isOpen={showRevokeModal}
         onClose={() => setShowRevokeModal(false)}
         onConfirm={() => {
+          localStorage.setItem("unify_student_rep_status", "NOT_SUBMITTED");
           localStorage.removeItem("unify_student_rep_submitted");
           setSubmissionStatus("idle");
         }}
@@ -463,6 +473,7 @@ const BatchRepVerification = () => {
       <div className="absolute bottom-4 right-4 flex flex-wrap justify-end max-w-[calc(100vw-32px)] sm:max-w-none gap-2 z-50 bg-black/50 p-2 rounded-lg backdrop-blur-sm border border-white/10">
         <button
           onClick={() => {
+            localStorage.setItem("unify_student_rep_status", "NOT_SUBMITTED");
             localStorage.removeItem("unify_student_rep_submitted");
             setSubmissionStatus("idle");
           }}
@@ -472,6 +483,7 @@ const BatchRepVerification = () => {
         </button>
         <button
           onClick={() => {
+            localStorage.setItem("unify_student_rep_status", "PENDING");
             localStorage.setItem("unify_student_rep_submitted", "true");
             setSubmissionStatus("pending");
           }}
@@ -481,6 +493,7 @@ const BatchRepVerification = () => {
         </button>
         <button
           onClick={() => {
+            localStorage.setItem("unify_student_rep_status", "APPROVED");
             localStorage.setItem("unify_student_rep_submitted", "true");
             setSubmissionStatus("approved");
           }}
@@ -490,7 +503,9 @@ const BatchRepVerification = () => {
         </button>
         <button
           onClick={() => {
+            localStorage.setItem("unify_student_rep_status", "REJECTED");
             localStorage.setItem("unify_student_rep_submitted", "true");
+            localStorage.setItem("unify_student_rep_reason", declineReason);
             setSubmissionStatus("declined");
           }}
           className="px-3 py-1 bg-red-900/50 hover:bg-red-900/70 text-red-400 text-xs rounded border border-red-500/30 transition-colors"

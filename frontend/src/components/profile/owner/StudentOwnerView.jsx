@@ -10,17 +10,45 @@ const STORAGE_KEY = "unify_student_rep_submitted";
 /**
  * StudentOwnerView — dashboard cards and actions for the student role owner view.
  */
-const StudentOwnerView = () => {
+const StudentOwnerView = ({ repStatus = "NOT_SUBMITTED", repReason }) => {
   const navigate = useNavigate();
-
-  // Read initial state from localStorage
-  const [submitted, setSubmitted] = useState(
-    () => localStorage.getItem(STORAGE_KEY) === "true"
-  );
 
   const handleVerificationClick = () => {
     navigate("/batch-rep-verification");
   };
+
+  const statusConfigs = {
+    NOT_SUBMITTED: {
+      title: "Become a Rep",
+      description:
+        "Verify as a Batch Representative to access leadership tools.",
+      buttonText: "Start Verification",
+      iconColor: "text-primary-blue",
+    },
+    PENDING: {
+      title: "Verification Pending",
+      description: "Your verification document is under review.",
+      buttonText: "See Status",
+      iconColor: "text-state-warning",
+    },
+    REJECTED: {
+      title: "Verification Rejected",
+      description:
+        repReason ||
+        "Your request was declined. Please check details and resubmit.",
+      buttonText: "See Status",
+      iconColor: "text-state-error",
+    },
+    APPROVED: {
+      title: "Batch Representative",
+      description: "Verification complete. You have Rep privileges.",
+      buttonText: "View Status",
+      iconColor: "text-state-success",
+    },
+  };
+
+  const currentStatus =
+    statusConfigs[repStatus] || statusConfigs.NOT_SUBMITTED;
 
   const cards = [
     {
@@ -69,7 +97,7 @@ const StudentOwnerView = () => {
 
   return (
     <div className="flex flex-col gap-4 md:gap-lg">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-md items-stretch">
+      <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-md items-stretch">
         {cards.map((card, idx) => (
           <ProfileDashboardCard key={idx} {...card} />
         ))}
@@ -79,12 +107,10 @@ const StudentOwnerView = () => {
       <div className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 md:p-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-md">
         <div className="flex flex-col gap-1 md:gap-xs text-start">
           <h3 className="text-base md:text-body-large-bold text-text-primary">
-            Become a Rep
+            {currentStatus.title}
           </h3>
           <p className="text-[12px] md:text-body-small text-text-secondary max-w-xs leading-relaxed">
-            {submitted
-              ? "Your verification document is under review."
-              : "Verify as a Batch Representative to access leadership tools."}
+            {currentStatus.description}
           </p>
         </div>
         <div className="flex items-center gap-2 md:gap-sm w-full sm:w-auto justify-between sm:justify-start">
@@ -94,13 +120,10 @@ const StudentOwnerView = () => {
             className="flex-1 sm:flex-initial text-[12px] md:text-body-small py-1.5 md:py-2"
             onClick={handleVerificationClick}
           >
-            {submitted ? "See Status" : "Start Verification"}
+            {currentStatus.buttonText}
           </Button>
           <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-            <ShieldCheck
-              size={17}
-              className={submitted ? "text-state-success" : "text-primary-blue"}
-            />
+            <ShieldCheck size={17} className={currentStatus.iconColor} />
           </div>
         </div>
       </div>

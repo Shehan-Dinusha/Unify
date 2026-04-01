@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import MainLayout from "../../components/layout/MainLayout";
 import ProfileHeader from "../../components/profile/ProfileHeader";
 import AccountSettingsSection from "../../components/profile/AccountSettingsSection";
@@ -84,20 +84,38 @@ const roleDisplayNames = {
 // ------------------------------------------------------------------
 // Role-based owner view switcher
 // ------------------------------------------------------------------
-const OwnerViewSwitch = ({ profile }) => {
+const OwnerViewSwitch = ({
+  profile,
+  verificationStatus,
+  verificationReason,
+  repStatus,
+  repReason,
+}) => {
   const role = profile?.role || "student";
   switch (role) {
     case "boarding_owner":
       return <BoardingOwnerOwnerView profile={profile} />;
     case "club_society":
-      return <ClubOwnerView profile={profile} />;
+      return (
+        <ClubOwnerView
+          profile={profile}
+          verificationStatus={verificationStatus}
+          verificationReason={verificationReason}
+        />
+      );
     case "food_cafe":
       return <FoodCafeOwnerView profile={profile} />;
     case "self_employed":
       return <SelfEmployedOwnerView profile={profile} />;
     case "student":
     default:
-      return <StudentOwnerView profile={profile} />;
+      return (
+        <StudentOwnerView
+          profile={profile}
+          repStatus={repStatus}
+          repReason={repReason}
+        />
+      );
   }
 };
 
@@ -114,12 +132,48 @@ const ROLE_OPTIONS = [
 
 const OwnProfilePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
 
   // Read role from ?role=boarding_owner — defaults to "student"
   const activeRole = searchParams.get("role") || "student";
 
   const profile = mockProfiles[activeRole] || mockProfiles.student;
+
+  // State to track verification status
+  const [verificationStatus, setVerificationStatus] = useState(
+    () =>
+      localStorage.getItem("unify_club_verification_status") || "NOT_SUBMITTED",
+  );
+
+  const [repStatus, setRepStatus] = useState(
+    () => localStorage.getItem("unify_student_rep_status") || "NOT_SUBMITTED",
+  );
+
+  // Sync with localStorage on every navigation (e.g., coming back from verification pages)
+  React.useEffect(() => {
+    // Club Status
+    const clubStatus =
+      localStorage.getItem("unify_club_verification_status") || "NOT_SUBMITTED";
+    setVerificationStatus(clubStatus);
+
+    // Rep Status
+    const repStatus =
+      localStorage.getItem("unify_student_rep_status") || "NOT_SUBMITTED";
+    setRepStatus(repStatus);
+  }, [location.pathname, location.search]);
+
+  const verificationReason =
+    localStorage.getItem("unify_club_verification_reason") ||
+    "Verification rejected. Please resubmit documents.";
+
+  const repReason =
+    localStorage.getItem("unify_student_rep_reason") ||
+    "Verification rejected. Please resubmit documents.";
+
+  const isClub = activeRole === "club_society";
+  const isApproved = verificationStatus === "APPROVED";
+  const shouldDisable = isClub && !isApproved;
 
   const user = {
     name: profile.name,
@@ -157,13 +211,24 @@ const OwnProfilePage = () => {
   };
 
   return (
-    <MainLayout user={user} pageTitle={getPageTitle()} verificationCount={0}>
+    <MainLayout
+      user={user}
+      pageTitle={getPageTitle()}
+      verificationCount={0}
+      sidebarDisabled={shouldDisable}
+    >
       <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md text-start px-1 md:px-0">
         {/* Row 1, Col 1 — Profile Card */}
         <ProfileHeader profile={profile} className="h-full" />
 
         {/* Row 1, Col 2 — Role Dashboard */}
-        <OwnerViewSwitch profile={profile} />
+        <OwnerViewSwitch
+          profile={profile}
+          verificationStatus={verificationStatus}
+          verificationReason={verificationReason}
+          repStatus={repStatus}
+          repReason={repReason}
+        />
 
         {/* Row 2 — Account Settings (Full Width) */}
         <div className="md:col-span-2 flex flex-col gap-4 md:gap-lg">
@@ -172,6 +237,7 @@ const OwnProfilePage = () => {
             onSecurity={handleSecurity}
             onSwitchAccount={handleSwitchAccount}
             onDeleteAccount={handleDeleteAccount}
+            disabled={shouldDisable}
           />
         </div>
       </div>

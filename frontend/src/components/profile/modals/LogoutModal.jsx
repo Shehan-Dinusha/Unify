@@ -1,6 +1,7 @@
 import React from "react";
 import { LogOut, X } from "lucide-react";
 import Button from "../../common/Button";
+import Card from "../../common/Card";
 
 /**
  * LogoutModal — confirmation dialog before logging out.
@@ -17,8 +18,12 @@ const LogoutModal = ({ onClose, onConfirm }) => {
         onClick={onClose}
       />
 
-      {/* Modal Card */}
-      <div className="relative w-full max-w-[400px] bg-dark-2 border border-white/10 rounded-[32px] p-xl shadow-2xl animate-in zoom-in-95 duration-200">
+      {/* Modal Card - Forcing solid dark background and removing all glassmorphic effects to match 3rd screenshot */}
+      <Card
+        variant="card"
+        className="w-full max-w-[400px] !bg-dark-2 !backdrop-blur-none !border-white/10 !shadow-2xl animate-in zoom-in-95 duration-200"
+        padding="p-xl"
+      >
         {/* Close Button - Optional based on screenshot, but good for UX */}
         <button
           onClick={onClose}
@@ -61,7 +66,7 @@ const LogoutModal = ({ onClose, onConfirm }) => {
             Confirm Logout
           </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

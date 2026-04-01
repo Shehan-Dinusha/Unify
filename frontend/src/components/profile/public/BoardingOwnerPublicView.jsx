@@ -47,7 +47,7 @@ const BoardingOwnerPublicView = ({ profile }) => {
       </div>
 
       {/* Bottom Row — Full Width Sections */}
-      <div className="md:col-span-2 flex flex-col gap-4 md:gap-md">
+      <div className="md:col-span-2 mt-4 md:mt-lg flex flex-col gap-4 md:gap-md">
         {/* About */}
         <AboutSection
           description={
