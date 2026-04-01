@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Input from '../components/common/Input';
@@ -6,47 +7,20 @@ import Select from '../components/common/Select';
 import Button from '../components/common/Button';
 import { Search, RotateCcw, TrendingUp, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { mockRequests } from '../data/mockData';
+import { studentProfiles } from '../data/mockStudentProfiles';
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
 
-const students = [
-    {
-        id: 1,
-        name: 'Kasun Perera',
-        email: 'kasun@uom.lk',
-        faculty: 'Faculty of IT',
-        status: 'Active',
-        lastActive: '2 mins ago',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=KasunPerera',
-    },
-    {
-        id: 2,
-        name: 'Achini Jayasuriya',
-        email: 'achini@uom.lk',
-        faculty: 'Faculty of IT',
-        status: 'Active',
-        lastActive: '1 hour ago',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=AchiniJay',
-    },
-    {
-        id: 3,
-        name: 'Kaveesha Silva',
-        email: 'kaveesha@uom.lk',
-        faculty: 'Faculty of IT',
-        status: 'Active',
-        lastActive: 'Yesterday',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=KaveeshaSilva',
-    },
-    {
-        id: 4,
-        name: 'Nuwani Perera',
-        email: 'nuwani@uom.lk',
-        faculty: 'Faculty of IT',
-        status: 'Active',
-        lastActive: '12 days ago',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NuwaniPerera',
-    },
-];
+// Local state derived from centralized student profiles
+const studentsData = studentProfiles.map(p => ({
+    id: p.id,
+    name: p.name,
+    email: p.email,
+    faculty: p.faculty,
+    status: p.status,
+    lastActive: p.activityLog?.[0]?.date || 'Oct 20, 2025',
+    avatar: p.avatar
+}));
 
 const facultyOptions = [
     { value: 'all', label: 'All Faculties' },
@@ -95,6 +69,7 @@ const studentStats = [
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
 const StudentManagement = () => {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All Students');
     const [facultyFilter, setFacultyFilter] = useState('all');
@@ -107,7 +82,7 @@ const StudentManagement = () => {
         setStatusFilter('all');
     };
 
-    const filteredStudents = students.filter((s) => {
+    const filteredStudents = studentsData.filter((s) => {
         if (searchQuery && !s.name.toLowerCase().includes(searchQuery.toLowerCase()) && !s.email.toLowerCase().includes(searchQuery.toLowerCase())) {
             return false;
         }
@@ -256,7 +231,9 @@ const StudentManagement = () => {
 
                         {/* Actions */}
                         <div className="flex items-center justify-end">
-                            <button className="px-md py-xs rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue hover:shadow-lg hover:shadow-primary-blue/25 transition-all duration-200">
+                            <button
+                                onClick={() => navigate(`/student-management/${student.id}`)}
+                                className="px-md py-xs rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue hover:shadow-lg hover:shadow-primary-blue/25 transition-all duration-200">
                                 View Profile
                             </button>
                         </div>
@@ -300,7 +277,9 @@ const StudentManagement = () => {
                             </div>
 
                             {/* Action */}
-                            <button className="w-full py-sm rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue transition-all duration-200 text-center">
+                            <button
+                                onClick={() => navigate(`/student-management/${student.id}`)}
+                                className="w-full py-sm rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue transition-all duration-200 text-center">
                                 View Profile
                             </button>
                         </div>

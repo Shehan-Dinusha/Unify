@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Send, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Send, ChevronLeft, ChevronRight, Heart, MessageCircle } from "lucide-react";
 import Card from "../common/Card";
 
 /* ─── Action Button ──────────────────────────────────────────── */
-const ActionBtn = ({ svgSrc, label, count, showBoth, activeColor = "text-primary", onClick, active }) => (
+const ActionBtn = ({ svgSrc, icon: Icon, label, count, showBoth, activeColor = "text-primary", onClick, active, fillActive = false }) => (
     <button
         onClick={onClick}
         className={`
@@ -18,14 +18,14 @@ const ActionBtn = ({ svgSrc, label, count, showBoth, activeColor = "text-primary
         {showBoth ? (
             <>
                 <div className="flex items-center gap-[3px]">
-                    <img src={svgSrc} alt={label} className="w-5 h-5" />
+                    {svgSrc ? <img src={svgSrc} alt={label} className="w-5 h-5" /> : <Icon size={20} className={active && fillActive ? "fill-current" : ""} strokeWidth={active && fillActive ? 0 : 1.8} />}
                     <span className="text-[12px] font-bold leading-none">{count}</span>
                 </div>
                 <span className="text-[11px] leading-none font-medium">{label}</span>
             </>
         ) : (
             <>
-                <img src={svgSrc} alt={label} className="w-5 h-5" />
+                {svgSrc ? <img src={svgSrc} alt={label} className="w-5 h-5" /> : <Icon size={20} className={active && fillActive ? "fill-current" : ""} strokeWidth={active && fillActive ? 0 : 1.8} />}
                 <span className="text-[11px] leading-none font-medium">{label}</span>
             </>
         )}
@@ -200,20 +200,21 @@ const BoardingPostCard = ({ post, onClick }) => {
                 {/* Action bar */}
                 <div className="pt-md border-t border-white/10 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
                     <ActionBtn
-                        svgSrc="/icon_like_marketplace.svg"
+                        icon={Heart}
                         label="Like"
                         count={likes}
                         showBoth
-                        activeColor="text-green-400"
+                        activeColor="text-primary-blue"
                         active={liked}
+                        fillActive={true}
                         onClick={() => { setLiked(p => !p); setLikes(n => liked ? n - 1 : n + 1); }}
                     />
                     <ActionBtn
-                        svgSrc="/icon_comment_marketplace.svg"
+                        icon={MessageCircle}
                         label="Comments"
                         count={postComments.length}
                         showBoth
-                        activeColor="text-blue-400"
+                        activeColor="text-primary-blue"
                         active={commentOpen}
                         onClick={() => setCommentOpen(o => !o)}
                     />
