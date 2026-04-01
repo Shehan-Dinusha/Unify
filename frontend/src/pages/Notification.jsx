@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Search, CornerUpLeft } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
+import Card from "../components/common/Card";
 import { mockNotifications } from "../data/mockData";
 
 /* --- Helper Components --- */
@@ -72,37 +73,41 @@ const NotificationCard = ({ notification }) => {
   };
 
   return (
-    <div
-      className={`relative w-full p-5 sm:p-6 rounded-2xl border transition-colors ${
+    <Card
+      variant="container"
+      padding="p-0"
+      className={`transition-all duration-300 ${
         isUnread
-          ? "bg-[#14233A] border-primary-blue/20" // Unread style (dark blueish)
-          : "bg-white/5 border-white/5 hover:border-white/10" // Read style
-      } flex items-start gap-4`}
+          ? "!bg-[#162743] !border-primary-blue/30 cursor-pointer"
+          : "hover:!bg-white/10 hover:!border-white/15 cursor-pointer"
+      }`}
     >
-      {/* Icon Area */}
-      {renderIcon()}
+      <div className="flex items-start gap-4 p-5 sm:p-6 w-full h-full relative">
+        {/* Icon Area */}
+        {renderIcon()}
 
-      {/* Content Area */}
-      <div className="flex-1 flex flex-col gap-1.5 pt-0.5">
-        <h3 className="text-body-small-bold sm:text-body-medium-bold">
-          {renderTitle()}
-        </h3>
-        <p className={`text-body-small ${type === "reply" ? "text-text-secondary italic" : "text-text-secondary"}`}>
-          {content}
-        </p>
-        <span className="text-[12px] text-text-tertiary mt-1">{time}</span>
-      </div>
+        {/* Content Area */}
+        <div className="flex-1 flex flex-col gap-1.5 pt-0.5">
+          <h3 className="text-body-small-bold sm:text-body-medium-bold">
+            {renderTitle()}
+          </h3>
+          <p className={`text-body-small ${type === "reply" ? "text-text-secondary italic" : "text-text-secondary"}`}>
+            {content}
+          </p>
+          <span className="text-[12px] text-text-tertiary mt-1">{time}</span>
+        </div>
 
-      {/* Right Area (Unread Dot or Thumbnail) */}
-      <div className="flex flex-col items-end gap-2 shrink-0 h-full">
-        {isUnread && <div className="w-2.5 h-2.5 rounded-full bg-primary-blue mt-2" />}
-        {image && (
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border border-white/10 mt-auto mb-auto">
-            <img src={image} alt="Match thumbnail" className="w-full h-full object-cover" />
-          </div>
-        )}
+        {/* Right Area (Unread Dot or Thumbnail) */}
+        <div className="flex flex-col items-end gap-2 shrink-0 h-full">
+          {isUnread && <div className="w-2.5 h-2.5 rounded-full bg-primary-blue mt-2" />}
+          {image && (
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border border-white/10 mt-auto mb-auto">
+              <img src={image} alt="Match thumbnail" className="w-full h-full object-cover" />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
