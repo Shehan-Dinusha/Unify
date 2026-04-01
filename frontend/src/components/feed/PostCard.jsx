@@ -90,6 +90,7 @@ const PostCard = ({
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
   const [showComments, setShowComments] = useState(false);
+  const reportNavigate = useNavigate();
   const [postComments, setPostComments] = useState([
     {
       id: 1,
@@ -229,6 +230,19 @@ const PostCard = ({
             <span className="text-[11px]">{isSaved ? 'Saved' : 'Save'}</span>
           </button>
 
+          {/* Report */}
+          <button
+            onClick={() =>
+              reportNavigate("/student/report-issue", {
+                state: { postData: { author, title }, from: "/news-feed" },
+              })
+            }
+            className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error"
+          >            <div className="flex items-center gap-1.5">
+              <img src="/icon_report_marketplace.svg" alt="Report" className="w-5 h-5 opacity-70 group-hover:opacity-100" />
+            </div>
+            <span className="text-[11px]">Report</span>
+          </button>
           {/* Report / Boost */}
           {showBoost ? (
             <button

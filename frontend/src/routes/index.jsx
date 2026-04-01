@@ -60,6 +60,12 @@ import MyReviewHistory from "../pages/MyReviewHistory";
 import ReceivedReviews from "../pages/ReceivedReviews";
 import FollowersDirectory from "../pages/FollowersDirectory";
 import Followings from "../pages/Followings";
+import StudentReportIssue from "../pages/StudentReportIssue";
+import StudentReportSuccess from "../pages/StudentReportSuccess";
+import StudentSubmittedReports from "../pages/StudentSubmittedReports";
+import StudentReportDetail from "../pages/StudentReportDetail";
+import StudentReportWithdrawal from "../pages/StudentReportWithdrawal";
+import StudentReportWithdrawalSuccess from "../pages/StudentReportWithdrawalSuccess";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout
@@ -316,6 +322,12 @@ const router = createBrowserRouter([
         ),
       },
       { path: '/order-history', element: <MyOrders /> },
+      { path: '/student/report-issue', element: <StudentReportIssue /> },
+      { path: '/student/report-success', element: <StudentReportSuccess /> },
+      { path: '/student/reports', element: <StudentSubmittedReports /> },
+      { path: '/student/reports/:id', element: <StudentReportDetail /> },
+      { path: '/student/reports/:id/withdraw', element: <StudentReportWithdrawal /> },
+      { path: '/student/reports/:id/withdraw/success', element: <StudentReportWithdrawalSuccess /> },
       {
         path: "/order-dashboard",
         element: (
