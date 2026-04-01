@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { MapPin, CheckCircle, Pencil, Trash2, ChevronDown, AlertTriangle, X } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
+import Card from "../components/common/Card";
 import { mockLostAndFoundItems } from "../data/mockData";
 import CreatePostModal from "../components/lost-found/CreatePostModal";
 import ReportItemForm from "../components/lost-found/ReportItemForm";
@@ -283,11 +284,13 @@ const MyLostAndFound = () => {
           onClick={closeDeleteModal}
         >
           {/* Blurred backdrop */}
-          <div className="absolute inset-0 bg-dark-1/60 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4" />
 
           {/* Glass Card */}
-          <div
-            className="relative w-full max-w-sm bg-dark-2/80 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 shadow-custom-shadow animate-in fade-in zoom-in-95 duration-200 text-center"
+          <Card
+            variant="card"
+            padding="p-6 sm:p-8"
+            className="w-full max-w-sm animate-in fade-in zoom-in-95 duration-200 text-center outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Warning Icon */}
@@ -318,7 +321,7 @@ const MyLostAndFound = () => {
                 Delete Post
               </button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
@@ -329,11 +332,13 @@ const MyLostAndFound = () => {
           onClick={closeDeleteModal}
         >
           {/* Blurred backdrop */}
-          <div className="absolute inset-0 bg-dark-1/60 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4" />
 
           {/* Glass Card */}
-          <div
-            className="relative w-full max-w-sm bg-dark-2/80 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 shadow-custom-shadow animate-in fade-in zoom-in-95 duration-200 text-center"
+          <Card
+            variant="card"
+            padding="p-6 sm:p-8"
+            className="w-full max-w-sm animate-in fade-in zoom-in-95 duration-200 text-center outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close X */}
@@ -363,7 +368,7 @@ const MyLostAndFound = () => {
             >
               Done
             </button>
-          </div>
+          </Card>
         </div>
       )}
 
