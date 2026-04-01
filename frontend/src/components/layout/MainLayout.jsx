@@ -8,6 +8,7 @@ const MainLayout = ({
   pageTitle,
   headerRight,
   verificationCount,
+  sidebarDisabled = false,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -27,6 +28,7 @@ const MainLayout = ({
         verificationCount={verificationCount}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
+        sidebarDisabled={sidebarDisabled}
       />
 
       {/* Main Content Area */}
@@ -39,7 +41,7 @@ const MainLayout = ({
         />
 
         {/* Page Content */}
-        <main className="p-md md:p-lg flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
+        <main className="px-3.5 py-4 md:p-lg flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
           {children}
         </main>
       </div>

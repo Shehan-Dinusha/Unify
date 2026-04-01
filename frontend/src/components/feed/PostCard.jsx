@@ -142,7 +142,12 @@ const PostCard = ({
       {/* Post Image */}
       {image && (
         <div className="w-full h-[300px] sm:h-[400px] overflow-hidden">
-          <img src={image} alt="post" className="w-full h-full object-cover" />
+          <img
+            src={image}
+            alt="post"
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         </div>
       )}
 
