@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Send, Heart, MessageCircle } from "lucide-react";
+import { MapPin, Send, Heart, MessageCircle, Bookmark } from "lucide-react";
 import { useSavedPosts } from "../../context/SavedPostsContext";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
@@ -221,10 +221,10 @@ const PostCard = ({
           {/* Save */}
           <button
             onClick={() => post && toggleSavePost(post)}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? 'text-state-info' : ''}`}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? 'text-primary-blue' : ''}`}
           >
             <div className="flex items-center gap-1.5">
-              <img src="/icon_save_marketplace.svg" alt="Save" className={`w-5 h-5 ${isSaved ? 'brightness-150' : 'opacity-70'}`} />
+              <Bookmark size={20} className={isSaved ? "fill-current" : ""} strokeWidth={isSaved ? 0 : 1.8} />
             </div>
             <span className="text-[11px]">{isSaved ? 'Saved' : 'Save'}</span>
           </button>

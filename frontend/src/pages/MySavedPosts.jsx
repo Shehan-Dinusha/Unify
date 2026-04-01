@@ -1,85 +1,85 @@
-import React, { useState } from "react";
-import { Heart, MessageCircle, Bookmark } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Bookmark, Search, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
-import mockPosts from "../data/mockData";
-
-/* ─── Compact Saved Post Card ─────────────────────────────────── */
-const SavedPostCard = ({ post, onUnsave }) => {
-  return (
-    <div className="bg-dark-2 rounded-2xl overflow-hidden border border-white/5 font-inter text-white flex flex-col">
-      {/* Image */}
-      {post.image && (
-        <div className="w-full h-[200px] overflow-hidden">
-          <img
-            src={post.image}
-            alt={post.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="p-4 flex flex-col gap-3 flex-1">
-        {/* Author Row */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full bg-[#7551FF] flex items-center justify-center text-white text-body-small-bold shrink-0">
-            {post.authorInitial}
-          </div>
-          <span className="text-body-small-bold text-text-primary truncate">
-            {post.author}
-          </span>
-        </div>
-
-        {/* Description */}
-        <p className="text-body-small text-text-secondary leading-relaxed line-clamp-3">
-          {post.description}
-        </p>
-
-        {/* Bottom Action Bar */}
-        <div className="flex items-center justify-between mt-auto pt-2">
-          {/* Stats */}
-          <div className="flex items-center gap-4 text-text-tertiary">
-            <div className="flex items-center gap-1.5">
-              <Heart size={16} strokeWidth={1.5} />
-              <span className="text-body-extra-small">{post.likes}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <MessageCircle size={16} strokeWidth={1.5} />
-              <span className="text-body-extra-small">{post.comments}</span>
-            </div>
-          </div>
-
-          {/* Unsave Button */}
-          <button
-            onClick={() => onUnsave(post)}
-            className="flex items-center gap-1.5 bg-primary-blue/15 hover:bg-primary-blue/25 text-primary-blue px-3.5 py-1.5 rounded-lg transition-colors"
-          >
-            <Bookmark size={14} className="fill-current" />
-            <span className="text-body-extra-small-bold">Unsave</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+import PostCard from "../components/feed/PostCard";
+import { useSavedPosts } from "../context/SavedPostsContext";
 
 /* ─── My Saved Posts Page ─────────────────────────────────────── */
 const MySavedPosts = () => {
   const navigate = useNavigate();
-  const [displayedPosts, setDisplayedPosts] = useState(mockPosts);
+  const { savedPosts } = useSavedPosts();
+
+  const searchInputRef = useRef(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const user = {
     name: "Alex Johnson",
     role: "student",
   };
 
-  const handleUnsave = (post) => {
-    setDisplayedPosts((prev) => prev.filter((p) => p.id !== post.id));
-  };
+  // Auto-focus search input when search bar opens
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearch]);
+
+  // Filter posts based on search query
+  const filteredPosts = searchQuery.trim()
+    ? savedPosts.filter(
+        (post) =>
+          post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          post.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          post.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : savedPosts;
+
+  // Custom header right content with search toggle
+  const headerRight = (
+    <div className="flex items-center gap-2">
+      {showSearch && (
+        <div className="flex items-center bg-dark-2 border border-primary-blue/30 rounded-full px-4 py-1.5 animate-in slide-in-from-right-4 duration-200">
+          <Search size={16} className="text-text-secondary mr-2 shrink-0" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search saved posts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="bg-transparent text-sm text-white placeholder-text-secondary outline-none w-48 sm:w-64"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="ml-1 text-text-secondary hover:text-white transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      )}
+      <button
+        onClick={() => {
+          setShowSearch(!showSearch);
+          if (showSearch) setSearchQuery("");
+        }}
+        className={`p-2 flex items-center justify-center shrink-0 rounded-full transition-colors ${
+          showSearch ? "bg-primary-blue/20 text-primary-blue" : "hover:bg-white/5"
+        }`}
+      >
+        {showSearch ? (
+          <X size={20} className="text-primary-blue" />
+        ) : (
+          <img src="/icon_search.svg" alt="Search" className="w-6 h-6 opacity-70" />
+        )}
+      </button>
+    </div>
+  );
 
   return (
-    <MainLayout user={user} pageTitle="Saved Posts" verificationCount={0}>
+    <MainLayout user={user} pageTitle="Saved Posts" verificationCount={0} headerRight={headerRight}>
       <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto">
         {/* Page Header */}
         <div className="flex items-center justify-between">
@@ -88,9 +88,18 @@ const MySavedPosts = () => {
           </p>
         </div>
 
+        {/* Search Results Info */}
+        {searchQuery.trim() && savedPosts.length > 0 && (
+          <div className="text-text-secondary text-sm -mt-2">
+            {filteredPosts.length > 0
+              ? `Showing ${filteredPosts.length} result${filteredPosts.length !== 1 ? "s" : ""} for "${searchQuery}"`
+              : `No saved posts found for "${searchQuery}"`}
+          </div>
+        )}
+
         {/* Content */}
-        {displayedPosts.length === 0 ? (
-          /* Empty State */
+        {savedPosts.length === 0 ? (
+          /* Empty State - No Saves At All */
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-20 h-20 rounded-full bg-primary-blue/10 flex items-center justify-center mb-5">
               <Bookmark size={36} className="text-primary-blue" />
@@ -106,14 +115,23 @@ const MySavedPosts = () => {
               Browse News Feed
             </button>
           </div>
+        ) : filteredPosts.length === 0 ? (
+          /* Empty State - Search returned nothing */
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+              <Search size={28} className="text-text-tertiary" />
+            </div>
+            <h2 className="text-body-large-bold text-text-primary mb-1">No results matching "{searchQuery}"</h2>
+            <p className="text-body-small text-text-secondary">Try adjusting your search terms.</p>
+          </div>
         ) : (
-          /* Saved Posts Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {displayedPosts.map((post) => (
-              <SavedPostCard
+          /* Saved Posts Feed */
+          <div className="flex flex-col gap-6 max-w-[680px] w-full mx-auto">
+            {filteredPosts.map((post) => (
+              <PostCard
                 key={post.id}
                 post={post}
-                onUnsave={handleUnsave}
+                {...post}
               />
             ))}
           </div>

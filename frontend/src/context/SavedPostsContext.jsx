@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState } from "react";
+import mockPosts from "../data/mockData";
 
 const SavedPostsContext = createContext();
 
 export const useSavedPosts = () => useContext(SavedPostsContext);
 
 export const SavedPostsProvider = ({ children }) => {
-  const [savedPosts, setSavedPosts] = useState([]);
+  // Initialize with 3 posts for preview purposes
+  const [savedPosts, setSavedPosts] = useState(mockPosts.slice(0, 3));
 
   const toggleSavePost = (post) => {
     setSavedPosts((prev) => {
