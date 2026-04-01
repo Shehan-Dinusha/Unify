@@ -19,7 +19,9 @@ import VerificationQueue from "../pages/VerificationQueue";
 import AdminDashboard from "../pages/AdminDashboard";
 import RevenueOverview from "../pages/RevenueOverview";
 import ActiveBusinesses from "../pages/ActiveBusinesses";
+import BusinessProfile from "../pages/BusinessProfile";
 import StudentManagement from "../pages/StudentManagement";
+import StudentUserProfile from "../pages/StudentUserProfile";
 import BoostController from "../pages/BoostController";
 import BoostPackageForm from "../pages/BoostPackageForm";
 import ReportModeration from "../pages/ReportModeration";
@@ -176,8 +178,16 @@ const router = createBrowserRouter([
         element: <ActiveBusinesses />,
       },
       {
+        path: "/active-businesses/:id",
+        element: <BusinessProfile />,
+      },
+      {
         path: "/student-management",
         element: <StudentManagement />,
+      },
+      {
+        path: "/student-management/:id",
+        element: <StudentUserProfile />,
       },
       {
         path: "/news-feed",
