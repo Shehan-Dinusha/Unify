@@ -41,6 +41,7 @@ import Club from "../pages/Club";
 import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
 import LostAndFound from "../pages/LostAndFound";
+import MyLostAndFound from "../pages/MyLostAndFound";
 import FoodCafe from "../pages/FoodCafe";
 import Services from "../pages/Services";
 import ClubCheckout from "../pages/ClubCheckout";
@@ -227,6 +228,7 @@ const router = createBrowserRouter([
       { path: "/club/followers", element: <FollowersDirectory /> },
       { path: "/student/followings", element: <Followings /> },
       { path: "/marketplace/boarding", element: <Boarding /> },
+      { path: "/my-lost-and-found", element: <MyLostAndFound /> },
       { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
       { path: "/profile/reviews", element: <MyReviewHistory /> },
       { path: "/business/reviews", element: <ReceivedReviews /> },
