@@ -155,6 +155,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
           {filteredPosts.map((post) => (
             <div key={post.id} ref={(el) => (postRefs.current[post.id] = el)}>
               <PostCard
+                post={post}
                 author={post.author}
                 authorInitial={post.authorInitial}
                 time={post.time}

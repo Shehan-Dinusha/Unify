@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useSavedPosts } from "../../context/SavedPostsContext";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Send, Heart, MessageCircle, Zap } from "lucide-react";
+import { MapPin, Send, Heart, MessageCircle, Zap ,Bookmark, } from "lucide-react";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
 const CommentSection = ({ postComments, onAddComment }) => {
@@ -80,6 +81,7 @@ const CommentSection = ({ postComments, onAddComment }) => {
 
 /* ─── PostCard ───────────────────────────────────────────────── */
 const PostCard = ({
+  post,
   author,
   authorInitial,
   time,
@@ -92,6 +94,8 @@ const PostCard = ({
   isPromoted,
   showBoost = false,
 }) => {
+  const { toggleSavePost, isPostSaved } = useSavedPosts();
+  const isSaved = post ? isPostSaved(post.id) : false;
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
@@ -114,7 +118,6 @@ const PostCard = ({
     },
   ]);
   const [commentCount, setCommentCount] = useState(comments);
-  const [isSaved, setIsSaved] = useState(false);
 
   const toggleLike = () => {
     setIsLiked(!isLiked);
@@ -231,6 +234,11 @@ const PostCard = ({
 
           {/* Save */}
           <button
+            onClick={() => post && toggleSavePost(post)}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? 'text-primary-blue' : ''}`}
+          >
+            <div className="flex items-center gap-1.5">
+              <Bookmark size={20} className={isSaved ? "fill-current" : ""} strokeWidth={isSaved ? 0 : 1.8} />
             onClick={() => setIsSaved(!isSaved)}
             className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? "text-state-info" : ""}`}
           >
