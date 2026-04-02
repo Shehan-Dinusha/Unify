@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Select from '../components/common/Select';
 import { mockRequests } from '../data/mockData';
+import { businessProfiles } from '../data/mockBusinessProfiles';
 import { Search, RotateCcw } from 'lucide-react';
 import Input from '../components/common/Input';
 
@@ -50,53 +52,16 @@ const categoryColors = {
     'Clubs & Society': 'bg-primary-accent/20 text-primary-accent border border-primary-accent/30',
 };
 
-const businesses = [
-    {
-        id: 1,
-        name: 'TechFlow Solutions',
-        email: 'contact@techflow.io',
-        category: 'Self Employee',
-        registrationDate: 'Oct 24, 2025',
-        status: 'Active',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TechFlow',
-    },
-    {
-        id: 2,
-        name: 'Urban Living',
-        email: 'agents@urbanliving.net',
-        category: 'Boarding',
-        registrationDate: 'Nov 01, 2025',
-        status: 'Active',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=UrbanLiving',
-    },
-    {
-        id: 3,
-        name: 'Nexus Creative',
-        email: 'projects@nexus.agency',
-        category: 'Self Employee',
-        registrationDate: 'Dec 15, 2025',
-        status: 'Active',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NexusCreative',
-    },
-    {
-        id: 4,
-        name: 'GreenLeaf Organics',
-        email: 'hello@greenleaf.com',
-        category: 'Food & Cafe',
-        registrationDate: 'Sep 12, 2025',
-        status: 'Active',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=GreenLeaf',
-    },
-    {
-        id: 5,
-        name: 'University Chess Club',
-        email: 'chess@uom.lk',
-        category: 'Clubs & Society',
-        registrationDate: 'Jan 10, 2026',
-        status: 'Active',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ChessClub',
-    },
-];
+// Local state derived from centralized business profiles
+const businessesData = businessProfiles.map(p => ({
+    id: p.id,
+    name: p.name,
+    email: p.businessInfo?.email || 'contact@business.lk',
+    category: p.category,
+    registrationDate: p.registrationDate,
+    status: p.status,
+    avatar: p.logo
+}));
 
 const categoryOptions = [
     { value: 'all', label: 'All Categories' },
@@ -119,6 +84,7 @@ const COLS = '2fr 1fr 1.2fr 1fr 1fr';
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
 const ActiveBusinesses = () => {
+    const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All Businesses');
     const [categoryFilter, setCategoryFilter] = useState('all');
@@ -131,7 +97,7 @@ const ActiveBusinesses = () => {
         setStatusFilter('all');
     };
 
-    const filtered = businesses.filter((b) => {
+    const filtered = businessesData.filter((b) => {
         const query = searchQuery.toLowerCase();
         const matchesSearch = b.name.toLowerCase().includes(query) ||
             b.category.toLowerCase().includes(query) ||
@@ -303,7 +269,9 @@ const ActiveBusinesses = () => {
 
                         {/* Action */}
                         <div className="flex items-center justify-end">
-                            <button className="px-md py-xs rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue hover:shadow-lg hover:shadow-primary-blue/25 transition-all duration-200">
+                            <button
+                                onClick={() => navigate(`/active-businesses/${biz.id}`)}
+                                className="px-md py-xs rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue hover:shadow-lg hover:shadow-primary-blue/25 transition-all duration-200">
                                 View Profile
                             </button>
                         </div>
@@ -346,7 +314,9 @@ const ActiveBusinesses = () => {
                             </div>
 
                             {/* Action */}
-                            <button className="w-full py-sm rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue transition-all duration-200 text-center">
+                            <button
+                                onClick={() => navigate(`/active-businesses/${biz.id}`)}
+                                className="w-full py-sm rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue transition-all duration-200 text-center">
                                 View Profile
                             </button>
                         </div>
