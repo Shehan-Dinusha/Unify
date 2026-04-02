@@ -19,7 +19,9 @@ import VerificationQueue from "../pages/VerificationQueue";
 import AdminDashboard from "../pages/AdminDashboard";
 import RevenueOverview from "../pages/RevenueOverview";
 import ActiveBusinesses from "../pages/ActiveBusinesses";
+import BusinessProfile from "../pages/BusinessProfile";
 import StudentManagement from "../pages/StudentManagement";
+import StudentUserProfile from "../pages/StudentUserProfile";
 import BoostController from "../pages/BoostController";
 import BoostPackageForm from "../pages/BoostPackageForm";
 import ReportModeration from "../pages/ReportModeration";
@@ -48,6 +50,10 @@ import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
 import MyOrders from "../pages/MyOrders";
 import Notification from "../pages/Notification";
 
+import BoostSelectPackage from "../pages/BoostSelectPackage";
+import BoostConfirmOrder from "../pages/BoostConfirmOrder";
+import BoostPostSuccess from "../pages/BoostPostSuccess";
+import BoostAnalytics from "../pages/BoostAnalytics";
 
 import NotFound from "../pages/NotFound";
 import MarketplaceReviews from "../pages/MarketplaceReviews";
@@ -55,6 +61,16 @@ import MyReviewHistory from "../pages/MyReviewHistory";
 import ReceivedReviews from "../pages/ReceivedReviews";
 import FollowersDirectory from "../pages/FollowersDirectory";
 import Followings from "../pages/Followings";
+import OwnProfilePage from "../pages/profile/OwnProfilePage";
+import PublicProfilePage from "../pages/profile/PublicProfilePage";
+import EditProfilePage from "../pages/profile/EditProfilePage";
+import SecurityPage from "../pages/profile/SecurityPage";
+import StudentReportIssue from "../pages/StudentReportIssue";
+import StudentReportSuccess from "../pages/StudentReportSuccess";
+import StudentSubmittedReports from "../pages/StudentSubmittedReports";
+import StudentReportDetail from "../pages/StudentReportDetail";
+import StudentReportWithdrawal from "../pages/StudentReportWithdrawal";
+import StudentReportWithdrawalSuccess from "../pages/StudentReportWithdrawalSuccess";
 
 const PlaceholderPage = ({ title, verificationCount }) => (
   <MainLayout
@@ -161,6 +177,22 @@ const router = createBrowserRouter([
         element: <BoostPackageForm />,
       },
       {
+        path: "/boost-controller/analytics/:id",
+        element: <BoostAnalytics />,
+      },
+      {
+        path: "/business/boost-post",
+        element: <BoostSelectPackage />,
+      },
+      {
+        path: "/business/boost-post/confirm",
+        element: <BoostConfirmOrder />,
+      },
+      {
+        path: "/business/boost-post/success",
+        element: <BoostPostSuccess />,
+      },
+      {
         path: "/club-verification",
         element: <ClubVerification />,
       },
@@ -177,12 +209,24 @@ const router = createBrowserRouter([
         element: <ActiveBusinesses />,
       },
       {
+        path: "/active-businesses/:id",
+        element: <BusinessProfile />,
+      },
+      {
         path: "/student-management",
         element: <StudentManagement />,
       },
       {
+        path: "/student-management/:id",
+        element: <StudentUserProfile />,
+      },
+      {
         path: "/news-feed",
         element: <NewsFeed />,
+      },
+      {
+        path: "/business/news-feed",
+        element: <NewsFeed userRole="business" />,
       },
       {
         path: "/marketplace-items",
@@ -217,7 +261,10 @@ const router = createBrowserRouter([
       { path: "/marketplace/club", element: <Club /> },
       { path: "/marketplace/club/product", element: <ClubProduct /> },
       { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
-      { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
+      {
+        path: "/marketplace/club/payment-success",
+        element: <ClubPaymentSuccess />,
+      },
       { path: "/marketplace/food-cafe", element: <FoodCafe /> },
       { path: "/marketplace/services", element: <Services /> },
       { path: "/club/followers", element: <FollowersDirectory /> },
@@ -226,6 +273,10 @@ const router = createBrowserRouter([
       { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
       { path: "/profile/reviews", element: <MyReviewHistory /> },
       { path: "/business/reviews", element: <ReceivedReviews /> },
+      { path: "/profile", element: <OwnProfilePage /> },
+      { path: "/profile/edit", element: <EditProfilePage /> },
+      { path: "/profile/security", element: <SecurityPage /> },
+      { path: "/profile/:userId", element: <PublicProfilePage /> },
       {
         path: "/learning",
         element: (
@@ -277,7 +328,17 @@ const router = createBrowserRouter([
           />
         ),
       },
+      { path: "/profile", element: <OwnProfilePage /> },
+      { path: "/profile/edit", element: <EditProfilePage /> },
+      { path: "/profile/security", element: <SecurityPage /> },
+      { path: "/profile/:userId", element: <PublicProfilePage /> },
       { path: '/order-history', element: <MyOrders /> },
+      { path: '/student/report-issue', element: <StudentReportIssue /> },
+      { path: '/student/report-success', element: <StudentReportSuccess /> },
+      { path: '/student/reports', element: <StudentSubmittedReports /> },
+      { path: '/student/reports/:id', element: <StudentReportDetail /> },
+      { path: '/student/reports/:id/withdraw', element: <StudentReportWithdrawal /> },
+      { path: '/student/reports/:id/withdraw/success', element: <StudentReportWithdrawalSuccess /> },
       {
         path: "/order-dashboard",
         element: (
