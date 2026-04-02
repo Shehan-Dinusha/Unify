@@ -48,6 +48,8 @@ import Services from "../pages/Services";
 import ClubCheckout from "../pages/ClubCheckout";
 import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
 import MyOrders from "../pages/MyOrders";
+import Notification from "../pages/Notification";
+
 import BoostSelectPackage from "../pages/BoostSelectPackage";
 import BoostConfirmOrder from "../pages/BoostConfirmOrder";
 import BoostPostSuccess from "../pages/BoostPostSuccess";
@@ -240,12 +242,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/notifications",
-        element: (
-          <PlaceholderPage
-            title="Notifications"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <Notification />,
       },
       {
         path: "/messages",

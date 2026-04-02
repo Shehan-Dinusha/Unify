@@ -595,3 +595,58 @@ export const mockLostAndFoundItems = [
     },
   },
 ];
+
+/* ─── Notifications Mock Data ───────────────────────────────── */
+export const mockNotifications = [
+  {
+    id: 1,
+    type: "reply",
+    title: "Sarah Jenkins replied to your comment",
+    content: '"That\'s exactly what the professor said in the last lecture, good catch!"',
+    time: "5 hours ago",
+    isUnread: true,
+    avatar: "https://i.pravatar.cc/150?u=sarah",
+  },
+  {
+    id: 2,
+    type: "like",
+    title: "New likes on your post",
+    content: 'Alex Chen and 3 others liked your post "Exam schedule updates".',
+    time: "Yesterday at 2:15 PM",
+    isUnread: true,
+    avatars: [
+      "https://i.pravatar.cc/150?u=alex",
+      "https://i.pravatar.cc/150?u=chen"
+    ],
+  },
+  {
+    id: 3,
+    type: "match",
+    title: "Potential match found",
+    content: 'A new item "Blue Hydroflask" has been posted that matches your lost item report #4021.',
+    time: "Yesterday at 4:30 PM",
+    isUnread: true,
+    image: "/lost_post_img1.jpg", 
+  },
+  {
+    id: 4,
+    type: "like",
+    title: "New likes on your post",
+    content: 'Alex Chen and 3 others liked your post "Exam schedule updates".',
+    time: "Yesterday at 2:15 PM",
+    isUnread: false,
+    avatars: [
+      "https://i.pravatar.cc/150?u=alex",
+      "https://i.pravatar.cc/150?u=chen"
+    ],
+  },
+  {
+    id: 5,
+    type: "match",
+    title: "Potential match found",
+    content: 'A new item "Blue Hydroflask" has been posted that matches your lost item report #4021.',
+    time: "Yesterday at 4:30 PM",
+    isUnread: false,
+    image: "/lost_post_img1.jpg",
+  }
+];
