@@ -6,7 +6,7 @@ import StatsCard from "../components/common/StatsCard";
 import PostCard from "../components/feed/PostCard";
 import mockPosts from "../data/mockData";
 
-const NewsFeed = () => {
+const NewsFeed = ({ userRole = 'student' }) => {
   const location = useLocation();
   const postRefs = useRef({});
   const searchInputRef = useRef(null);
@@ -15,7 +15,8 @@ const NewsFeed = () => {
 
   const user = {
     name: "Alex Johnson",
-    role: "student",
+    role: userRole,
+    ...(userRole === 'business' ? { displayRole: 'Business & Organization' } : {}),
   };
 
   useEffect(() => {
@@ -154,6 +155,7 @@ const NewsFeed = () => {
           {filteredPosts.map((post) => (
             <div key={post.id} ref={(el) => (postRefs.current[post.id] = el)}>
               <PostCard
+                post={post}
                 author={post.author}
                 authorInitial={post.authorInitial}
                 time={post.time}
@@ -164,6 +166,7 @@ const NewsFeed = () => {
                 likes={post.likes}
                 comments={post.comments}
                 isPromoted={post.isPromoted}
+                showBoost={user.role === 'business'}
               />
             </div>
           ))}

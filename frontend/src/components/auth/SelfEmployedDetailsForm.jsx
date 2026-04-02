@@ -16,10 +16,14 @@ const SelfEmployedDetailsForm = ({ onNext }) => {
 
   const [errors, setErrors] = useState({});
 
-  // ... (validateForm, isFormComplete)
+  // Form is complete when required fields are filled
+  const isFormComplete =
+    formData.fullName.trim() !== "" && formData.service.trim() !== "" && formData.about.trim() !== "";
 
   const handleChange = (e) => {
-    // ...
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const handleImageChange = (file) => {
@@ -27,7 +31,9 @@ const SelfEmployedDetailsForm = ({ onNext }) => {
   };
 
   const handleSubmit = (e) => {
-    // ...
+    e.preventDefault();
+    if (!isFormComplete) return;
+    onNext(formData);
   };
 
   return (

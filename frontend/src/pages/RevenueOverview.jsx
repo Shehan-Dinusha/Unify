@@ -1,6 +1,7 @@
 import React from 'react';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
+import { LineChart, DonutChart } from '../components/chart';
 import { mockRequests } from '../data/mockData';
 
 // ─── Data ───────────────────────────────────────────────────────────────────
@@ -18,145 +19,6 @@ const breakdownSegments = [
     { label: 'Merchandise', value: 15, color: '#FBBF24' },
     { label: 'Donations', value: 5, color: '#9CA3AF' },
 ];
-
-// ─── Revenue Line Chart ──────────────────────────────────────────────────────
-
-const RevenueChart = ({ actual, projected, maxVal, tooltipIdx }) => {
-    const W = 600;
-    const H = 340;
-    const padT = 10;
-    const padB = 10;
-    const padL = 0;
-    const padR = 0;
-    const n = actual.length;
-
-    const toX = (i) => padL + (i / (n - 1)) * (W - padL - padR);
-    const toY = (v) => padT + (1 - v / maxVal) * (H - padT - padB);
-
-    const buildPath = (data) =>
-        data.map((v, i) => `${i === 0 ? 'M' : 'L'}${toX(i)},${toY(v)}`).join(' ');
-
-    const buildArea = (data) => {
-        const line = buildPath(data);
-        return `${line} L${toX(n - 1)},${H - padB} L${toX(0)},${H - padB} Z`;
-    };
-
-    const tipX = toX(tooltipIdx);
-    const tipY = toY(actual[tooltipIdx]);
-    const tipXPct = `${(tipX / W) * 100}%`;
-    const tipYPct = `${(tipY / H) * 100}%`;
-
-    const gridVals = [0, 3, 6, 9, 12, 15];
-
-    return (
-        <div className="relative w-full">
-            <svg
-                viewBox={`0 0 ${W} ${H}`}
-                preserveAspectRatio="xMidYMid meet"
-                className="w-full"
-                style={{ height: 340 }}
-            >
-                <defs>
-                    <linearGradient id="revAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2B8CEE" stopOpacity="0.25" />
-                        <stop offset="100%" stopColor="#2B8CEE" stopOpacity="0.02" />
-                    </linearGradient>
-                </defs>
-
-                {gridVals.map((v) => (
-                    <line
-                        key={v}
-                        x1={padL} y1={toY(v)}
-                        x2={W - padR} y2={toY(v)}
-                        stroke="rgba(255,255,255,0.06)"
-                        strokeWidth="1"
-                    />
-                ))}
-
-                <path d={buildArea(actual)} fill="url(#revAreaGrad)" />
-
-                <path
-                    d={buildPath(projected)}
-                    fill="none"
-                    stroke="#9CA3AF"
-                    strokeWidth="2"
-                    strokeDasharray="6 4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-
-                <path
-                    d={buildPath(actual)}
-                    fill="none"
-                    stroke="#2B8CEE"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-
-                <circle
-                    cx={tipX} cy={tipY}
-                    r="5"
-                    fill="#2B8CEE"
-                    stroke="#0D1A26"
-                    strokeWidth="2"
-                />
-            </svg>
-
-            <div
-                className="absolute pointer-events-none"
-                style={{
-                    left: tipXPct,
-                    top: tipYPct,
-                    transform: 'translate(-50%, -110%)',
-                }}
-            >
-                <div className="bg-dark-4 border border-white/20 rounded-lg px-sm py-xs shadow-custom-shadow whitespace-nowrap">
-                    <div className="text-body-extra-small text-text-secondary">Current Rev</div>
-                    <div className="text-body-small-bold text-text-primary">Rs. 9.4M</div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// ─── Donut Chart ─────────────────────────────────────────────────────────────
-
-const DonutChart = ({ segments, size = 160, strokeWidth = 22, total, label }) => {
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-    let offset = 0;
-
-    return (
-        <div className="relative" style={{ width: size, height: size }}>
-            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                {segments.map((seg, i) => {
-                    const dash = (seg.value / 100) * circumference;
-                    const gap = circumference - dash;
-                    const cur = offset;
-                    offset += dash;
-                    return (
-                        <circle
-                            key={i}
-                            cx={size / 2} cy={size / 2} r={radius}
-                            fill="none"
-                            stroke={seg.color}
-                            strokeWidth={strokeWidth}
-                            strokeDasharray={`${dash} ${gap}`}
-                            strokeDashoffset={-cur}
-                            strokeLinecap="round"
-                            style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
-                        />
-                    );
-                })}
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-heading-small text-text-primary leading-none">{total}</span>
-                <span className="text-body-extra-small text-text-secondary">Total LKR</span>
-            </div>
-        </div>
-    );
-};
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -282,7 +144,7 @@ const RevenueOverview = () => {
 
                             {/* Chart + X-axis */}
                             <div className="flex-1 min-w-0">
-                                <RevenueChart
+                                <LineChart
                                     actual={actualRevenue}
                                     projected={projectedRevenue}
                                     maxVal={MAX_REV}
@@ -314,8 +176,10 @@ const RevenueOverview = () => {
                         <div className="flex flex-col items-center">
                             <DonutChart
                                 segments={breakdownSegments}
-                                total="12.8K"
-                                label="Total LKR"
+                                size={160}
+                                strokeWidth={22}
+                                centerLabel="12.8K"
+                                centerSubLabel="Total LKR"
                             />
 
                             <div className="grid grid-cols-2 gap-x-lg gap-y-sm w-full mt-lg">

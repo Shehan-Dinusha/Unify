@@ -57,45 +57,6 @@ const BoostController = () => {
     ];
 
     return (
-        <>
-            {/* Delete Confirmation Modal */}
-            {deleteTarget && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
-                    <Card variant="card" padding="p-0" className="w-full max-w-[420px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
-                        <div className="p-8 pb-6 flex flex-col items-center text-center">
-                            {/* Warning Icon */}
-                            <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
-                                <AlertTriangle size={32} className="text-state-error" />
-                            </div>
-
-                            <h2 className="text-xl font-bold text-white mb-3">
-                                Delete Package?
-                            </h2>
-                            <p className="text-text-secondary text-sm leading-relaxed mb-2 max-w-sm">
-                                Are you sure you want to delete the <span className="text-text-primary font-semibold">"{deleteTarget.name}"</span> package? This action cannot be undone.
-                            </p>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="px-8 pb-8 pt-2 flex flex-col gap-3">
-                            <button
-                                onClick={confirmDelete}
-                                className="w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
-                            >
-                                <Trash2 size={18} />
-                                Yes, Delete Package
-                            </button>
-                            <button
-                                onClick={cancelDelete}
-                                className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
             <MainLayout
                 user={{ name: 'Alex Johnson', role: 'admin' }}
                 pageTitle="Boost Moderation"
@@ -275,8 +236,32 @@ const BoostController = () => {
                         </div>
                     </Card>
                 </div>
+
+                {/* Delete Confirmation Modal — inside MainLayout so sidebar shows behind blur */}
+                {deleteTarget && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
+                        <Card variant="card" padding="p-0" className="w-full max-w-[420px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+                            <div className="p-8 pb-6 flex flex-col items-center text-center">
+                                <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
+                                    <AlertTriangle size={32} className="text-state-error" />
+                                </div>
+                                <h2 className="text-xl font-bold text-white mb-3">Delete Package?</h2>
+                                <p className="text-text-secondary text-sm leading-relaxed mb-2 max-w-sm">
+                                    Are you sure you want to delete the <span className="text-text-primary font-semibold">"{deleteTarget.name}"</span> package? This action cannot be undone.
+                                </p>
+                            </div>
+                            <div className="px-8 pb-8 pt-2 flex flex-col gap-3">
+                                <button onClick={confirmDelete} className="w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
+                                    <Trash2 size={18} /> Yes, Delete Package
+                                </button>
+                                <button onClick={cancelDelete} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200">
+                                    Cancel
+                                </button>
+                            </div>
+                        </Card>
+                    </div>
+                )}
             </MainLayout>
-        </>
     );
 };
 
