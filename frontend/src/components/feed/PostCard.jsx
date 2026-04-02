@@ -1,7 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSavedPosts } from "../../context/SavedPostsContext";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Send, Heart, MessageCircle, Zap ,Bookmark, } from "lucide-react";
+import {
+  MapPin,
+  Send,
+  Heart,
+  MessageCircle,
+  Zap,
+  Bookmark,
+} from "lucide-react";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
 const CommentSection = ({ postComments, onAddComment }) => {
@@ -96,7 +103,6 @@ const PostCard = ({
 }) => {
   const { toggleSavePost, isPostSaved } = useSavedPosts();
   const isSaved = post ? isPostSaved(post.id) : false;
-  const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
   const [showComments, setShowComments] = useState(false);
@@ -235,11 +241,15 @@ const PostCard = ({
           {/* Save */}
           <button
             onClick={() => post && toggleSavePost(post)}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? 'text-primary-blue' : ''}`}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? "text-primary-blue" : ""}`}
           >
             <div className="flex items-center gap-1.5">
-              <Bookmark size={20} className={isSaved ? "fill-current" : ""} strokeWidth={isSaved ? 0 : 1.8} />
-            onClick={() => setIsSaved(!isSaved)}
+              <Bookmark
+                size={20}
+                className={isSaved ? "fill-current" : ""}
+                strokeWidth={isSaved ? 0 : 1.8}
+              />
+              {/* onClick={() => setIsSaved(!isSaved)}
             className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? "text-state-info" : ""}`}
           >
             <div className="flex items-center gap-1.5">
@@ -247,7 +257,7 @@ const PostCard = ({
                 src="/icon_save_marketplace.svg"
                 alt="Save"
                 className={`w-5 h-5 ${isSaved ? "brightness-150" : "opacity-70"}`}
-              />
+              /> */}
             </div>
             <span className="text-[11px]">{isSaved ? "Saved" : "Save"}</span>
           </button>
