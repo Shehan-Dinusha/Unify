@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LandingLayout from "../components/layout/LandingLayout";
 import AuthenticationHeader from "../components/auth/AuthenticationHeader";
 import ForgotPasswordForm from "../components/auth/ForgotPasswordForm";
@@ -40,7 +40,7 @@ const ForgotPasswordPage = () => {
 
   return (
     <LandingLayout Header={AuthenticationHeader}>
-      <div className="flex-1 flex items-center justify-center py-10 px-4">
+      <div className="flex-1 flex items-center justify-center py-10 px-4 sm:px-0">
         {renderStep()}
       </div>
     </LandingLayout>

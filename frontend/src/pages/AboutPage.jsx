@@ -8,12 +8,12 @@ const AboutPage = () => {
     <LandingLayout>
       <section className="w-full flex flex-col items-center text-center mt-10 mb-20">
         {/* Title */}
-        <h1 className="text-heading-display text-white tracking-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-heading-display text-white tracking-tight leading-tight font-black font-inter">
           About <span className="text-primary-blue">Unify</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="mt-6 text-body-large-bold text-text-secondary max-w-[750px]">
+        <p className="mt-6 text-body-large-bold font-normal md:font-bold text-text-secondary max-w-[750px]">
           Unify is a purpose-built platform designed to bridge the gap between
           students, faculty, and university services, creating a seamless
           digital campus experience.
