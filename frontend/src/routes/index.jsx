@@ -64,6 +64,8 @@ import MyReviewHistory from "../pages/MyReviewHistory";
 import ReceivedReviews from "../pages/ReceivedReviews";
 import FollowersDirectory from "../pages/FollowersDirectory";
 import Followings from "../pages/Followings";
+import BatchRepLearningDashboard from "../pages/BatchRepLearningDashboard";
+import StudentLearningDashboard from "../pages/StudentLearningDashboard";
 import OwnProfilePage from "../pages/profile/OwnProfilePage";
 import PublicProfilePage from "../pages/profile/PublicProfilePage";
 import EditProfilePage from "../pages/profile/EditProfilePage";
@@ -285,12 +287,11 @@ const router = createBrowserRouter([
       { path: "/profile/:userId", element: <PublicProfilePage /> },
       {
         path: "/learning",
-        element: (
-          <PlaceholderPage
-            title="Learning"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <BatchRepLearningDashboard />,
+      },
+      {
+        path: "/student-learning",
+        element: <StudentLearningDashboard />,
       },
       {
         path: "/report-moderation",
