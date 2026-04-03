@@ -38,15 +38,28 @@ import EventsToday from "../pages/EventsToday";
 import NewAnnouncements from "../pages/NewAnnouncements";
 import Marketplace from "../pages/Marketplace";
 import Club from "../pages/Club";
+import ClubOwnerMarketplace from "../pages/ClubOwnerMarketplace";
 import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
+import BoardingOwnerMarketplace from "../pages/BoardingOwnerMarketplace";
+import CreateBoardingPostPage from "../pages/CreateBoardingPostPage";
 import LostAndFound from "../pages/LostAndFound";
 import FoodCafe from "../pages/FoodCafe";
 import Services from "../pages/Services";
 import ClubCheckout from "../pages/ClubCheckout";
 import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
 import MyOrders from "../pages/MyOrders";
-
+import OrderDetails from "../pages/OrderDetails";
+import CreateProductPage from "../pages/CreateProductPage";
+import CreateEventPage from "../pages/CreateEventPage";
+import CreateNormalPostPage from "../pages/CreateNormalPostPage";
+import ClubOwnerDashboard from "../pages/ClubOwnerDashboard";
+import ProductOrderDashboard from "../pages/ProductOrderDashboard";
+import ClubWalletPage from "../pages/ClubWalletPage";
+import FoodCafeOwnerMarketplace from "../pages/FoodCafeOwnerMarketplace";
+import CreateFoodCafePostPage from "../pages/CreateFoodCafePostPage";
+import ServicesOwnerMarketplace from "../pages/ServicesOwnerMarketplace";
+import CreateServicePostPage from "../pages/CreateServicePostPage";
 
 import NotFound from "../pages/NotFound";
 import MarketplaceReviews from "../pages/MarketplaceReviews";
@@ -219,6 +232,13 @@ const router = createBrowserRouter([
       },
       { path: "/marketplace", element: <Marketplace /> },
       { path: "/marketplace/club", element: <Club /> },
+      { path: "/club-owner/marketplace", element: <ClubOwnerMarketplace /> },
+      { path: "/club-owner/create-product", element: <CreateProductPage /> },
+      { path: "/club-owner/create-event", element: <CreateEventPage /> },
+      { path: "/club-owner/create-post", element: <CreateNormalPostPage /> },
+      { path: "/club-owner/dashboard", element: <ClubOwnerDashboard /> },
+      { path: "/club-owner/product-orders/:id", element: <ProductOrderDashboard /> },
+      { path: "/club-owner/wallet", element: <ClubWalletPage /> },
       { path: "/marketplace/club/product", element: <ClubProduct /> },
       { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
       { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
@@ -227,6 +247,12 @@ const router = createBrowserRouter([
       { path: "/club/followers", element: <FollowersDirectory /> },
       { path: "/student/followings", element: <Followings /> },
       { path: "/marketplace/boarding", element: <Boarding /> },
+      { path: "/boarding-owner/marketplace", element: <BoardingOwnerMarketplace /> },
+      { path: "/boarding-owner/create-post", element: <CreateBoardingPostPage /> },
+      { path: "/food-cafe-owner/marketplace", element: <FoodCafeOwnerMarketplace /> },
+      { path: "/food-cafe-owner/create-post", element: <CreateFoodCafePostPage /> },
+      { path: "/services-owner/marketplace", element: <ServicesOwnerMarketplace /> },
+      { path: "/services-owner/create-post", element: <CreateServicePostPage /> },
       { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
       { path: "/profile/reviews", element: <MyReviewHistory /> },
       { path: "/business/reviews", element: <ReceivedReviews /> },
@@ -282,6 +308,7 @@ const router = createBrowserRouter([
         ),
       },
       { path: '/order-history', element: <MyOrders /> },
+      { path: '/order-details/:id', element: <OrderDetails /> },
       {
         path: "/order-dashboard",
         element: (
