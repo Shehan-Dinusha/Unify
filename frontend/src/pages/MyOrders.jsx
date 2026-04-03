@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import { ChevronRight, Search } from "lucide-react";
 import { mockOrders } from "../data/mockOrdersData";
 
 const MyOrders = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("All");
     const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
 
@@ -31,13 +33,7 @@ const MyOrders = () => {
     };
 
     return (
-        <MainLayout user={user} pageTitle="My Orders" verificationCount={0} headerRight={
-            <div className="flex items-center gap-md">
-                <button className="p-sm rounded-xl bg-white/5 border border-white/10 text-text-secondary hover:text-text-primary transition-colors">
-                    <Search size={20} />
-                </button>
-            </div>
-        }>
+        <MainLayout user={user} pageTitle="My Orders" verificationCount={0} >
             <div className="max-w-[1000px] mx-auto pb-2xl">
                 {/* Tabs */}
                 <div className="flex justify-end mb-xl">
@@ -58,12 +54,13 @@ const MyOrders = () => {
                 </div>
 
                 {/* Orders Card */}
-                <Card variant="card" padding="p-0" className="border-white/5 bg-white/[0.02]">
+                <Card variant="card" padding="p-0" className="border-white/5">
                     <div className="divide-y divide-white/5">
                         {filteredOrders.length > 0 ? (
                             filteredOrders.map((order) => (
                                 <div
                                     key={order.id}
+                                    onClick={() => navigate(`/order-details/${order.id}`)}
                                     className="group flex items-center gap-lg p-lg hover:bg-white/[0.03] transition-colors cursor-pointer"
                                 >
                                     {/* Product Image */}

@@ -7,7 +7,10 @@ import { useNavigate } from "react-router-dom";
 /* ─── Single pushable action button ─────────────────────────── */
 const ActionBtn = ({ icon: Icon, svgSrc, label, count, showBoth, activeColor = "text-primary", onClick, active, fillActive = false }) => (
     <button
-        onClick={onClick}
+        onClick={(e) => {
+            e.stopPropagation();
+            if (onClick) onClick(e);
+        }}
         className={`
             flex flex-col items-center gap-[3px] px-3 py-2 rounded-xl
             transition-all duration-150 select-none
@@ -113,7 +116,7 @@ const CommentSection = ({ postComments, onAddComment }) => {
 };
 
 /* ─── Card component ─────────────────────────────────────────── */
-const ClubPostCard = ({ post }) => {
+const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick }) => {
     const navigate = useNavigate();
 
     const [boosted, setBoosted] = useState(false);
@@ -141,7 +144,12 @@ const ClubPostCard = ({ post }) => {
     };
 
     return (
-        <Card variant="card" padding="p-0" className="overflow-hidden">
+        <Card 
+            variant="card" 
+            padding="p-0" 
+            className={`overflow-hidden transition-all duration-200 ${onCardClick ? "cursor-pointer hover:border-white/15 hover:bg-white/[0.02]" : ""}`}
+            onClick={onCardClick}
+        >
             {/* Image */}
             <div className="relative w-full h-[360px] bg-white/5">
                 <img src={post.image} alt={post.clubName} className="w-full h-full object-cover" />
@@ -183,7 +191,10 @@ const ClubPostCard = ({ post }) => {
                     </p>
                     {post.text && post.text.length > 80 && (
                         <button
-                            onClick={() => setIsExpanded(!isExpanded)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsExpanded(!isExpanded);
+                            }}
                             className="text-white opacity-80 text-[13px] font-semibold mt-1 hover:underline"
                         >
                             {isExpanded ? "See less" : "See more"}
@@ -192,8 +203,10 @@ const ClubPostCard = ({ post }) => {
                 </div>
 
                 {/* ── Action bar ─────────────────────────────────────── */}
-                <div className="mt-lg pt-md border-t border-white/10 flex items-center justify-between">
-                    {/* Like */}
+                {!hideActions && (
+                    <>
+                        <div className="mt-lg pt-md border-t border-white/10 flex items-center justify-between">
+                            {/* Like */}
                     <ActionBtn
                         icon={Heart}
                         label="Like"
@@ -216,15 +229,16 @@ const ClubPostCard = ({ post }) => {
                         onClick={() => setCommentOpen(o => !o)}
                     />
 
-                    {/* Boost 
-                    <ActionBtn
-                        svgSrc="/icon_boost_controller.svg"
-                        label="Boost"
-                        activeColor="text-yellow-400"
-                        active={boosted}
-                        onClick={toggleBoost}
-                    />
-                    */}
+                    {/* Boost */}
+                    {isOwner && (
+                        <ActionBtn
+                            svgSrc="/icon_boost_controller.svg"
+                            label="Boost"
+                            activeColor="text-yellow-400"
+                            active={boosted}
+                            onClick={toggleBoost}
+                        />
+                    )}
                     {/* Save */}
                     <ActionBtn
                         svgSrc="/icon_save_marketplace.svg"
@@ -246,23 +260,29 @@ const ClubPostCard = ({ post }) => {
 
                 {/* ── Comment section (toggles open) ─────────────────── */}
                 {commentOpen && (
-                    <CommentSection
-                        postComments={postComments}
-                        onAddComment={handleAddComment}
-                    />
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <CommentSection
+                            postComments={postComments}
+                            onAddComment={handleAddComment}
+                        />
+                    </div>
+                )}
+                    </>
                 )}
 
                 {/* Buy now */}
-                <div className="mt-lg pt-md border-t border-white/10 flex items-end justify-end">
-                    <Button
-                        variant="primary"
-                        size="medium"
-                        className="min-w-[160px]"
-                        onClick={() => navigate("/marketplace/club/product")}
-                    >
-                        Buy now
-                    </Button>
-                </div>
+                {!isOwner && (
+                    <div className="mt-lg pt-md border-t border-white/10 flex items-end justify-end">
+                        <Button
+                            variant="primary"
+                            size="medium"
+                            className="min-w-[160px]"
+                            onClick={() => navigate("/marketplace/club/product")}
+                        >
+                            Buy now
+                        </Button>
+                    </div>
+                )}
             </div>
         </Card>
     );
