@@ -16,6 +16,7 @@ import {
   ClipboardList,
   LogOut,
 } from "lucide-react";
+import LogoutModal from "../profile/modals/LogoutModal";
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({
@@ -26,9 +27,16 @@ const SidebarItem = ({
   active = false,
   isDanger = false,
   path,
+  onClick,
+  disabled = false,
 }) => {
-  const baseStyles =
-    "w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 cursor-pointer group";
+  const navigate = useNavigate();
+
+  const baseStyles = `w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 ${
+    disabled
+      ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
+      : "cursor-pointer group"
+  }`;
 
   const activeStyles = active
     ? "bg-primary-blue shadow-custom text-text-primary"
@@ -36,16 +44,14 @@ const SidebarItem = ({
       ? "text-state-error hover:bg-state-error/10"
       : "text-text-secondary hover:bg-white/5 hover:text-text-primary";
 
-  const navigate = useNavigate();
+  const handleClick = () => {
+    if (disabled) return;
+    if (path) navigate(path);
+    if (onClick) onClick();
+  };
 
   return (
-    <div
-      className={`${baseStyles} ${activeStyles}`}
-      onClick={() => {
-        if (path) navigate(path);
-        if (onClick) onClick();
-      }}
-    >
+    <div className={`${baseStyles} ${activeStyles}`} onClick={handleClick}>
       <div className="flex items-center gap-md">
         {iconSrc ? (
           <img
@@ -78,8 +84,16 @@ const SidebarItem = ({
   );
 };
 
-const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
+const UnifiedSidebar = ({
+  user,
+  verificationCount,
+  isOpen,
+  onClose,
+  sidebarDisabled = false,
+}) => {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = React.useState(false);
 
   // Configuration Map for different user roles
   const roleConfigs = {
@@ -136,7 +150,7 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
     business: {
       title: "Business Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/news-feed" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed", childPaths: ["/business/boost-post"] },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
         { icon: ShoppingCart, label: "My Products", path: "/my-products" },
         { icon: ClipboardList, label: "Order History", path: "/order-history" },
@@ -178,6 +192,9 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
     },
   };
 
+  const isClub = user.role?.toLowerCase() === "club_society" || user.role?.toLowerCase() === "club";
+  const shouldDisableNav = sidebarDisabled && isClub;
+
   const currentConfig =
     roleConfigs[user.role.toLowerCase()] || roleConfigs.student;
 
@@ -198,7 +215,7 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
       {/* Sidebar Content */}
       <aside
         className={`w-72 h-screen bg-dark-1 border-r border-white/10 flex flex-col justify-between items-start 
-          fixed md:sticky top-0 left-0 z-50 transform transition-transform duration-300 ease-in-out
+          fixed md:sticky top-0 left-0 z-[60] transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
@@ -227,9 +244,11 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
               <SidebarItem
                 key={index}
                 {...link}
+                disabled={shouldDisableNav}
                 active={
                   pathname === link.path ||
-                  (link.childPaths && link.childPaths.some(cp => pathname.startsWith(cp)))
+                  (link.childPaths &&
+                    link.childPaths.some((cp) => pathname.startsWith(cp)))
                 }
               />
             ))}
@@ -240,9 +259,20 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
         <div className="w-full px-md pb-md flex flex-col gap-md">
           <div className="h-px bg-white/10 w-full" />
 
-          <SidebarItem iconSrc="/icon_log_out.svg" label="Log Out" isDanger />
+          <SidebarItem
+            iconSrc="/icon_log_out.svg"
+            label="Log Out"
+            isDanger
+            onClick={() => setShowLogoutModal(true)}
+          />
 
-          <div className="w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md hover:bg-white/10 transition-colors cursor-pointer group">
+          <div
+            className={`w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md transition-colors group ${
+              shouldDisableNav
+                ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
+                : "hover:bg-white/10 cursor-pointer"
+            }`}
+          >
             <img
               className="w-10 h-10 rounded-full object-cover border border-white/20 group-hover:border-primary-blue transition-colors"
               src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
@@ -259,6 +289,19 @@ const UnifiedSidebar = ({ user, verificationCount, isOpen, onClose }) => {
           </div>
         </div>
       </aside>
+
+      {/* Logout Modal */}
+      {showLogoutModal && (
+        <LogoutModal
+          onClose={() => setShowLogoutModal(false)}
+          onConfirm={() => {
+            setShowLogoutModal(false);
+            // Mock logout: clear tokens if any and redirect to login
+            console.log("Logging out...");
+            navigate("/login");
+          }}
+        />
+      )}
     </>
   );
 };
