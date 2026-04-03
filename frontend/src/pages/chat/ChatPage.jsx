@@ -193,11 +193,11 @@ const ChatPage = () => {
 
   return (
     <MainLayout user={user} pageTitle="Messages" noPadding>
-      <div className="flex h-full overflow-hidden relative">
+      <div className="flex h-full overflow-hidden relative border border-white/10 rounded-2xl md:rounded-3xl bg-dark-1/40 backdrop-blur-md shadow-custom">
 
         {/* ── Left Panel ── */}
         <div className={`
-          w-full md:w-[320px] flex-shrink-0 flex flex-col bg-dark-1/70 backdrop-blur-2xl border-r border-white/5 transition-all duration-300
+          w-full md:w-[320px] flex-shrink-0 flex flex-col bg-dark-1/70 backdrop-blur-2xl border-r border-white/10 transition-all duration-300
           ${activeChatId ? "hidden md:flex" : "flex"}
         `}>
 
