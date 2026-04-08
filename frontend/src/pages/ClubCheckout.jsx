@@ -31,22 +31,35 @@ const ClubCheckout = () => {
                             </div>
 
                             <div className="flex gap-md md:gap-xl items-start">
-                                <div className="w-24 h-24 md:w-32 md:h-32 aspect-square rounded-2xl overflow-hidden bg-white/5 border border-white/10 shrink-0">
+                                {/* Product image */}
+                                <div className="w-20 h-20 md:w-32 md:h-32 aspect-square rounded-2xl overflow-hidden bg-white/5 border border-white/10 shrink-0">
                                     <img
                                         src={product.images[0].src}
                                         alt={product.images[0].alt}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
+
+                                {/* Product info */}
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex justify-between items-start w-full gap-sm">
-                                        <div className="min-w-0">
-                                            <h3 className="text-body-medium-bold md:text-body-large-bold text-text-primary truncate">{product.title}</h3>
-                                            <p className="text-body-extra-small md:text-body-small text-text-tertiary mt-xs truncate">{product.clubName} {product.clubSubtitle}</p>
+                                    {/* Mobile: title + club stacked, price below. Desktop: title+club left, price right */}
+                                    <div className="md:flex md:justify-between md:items-start md:gap-sm">
+                                        <div>
+                                            {/* No truncate on mobile — let it wrap */}
+                                            <h3 className="text-body-medium-bold md:text-body-large-bold text-text-primary leading-snug md:truncate">
+                                                {product.title}
+                                            </h3>
+                                            <p className="text-body-extra-small md:text-body-small text-text-tertiary mt-xs md:truncate">
+                                                {product.clubName} · {product.clubSubtitle}
+                                            </p>
                                         </div>
-                                        <p className="text-body-medium-bold md:text-body-large-bold text-text-primary shrink-0">Rs.{subtotal.toFixed(2)}</p>
+                                        {/* Price: inline with title on md+, below on mobile */}
+                                        <p className="text-body-medium-bold md:text-body-large-bold text-text-primary shrink-0 mt-xs md:mt-0">
+                                            Rs.{subtotal.toFixed(2)}
+                                        </p>
                                     </div>
 
+                                    {/* Attribute pills */}
                                     <div className="mt-md md:mt-lg flex flex-wrap gap-xs md:gap-sm">
                                         <div className="px-sm md:px-md py-xs rounded-full bg-white/5 border border-white/10 flex items-center gap-xs">
                                             <span className="text-[10px] md:text-body-extra-small text-text-tertiary">Size:</span>
@@ -56,7 +69,9 @@ const ClubCheckout = () => {
                                             <span className="text-[10px] md:text-body-extra-small text-text-tertiary">Color:</span>
                                             <div className="flex items-center gap-xs">
                                                 <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full" style={{ backgroundColor: product.colors[0].swatch }} />
-                                                <span className="text-[10px] md:text-body-extra-small-bold text-text-primary">{product.colors[0].name.split(' ').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}</span>
+                                                <span className="text-[10px] md:text-body-extra-small-bold text-text-primary">
+                                                    {product.colors[0].name.split(' ').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className="px-sm md:px-md py-xs rounded-full bg-white/5 border border-white/10 flex items-center gap-xs">
@@ -80,7 +95,7 @@ const ClubCheckout = () => {
 
                     {/* RIGHT: Payment Details */}
                     <div className="space-y-md md:space-y-lg">
-                        <Card variant="card" className="border-white/5" padding="p-md md:p-xl">
+                        <Card variant="card" className="border-white/5" padding="p-md md:p-xl pb-24 md:pb-xl">
                             <h2 className="text-body-large-bold md:text-heading-small font-bold text-text-primary mb-lg md:mb-xl">Payment Details</h2>
 
                             <div className="space-y-sm md:space-y-md">
@@ -97,10 +112,20 @@ const ClubCheckout = () => {
                                 <span className="text-body-large-bold md:text-heading-small font-bold text-text-primary">Rs.{total.toFixed(2)}</span>
                             </div>
 
+                            <p className="mt-md md:mt-lg text-[10px] md:text-[11px] text-text-tertiary text-center leading-relaxed">
+                                By <span className="font-semibold">proceeding</span>, you agree to the <a href="#" className="underline">Terms of Service</a> and <a href="#" className="underline">Return Policy</a>.
+                            </p>
+
+                            <div className="mt-md md:mt-xl mb-md md:mb-0 p-sm md:p-md bg-white/[0.01] border border-white/5 rounded-xl flex items-center justify-center gap-md md:gap-lg">
+                                <img src="https://img.icons8.com/color/48/000000/paypal.png" alt="PayPal" className="h-4 md:h-5" />
+                                <img src="https://img.icons8.com/color/48/000000/mastercard.png" alt="Mastercard" className="h-4 md:h-5" />
+                                <img src="https://img.icons8.com/color/48/000000/apple-pay.png" alt="Apple Pay" className="h-4 md:h-5" />
+                            </div>
+
                             {/* Sticky Buy Button Container on Mobile */}
                             <div className="
-                                fixed bottom-0 left-0 right-0 z-50 p-md bg-dark-1/90 backdrop-blur-lg border-t border-white/10
-                                md:static md:z-auto md:p-0 md:bg-transparent md:backdrop-blur-none md:border-t-0
+                                fixed bottom-0 left-0 right-0 z-50 p-md bg-[#0D1A26]/90 backdrop-blur-lg border-t border-white/10
+                                md:static md:z-auto md:p-0 md:bg-transparent md:backdrop-blur-none md:border-t-0 md:mt-lg
                             ">
                                 <Button
                                     variant="primary"
@@ -111,16 +136,6 @@ const ClubCheckout = () => {
                                 >
                                     Proceed to Payment
                                 </Button>
-                            </div>
-
-                            <p className="mt-md md:mt-lg text-[10px] md:text-[11px] text-text-tertiary text-center leading-relaxed">
-                                By <span className="font-semibold">proceeding</span>, you agree to the <a href="#" className="underline">Terms of Service</a> and <a href="#" className="underline">Return Policy</a>.
-                            </p>
-
-                            <div className="mt-lg md:mt-xl p-sm md:p-md bg-white/[0.01] border border-white/5 rounded-xl flex items-center justify-center gap-md md:gap-lg">
-                                <img src="https://img.icons8.com/color/48/000000/paypal.png" alt="PayPal" className="h-4 md:h-5" />
-                                <img src="https://img.icons8.com/color/48/000000/mastercard.png" alt="Mastercard" className="h-4 md:h-5" />
-                                <img src="https://img.icons8.com/color/48/000000/apple-pay.png" alt="Apple Pay" className="h-4 md:h-5" />
                             </div>
                         </Card>
                     </div>

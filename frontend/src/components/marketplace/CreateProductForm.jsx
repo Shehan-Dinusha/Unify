@@ -23,6 +23,31 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
     });
 
     const [newColor, setNewColor] = useState({ hex: "#3B82F6", name: "" });
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = React.useRef(null);
+
+    const handleFiles = (files) => {
+        const newImages = Array.from(files)
+            .filter(file => file.type.startsWith('image/'))
+            .map(file => ({
+                id: Date.now() + Math.random(),
+                url: URL.createObjectURL(file),
+                file
+            }));
+        if (newImages.length > 0) {
+            setFormData(prev => ({
+                ...prev,
+                images: [...prev.images, ...newImages]
+            }));
+        }
+    };
+
+    const removeImage = (id) => {
+        setFormData(prev => ({
+            ...prev,
+            images: prev.images.filter(img => img.id !== id)
+        }));
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -69,7 +94,7 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                 {/* Left Column: Form Sections */}
                 <div className="flex flex-col gap-6 pb-8">
                     {/* Basic Information */}
-                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
+                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-2 bg-blue-500/20 text-blue-500 rounded-lg">
                                 <Edit3 className="w-5 h-5" />
@@ -114,7 +139,21 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                                     Product Images
                                 </label>
                                 <div className="grid grid-cols-3 gap-4">
-                                    <div className="aspect-square bg-white/5 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-white/10 transition-colors group">
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        className="hidden" 
+                                        multiple 
+                                        accept="image/*" 
+                                        onChange={(e) => handleFiles(e.target.files)} 
+                                    />
+                                    <div 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                                        onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFiles(e.dataTransfer.files); }}
+                                        className={`aspect-square bg-white/5 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors group ${isDragging ? 'border-primary-blue bg-primary-blue/10' : 'border-white/10 hover:bg-white/10'}`}
+                                    >
                                         <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-text-secondary group-hover:text-white transition-colors">
                                             <Upload className="w-5 h-5" />
                                         </div>
@@ -126,7 +165,7 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                                         <div key={img.id} className="relative aspect-square rounded-2xl overflow-hidden group">
                                             <img src={img.url} alt="Product" className="w-full h-full object-cover" />
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <button className="p-2 bg-red-500/20 text-red-500 rounded-lg backdrop-blur-md">
+                                                <button onClick={() => removeImage(img.id)} className="p-2 bg-red-500/20 text-red-500 rounded-lg backdrop-blur-md">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
@@ -135,7 +174,7 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                         Base Price ($)
@@ -172,7 +211,7 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                     </Card>
 
                     {/* Configuration */}
-                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
+                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-500/20 text-blue-500 rounded-lg">
@@ -267,7 +306,7 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                     </Card>
 
                     {/* Deadline & Note */}
-                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
+                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
@@ -299,7 +338,7 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                 </div>
 
                 {/* Right Column: Preview Sidebar */}
-                <div className="flex flex-col gap-6 sticky top-4 h-fit">
+                <div className="flex flex-col gap-6 xl:sticky xl:top-4 h-fit pb-24 xl:pb-0">
                     <div className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1 px-4">
                         Product Preview
                     </div>
@@ -377,7 +416,8 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                         </div>
                     </Card>
 
-                    <div className="flex gap-4 mt-4">
+                    {/* Action Buttons */}
+                    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[#0B1724]/95 backdrop-blur-md border-t border-white/10 xl:static xl:z-auto xl:p-0 xl:bg-transparent xl:backdrop-blur-none xl:border-t-0 flex gap-4 mt-4 xl:mt-0">
                         <button
                             onClick={onCancel}
                             className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/10"

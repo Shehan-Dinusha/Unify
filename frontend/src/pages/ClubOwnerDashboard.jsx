@@ -3,6 +3,7 @@ import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import ClubPostCard from "../components/club/ClubPostCard";
 import { mockClubFeed } from "../data/mockClubData";
+import { BarChart, DonutChart, ProgressBar } from "../components/chart";
 
 import {
     dashboardStats,
@@ -70,9 +71,9 @@ const ClubOwnerDashboard = () => {
     const headerRight = (
         <button
             onClick={() => navigate("/club-owner/wallet")}
-            className="flex items-center gap-2 bg-primary-blue hover:bg-primary-blue/90 text-white px-5 py-2 rounded-full font-bold text-sm transition-all shadow-[0_0_15px_rgba(43,140,238,0.4)]"
+            className="flex items-center gap-2 bg-primary-blue hover:bg-primary-blue/90 text-white px-3 sm:px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all shadow-[0_0_15px_rgba(43,140,238,0.4)] shrink-0 whitespace-nowrap"
         >
-            <Wallet className="w-4 h-4" />
+            <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             Wallet
         </button>
     );
@@ -124,7 +125,7 @@ const ClubOwnerDashboard = () => {
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-5">
                     {/* Order Trends Bar Chart */}
                     <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center justify-between mb-4">
                             <h3 className="font-bold text-base">Order Trends</h3>
                             <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
                                 {["Month", "Year"].map((f) => (
@@ -138,53 +139,34 @@ const ClubOwnerDashboard = () => {
                                 ))}
                             </div>
                         </div>
-                        {/* Bar chart — Month view: 30 days, Year view: 12 months */}
                         {(() => {
                             const bars = chartData[chartFilter];
                             const isMonth = chartFilter === "Month";
-                            const gap = isMonth ? "1px" : "6px";
-                            // Show label only every 5th day in Month view (5,10,15...30)
-                            const showLabel = (i) =>
-                                isMonth ? (i + 1) % 5 === 0 : true;
+                            const values = bars.map((b) => b.h);
+                            const labels = isMonth
+                                ? bars.map((b, i) => (i + 1) % 5 === 0 ? b.label : "")
+                                : bars.map((b) => b.label);
+                            const maxVal = 100;
+                            // Highlight today's bar: day-of-month (0-indexed) for Month,
+                            // current month index for Year
+                            const today = new Date();
+                            const todayIdx = isMonth
+                                ? Math.min(today.getDate() - 1, bars.length - 1)
+                                : today.getMonth();
+                            const yLabels = ["100", "75", "50", "25", "0"];
+                            const yVals = [100, 75, 50, 25, 0];
                             return (
-                                <div
-                                    className="flex items-end pt-2 pb-6"
-                                    style={{ height: "144px", gap }}
-                                >
-                                    {bars.map((b, i) => {
-                                        const barPx = Math.round((b.h / 100) * 112);
-                                        const isLast = i === bars.length - 1;
-                                        return (
-                                            <div
-                                                key={b.label}
-                                                className="flex-1 flex flex-col items-center justify-end"
-                                                style={{ height: "100%" }}
-                                            >
-                                                <div
-                                                    className={`w-full relative rounded-t-sm transition-all duration-300 ${
-                                                        isLast
-                                                            ? "bg-primary-blue shadow-[0_0_10px_rgba(43,140,238,0.6)]"
-                                                            : "bg-primary-blue/30 hover:bg-primary-blue/55"
-                                                    }`}
-                                                    style={{ height: `${barPx}px` }}
-                                                >
-                                                    {showLabel(i) && (
-                                                        <span
-                                                            className="absolute top-full left-1/2 -translate-x-1/2 text-text-secondary mt-1.5 whitespace-nowrap"
-                                                            style={{ fontSize: isMonth ? "8px" : "10px" }}
-                                                        >
-                                                            {b.label}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                <BarChart
+                                    data={values}
+                                    labels={labels}
+                                    maxVal={maxVal}
+                                    peakIdx={todayIdx}
+                                    yLabels={yLabels}
+                                    yVals={yVals}
+                                    statLabel="Orders"
+                                />
                             );
                         })()}
-
-
                     </Card>
 
                     {/* Top Products */}
@@ -218,46 +200,35 @@ const ClubOwnerDashboard = () => {
                             <h3 className="font-bold text-base">Revenue Breakdown</h3>
                             <span className="text-text-secondary text-xs">Last 30 Days</span>
                         </div>
-                        <div className="flex items-center gap-6">
-                            {/* Donut */}
-                            <div className="relative w-20 h-20 shrink-0">
-                                <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                                    <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#1e3a52" strokeWidth="4" />
-                                    {(() => {
-                                        let offset = 0;
-                                        return revenueBreakdown.map((seg) => {
-                                            const dash = (seg.pct / 100) * 100;
-                                            const el = (
-                                                <circle
-                                                    key={seg.label}
-                                                    cx="18" cy="18" r="15.9155"
-                                                    fill="none"
-                                                    stroke={seg.color}
-                                                    strokeWidth="4"
-                                                    strokeDasharray={`${dash} ${100 - dash}`}
-                                                    strokeDashoffset={-offset}
-                                                />
-                                            );
-                                            offset += dash;
-                                            return el;
-                                        });
-                                    })()}
-                                </svg>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-sm font-bold">9.1k</span>
-                                    <span className="text-[9px] text-text-secondary">TOTAL</span>
-                                </div>
-                            </div>
-                            {/* Legend */}
-                            <div className="flex flex-col gap-2 flex-1 min-w-0">
-                                {revenueBreakdown.map((s) => (
-                                    <div key={s.label} className="flex items-center gap-2">
-                                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-                                        <span className="text-xs text-text-secondary truncate">{s.label}</span>
-                                        <span className="text-xs font-bold ml-auto">{s.pct}%</span>
+                        {/* Donut centered */}
+                        <div className="flex justify-center mb-5">
+                            <DonutChart
+                                segments={revenueBreakdown.map((s) => ({ value: s.pct, color: s.color }))}
+                                size={120}
+                                strokeWidth={16}
+                                centerLabel="9.1k"
+                                centerSubLabel="TOTAL"
+                            />
+                        </div>
+                        {/* Full-width legend — no truncation */}
+                        <div className="flex flex-col gap-3">
+                            {revenueBreakdown.map((s) => (
+                                <div key={s.label}>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
+                                            <span className="text-xs text-text-secondary">{s.label}</span>
+                                        </div>
+                                        <span className="text-xs font-bold">{s.pct}%</span>
                                     </div>
-                                ))}
-                            </div>
+                                    <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full transition-all duration-500"
+                                            style={{ width: `${s.pct}%`, backgroundColor: s.color }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </Card>
 
@@ -273,20 +244,29 @@ const ClubOwnerDashboard = () => {
                             <span className="text-text-secondary text-xs">Top Faculties</span>
                         </div>
                         <div className="flex flex-col gap-4">
-                            {buyerDemographics.map((d) => (
-                                <div key={d.label} className="flex flex-col gap-1.5">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-text-secondary text-xs">{d.label}</span>
-                                        <span className="font-bold text-xs">{d.pct}%</span>
-                                    </div>
-                                    <div className="h-2 bg-white/8 rounded-full overflow-hidden">
-                                        <div
-                                            className={`h-full rounded-full ${d.color} transition-all`}
-                                            style={{ width: `${d.pct}%` }}
+                            {buyerDemographics.map((d) => {
+                                // Map Tailwind color classes to hex for the ProgressBar component
+                                const colorMap = {
+                                    "bg-primary-blue": "#2B8CEE",
+                                    "bg-blue-400": "#60A5FA",
+                                    "bg-orange-400": "#FB923C",
+                                    "bg-yellow-400": "#FACC15",
+                                };
+                                return (
+                                    <div key={d.label} className="flex flex-col gap-1.5">
+                                        <div className="flex justify-between">
+                                            <span className="text-text-secondary text-xs">{d.label}</span>
+                                            <span className="font-bold text-xs">{d.pct}%</span>
+                                        </div>
+                                        <ProgressBar
+                                            value={d.pct}
+                                            max={100}
+                                            color={colorMap[d.color] ?? "#2B8CEE"}
+                                            className="h-2"
                                         />
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </Card>
                 </div>

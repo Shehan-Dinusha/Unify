@@ -11,20 +11,24 @@ export const dashboardStats = {
     completedOrders: 1242,
 };
 
-// ── Chart data keyed by filter (Month = daily for 30 days, Year = full year) ──
+// ── Chart data keyed by filter ────────────────────────────────────────────────
+// Month view: one bar per day for the ACTUAL number of days in the current month
+// (handles 28 / 29 / 30 / 31 automatically every month)
+const _now = new Date();
+const _daysInMonth = new Date(_now.getFullYear(), _now.getMonth() + 1, 0).getDate();
+
+// Deterministic wave pattern so values look realistic (not random on every render)
+const _baseHeights = [
+    28, 35, 22, 40, 55, 30, 20, 45, 60, 38,
+    50, 42, 25, 18, 52, 63, 47, 55, 70, 35,
+    22, 68, 74, 58, 62, 45, 30, 78, 85, 80, 72, 65,
+]; // 32 values covers up to 31 days
+
 export const chartData = {
-    Month: [
-        { label: "1",  h: 28 }, { label: "2",  h: 35 }, { label: "3",  h: 22 },
-        { label: "4",  h: 40 }, { label: "5",  h: 55 }, { label: "6",  h: 30 },
-        { label: "7",  h: 20 }, { label: "8",  h: 45 }, { label: "9",  h: 60 },
-        { label: "10", h: 38 }, { label: "11", h: 50 }, { label: "12", h: 42 },
-        { label: "13", h: 25 }, { label: "14", h: 18 }, { label: "15", h: 52 },
-        { label: "16", h: 63 }, { label: "17", h: 47 }, { label: "18", h: 55 },
-        { label: "19", h: 70 }, { label: "20", h: 35 }, { label: "21", h: 22 },
-        { label: "22", h: 68 }, { label: "23", h: 74 }, { label: "24", h: 58 },
-        { label: "25", h: 62 }, { label: "26", h: 45 }, { label: "27", h: 30 },
-        { label: "28", h: 78 }, { label: "29", h: 85 }, { label: "30", h: 80 },
-    ],
+    Month: Array.from({ length: _daysInMonth }, (_, i) => ({
+        label: String(i + 1),
+        h: _baseHeights[i] ?? Math.round(30 + ((i * 7) % 55)),
+    })),
     Year: [
         { label: "Jan", h: 30 }, { label: "Feb", h: 42 }, { label: "Mar", h: 38 },
         { label: "Apr", h: 55 }, { label: "May", h: 48 }, { label: "Jun", h: 62 },

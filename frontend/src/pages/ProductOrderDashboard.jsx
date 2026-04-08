@@ -297,37 +297,39 @@ const ProductOrderDashboard = () => {
                     <div className="flex-1" />
 
                     {/* Bulk Status */}
-                    <div className="flex items-center gap-2 bg-[#1A2F45]/80 border border-white/8 rounded-xl px-4 py-2 text-sm">
-                        <span className="text-text-secondary text-xs font-medium">Bulk Status:</span>
-
-                        {/* From */}
-                        <div className="relative group">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-[#1A2F45]/80 border border-white/8 rounded-xl px-3 sm:px-4 py-3 sm:py-2 text-sm w-full xl:w-auto">
+                        
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <span className="text-text-secondary text-[11px] font-medium shrink-0">Bulk Status:</span>
+                            {/* From */}
                             <select
                                 value={bulkFrom}
                                 onChange={(e) => setBulkFrom(e.target.value)}
-                                className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white text-xs font-medium appearance-none cursor-pointer focus:outline-none"
+                                className="flex-1 sm:flex-none bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-medium appearance-none cursor-pointer focus:outline-none min-w-0"
                             >
                                 {ALL_STATUSES.map((s) => <option key={s} value={s} className="bg-[#0D1A26]">{s}</option>)}
                             </select>
                         </div>
 
-                        <span className="text-text-secondary text-xs">To:</span>
+                        <div className="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                            <span className="text-text-secondary text-[11px] shrink-0">To:</span>
+                            {/* To */}
+                            <select
+                                value={bulkTo}
+                                onChange={(e) => setBulkTo(e.target.value)}
+                                className="flex-1 sm:flex-none bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-medium appearance-none cursor-pointer focus:outline-none min-w-0"
+                            >
+                                {ALL_STATUSES.map((s) => <option key={s} value={s} className="bg-[#0D1A26]">{s}</option>)}
+                            </select>
 
-                        {/* To */}
-                        <select
-                            value={bulkTo}
-                            onChange={(e) => setBulkTo(e.target.value)}
-                            className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white text-xs font-medium appearance-none cursor-pointer focus:outline-none"
-                        >
-                            {ALL_STATUSES.map((s) => <option key={s} value={s} className="bg-[#0D1A26]">{s}</option>)}
-                        </select>
-
-                        <button
-                            onClick={applyBulk}
-                            className="bg-white text-dark-1 hover:bg-white/90 px-4 py-1.5 rounded-lg text-xs font-bold transition-all"
-                        >
-                            Apply to All
-                        </button>
+                            <button
+                                onClick={applyBulk}
+                                className="bg-white text-dark-1 hover:bg-white/90 px-3 sm:px-4 py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all shrink-0"
+                            >
+                                <span className="sm:hidden">Apply</span>
+                                <span className="hidden sm:inline">Apply to All</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

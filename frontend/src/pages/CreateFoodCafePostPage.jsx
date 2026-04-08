@@ -16,11 +16,31 @@ const CreateFoodCafePostPage = () => {
     };
 
     const [description, setDescription] = useState("");
-    const [location, setLocation] = useState("");
     const [tagInput, setTagInput] = useState("");
     const [tags, setTags] = useState(["Free Wi-Fi", "Espresso"]);
     const [hours, setHours] = useState("");
     const [phone, setPhone] = useState("");
+
+    const [images, setImages] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = React.useRef(null);
+
+    const handleFiles = (files) => {
+        const newImages = Array.from(files)
+            .filter(file => file.type.startsWith('image/'))
+            .map(file => ({
+                id: Date.now() + Math.random(),
+                url: URL.createObjectURL(file),
+                file
+            }));
+        if (newImages.length > 0) {
+            setImages(prev => [...prev, ...newImages]);
+        }
+    };
+
+    const removeImage = (id) => {
+        setImages(prev => prev.filter(img => img.id !== id));
+    };
 
     const handleAddTag = () => {
         if (tagInput.trim() && !tags.includes(tagInput.trim())) {
@@ -35,7 +55,7 @@ const CreateFoodCafePostPage = () => {
 
     const handleCancel = () => navigate("/food-cafe-owner/marketplace");
     const handlePublish = () => {
-        console.log("Submitting food & cafe post:", { description, location, tags, hours, phone });
+        console.log("Submitting food & cafe post:", { description, tags, hours, phone });
         navigate("/food-cafe-owner/marketplace");
     };
 
@@ -63,16 +83,42 @@ const CreateFoodCafePostPage = () => {
                                         <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                             Photos
                                         </label>
-                                        <div className="border-2 border-dashed border-white/10 rounded-2xl p-10 flex flex-col items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
-                                            <div className="w-12 h-12 rounded-xl bg-primary-blue/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
-                                                <ImagePlus className="text-primary-blue w-6 h-6" />
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef} 
+                                                className="hidden" 
+                                                multiple 
+                                                accept="image/*" 
+                                                onChange={(e) => handleFiles(e.target.files)} 
+                                            />
+                                            <div 
+                                                onClick={() => fileInputRef.current?.click()}
+                                                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                                onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                                                onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFiles(e.dataTransfer.files); }}
+                                                className={`aspect-[4/3] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-4 transition-colors cursor-pointer group ${isDragging ? 'border-primary-blue bg-primary-blue/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
+                                            >
+                                                <div className="w-10 h-10 rounded-xl bg-primary-blue/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                                                    <ImagePlus className="text-primary-blue w-5 h-5" />
+                                                </div>
+                                                <p className="text-white text-[11px] font-medium mb-1 text-center">
+                                                    Drag & drop or click
+                                                </p>
+                                                <p className="text-text-secondary text-[9px] text-center uppercase tracking-wider">
+                                                    Max. 10MB
+                                                </p>
                                             </div>
-                                            <p className="text-white text-sm font-bold mb-1 text-center">
-                                                Click to upload photos
-                                            </p>
-                                            <p className="text-text-secondary text-[11px] text-center uppercase tracking-wider">
-                                                SVG, PNG, JPG or GIF (max. 10MB)
-                                            </p>
+                                            {images.map((img) => (
+                                                <div key={img.id} className="relative aspect-[4/3] rounded-2xl overflow-hidden group border border-white/10">
+                                                    <img src={img.url} alt="Uploaded" className="w-full h-full object-cover" />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                                        <button onClick={() => removeImage(img.id)} className="text-red-400 font-bold text-[10px] bg-red-400/20 px-2.5 py-1.5 rounded-lg border border-red-400/30 hover:bg-red-400/30 transition-colors">
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
 
@@ -87,24 +133,6 @@ const CreateFoodCafePostPage = () => {
                                             rows={4}
                                             className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors resize-none placeholder:text-text-secondary"
                                         />
-                                    </div>
-
-                                    <div>
-                                        <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                            Location <span className="text-red-500">*</span>
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
-                                                <MapPin className="w-4 h-4" />
-                                            </div>
-                                            <input
-                                                type="text"
-                                                value={location}
-                                                onChange={(e) => setLocation(e.target.value)}
-                                                placeholder="Full address or nearby landmark"
-                                                className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors placeholder:text-text-secondary"
-                                            />
-                                        </div>
                                     </div>
                                 </div>
                             </Card>
@@ -200,12 +228,26 @@ const CreateFoodCafePostPage = () => {
                             </div>
 
                             <Card variant="card" className="bg-[#0B1724]/60 border-white/10 !p-0 overflow-hidden shadow-2xl">
-                                <div className="aspect-[4/3] bg-white/5 relative group">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&q=80&w=800"
-                                        alt="Preview"
-                                        className="w-full h-full object-cover"
-                                    />
+                                <div className="aspect-[4/3] bg-white/5 relative group bg-dark-1/50 flex items-center justify-center">
+                                    {images.length > 0 ? (
+                                        <>
+                                            <img
+                                                src={images[0].url}
+                                                alt="Preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            {images.length > 1 && (
+                                                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-white border border-white/10 shadow-lg">
+                                                    +{images.length - 1} more
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center text-white/20">
+                                            <ImagePlus className="w-10 h-10 mb-2" />
+                                            <span className="text-[11px] font-bold uppercase tracking-wider">No photos added</span>
+                                        </div>
+                                    )}
                                     {hours && (
                                         <div className="absolute bottom-4 left-4 bg-dark-1/70 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 z-10">
                                             <span className="text-[13px] font-bold text-white">{hours}</span>
@@ -226,13 +268,6 @@ const CreateFoodCafePostPage = () => {
                                                 <p className="text-[11px] text-text-tertiary">Just now</p>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-1 mb-3">
-                                        <MapPin size={13} className="text-text-tertiary flex-shrink-0" />
-                                        <span className="text-[13px] text-text-tertiary line-clamp-1">
-                                            {location || "Your location will appear here"}
-                                        </span>
                                     </div>
 
                                     <p className="text-[14px] text-text-secondary leading-6 mb-4 line-clamp-2 min-h-[48px]">
