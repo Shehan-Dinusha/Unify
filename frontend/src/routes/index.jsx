@@ -41,8 +41,11 @@ import EventsToday from "../pages/EventsToday";
 import NewAnnouncements from "../pages/NewAnnouncements";
 import Marketplace from "../pages/Marketplace";
 import Club from "../pages/Club";
+import ClubOwnerMarketplace from "../pages/ClubOwnerMarketplace";
 import ClubProduct from "../pages/ClubProduct";
 import Boarding from "../pages/Boarding";
+import BoardingOwnerMarketplace from "../pages/BoardingOwnerMarketplace";
+import CreateBoardingPostPage from "../pages/CreateBoardingPostPage";
 import LostAndFound from "../pages/LostAndFound";
 import MyLostAndFound from "../pages/MyLostAndFound";
 import FoodCafe from "../pages/FoodCafe";
@@ -50,6 +53,18 @@ import Services from "../pages/Services";
 import ClubCheckout from "../pages/ClubCheckout";
 import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
 import MyOrders from "../pages/MyOrders";
+import OrderDetails from "../pages/OrderDetails";
+import CreateProductPage from "../pages/CreateProductPage";
+import CreateEventPage from "../pages/CreateEventPage";
+import CreateNormalPostPage from "../pages/CreateNormalPostPage";
+import ClubOwnerDashboard from "../pages/ClubOwnerDashboard";
+import ProductOrderDashboard from "../pages/ProductOrderDashboard";
+import ClubWalletPage from "../pages/ClubWalletPage";
+import FoodCafeOwnerMarketplace from "../pages/FoodCafeOwnerMarketplace";
+import CreateFoodCafePostPage from "../pages/CreateFoodCafePostPage";
+import ServicesOwnerMarketplace from "../pages/ServicesOwnerMarketplace";
+import CreateServicePostPage from "../pages/CreateServicePostPage";
+import ChatPage from "../pages/chat/ChatPage";
 import MySavedPosts from "../pages/MySavedPosts";
 import Notification from "../pages/Notification";
 
@@ -64,6 +79,8 @@ import MyReviewHistory from "../pages/MyReviewHistory";
 import ReceivedReviews from "../pages/ReceivedReviews";
 import FollowersDirectory from "../pages/FollowersDirectory";
 import Followings from "../pages/Followings";
+import BatchRepLearningDashboard from "../pages/BatchRepLearningDashboard";
+import StudentLearningDashboard from "../pages/StudentLearningDashboard";
 import OwnProfilePage from "../pages/profile/OwnProfilePage";
 import PublicProfilePage from "../pages/profile/PublicProfilePage";
 import EditProfilePage from "../pages/profile/EditProfilePage";
@@ -251,12 +268,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/messages",
-        element: (
-          <PlaceholderPage
-            title="Messages"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <ChatPage />,
       },
       {
         path: "/lost-and-found",
@@ -264,6 +276,13 @@ const router = createBrowserRouter([
       },
       { path: "/marketplace", element: <Marketplace /> },
       { path: "/marketplace/club", element: <Club /> },
+      { path: "/club-owner/marketplace", element: <ClubOwnerMarketplace /> },
+      { path: "/club-owner/create-product", element: <CreateProductPage /> },
+      { path: "/club-owner/create-event", element: <CreateEventPage /> },
+      { path: "/club-owner/create-post", element: <CreateNormalPostPage /> },
+      { path: "/club-owner/dashboard", element: <ClubOwnerDashboard /> },
+      { path: "/club-owner/product-orders/:id", element: <ProductOrderDashboard /> },
+      { path: "/club-owner/wallet", element: <ClubWalletPage /> },
       { path: "/marketplace/club/product", element: <ClubProduct /> },
       { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
       {
@@ -275,6 +294,12 @@ const router = createBrowserRouter([
       { path: "/club/followers", element: <FollowersDirectory /> },
       { path: "/student/followings", element: <Followings /> },
       { path: "/marketplace/boarding", element: <Boarding /> },
+      { path: "/boarding-owner/marketplace", element: <BoardingOwnerMarketplace /> },
+      { path: "/boarding-owner/create-post", element: <CreateBoardingPostPage /> },
+      { path: "/food-cafe-owner/marketplace", element: <FoodCafeOwnerMarketplace /> },
+      { path: "/food-cafe-owner/create-post", element: <CreateFoodCafePostPage /> },
+      { path: "/services-owner/marketplace", element: <ServicesOwnerMarketplace /> },
+      { path: "/services-owner/create-post", element: <CreateServicePostPage /> },
       { path: "/my-lost-and-found", element: <MyLostAndFound /> },
       { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
       { path: "/profile/reviews", element: <MyReviewHistory /> },
@@ -285,12 +310,11 @@ const router = createBrowserRouter([
       { path: "/profile/:userId", element: <PublicProfilePage /> },
       {
         path: "/learning",
-        element: (
-          <PlaceholderPage
-            title="Learning"
-            verificationCount={mockRequests.length}
-          />
-        ),
+        element: <BatchRepLearningDashboard />,
+      },
+      {
+        path: "/student-learning",
+        element: <StudentLearningDashboard />,
       },
       {
         path: "/report-moderation",
@@ -339,6 +363,7 @@ const router = createBrowserRouter([
       { path: "/profile/security", element: <SecurityPage /> },
       { path: "/profile/:userId", element: <PublicProfilePage /> },
       { path: '/order-history', element: <MyOrders /> },
+      { path: '/order-details/:id', element: <OrderDetails /> },
       { path: '/my-saved-posts', element: <MySavedPosts /> },
       { path: '/student/report-issue', element: <StudentReportIssue /> },
       { path: '/student/report-success', element: <StudentReportSuccess /> },

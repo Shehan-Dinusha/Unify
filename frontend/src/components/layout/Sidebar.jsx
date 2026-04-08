@@ -165,8 +165,29 @@ const UnifiedSidebar = ({
         {
           icon: LayoutDashboard,
           label: "Order Dashboard",
-          path: "/order-dashboard",
+          path: "/club-owner/dashboard",
         },
+      ],
+    },
+    boarding_owner: {
+      title: "Boarding Dashboard",
+      links: [
+        { icon: Rss, label: "News Feed", path: "/boarding-owner/marketplace" },
+        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+      ],
+    },
+    food_cafe_owner: {
+      title: "Food & Cafe Dashboard",
+      links: [
+        { icon: Rss, label: "News Feed", path: "/food-cafe-owner/marketplace" },
+        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+      ],
+    },
+    services_owner: {
+      title: "Services Dashboard",
+      links: [
+        { icon: Rss, label: "News Feed", path: "/services-owner/marketplace" },
+        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
       ],
     },
   };

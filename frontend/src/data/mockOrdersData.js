@@ -1,3 +1,5 @@
+// mockOrdersData.js — buyer-side order records (used on the My Orders page)
+
 export const mockOrders = [
     {
         id: "ord1",
@@ -7,7 +9,24 @@ export const mockOrders = [
         orderDate: "Oct 24, 2024",
         status: "COMPLETED",
         price: "Rs.50.00",
-        image: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=200&q=80"
+        image: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=400&q=80",
+        size: "Standard",
+        color: "Hardcover",
+        colorHex: "#3F3F46",
+        qty: 1,
+        subtotal: "Rs.50.00",
+        platformFee: "Rs.1.50",
+        taxes: "Rs.4.00",
+        total: "Rs.55.50",
+        paymentMethod: "**** 1234",
+        pickupLocation: "Main Library Reception",
+        pickupRoom: "Level 1, Main Desk",
+        timeline: [
+            { title: "Order Placed", date: "Oct 24, 2024 at 09:00 AM", status: "completed", icon: "CheckCircle" },
+            { title: "Seller Confirmed", date: "Oct 24, 2024 at 10:30 AM", status: "completed", icon: "CheckCircle" },
+            { title: "Ready for Pickup", date: "Oct 25, 2024 at 02:00 PM", status: "completed", icon: "CheckCircle" },
+            { title: "Order Completed", date: "Oct 26, 2024 at 11:00 AM", status: "completed", icon: "CheckCircle" }
+        ]
     },
     {
         id: "ord2",
@@ -17,7 +36,24 @@ export const mockOrders = [
         orderDate: "Oct 26, 2024",
         status: "IN PROGRESS",
         price: "Rs.35.00",
-        image: "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=200&q=80"
+        image: "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&w=400&q=80",
+        size: "M",
+        color: "Midnight Black",
+        colorHex: "#000000",
+        qty: 1,
+        subtotal: "Rs.35.00",
+        platformFee: "Rs.1.50",
+        taxes: "Rs.2.80",
+        total: "Rs.39.30",
+        paymentMethod: "**** 4242",
+        pickupLocation: "CS Lab (Building 4, Room 202)",
+        pickupRoom: "Building 4, Room 202",
+        timeline: [
+            { title: "Order Placed", date: "Oct 26, 2024 at 10:30 AM", status: "completed", icon: "CheckCircle" },
+            { title: "Seller Confirmed", date: "Oct 26, 2024 at 11:15 AM", status: "completed", icon: "CheckCircle" },
+            { title: "Ready for Pickup", date: "Expected by Oct 28, 2024", status: "current", icon: "Clock" },
+            { title: "Order Completed", date: "", status: "upcoming", icon: "Circle" }
+        ]
     },
     {
         id: "ord3",
@@ -27,7 +63,24 @@ export const mockOrders = [
         orderDate: "Oct 20, 2024",
         status: "PENDING",
         price: "Rs.25.00",
-        image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=200&q=80"
+        image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80",
+        size: "1 Hour",
+        color: "Online",
+        colorHex: "#2B8CEE",
+        qty: 1,
+        subtotal: "Rs.25.00",
+        platformFee: "Rs.1.00",
+        taxes: "Rs.2.00",
+        total: "Rs.28.00",
+        paymentMethod: "**** 9999",
+        pickupLocation: "Zoom (Link will be sent)",
+        pickupRoom: "Online Meeting Room",
+        timeline: [
+            { title: "Order Placed", date: "Oct 20, 2024 at 02:00 PM", status: "completed", icon: "CheckCircle" },
+            { title: "Seller Confirmed", date: "Pending Confirmation", status: "current", icon: "Clock" },
+            { title: "Meeting Scheduled", date: "", status: "upcoming", icon: "Circle" },
+            { title: "Session Completed", date: "", status: "upcoming", icon: "Circle" }
+        ]
     },
     {
         id: "ord4",
@@ -37,6 +90,23 @@ export const mockOrders = [
         orderDate: "Oct 15, 2024",
         status: "COMPLETED",
         price: "Rs.120.00",
-        image: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=200&q=80"
+        image: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=400&q=80",
+        size: "L (Adult)",
+        color: "Classic Red",
+        colorHex: "#EF4444",
+        qty: 1,
+        subtotal: "Rs.120.00",
+        platformFee: "Rs.5.00",
+        taxes: "Rs.9.60",
+        total: "Rs.134.60",
+        paymentMethod: "**** 5555",
+        pickupLocation: "University Gym Parking",
+        pickupRoom: "Cycle Stand A",
+        timeline: [
+            { title: "Order Placed", date: "Oct 15, 2024 at 08:30 AM", status: "completed", icon: "CheckCircle" },
+            { title: "Seller Confirmed", date: "Oct 15, 2024 at 09:45 AM", status: "completed", icon: "CheckCircle" },
+            { title: "Ready for Pickup", date: "Oct 15, 2024 at 12:00 PM", status: "completed", icon: "CheckCircle" },
+            { title: "Order Completed", date: "Oct 15, 2024 at 01:30 PM", status: "completed", icon: "CheckCircle" }
+        ]
     }
 ];
