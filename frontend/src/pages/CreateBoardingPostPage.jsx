@@ -24,6 +24,27 @@ const CreateBoardingPostPage = () => {
     const [phone, setPhone] = useState("");
     const [slots, setSlots] = useState("");
 
+    const [images, setImages] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = React.useRef(null);
+
+    const handleFiles = (files) => {
+        const newImages = Array.from(files)
+            .filter(file => file.type.startsWith('image/'))
+            .map(file => ({
+                id: Date.now() + Math.random(),
+                url: URL.createObjectURL(file),
+                file
+            }));
+        if (newImages.length > 0) {
+            setImages(prev => [...prev, ...newImages]);
+        }
+    };
+
+    const removeImage = (id) => {
+        setImages(prev => prev.filter(img => img.id !== id));
+    };
+
     const handleAddAmenity = () => {
         if (amenityInput.trim() && !amenities.includes(amenityInput.trim())) {
             setAmenities([...amenities, amenityInput.trim()]);
@@ -72,16 +93,42 @@ const CreateBoardingPostPage = () => {
                                         <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                             Photos
                                         </label>
-                                        <div className="border-2 border-dashed border-white/10 rounded-2xl p-10 flex flex-col items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
-                                            <div className="w-12 h-12 rounded-xl bg-primary-blue/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
-                                                <ImagePlus className="text-primary-blue w-6 h-6" />
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef} 
+                                                className="hidden" 
+                                                multiple 
+                                                accept="image/*" 
+                                                onChange={(e) => handleFiles(e.target.files)} 
+                                            />
+                                            <div 
+                                                onClick={() => fileInputRef.current?.click()}
+                                                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                                onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                                                onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFiles(e.dataTransfer.files); }}
+                                                className={`aspect-[4/3] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-4 transition-colors cursor-pointer group ${isDragging ? 'border-primary-blue bg-primary-blue/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
+                                            >
+                                                <div className="w-10 h-10 rounded-xl bg-primary-blue/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                                                    <ImagePlus className="text-primary-blue w-5 h-5" />
+                                                </div>
+                                                <p className="text-white text-[11px] font-medium mb-1 text-center">
+                                                    Drag & drop or click
+                                                </p>
+                                                <p className="text-text-secondary text-[9px] text-center uppercase tracking-wider">
+                                                    Max. 10MB
+                                                </p>
                                             </div>
-                                            <p className="text-white text-sm font-bold mb-1 text-center">
-                                                Click to upload photos
-                                            </p>
-                                            <p className="text-text-secondary text-[11px] text-center uppercase tracking-wider">
-                                                SVG, PNG, JPG or GIF (max. 10MB)
-                                            </p>
+                                            {images.map((img) => (
+                                                <div key={img.id} className="relative aspect-[4/3] rounded-2xl overflow-hidden group border border-white/10">
+                                                    <img src={img.url} alt="Uploaded" className="w-full h-full object-cover" />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                                        <button onClick={() => removeImage(img.id)} className="text-red-400 font-bold text-[10px] bg-red-400/20 px-2.5 py-1.5 rounded-lg border border-red-400/30 hover:bg-red-400/30 transition-colors">
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
 
@@ -260,12 +307,26 @@ const CreateBoardingPostPage = () => {
 
                             <Card variant="card" className="bg-[#0B1724]/60 border-white/10 !p-0 overflow-hidden shadow-2xl">
                                 {/* Preview Image */}
-                                <div className="aspect-[4/3] bg-white/5 relative group">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800"
-                                        alt="Preview"
-                                        className="w-full h-full object-cover"
-                                    />
+                                <div className="aspect-[4/3] bg-white/5 relative group bg-dark-1/50 flex items-center justify-center">
+                                    {images.length > 0 ? (
+                                        <>
+                                            <img
+                                                src={images[0].url}
+                                                alt="Preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            {images.length > 1 && (
+                                                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-white border border-white/10 shadow-lg">
+                                                    +{images.length - 1} more
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center text-white/20">
+                                            <ImagePlus className="w-10 h-10 mb-2" />
+                                            <span className="text-[11px] font-bold uppercase tracking-wider">No photos added</span>
+                                        </div>
+                                    )}
                                     {price && (
                                         <div className="absolute bottom-4 left-4 bg-dark-1/70 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 z-10">
                                             <span className="text-[13px] font-bold text-white">${price}/month</span>

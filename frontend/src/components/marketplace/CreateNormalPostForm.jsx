@@ -4,6 +4,26 @@ import Card from "../common/Card";
 
 const CreateNormalPostForm = ({ onCancel, onPublish }) => {
     const [description, setDescription] = useState("");
+    const [images, setImages] = useState([]);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = React.useRef(null);
+
+    const handleFiles = (files) => {
+        const newImages = Array.from(files)
+            .filter(file => file.type.startsWith('image/'))
+            .map(file => ({
+                id: Date.now() + Math.random(),
+                url: URL.createObjectURL(file),
+                file
+            }));
+        if (newImages.length > 0) {
+            setImages(prev => [...prev, ...newImages]);
+        }
+    };
+
+    const removeImage = (id) => {
+        setImages(prev => prev.filter(img => img.id !== id));
+    };
 
     return (
         <div className="flex flex-col w-full h-full text-white font-inter">
@@ -11,7 +31,7 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
 
                 {/* ── Left Column: Form ── */}
                 <div className="flex flex-col gap-6 pb-8">
-                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
+                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-2 bg-purple-500/20 text-purple-400 rounded-lg">
                                 <Edit3 className="w-5 h-5" />
@@ -30,17 +50,39 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
                                 <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                     Photos
                                 </label>
-                                <div className="border-2 border-dashed border-white/10 rounded-2xl p-10 flex flex-col items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
-                                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
-                                        <ImagePlus className="text-blue-500 w-6 h-6" />
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        className="hidden" 
+                                        multiple 
+                                        accept="image/*" 
+                                        onChange={(e) => handleFiles(e.target.files)} 
+                                    />
+                                    <div 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                                        onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFiles(e.dataTransfer.files); }}
+                                        className={`aspect-square border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-4 transition-colors cursor-pointer group ${isDragging ? 'border-primary-blue bg-primary-blue/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
+                                    >
+                                        <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                                            <ImagePlus className="text-blue-500 w-5 h-5" />
+                                        </div>
+                                        <p className="text-white text-[11px] font-medium mb-1 text-center">
+                                            Drag & drop or click
+                                        </p>
                                     </div>
-                                    <p className="text-white text-sm font-medium mb-1 text-center">
-                                        Drag & drop photos or{" "}
-                                        <span className="text-primary-blue">Browse</span>
-                                    </p>
-                                    <p className="text-text-secondary text-xs text-center">
-                                        Supported formats: JPG, PNG, WEBP
-                                    </p>
+                                    {images.map((img) => (
+                                        <div key={img.id} className="relative aspect-square rounded-2xl overflow-hidden group">
+                                            <img src={img.url} alt="Post" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <button onClick={() => removeImage(img.id)} className="text-red-400 font-bold text-[10px] bg-red-400/20 px-2.5 py-1.5 rounded-lg border border-red-400/30">
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
@@ -65,16 +107,27 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
                 </div>
 
                 {/* ── Right Column: Preview Sidebar ── */}
-                <div className="flex flex-col gap-6 sticky top-4 h-fit">
+                <div className="flex flex-col gap-6 xl:sticky xl:top-4 h-fit pb-24 xl:pb-0">
                     <div className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1 px-4">
                         Post Preview
                     </div>
 
                     <Card variant="card" className="bg-[#0B1724]/60 border-white/10 !p-0 overflow-hidden shadow-2xl">
-                        {/* Image placeholder */}
-                        <div className="h-48 bg-white/5 flex items-center justify-center">
-                            <ImagePlus className="w-8 h-8 text-white/10" />
-                        </div>
+                        {/* Image preview */}
+                        {images.length > 0 ? (
+                            <div className="h-48 relative">
+                                <img src={images[0].url} alt="Preview" className="w-full h-full object-cover" />
+                                {images.length > 1 && (
+                                    <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-white border border-white/10">
+                                        +{images.length - 1} more
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="h-48 bg-white/5 flex items-center justify-center">
+                                <ImagePlus className="w-8 h-8 text-white/10" />
+                            </div>
+                        )}
 
                         {/* Club header stub */}
                         <div className="p-6 space-y-4">
@@ -100,7 +153,7 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
                     </Card>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-4">
+                    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[#0B1724]/95 backdrop-blur-md border-t border-white/10 xl:static xl:z-auto xl:p-0 xl:bg-transparent xl:backdrop-blur-none xl:border-t-0 flex gap-4 mt-4 xl:mt-0">
                         <button
                             type="button"
                             onClick={onCancel}

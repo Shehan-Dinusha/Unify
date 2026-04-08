@@ -76,6 +76,20 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
         location: "",
     });
 
+    const [coverImage, setCoverImage] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = React.useRef(null);
+
+    const handleFile = (files) => {
+        const file = files[0];
+        if (file && file.type.startsWith('image/')) {
+            setCoverImage({
+                url: URL.createObjectURL(file),
+                file
+            });
+        }
+    };
+
     const [tiers, setTiers] = useState([
         { id: 1, label: "Ticketing Details", enabled: false, price: "", isFree: false },
         { id: 2, label: "Ticketing Details", enabled: false, price: "", isFree: false },
@@ -98,7 +112,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                 <div className="flex flex-col gap-6 pb-8">
 
                     {/* Event Details */}
-                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
+                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-2 bg-blue-500/20 text-blue-500 rounded-lg">
                                 <Edit3 className="w-5 h-5" />
@@ -115,16 +129,40 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                 <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                     Event Cover Image
                                 </label>
-                                <div className="border-2 border-dashed border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
-                                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
-                                        <ImagePlus className="text-blue-500 w-5 h-5" />
-                                    </div>
-                                    <p className="text-white text-sm font-medium mb-1">
-                                        Click to upload or drag and drop
-                                    </p>
-                                    <p className="text-text-secondary text-[11px]">
-                                        SVG, PNG, JPG or GIF (max. 800×400px)
-                                    </p>
+                                <div 
+                                    onClick={() => fileInputRef.current?.click()}
+                                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                                    onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                                    onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFile(e.dataTransfer.files); }}
+                                    className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-colors cursor-pointer group ${isDragging ? 'border-primary-blue bg-primary-blue/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
+                                >
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        className="hidden" 
+                                        accept="image/*" 
+                                        onChange={(e) => handleFile(e.target.files)} 
+                                    />
+                                    {coverImage ? (
+                                        <div className="w-full relative rounded-lg overflow-hidden group">
+                                            <img src={coverImage.url} alt="Cover" className="max-h-32 mx-auto object-cover" />
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <button onClick={(e) => { e.stopPropagation(); setCoverImage(null); }} className="text-red-400 font-bold text-xs bg-red-400/20 px-3 py-1.5 rounded-lg border border-red-400/30">Replace Image</button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                                                <ImagePlus className="text-blue-500 w-5 h-5" />
+                                            </div>
+                                            <p className="text-white text-sm font-medium mb-1">
+                                                Click to upload or drag and drop
+                                            </p>
+                                            <p className="text-text-secondary text-[11px]">
+                                                SVG, PNG, JPG or GIF (max. 800×400px)
+                                            </p>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -159,7 +197,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                             </div>
 
                             {/* Date & Time */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                         Date
@@ -213,7 +251,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                     </Card>
 
                     {/* Ticketing Card */}
-                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
+                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6">
                         <div className="mb-5">
                             <h3 className="text-base font-bold">Enable Tickets</h3>
                             <p className="text-text-secondary text-xs mt-0.5">
@@ -239,16 +277,20 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                 </div>
 
                 {/* ── Right Column: Preview ─────────────────────── */}
-                <div className="flex flex-col gap-6 sticky top-4 h-fit">
+                <div className="flex flex-col gap-6 xl:sticky xl:top-4 h-fit pb-24 xl:pb-0">
                     <div className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1 px-4">
                         Event Preview
                     </div>
 
                     <Card variant="card" className="bg-[#0B1724]/60 border-white/10 !p-0 overflow-hidden shadow-2xl">
-                        {/* Cover placeholder */}
-                        <div className="h-44 bg-white/5 flex items-center justify-center">
-                            <ImagePlus className="w-8 h-8 text-white/10" />
-                        </div>
+                        {/* Cover image preview */}
+                        {coverImage ? (
+                            <img src={coverImage.url} alt="Cover Preview" className="h-44 w-full object-cover" />
+                        ) : (
+                            <div className="h-44 bg-white/5 flex items-center justify-center">
+                                <ImagePlus className="w-8 h-8 text-white/10" />
+                            </div>
+                        )}
 
                         <div className="p-6 space-y-4">
                             <h3 className="text-xl font-bold leading-tight">
@@ -302,7 +344,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                     </Card>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-4">
+                    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[#0B1724]/95 backdrop-blur-md border-t border-white/10 xl:static xl:z-auto xl:p-0 xl:bg-transparent xl:backdrop-blur-none xl:border-t-0 flex gap-4 mt-4 xl:mt-0">
                         <button
                             type="button"
                             onClick={onCancel}
