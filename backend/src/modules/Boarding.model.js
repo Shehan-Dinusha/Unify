@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const Boarding = sequelize.define('Boarding', {
   id: {
@@ -49,7 +49,7 @@ const Boarding = sequelize.define('Boarding', {
     allowNull: true,
   },
   amenities: {
-    type: DataTypes.JSON, 
+    type: DataTypes.JSON,
     allowNull: true,
   },
   images: {
@@ -61,4 +61,4 @@ const Boarding = sequelize.define('Boarding', {
   timestamps: true,
 });
 
-module.exports = Boarding;
+export default Boarding;

@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const Message = sequelize.define('Message', {
   id: {
@@ -32,4 +32,4 @@ const Message = sequelize.define('Message', {
   timestamps: true,
 });
 
-module.exports = Message;
+export default Message;

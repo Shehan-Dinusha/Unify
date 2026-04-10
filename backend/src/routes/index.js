@@ -1,10 +1,10 @@
-
 import express from 'express';
-// import userModule from '../modules/user/index.js';
 
 const router = express.Router();
 
-// router.use('/users', userModule.routes);
-
+// Routes will be registered here as development progresses.
+// Example:
+// import userRoutes from './users.js';
+// router.use('/users', userRoutes);
 
 export default router;

@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const VerificationRequest = sequelize.define('VerificationRequest', {
   id: {
@@ -40,4 +40,4 @@ const VerificationRequest = sequelize.define('VerificationRequest', {
   timestamps: true,
 });
 
-module.exports = VerificationRequest;
+export default VerificationRequest;

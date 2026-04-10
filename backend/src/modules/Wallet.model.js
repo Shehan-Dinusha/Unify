@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const Wallet = sequelize.define('Wallet', {
   id: {
@@ -41,4 +41,4 @@ const Wallet = sequelize.define('Wallet', {
   timestamps: true,
 });
 
-module.exports = Wallet;
+export default Wallet;

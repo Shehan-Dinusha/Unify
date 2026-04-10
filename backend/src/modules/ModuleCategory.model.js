@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const ModuleCategory = sequelize.define('ModuleCategory', {
   id: {
@@ -24,4 +24,4 @@ const ModuleCategory = sequelize.define('ModuleCategory', {
   timestamps: true,
 });
 
-module.exports = ModuleCategory;
+export default ModuleCategory;

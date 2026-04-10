@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const BoostCampaign = sequelize.define('BoostCampaign', {
   id: {
@@ -64,4 +64,4 @@ const BoostCampaign = sequelize.define('BoostCampaign', {
   timestamps: true,
 });
 
-module.exports = BoostCampaign;
+export default BoostCampaign;

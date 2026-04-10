@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const BoostInteraction = sequelize.define('BoostInteraction', {
   id: {
@@ -32,4 +32,4 @@ const BoostInteraction = sequelize.define('BoostInteraction', {
   timestamps: true,
 });
 
-module.exports = BoostInteraction;
+export default BoostInteraction;

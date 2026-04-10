@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const Material = sequelize.define('Material', {
   id: {
@@ -16,7 +16,7 @@ const Material = sequelize.define('Material', {
     allowNull: false,
   },
   categoryId: {
-    type: DataTypes.STRING,
+    type: DataTypes.INTEGER,
     allowNull: true,
   },
   name: {
@@ -40,4 +40,4 @@ const Material = sequelize.define('Material', {
   timestamps: true,
 });
 
-module.exports = Material;
+export default Material;

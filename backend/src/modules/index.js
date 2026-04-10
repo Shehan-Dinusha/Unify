@@ -1,51 +1,60 @@
-const db = require('../config/database');
+/**
+ * modules/index.js
+ *
+ * Central registry: imports all models, defines all associations,
+ * and re-exports everything. Import this file once in server.js so
+ * Sequelize registers all models before sync() is called.
+ */
 
-// Import all models
-const User = require('./User.model');
-const StudentProfile = require('./StudentProfile.model');
-const BusinessProfile = require('./BusinessProfile.model');
-const ClubProfile = require('./ClubProfile.model');
-const Post = require('./Post.model');
-const Comment = require('./Comment.model');
-const Boarding = require('./Boarding.model');
-const LostAndFound = require('./LostAndFound.model');
-const MarketplaceItem = require('./MarketplaceItem.model');
-const Semester = require('./Semester.model');
-const AcademicModule = require('./AcademicModule.model');
-const ModuleCategory = require('./ModuleCategory.model');
-const Material = require('./Material.model');
-const Report = require('./Report.model');
-const Order = require('./Order.model');
-const Review = require('./Review.model');
-const Conversation = require('./Conversation.model');
-const Message = require('./Message.model');
-const BoostPackage = require('./BoostPackage.model');
-const BoostCampaign = require('./BoostCampaign.model');
-const BoostInteraction = require('./BoostInteraction.model');
-const AdminLog = require('./AdminLog.model');
-const UserActivityLog = require('./UserActivityLog.model');
-const UserFollower = require('./UserFollower.model');
-const VerificationRequest = require('./VerificationRequest.model');
-const SavedItem = require('./SavedItem.model');
-const Wallet = require('./Wallet.model');
-const Transaction = require('./Transaction.model');
-const WithdrawalRequest = require('./WithdrawalRequest.model');
-const Notification = require('./Notification.model');
+import sequelize from '../config/database.js';
 
-// Define Relationships
+// ── Models ────────────────────────────────────────────────────────────────────
+import User from './User.model.js';
+import StudentProfile from './StudentProfile.model.js';
+import BusinessProfile from './BusinessProfile.model.js';
+import ClubProfile from './ClubProfile.model.js';
+import Post from './Post.model.js';
+import Comment from './Comment.model.js';
+import Boarding from './Boarding.model.js';
+import LostAndFound from './LostAndFound.model.js';
+import MarketplaceItem from './MarketplaceItem.model.js';
+import Semester from './Semester.model.js';
+import AcademicModule from './AcademicModule.model.js';
+import ModuleCategory from './ModuleCategory.model.js';
+import Material from './Material.model.js';
+import Report from './Report.model.js';
+import Order from './Order.model.js';
+import Review from './Review.model.js';
+import Conversation from './Conversation.model.js';
+import Message from './Message.model.js';
+import BoostPackage from './BoostPackage.model.js';
+import BoostCampaign from './BoostCampaign.model.js';
+import BoostInteraction from './BoostInteraction.model.js';
+import AdminLog from './AdminLog.model.js';
+import UserActivityLog from './UserActivityLog.model.js';
+import UserFollower from './UserFollower.model.js';
+import VerificationRequest from './VerificationRequest.model.js';
+import SavedItem from './SavedItem.model.js';
+import Wallet from './Wallet.model.js';
+import Transaction from './Transaction.model.js';
+import WithdrawalRequest from './WithdrawalRequest.model.js';
+import Notification from './Notification.model.js';
+
+// ── Associations ──────────────────────────────────────────────────────────────
 
 // --- Profiles ---
 User.hasOne(StudentProfile, { foreignKey: 'userId', as: 'studentProfile', onDelete: 'CASCADE' });
 StudentProfile.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-
-User.hasMany(UserActivityLog, { foreignKey: 'userId', as: 'activityLogs', onDelete: 'CASCADE' });
-UserActivityLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 User.hasOne(BusinessProfile, { foreignKey: 'userId', as: 'businessProfile', onDelete: 'CASCADE' });
 BusinessProfile.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 User.hasOne(ClubProfile, { foreignKey: 'userId', as: 'clubProfile', onDelete: 'CASCADE' });
 ClubProfile.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+// --- Activity Logs ---
+User.hasMany(UserActivityLog, { foreignKey: 'userId', as: 'activityLogs', onDelete: 'CASCADE' });
+UserActivityLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 // --- Following System ---
 User.belongsToMany(User, { through: UserFollower, as: 'Followers', foreignKey: 'followingId', otherKey: 'followerId' });
@@ -61,16 +70,17 @@ Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post' });
 User.hasMany(Comment, { foreignKey: 'userId', as: 'comments', onDelete: 'CASCADE' });
 Comment.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
-// --- Boardings & Marketplace & LostFound ---
-
-// --- Boardings & Marketplace & LostFound ---
+// --- Boardings ---
 User.hasMany(Boarding, { foreignKey: 'hostId', as: 'boardings', onDelete: 'CASCADE' });
 Boarding.belongsTo(User, { foreignKey: 'hostId', as: 'host' });
 
+// --- Lost & Found ---
 User.hasMany(LostAndFound, { foreignKey: 'userId', as: 'lostAndFounds', onDelete: 'CASCADE' });
 LostAndFound.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+// --- Marketplace ---
 MarketplaceItem.belongsTo(User, { foreignKey: 'sellerId', as: 'seller' });
+User.hasMany(MarketplaceItem, { foreignKey: 'sellerId', as: 'marketplaceItems', onDelete: 'CASCADE' });
 
 MarketplaceItem.hasMany(Comment, { foreignKey: 'itemId', as: 'comments', onDelete: 'CASCADE' });
 Comment.belongsTo(MarketplaceItem, { foreignKey: 'itemId', as: 'item' });
@@ -89,7 +99,7 @@ MarketplaceItem.hasMany(Order, { foreignKey: 'itemId', as: 'orders' });
 Review.belongsTo(User, { foreignKey: 'reviewerId', as: 'reviewer' });
 User.hasMany(Review, { foreignKey: 'reviewerId', as: 'reviewsGiven' });
 
-Review.belongsTo(User, { foreignKey: 'targetId', as: 'target' }); // User could be a service owner or boarding host
+Review.belongsTo(User, { foreignKey: 'targetId', as: 'target' });
 User.hasMany(Review, { foreignKey: 'targetId', as: 'reviewsReceived' });
 
 // --- Chat System ---
@@ -104,7 +114,7 @@ Conversation.hasMany(Message, { foreignKey: 'conversationId', as: 'messages' });
 Message.belongsTo(User, { foreignKey: 'senderId', as: 'sender' });
 User.hasMany(Message, { foreignKey: 'senderId', as: 'sentMessages' });
 
-// --- Advertising/Boosts ---
+// --- Advertising / Boosts ---
 BoostCampaign.belongsTo(Post, { foreignKey: 'postId', as: 'post', onDelete: 'CASCADE' });
 Post.hasOne(BoostCampaign, { foreignKey: 'postId', as: 'activeCampaign' });
 
@@ -190,8 +200,9 @@ WithdrawalRequest.belongsTo(Wallet, { foreignKey: 'walletId', as: 'wallet' });
 User.hasMany(Notification, { foreignKey: 'userId', as: 'notifications', onDelete: 'CASCADE' });
 Notification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
-module.exports = {
-  db,
+// ── Exports ───────────────────────────────────────────────────────────────────
+export {
+  sequelize,
   User,
   StudentProfile,
   BusinessProfile,

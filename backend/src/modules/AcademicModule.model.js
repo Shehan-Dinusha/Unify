@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const AcademicModule = sequelize.define('AcademicModule', {
   id: {
@@ -24,7 +24,7 @@ const AcademicModule = sequelize.define('AcademicModule', {
     allowNull: true,
   },
   degrees: {
-    type: DataTypes.JSON, 
+    type: DataTypes.JSON,
     allowNull: true,
   },
 }, {
@@ -32,4 +32,4 @@ const AcademicModule = sequelize.define('AcademicModule', {
   timestamps: true,
 });
 
-module.exports = AcademicModule;
+export default AcademicModule;

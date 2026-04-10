@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const LostAndFound = sequelize.define('LostAndFound', {
   id: {
@@ -49,4 +49,4 @@ const LostAndFound = sequelize.define('LostAndFound', {
   timestamps: true,
 });
 
-module.exports = LostAndFound;
+export default LostAndFound;

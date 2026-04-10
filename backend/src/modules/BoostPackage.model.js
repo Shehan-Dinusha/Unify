@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const BoostPackage = sequelize.define('BoostPackage', {
   id: {
@@ -39,4 +39,4 @@ const BoostPackage = sequelize.define('BoostPackage', {
   timestamps: true,
 });
 
-module.exports = BoostPackage;
+export default BoostPackage;
