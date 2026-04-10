@@ -1,40 +1,23 @@
+const { Sequelize } = require('sequelize');
 
-import dotenv from 'dotenv';
+const dbHost = process.env.DB_HOST || 'localhost';
+const dbUser = process.env.DB_USER || 'root';
+const dbPassword = process.env.DB_PASSWORD || '';
+const dbName = process.env.DB_NAME || 'unify_db';
+const dbDialect = process.env.DB_DIALECT || 'mysql';
+const dbPort = process.env.DB_PORT || 3306;
 
-dotenv.config();
-
-export default {
-  development: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    dialect: 'postgres',
-    port: process.env.DB_PORT || 5432,
-    logging: false,
-  },
-  test: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME_TEST || 'unify_test',
-    host: process.env.DB_HOST,
-    dialect: 'postgres',
-    port: process.env.DB_PORT || 5432,
-    logging: false,
-  },
-  production: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    dialect: 'postgres',
-    port: process.env.DB_PORT || 5432,
-    logging: false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
-    }
+const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
+  host: dbHost,
+  dialect: dbDialect,
+  port: dbPort,
+  logging: false, // Set to console.log to see SQL queries
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000
   }
-};
+});
+
+module.exports = sequelize;
