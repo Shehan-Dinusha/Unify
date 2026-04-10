@@ -24,6 +24,18 @@ const Wallet = sequelize.define('Wallet', {
     type: DataTypes.DECIMAL(10, 2),
     defaultValue: 0.00,
   },
+  currency: {
+    type: DataTypes.STRING(3),
+    defaultValue: 'LKR', // ISO 4217 code — allows multi-currency expansion
+  },
+  stripeCustomerId: {
+    type: DataTypes.STRING,
+    allowNull: true, // Stripe Customer ID e.g. 'cus_Pxxxxxxxxxxxxxxx' (for buyers)
+  },
+  stripeAccountId: {
+    type: DataTypes.STRING,
+    allowNull: true, // Stripe Connect Express Account ID e.g. 'acct_1Oxxxx' (for vendors/clubs)
+  },
 }, {
   tableName: 'wallets',
   timestamps: true,

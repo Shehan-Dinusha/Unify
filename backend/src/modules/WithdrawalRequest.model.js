@@ -31,6 +31,14 @@ const WithdrawalRequest = sequelize.define('WithdrawalRequest', {
     type: DataTypes.ENUM('PENDING', 'PROCESSED', 'FAILED'),
     defaultValue: 'PENDING',
   },
+  stripePayoutId: {
+    type: DataTypes.STRING,
+    allowNull: true, // Stripe Payout ID e.g. 'po_1Oxxxxxxxxxxxx' — set once payout is initiated
+  },
+  currency: {
+    type: DataTypes.STRING(3),
+    defaultValue: 'LKR',
+  },
 }, {
   tableName: 'withdrawal_requests',
   timestamps: true,
