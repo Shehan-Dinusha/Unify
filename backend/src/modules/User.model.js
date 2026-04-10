@@ -34,8 +34,8 @@ const User = sequelize.define('User', {
     defaultValue: 'Student',
   },
   avatar: {
-    type: DataTypes.STRING,
-    allowNull: true,
+    type: DataTypes.TEXT,
+    allowNull: true, // S3 object key e.g. 'avatars/user-123/profile.jpg'
   },
   status: {
     type: DataTypes.ENUM('Active', 'Suspended'),

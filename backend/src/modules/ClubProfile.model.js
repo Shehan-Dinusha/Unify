@@ -32,6 +32,14 @@ const ClubProfile = sequelize.define('ClubProfile', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  logo: {
+    type: DataTypes.TEXT,
+    allowNull: true, // S3 object key e.g. 'clubs/club-id/logo.png'
+  },
+  coverImage: {
+    type: DataTypes.TEXT,
+    allowNull: true, // S3 object key e.g. 'clubs/club-id/cover.jpg'
+  },
   establishedDate: {
     type: DataTypes.DATE,
     allowNull: true,

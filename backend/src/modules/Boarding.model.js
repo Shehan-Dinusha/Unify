@@ -53,7 +53,7 @@ const Boarding = sequelize.define('Boarding', {
     allowNull: true,
   },
   images: {
-    type: DataTypes.JSON, // Arrays of strings
+    type: DataTypes.JSON, // Array of S3 object keys e.g. ['boardings/id/img1.jpg']
     allowNull: true,
   },
 }, {

@@ -32,8 +32,8 @@ const Material = sequelize.define('Material', {
     allowNull: true,
   },
   url: {
-    type: DataTypes.STRING,
-    allowNull: true,
+    type: DataTypes.TEXT,
+    allowNull: true, // S3 object key e.g. 'materials/module-id/file.pdf'
   },
 }, {
   tableName: 'materials',

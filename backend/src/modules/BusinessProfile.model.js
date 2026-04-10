@@ -32,6 +32,14 @@ const BusinessProfile = sequelize.define('BusinessProfile', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  logo: {
+    type: DataTypes.TEXT,
+    allowNull: true, // S3 object key e.g. 'businesses/biz-id/logo.png'
+  },
+  coverImage: {
+    type: DataTypes.TEXT,
+    allowNull: true, // S3 object key e.g. 'businesses/biz-id/cover.jpg'
+  },
   address: {
     type: DataTypes.TEXT,
     allowNull: true,

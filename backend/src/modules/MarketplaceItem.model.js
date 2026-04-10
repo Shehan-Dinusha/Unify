@@ -29,7 +29,7 @@ const MarketplaceItem = sequelize.define('MarketplaceItem', {
   },
   images: {
     type: DataTypes.JSON,
-    allowNull: true,
+    allowNull: true, // Array of S3 object keys e.g. ['marketplace/item-id/img1.jpg']
   },
   options: {
     type: DataTypes.JSON,

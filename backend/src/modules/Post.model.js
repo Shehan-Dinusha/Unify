@@ -21,7 +21,7 @@ const Post = sequelize.define('Post', {
   },
   images: {
     type: DataTypes.JSON,
-    allowNull: true,
+    allowNull: true, // Array of S3 object keys e.g. ['posts/post-1/img1.jpg', 'posts/post-1/img2.jpg']
   },
   location: {
     type: DataTypes.STRING,

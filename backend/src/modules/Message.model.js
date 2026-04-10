@@ -17,7 +17,11 @@ const Message = sequelize.define('Message', {
   },
   text: {
     type: DataTypes.TEXT,
-    allowNull: false,
+    allowNull: true, // Null if the message is attachments only
+  },
+  attachments: {
+    type: DataTypes.JSON,
+    allowNull: true, // Array of URLs e.g. images, files sent in chat
   },
   isRead: {
     type: DataTypes.BOOLEAN,
