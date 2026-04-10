@@ -21,6 +21,11 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ── Root Route ────────────────────────────────────────────────────────────────
+app.get('/', (_req, res) => {
+  sendResponse(res, 200, true, 'Welcome to Unify API');
+});
+
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   sendResponse(res, 200, true, 'Server is healthy');
