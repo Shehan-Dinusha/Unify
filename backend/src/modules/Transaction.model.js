@@ -20,7 +20,7 @@ const Transaction = sequelize.define('Transaction', {
     allowNull: false,
   },
   category: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
     defaultValue: 'General', // E.g., 'Club Tickets', 'Biz Boosts', 'Merchandise', 'Donation', 'Platform Fee'
   },
@@ -50,19 +50,19 @@ const Transaction = sequelize.define('Transaction', {
     defaultValue: 'PENDING',
   },
   description: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   stripePaymentIntentId: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // Stripe PaymentIntent ID e.g. 'pi_3OxxxxxxxxxxxxxxxxxxxY'
   },
   stripeChargeId: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // Stripe Charge ID for refund reference e.g. 'ch_3Oxxxxxxxxxx'
   },
   stripeTransferId: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // Stripe Transfer ID when crediting a connected vendor account
   },
   metadata: {

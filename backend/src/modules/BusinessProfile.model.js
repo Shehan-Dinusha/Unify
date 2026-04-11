@@ -13,19 +13,19 @@ const BusinessProfile = sequelize.define('BusinessProfile', {
     unique: true,
   },
   location: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   category: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true,
   },
   email: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   phone: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(20),
     allowNull: true,
   },
   isVerified: {
@@ -45,7 +45,7 @@ const BusinessProfile = sequelize.define('BusinessProfile', {
     allowNull: true,
   },
   website: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   registrationDate: {
@@ -54,7 +54,7 @@ const BusinessProfile = sequelize.define('BusinessProfile', {
     defaultValue: DataTypes.NOW,
   },
   businessRegistrationNumber: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // e.g., '#BIZ-8821'
   },
 }, {

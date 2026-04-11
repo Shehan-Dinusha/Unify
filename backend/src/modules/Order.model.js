@@ -8,7 +8,7 @@ const Order = sequelize.define('Order', {
     primaryKey: true,
   },
   orderId: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false,
     unique: true,
   },
@@ -53,31 +53,31 @@ const Order = sequelize.define('Order', {
     allowNull: false,
   },
   paymentMethod: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   pickupLocation: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   pickupRoom: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   pickupTime: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   color: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   colorHex: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // Stores the explicit CSS hex code like '#2B8CEE'
   },
   size: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   timeline: {

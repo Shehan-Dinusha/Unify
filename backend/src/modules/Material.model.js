@@ -20,15 +20,15 @@ const Material = sequelize.define('Material', {
     allowNull: true,
   },
   name: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
   fileType: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true,
   },
   fileSize: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   url: {

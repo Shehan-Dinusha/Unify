@@ -28,15 +28,15 @@ const Report = sequelize.define('Report', {
     allowNull: true,
   },
   type: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
   title: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true,
   },
   category: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true,
   },
   description: {

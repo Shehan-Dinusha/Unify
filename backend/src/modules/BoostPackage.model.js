@@ -3,11 +3,11 @@ import sequelize from '../config/database.js';
 
 const BoostPackage = sequelize.define('BoostPackage', {
   id: {
-    type: DataTypes.STRING, // e.g. pkg-001
+    type: DataTypes.STRING(255), // e.g. pkg-001
     primaryKey: true,
   },
   name: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
   price: {
@@ -19,7 +19,7 @@ const BoostPackage = sequelize.define('BoostPackage', {
     allowNull: false,
   },
   durationUnit: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false,
   },
   description: {
@@ -27,7 +27,7 @@ const BoostPackage = sequelize.define('BoostPackage', {
     allowNull: true,
   },
   badge: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   features: {

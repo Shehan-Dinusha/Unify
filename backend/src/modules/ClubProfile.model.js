@@ -13,7 +13,7 @@ const ClubProfile = sequelize.define('ClubProfile', {
     unique: true,
   },
   clubName: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
   description: {
@@ -21,11 +21,11 @@ const ClubProfile = sequelize.define('ClubProfile', {
     allowNull: true,
   },
   email: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   category: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true,
   },
   isVerified: {

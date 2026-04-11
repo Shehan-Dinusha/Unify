@@ -12,7 +12,7 @@ const VerificationRequest = sequelize.define('VerificationRequest', {
     allowNull: false,
   },
   requestedRole: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(50),
     allowNull: false, // E.g., 'Batch Rep', 'Business', 'Club'
   },
   documentUrl: {

@@ -8,7 +8,7 @@ const Semester = sequelize.define('Semester', {
     primaryKey: true,
   },
   name: {
-    type: DataTypes.STRING, // e.g. "Semester 1"
+    type: DataTypes.STRING(100), // e.g. "Semester 1"
     allowNull: false,
   },
 }, {

@@ -12,11 +12,11 @@ const Boarding = sequelize.define('Boarding', {
     allowNull: false,
   },
   title: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true,
   },
   location: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   description: {
@@ -24,7 +24,7 @@ const Boarding = sequelize.define('Boarding', {
     allowNull: true,
   },
   price: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   capacity: {
@@ -36,7 +36,7 @@ const Boarding = sequelize.define('Boarding', {
     allowNull: true,
   },
   phone: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(20),
     allowNull: true,
   },
   gender: {
@@ -45,7 +45,7 @@ const Boarding = sequelize.define('Boarding', {
     defaultValue: 'Any',
   },
   roomType: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true,
   },
   amenities: {

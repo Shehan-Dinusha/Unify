@@ -12,11 +12,11 @@ const ModuleCategory = sequelize.define('ModuleCategory', {
     allowNull: false,
   },
   title: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
   iconName: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true,
   },
 }, {

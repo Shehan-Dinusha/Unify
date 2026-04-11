@@ -16,7 +16,7 @@ const LostAndFound = sequelize.define('LostAndFound', {
     allowNull: false,
   },
   title: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
   description: {
@@ -24,15 +24,15 @@ const LostAndFound = sequelize.define('LostAndFound', {
     allowNull: true,
   },
   location: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   date: {
-    type: DataTypes.STRING, // e.g. Mar 10, 2026 OR actual Date type
+    type: DataTypes.STRING(255), // e.g. Mar 10, 2026 OR actual Date type
     allowNull: true,
   },
   timeOfDay: {
-    type: DataTypes.STRING, // e.g. 11:45 AM
+    type: DataTypes.STRING(255), // e.g. 11:45 AM
     allowNull: true,
   },
   image: {

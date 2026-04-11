@@ -12,31 +12,31 @@ const UserActivityLog = sequelize.define('UserActivityLog', {
     allowNull: false,
   },
   icon: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // E.g. '✏️', '💳'
   },
   iconColor: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // E.g. 'bg-primary-blue/20'
   },
   title: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false, // E.g. 'Menu Updated'
   },
   type: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true, // E.g. 'login', 'post', 'comment'
   },
   ip: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // E.g. '192.168.1.1'
   },
   device: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // E.g. 'MacBook Pro - Chrome'
   },
   detail: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // E.g. 'Added seasonal organic smoothies.'
   },
 }, {

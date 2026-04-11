@@ -12,11 +12,11 @@ const AdminLog = sequelize.define('AdminLog', {
     allowNull: false,
   },
   type: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false, // E.g., 'package_added', 'package_deleted', 'package_updated', 'system'
   },
   title: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
   description: {
@@ -36,7 +36,7 @@ const AdminLog = sequelize.define('AdminLog', {
     allowNull: true, // Used for suspension/warning severity classification
   },
   caseRef: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // Human-readable case reference e.g. '#CASE-2024-0042'
   },
 }, {

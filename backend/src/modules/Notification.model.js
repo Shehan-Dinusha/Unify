@@ -17,7 +17,7 @@ const Notification = sequelize.define('Notification', {
     defaultValue: 'General',
   },
   title: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
   content: {
@@ -33,7 +33,7 @@ const Notification = sequelize.define('Notification', {
     allowNull: true, // ID of the triggering item (Post, Comment, LostAndFound)
   },
   referenceType: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true, // 'Post', 'Comment', 'Match', etc.
   },
 }, {

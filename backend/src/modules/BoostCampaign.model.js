@@ -12,7 +12,7 @@ const BoostCampaign = sequelize.define('BoostCampaign', {
     allowNull: false,
   },
   packageId: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: false,
   },
   status: {
@@ -24,11 +24,11 @@ const BoostCampaign = sequelize.define('BoostCampaign', {
     allowNull: false,
   },
   estReach: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   placement: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   subtotal: {

@@ -13,23 +13,23 @@ const StudentProfile = sequelize.define('StudentProfile', {
     unique: true,
   },
   studentCode: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(50),
     allowNull: true,
   },
   faculty: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   department: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // E.g. 'Computer Science', 'Civil Engineering'
   },
   degree: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   year: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // E.g. 'Year 2', '3rd Year'
   },
   gpa: {
@@ -37,11 +37,11 @@ const StudentProfile = sequelize.define('StudentProfile', {
     allowNull: true, // E.g. 3.75
   },
   batch: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   address: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true, // Home or boarding address
   },
   joinDate: {
@@ -49,7 +49,7 @@ const StudentProfile = sequelize.define('StudentProfile', {
     allowNull: true,
   },
   tier: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
     defaultValue: 'Standard',
   },

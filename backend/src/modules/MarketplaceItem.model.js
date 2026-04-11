@@ -12,7 +12,7 @@ const MarketplaceItem = sequelize.define('MarketplaceItem', {
     allowNull: false,
   },
   title: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
   description: {
@@ -20,11 +20,11 @@ const MarketplaceItem = sequelize.define('MarketplaceItem', {
     allowNull: true,
   },
   price: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   category: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: true,
   },
   images: {

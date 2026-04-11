@@ -12,11 +12,11 @@ const AcademicModule = sequelize.define('AcademicModule', {
     allowNull: false,
   },
   code: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(50),
     allowNull: false,
   },
   name: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
   description: {
