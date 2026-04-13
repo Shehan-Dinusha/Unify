@@ -1,34 +1,36 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import { errorHandler } from './middlewares/error.middleware.js';
-import { sendResponse } from './utils/response.js';
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import { errorHandler } from "./middlewares/error.middleware.js";
+import { sendResponse } from "./utils/response.js";
 
 const app = express();
 
 // ── Security ──────────────────────────────────────────────────────────────────
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 // ── Request Logging ───────────────────────────────────────────────────────────
-app.use(morgan('dev'));
+app.use(morgan("dev"));
 
 // ── Body Parsers ──────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ── Root Route ────────────────────────────────────────────────────────────────
-app.get('/', (_req, res) => {
-  sendResponse(res, 200, true, 'Welcome to Unify API');
+app.get("/", (_req, res) => {
+  sendResponse(res, 200, true, "Welcome to Unify API");
 });
 
 // ── Health Check ──────────────────────────────────────────────────────────────
-app.get('/health', (_req, res) => {
-  sendResponse(res, 200, true, 'Server is healthy');
+app.get("/health", (_req, res) => {
+  sendResponse(res, 200, true, "Server is healthy");
 });
 
 // ── API Routes ────────────────────────────────────────────────────────────────
@@ -38,7 +40,7 @@ app.get('/health', (_req, res) => {
 
 // ── 404 Handler ───────────────────────────────────────────────────────────────
 app.use((_req, _res, next) => {
-  const error = new Error('Not Found');
+  const error = new Error("Not Found");
   error.statusCode = 404;
   next(error);
 });
