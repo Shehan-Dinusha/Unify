@@ -4,3 +4,6 @@ export * from "./getVerificationStatus.controller.js";
 export * from "./getPendingVerifications.controller.js";
 export * from "./approveVerificationRequest.controller.js";
 export * from "./rejectVerificationRequest.controller.js";
+export * from "./getVerifiedEntities.controller.js";
+export * from "./getVerificationDocument.controller.js";
+export * from "./removeVerifiedAccount.controller.js";
