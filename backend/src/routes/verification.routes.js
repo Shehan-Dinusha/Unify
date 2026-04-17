@@ -17,6 +17,18 @@ router.get(
   VerificationController.getPendingVerifications
 );
 
+// PATCH /api/v1/verifications/:id/approve
+router.patch(
+  "/:id/approve",
+  VerificationController.approveVerificationRequest
+);
+
+// PATCH /api/v1/verifications/:id/reject
+router.patch(
+  "/:id/reject",
+  VerificationController.rejectVerificationRequest
+);
+
 // GET /api/v1/verifications/status
 router.get(
   "/status",
