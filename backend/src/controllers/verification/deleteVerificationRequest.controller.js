@@ -16,11 +16,18 @@ export const deleteVerificationRequest = async (req, res, next) => {
     if (existingRequest.documentUrl && existingRequest.documentUrl.startsWith('/uploads/verifications/')) {
       const filename = existingRequest.documentUrl.split('/').pop();
       const filePath = path.join(process.cwd(), 'uploads/verifications', filename);
+      // 🔥 Physically delete the file to save disk/S3 space!
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
     }
 
+    // Scrub the file references from the database so we only keep the pure structural row for stats
+    existingRequest.documentUrl = null;
+    existingRequest.documentMetadata = null;
+    await existingRequest.save();
+
+    // Soft delete the row
     await existingRequest.destroy();
 
     return sendResponse(res, 200, true, "Verification submission deleted successfully.");

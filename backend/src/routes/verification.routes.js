@@ -11,6 +11,12 @@ router.post(
   VerificationController.submitVerificationRequest
 );
 
+// GET /api/v1/verifications/pending
+router.get(
+  "/pending",
+  VerificationController.getPendingVerifications
+);
+
 // GET /api/v1/verifications/status
 router.get(
   "/status",
