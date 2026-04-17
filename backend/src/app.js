@@ -4,6 +4,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import { sendResponse } from "./utils/response.js";
+import path from "path";
+import apiRoutes from "./routes/index.js";
 
 const app = express();
 
@@ -34,9 +36,10 @@ app.get("/health", (_req, res) => {
 });
 
 // ── API Routes ────────────────────────────────────────────────────────────────
-// Routes will be wired here as they are developed.
-// Example: import userRoutes from './routes/users.js';
-//          app.use('/api/v1/users', userRoutes);
+app.use("/api/v1", apiRoutes);
+
+// ── Static Files (Temporary prior to S3 migration) ────────────────────────────
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // ── 404 Handler ───────────────────────────────────────────────────────────────
 app.use((_req, _res, next) => {

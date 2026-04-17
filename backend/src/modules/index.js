@@ -307,9 +307,9 @@ Comment.hasMany(Report, {
 Report.belongsTo(Comment, { foreignKey: "commentId", as: "comment" });
 
 // --- Verifications ---
-User.hasMany(VerificationRequest, {
+User.hasOne(VerificationRequest, {
   foreignKey: "userId",
-  as: "verificationRequests",
+  as: "verificationRequest",
   onDelete: "CASCADE",
 });
 VerificationRequest.belongsTo(User, { foreignKey: "userId", as: "user" });
