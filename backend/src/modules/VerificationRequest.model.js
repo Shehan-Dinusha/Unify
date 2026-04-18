@@ -41,6 +41,7 @@ const VerificationRequest = sequelize.define(
   {
     tableName: "verification_requests",
     timestamps: true,
+    paranoid: true,
   },
 );
 
