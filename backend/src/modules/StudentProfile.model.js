@@ -9,50 +9,84 @@ const StudentProfile = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
+
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       unique: true,
     },
-    studentCode: {
+
+    registrationNumber: {
       type: DataTypes.STRING(50),
-      allowNull: true,
+      allowNull: true, // handled in controller
     },
+
+    university: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      defaultValue: "University of Moratuwa",
+    },
+
     faculty: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+
     department: {
       type: DataTypes.STRING(255),
-      allowNull: true, // E.g. 'Computer Science', 'Civil Engineering'
+      allowNull: true,
     },
+
     degree: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
-    year: {
-      type: DataTypes.STRING(255),
-      allowNull: true, // E.g. 'Year 2', '3rd Year'
-    },
-    gpa: {
-      type: DataTypes.DECIMAL(3, 2),
-      allowNull: true, // E.g. 3.75
-    },
+
     batch: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(50),
       allowNull: true,
     },
-    address: {
-      type: DataTypes.STRING(255),
-      allowNull: true, // Home or boarding address
+
+    firstName: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
     },
+
+    lastName: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+
+    gender: {
+      type: DataTypes.ENUM("Male", "Female", "Other"),
+      allowNull: true,
+    },
+
+    dateOfBirth: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+
+    // 🔥 supports frontend multiple addresses
+    addresses: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+
+    isBatchRep: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+
     joinDate: {
       type: DataTypes.DATE,
       allowNull: true,
     },
+
     tier: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
+      type: DataTypes.STRING(50),
+      allowNull: false,
       defaultValue: "Standard",
     },
   },
