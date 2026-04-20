@@ -1,4 +1,4 @@
-import { Review, User } from "../../modules/index.js";
+import { Review, User, StudentProfile, ClubProfile } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -18,6 +18,10 @@ export const getTargetReviews = async (req, res, next) => {
       return sendResponse(res, 404, false, "Target user not found.");
     }
 
+    if (targetExists.role !== "Business") {
+      return sendResponse(res, 400, false, "Target is not a Business account.");
+    }
+
     const rawReviews = await Review.findAll({
       where: { targetId },
       include: [
@@ -25,6 +29,20 @@ export const getTargetReviews = async (req, res, next) => {
           model: User,
           as: "reviewer",
           attributes: ["id", "name", "role", "avatar"],
+          include: [
+            {
+              model: StudentProfile,
+              as: "studentProfile",
+              attributes: ["isBatchRep"],
+              required: false,
+            },
+            {
+              model: ClubProfile,
+              as: "clubProfile",
+              attributes: ["isVerified"],
+              required: false,
+            },
+          ],
         },
       ],
       order: [["createdAt", "DESC"]],
@@ -79,9 +97,21 @@ export const getTargetReviews = async (req, res, next) => {
             bgColor: "bg-gray-600",
           };
         } else {
+          let actualRole = review.reviewer.role;
+          let isVerified = false;
+
+          // Determine specific identity
+          if (review.reviewer.role === "Student" && review.reviewer.studentProfile?.isBatchRep) {
+            actualRole = "Batch Rep";
+            isVerified = true;
+          } else if (review.reviewer.role === "Club" && review.reviewer.clubProfile?.isVerified) {
+            isVerified = true;
+          }
+
           author = {
             name: review.reviewer.name,
-            role: review.reviewer.role,
+            role: actualRole,
+            isVerified: isVerified,
             avatar: review.reviewer.avatar,
             initials: review.reviewer.name
               ? review.reviewer.name.substring(0, 2).toUpperCase()

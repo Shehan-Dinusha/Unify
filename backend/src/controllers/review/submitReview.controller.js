@@ -1,5 +1,6 @@
 import Review from "../../modules/Review.model.js";
 import User from "../../modules/User.model.js";
+import ClubProfile from "../../modules/ClubProfile.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -30,9 +31,25 @@ export const submitReview = async (req, res, next) => {
       return sendResponse(res, 404, false, "Reviewer not found.");
     }
 
+    if (reviewerExists.role !== "Student" && reviewerExists.role !== "Club") {
+      return sendResponse(res, 403, false, "Only Students and Clubs can submit reviews.");
+    }
+
+    // If the reviewer is a Club, they must be verified first
+    if (reviewerExists.role === "Club") {
+      const clubProfile = await ClubProfile.findOne({ where: { userId: reviewerId } });
+      if (!clubProfile || !clubProfile.isVerified) {
+        return sendResponse(res, 403, false, "Only verified Clubs can submit reviews.");
+      }
+    }
+
     const targetExists = await User.findByPk(targetId);
     if (!targetExists) {
       return sendResponse(res, 404, false, "Target user not found.");
+    }
+
+    if (targetExists.role !== "Business") {
+      return sendResponse(res, 400, false, "Reviews can only be given to Business accounts.");
     }
 
     // check if user has already submitted a review for this target
