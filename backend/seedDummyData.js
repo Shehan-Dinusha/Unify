@@ -7,16 +7,16 @@ import {
   BusinessProfile,
   MarketplaceItem,
   Review,
+  Boarding,
 } from "./src/modules/index.js";
 
 async function seedData() {
-  console.log("Starting data seeding process for testing...");
+  console.log("Starting comprehensive data seeding for Unify...");
 
   try {
     await sequelize.authenticate();
     console.log("Database connected successfully.");
 
-    // Sync database models
     await sequelize.sync({ alter: true });
 
     // Fix PostgreSQL sequence if it is out of sync
@@ -36,6 +36,9 @@ async function seedData() {
       await sequelize.query(
         `SELECT setval('reviews_id_seq', (SELECT MAX(id) FROM reviews));`,
       );
+      await sequelize.query(
+        `SELECT setval('boardings_id_seq', (SELECT MAX(id) FROM boardings));`,
+      );
     } catch (err) {
       console.log("Sequence fix skipped or not required.");
     }
@@ -44,154 +47,167 @@ async function seedData() {
 
     // 1. Create a Student User
     const [studentUser] = await User.findOrCreate({
-      where: { email: "student@unifytest.com" },
+      where: { email: "alex.j@unify.com" },
       defaults: {
-        name: "Test Student",
-        email: "student@unifytest.com",
+        name: "Alex Johnson",
+        email: "alex.j@unify.com",
         passwordHash,
         role: "Student",
-        phone: "+94770000001",
+        phone: "+94771111111",
       },
     });
 
-    if (studentUser) {
-      await StudentProfile.findOrCreate({
-        where: { userId: studentUser.id },
-        defaults: {
-          userId: studentUser.id,
-          studentCode: "ST12345",
-          faculty: "Computing",
-          department: "Computer Science",
-        },
-      });
-    }
-
-    // 2. Create a Business User
-    const [businessUser] = await User.findOrCreate({
-      where: { email: "business@unifytest.com" },
+    await StudentProfile.findOrCreate({
+      where: { userId: studentUser.id },
       defaults: {
-        name: "Test Business",
-        email: "business@unifytest.com",
+        userId: studentUser.id,
+        registrationNumber: "ENG-22-045",
+        faculty: "Faculty of Engineering",
+        department: "Computer Science",
+        tier: "Premium",
+      },
+    });
+
+    // 2. Create another Student (Seller)
+    const [sellerStudent] = await User.findOrCreate({
+      where: { email: "sarah.m@unify.com" },
+      defaults: {
+        name: "Sarah Miller",
+        email: "sarah.m@unify.com",
+        passwordHash,
+        role: "Student",
+        phone: "+94772222222",
+      },
+    });
+
+    await StudentProfile.findOrCreate({
+      where: { userId: sellerStudent.id },
+      defaults: {
+        userId: sellerStudent.id,
+        registrationNumber: "SCI-21-089",
+        tier: "Standard",
+      },
+    });
+
+    // 3. Create a Business User (Host/Food Cafe)
+    const [businessUser] = await User.findOrCreate({
+      where: { email: "campus.cafe@unify.com" },
+      defaults: {
+        name: "Campus Bites & Cafe",
+        email: "campus.cafe@unify.com",
         passwordHash,
         role: "Business",
-        phone: "+94770000002",
+        phone: "+94773333333",
       },
     });
 
-    if (businessUser) {
-      await BusinessProfile.findOrCreate({
-        where: { userId: businessUser.id },
-        defaults: {
-          userId: businessUser.id,
-          category: "Food & Beverage",
-          location: "Near Campus",
-        },
-      });
-    }
-
-    // 3. Create another Student to act as a Target/Seller
-    const [sellerStudent] = await User.findOrCreate({
-      where: { email: "seller@unifytest.com" },
+    await BusinessProfile.findOrCreate({
+      where: { userId: businessUser.id },
       defaults: {
-        name: "Test Seller",
-        email: "seller@unifytest.com",
-        passwordHash,
-        role: "Student",
-        phone: "+94770000003",
+        userId: businessUser.id,
+        displayName: "Campus Bites & Cafe",
+        businessName: "Campus Bites & Cafe Unify",
+        category: "FOOD",
+        addresses: { primary: "Main Gate, Malabe" },
       },
     });
 
-    if (sellerStudent) {
-      await StudentProfile.findOrCreate({
-        where: { userId: sellerStudent.id },
-        defaults: {
-          userId: sellerStudent.id,
-          studentCode: "ST99999",
-          tier: "Premium",
-        },
-      });
-    }
-
-    // 4. Create Marketplace Items for the Seller
-    const [item1] = await MarketplaceItem.findOrCreate({
-      where: { title: "Used Engineering Math Book" },
+    // 4. Create Marketplace Items (Services, Merch, Essentials)
+    await MarketplaceItem.findOrCreate({
+      where: { title: "Data Structures Tutoring" },
       defaults: {
         sellerId: sellerStudent.id,
-        title: "Used Engineering Math Book",
-        description: "Good condition, no missing pages.",
-        price: "Rs. 1500",
-        category: "Books",
+        title: "Data Structures Tutoring",
+        description:
+          "1-on-1 tutoring session. Guaranteed results with practical examples.",
+        price: "$30/hr",
+        category: "Services",
       },
     });
 
-    const [item2] = await MarketplaceItem.findOrCreate({
-      where: { title: "Campus Umbrella" },
+    await MarketplaceItem.findOrCreate({
+      where: { title: "Unify Tech Hoodie" },
       defaults: {
         sellerId: businessUser.id,
-        title: "Campus Umbrella",
-        description: "Sturdy and durable anomali umbrella.",
-        price: "Rs. 950",
+        title: "Unify Tech Hoodie",
+        description: "Official tech club hoodie. Premium cotton blend.",
+        price: "$45",
+        category: "Clubs' Merchandise",
+      },
+    });
+
+    await MarketplaceItem.findOrCreate({
+      where: { title: "Dorm Essentials Pack" },
+      defaults: {
+        sellerId: sellerStudent.id,
+        title: "Dorm Essentials Pack",
+        description: "Bed sheets, lamp, mini-fan, and organizer.",
+        price: "$80",
         category: "Essentials",
       },
     });
 
-    // 5. Create Reviews
+    // 5. Create Boardings
+    await Boarding.findOrCreate({
+      where: { title: "Cozy Student Pod - Walk to Campus" },
+      defaults: {
+        hostId: businessUser.id,
+        title: "Cozy Student Pod - Walk to Campus",
+        description:
+          "Fully furnished single room in a student-friendly neighborhood. Only 10 mins walk from main campus.",
+        pricePerMonth: "$450",
+        location: "Kothalawala, Malabe",
+        amenities: "WiFi, AC, Laundry",
+        availableFrom: new Date(),
+        isVerified: true,
+      },
+    });
 
-    // Student reviews Business User
+    await Boarding.findOrCreate({
+      where: { title: "Premium Shared Annex" },
+      defaults: {
+        hostId: businessUser.id,
+        title: "Premium Shared Annex",
+        description:
+          "Shared room suitable for 2 students. Attached bathroom and kitchenette.",
+        pricePerMonth: "$300",
+        location: "Thalahena, Malabe",
+        amenities: "Utility Included, Parking",
+        availableFrom: new Date(),
+        isVerified: false,
+      },
+    });
+
+    // 6. Create Reviews
     await Review.findOrCreate({
       where: { reviewerId: studentUser.id, targetId: businessUser.id },
       defaults: {
         reviewerId: studentUser.id,
-        targetId: businessUser.id, // Target is the Business User
+        targetId: businessUser.id,
         rating: 5,
-        content: "Great business, very affordable for students!",
+        content: "Amazing food and affordable prices for students!",
         isLikedByOwner: true,
       },
     });
 
-    // Student reviews a Marketplace Item Seller or Seller's item directly
-    // Wait, by schema targetId is related to User. "targetId: User who provided a service or business"
-    // So reviewing the seller.
     await Review.findOrCreate({
       where: { reviewerId: studentUser.id, targetId: sellerStudent.id },
       defaults: {
         reviewerId: studentUser.id,
-        targetId: sellerStudent.id, // Target is the Seller User
+        targetId: sellerStudent.id,
         rating: 4,
-        content: "Good product condition, prompt replies.",
-        helpfulCount: 2,
+        content: "Tutoring sessions were very helpful for my mid-terms.",
+        helpfulCount: 5,
       },
     });
 
-    // Business replies or reviews Student
-    await Review.findOrCreate({
-      where: { reviewerId: businessUser.id, targetId: studentUser.id },
-      defaults: {
-        reviewerId: businessUser.id,
-        targetId: studentUser.id,
-        rating: 3,
-        content: "Neutral experience, communication could be better.",
-      },
-    });
-
-    console.log("Mock data seeded successfully.");
     console.log("-----------------------------------------");
-    console.log("Available Test Users:");
     console.log(
-      "Student: student@unifytest.com / password123 (ID: " +
-        studentUser.id +
-        ")",
+      "Mock data heavily populated from frontend mock data equivalents!",
     );
-    console.log(
-      "Business: business@unifytest.com / password123 (ID: " +
-        businessUser.id +
-        ")",
-    );
-    console.log(
-      "Seller: seller@unifytest.com / password123 (ID: " +
-        sellerStudent.id +
-        ")",
-    );
+    console.log("Student: alex.j@unify.com / password123");
+    console.log("Business: campus.cafe@unify.com / password123");
+    console.log("Seller: sarah.m@unify.com / password123");
   } catch (error) {
     console.error("Error seeding data:", error);
   } finally {
