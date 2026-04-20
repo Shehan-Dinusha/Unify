@@ -1,6 +1,5 @@
 import {
   Review,
-  ReviewFeedback,
   User,
   StudentProfile,
   ClubProfile,
@@ -9,16 +8,9 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { formatRelativeDate } from "../../utils/date.js";
 
-export const getTargetReviews = async (req, res, next) => {
+export const getReceivedReviews = async (req, res, next) => {
   try {
-    const { targetId } = req.params;
-
-    // Fallback to 1 for testing if req.user is not yet defined
-    const currentUserId = req.user?.id || 1;
-
-    if (!targetId) {
-      return sendResponse(res, 400, false, "Target ID is required.");
-    }
+    const targetId = req.user?.id || 4; // Fallback to 1 for testing if req.user is not yet defined
 
     const targetExists = await User.findByPk(targetId);
     if (!targetExists) {
@@ -26,7 +18,12 @@ export const getTargetReviews = async (req, res, next) => {
     }
 
     if (targetExists.role !== "Business") {
-      return sendResponse(res, 400, false, "Target is not a Business account.");
+      return sendResponse(
+        res,
+        400,
+        false,
+        "Only Business accounts can view received reviews from this endpoint.",
+      );
     }
 
     const rawReviews = await Review.findAll({
@@ -51,13 +48,6 @@ export const getTargetReviews = async (req, res, next) => {
             },
           ],
         },
-        {
-          model: ReviewFeedback,
-          as: "feedbacks",
-          attributes: ["userId", "isHelpful"],
-          where: { userId: currentUserId },
-          required: false,
-        },
       ],
       order: [["createdAt", "DESC"]],
     });
@@ -74,7 +64,8 @@ export const getTargetReviews = async (req, res, next) => {
       }
     });
 
-    const averageRating = totalReviews > 0 ? sumRating / totalReviews : 0;
+    const averageRating =
+      totalReviews > 0 ? (sumRating / totalReviews).toFixed(1) : 0;
 
     // Format distribution into percentages as expected by frontend
     const distribution = [5, 4, 3, 2, 1].map((stars) => {
@@ -93,7 +84,6 @@ export const getTargetReviews = async (req, res, next) => {
     // 2. Format Reviews list for frontend expectations
     const formattedReviews = rawReviews.map((modelReview) => {
       const review = modelReview.toJSON();
-      const isOwn = review.reviewerId === currentUserId;
 
       let author = {
         name: "Deleted User",
@@ -114,7 +104,6 @@ export const getTargetReviews = async (req, res, next) => {
           let actualRole = review.reviewer.role;
           let isVerified = false;
 
-          // Determine specific identity
           if (
             review.reviewer.role === "Student" &&
             review.reviewer.studentProfile?.isBatchRep
@@ -141,27 +130,16 @@ export const getTargetReviews = async (req, res, next) => {
         }
       }
 
-      // Basic formatting of date. The frontend says "Just now" or "2 days ago",
-      // formatting relative date using util function.
       const dateStr = formatRelativeDate(review.createdAt);
 
       let parsedOwnerReply = null;
+      let hasOwnerReplied = false;
       if (review.ownerReply) {
+        hasOwnerReplied = true;
         parsedOwnerReply = {
           content: review.ownerReply,
-          author: {
-            name: "Owner",
-            avatar: null,
-          },
           createdAt: formatRelativeDate(review.updatedAt),
         };
-      }
-
-      let currentUserFeedback = null;
-      if (review.feedbacks && review.feedbacks.length > 0) {
-        currentUserFeedback = review.feedbacks[0].isHelpful
-          ? "helpful"
-          : "not_helpful";
       }
 
       return {
@@ -170,21 +148,26 @@ export const getTargetReviews = async (req, res, next) => {
         content: review.content,
         helpfulCount: review.helpfulCount || 0,
         notHelpfulCount: review.notHelpfulCount || 0,
-        currentUserFeedback: currentUserFeedback,
-        isOwn,
-        isLikedByOwner: review.isLikedByOwner,
+        isLikedByOwner: review.isLikedByOwner || false,
         createdAt: dateStr,
         author,
+        hasOwnerReplied,
         ownerReply: parsedOwnerReply,
       };
     });
 
-    return sendResponse(res, 200, true, "Reviews fetched successfully", {
-      reviews: formattedReviews,
-      summary,
-    });
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Received reviews fetched successfully",
+      {
+        reviews: formattedReviews,
+        summary,
+      },
+    );
   } catch (error) {
-    logger.error("Error fetching target reviews", error);
+    logger.error("Error fetching received reviews", error);
     next(error);
   }
 };
