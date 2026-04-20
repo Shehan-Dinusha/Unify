@@ -9,55 +9,105 @@ const BusinessProfile = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
+
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       unique: true,
     },
-    location: {
-      type: DataTypes.STRING(255),
+
+    displayName: {
+      type: DataTypes.STRING(150),
+      allowNull: false,
+    },
+
+    businessName: {
+      type: DataTypes.STRING(150),
       allowNull: true,
     },
+
     category: {
+      type: DataTypes.ENUM("BOARDING", "FOOD", "SELF_EMPLOYED"),
+      allowNull: false,
+    },
+
+    about: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
+    serviceType: {
+      type: DataTypes.STRING(150),
+      allowNull: true,
+    },
+
+    addresses: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+
+    // 🔥 Owner details (frontend sends these)
+    ownerFirstName: {
       type: DataTypes.STRING(100),
       allowNull: true,
     },
+
+    ownerLastName: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+
+    nic: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+
+    dob: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+
+    gender: {
+      type: DataTypes.ENUM("Male", "Female", "Other"),
+      allowNull: true,
+    },
+
+    // 🔥 contact fields (frontend expects these)
     email: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+
     phone: {
       type: DataTypes.STRING(20),
       allowNull: true,
     },
-    isVerified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    logo: {
-      type: DataTypes.TEXT,
-      allowNull: true, // S3 object key e.g. 'businesses/biz-id/logo.png'
-    },
-    coverImage: {
-      type: DataTypes.TEXT,
-      allowNull: true, // S3 object key e.g. 'businesses/biz-id/cover.jpg'
-    },
-    address: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
+
     website: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
-    registrationDate: {
-      type: DataTypes.DATE,
+
+    logo: {
+      type: DataTypes.TEXT,
       allowNull: true,
-      defaultValue: DataTypes.NOW,
     },
-    businessRegistrationNumber: {
-      type: DataTypes.STRING(255),
-      allowNull: true, // e.g., '#BIZ-8821'
+
+    verificationDoc: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+
+    averageRating: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
     },
   },
   {

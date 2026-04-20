@@ -9,42 +9,42 @@ const ClubProfile = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
+
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       unique: true,
     },
+
     clubName: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(150),
       allowNull: false,
     },
-    description: {
+
+    about: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+
     email: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
-    category: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    isVerified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
+
     logo: {
       type: DataTypes.TEXT,
-      allowNull: true, // S3 object key e.g. 'clubs/club-id/logo.png'
+      allowNull: true,
     },
+
     coverImage: {
       type: DataTypes.TEXT,
-      allowNull: true, // S3 object key e.g. 'clubs/club-id/cover.jpg'
-    },
-    establishedDate: {
-      type: DataTypes.DATE,
       allowNull: true,
+    },
+
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
   },
   {
