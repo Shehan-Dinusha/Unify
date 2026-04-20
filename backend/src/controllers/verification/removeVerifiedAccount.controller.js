@@ -2,6 +2,7 @@ import { sequelize } from "../../modules/index.js";
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import User from "../../modules/User.model.js";
 import ClubProfile from "../../modules/ClubProfile.model.js";
+import StudentProfile from "../../modules/StudentProfile.model.js";
 import Notification from "../../modules/Notification.model.js";
 import AdminLog from "../../modules/AdminLog.model.js";
 import { sendResponse } from "../../utils/response.js";
@@ -63,9 +64,15 @@ export const removeVerifiedAccount = async (req, res, next) => {
         await clubProfile.save({ transaction });
       }
     } else if (requestedRole === "Batch Rep") {
-      // Revert Batch Rep back to Student
-      user.role = "Student";
-      await user.save({ transaction });
+      // Revert Batch Rep flag in Student Profile
+      const studentProfile = await StudentProfile.findOne({
+        where: { userId: user.id },
+        transaction,
+      });
+      if (studentProfile) {
+        studentProfile.isBatchRep = false;
+        await studentProfile.save({ transaction });
+      }
     } else {
       // Any other dynamically assigned roles revert to 'Student' by default or keep previous state.
       // For safety, defaulting to 'Student'.

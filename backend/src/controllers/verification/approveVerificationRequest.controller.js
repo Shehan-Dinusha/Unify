@@ -2,6 +2,7 @@ import { sequelize } from "../../modules/index.js";
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import User from "../../modules/User.model.js";
 import ClubProfile from "../../modules/ClubProfile.model.js";
+import StudentProfile from "../../modules/StudentProfile.model.js";
 import Notification from "../../modules/Notification.model.js";
 import AdminLog from "../../modules/AdminLog.model.js";
 import { sendResponse } from "../../utils/response.js";
@@ -83,9 +84,24 @@ export const approveVerificationRequest = async (req, res, next) => {
         );
       }
 
-      // Elevate User
-      user.role = "Batch Rep";
-      await user.save({ transaction });
+      // Elevate StudentProfile
+      const studentProfile = await StudentProfile.findOne({
+        where: { userId: user.id },
+        transaction,
+      });
+
+      if (!studentProfile) {
+        await transaction.rollback();
+        return sendResponse(
+          res,
+          404,
+          false,
+          "Fatal Error: Student Profile is missing for this Student.",
+        );
+      }
+
+      studentProfile.isBatchRep = true;
+      await studentProfile.save({ transaction });
     } else {
       // Fallback for Business or generic future roles
       user.role = requestedRole;
