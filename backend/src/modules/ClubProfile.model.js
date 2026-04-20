@@ -41,11 +41,6 @@ const ClubProfile = sequelize.define(
       allowNull: true,
     },
 
-    verificationDoc: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
     isVerified: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
