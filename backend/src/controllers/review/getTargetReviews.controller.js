@@ -1,4 +1,10 @@
-import { Review, User, StudentProfile, ClubProfile } from "../../modules/index.js";
+import {
+  Review,
+  ReviewFeedback,
+  User,
+  StudentProfile,
+  ClubProfile,
+} from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -43,6 +49,13 @@ export const getTargetReviews = async (req, res, next) => {
               required: false,
             },
           ],
+        },
+        {
+          model: ReviewFeedback,
+          as: "feedbacks",
+          attributes: ["userId", "isHelpful"],
+          where: { userId: currentUserId },
+          required: false,
         },
       ],
       order: [["createdAt", "DESC"]],
@@ -101,10 +114,16 @@ export const getTargetReviews = async (req, res, next) => {
           let isVerified = false;
 
           // Determine specific identity
-          if (review.reviewer.role === "Student" && review.reviewer.studentProfile?.isBatchRep) {
+          if (
+            review.reviewer.role === "Student" &&
+            review.reviewer.studentProfile?.isBatchRep
+          ) {
             actualRole = "Batch Rep";
             isVerified = true;
-          } else if (review.reviewer.role === "Club" && review.reviewer.clubProfile?.isVerified) {
+          } else if (
+            review.reviewer.role === "Club" &&
+            review.reviewer.clubProfile?.isVerified
+          ) {
             isVerified = true;
           }
 
@@ -141,12 +160,20 @@ export const getTargetReviews = async (req, res, next) => {
         };
       }
 
+      let currentUserFeedback = null;
+      if (review.feedbacks && review.feedbacks.length > 0) {
+        currentUserFeedback = review.feedbacks[0].isHelpful
+          ? "helpful"
+          : "not_helpful";
+      }
+
       return {
         id: review.id,
         rating: review.rating,
         content: review.content,
         helpfulCount: review.helpfulCount || 0,
         notHelpfulCount: review.notHelpfulCount || 0,
+        currentUserFeedback: currentUserFeedback,
         isOwn,
         isLikedByOwner: review.isLikedByOwner,
         createdAt: dateStr,
