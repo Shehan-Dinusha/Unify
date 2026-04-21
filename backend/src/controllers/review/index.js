@@ -5,3 +5,4 @@ export { toggleReviewFeedback } from "./reviewInteraction.controller.js";
 export { getReceivedReviews } from "./getReceivedReviews.controller.js";
 export { toggleOwnerLike } from "./toggleOwnerLike.controller.js";
 export { replyToReview } from "./replyToReview.controller.js";
+export { getMyReviews } from "./getMyReviews.controller.js";
