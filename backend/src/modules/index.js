@@ -39,6 +39,7 @@ import Wallet from "./Wallet.model.js";
 import Transaction from "./Transaction.model.js";
 import WithdrawalRequest from "./WithdrawalRequest.model.js";
 import Notification from "./Notification.model.js";
+import StudentReport from "./StudentReport.model.js";
 
 // ── Associations ──────────────────────────────────────────────────────────────
 
@@ -386,6 +387,14 @@ User.hasMany(Notification, {
 });
 Notification.belongsTo(User, { foreignKey: "userId", as: "user" });
 
+// --- Student Reports ---
+User.hasMany(StudentReport, {
+  foreignKey: "studentId",
+  as: "studentReports",
+  onDelete: "CASCADE",
+});
+StudentReport.belongsTo(User, { foreignKey: "studentId", as: "student" });
+
 // ── Exports ───────────────────────────────────────────────────────────────────
 export {
   sequelize,
@@ -419,4 +428,5 @@ export {
   Transaction,
   WithdrawalRequest,
   Notification,
+  StudentReport,
 };
