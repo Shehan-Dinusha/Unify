@@ -1,0 +1,7 @@
+export * from "./createReport.controller.js";
+export * from "./getStudentReports.controller.js";
+export * from "./getReportById.controller.js";
+export * from "./updateReport.controller.js";
+export * from "./withdrawReport.controller.js";
+export * from "./getReportQueue.controller.js";
+export * from "./getStatistics.controller.js";
