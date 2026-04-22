@@ -1,6 +1,6 @@
 import express from 'express';
 import { ReportController } from '../controllers/index.js';
-import reportUploadService from '../services/reportUpload.service.js';
+import uploadService from '../services/upload.service.js';
 // import { authenticateToken } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
@@ -14,7 +14,7 @@ const router = express.Router();
 // POST /api/v1/reports - Create a new report (Supports Step 3 File Upload)
 router.post(
   '/',
-  reportUploadService.single('evidenceFile'), // Handles optional file upload from Step 3
+  uploadService.single('evidenceFile'), // Handles optional file upload from Step 3
   ReportController.createReport
 );
 
