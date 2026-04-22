@@ -14,72 +14,97 @@ const generateReportId = () => {
 
 /**
  * Handle student submission of a new report.
+ * 100% Compatible with the Frontend UI scenarios.
  * Performs manual validation matching the Verification module pattern.
  */
 export const createReport = async (req, res, next) => {
   try {
     const studentId = req.user?.id || 1;
-    if (!studentId && !req.user) {
-      // Temporary: we allow proceeding if we have the fallback
-      logger.info('Using fallback studentId 1 for testing');
-    }
-
-    const { title, description, category } = req.body;
+    
+    const { 
+      reportType, 
+      category, 
+      additionalDetails, 
+      evidenceUrl, 
+      reportedEntityId 
+    } = req.body;
 
     // 1. Manual Validation
-    if (!title || title.length < 5 || title.length > 200) {
-      return sendResponse(res, 400, false, 'Title is required and must be between 5 and 200 characters.');
+    
+    // Step 1: What are you reporting? (Required)
+    const validTypes = ['post', 'comment', 'user'];
+    if (!reportType || !validTypes.includes(reportType)) {
+      return sendResponse(res, 400, false, 'A valid report type (post, comment, user) is required.');
     }
 
-    if (!description || description.length < 20 || description.length > 5000) {
-      return sendResponse(res, 400, false, 'Description is required and must be between 20 and 5000 characters.');
-    }
-
-    const validCategories = ['Facility', 'IT Support', 'Academic', 'Library', 'Other'];
+    // Step 2: Why are you reporting? (Required)
+    const validCategories = ['inappropriate', 'spam', 'harassment', 'misinformation', 'other'];
     if (!category || !validCategories.includes(category)) {
-      return sendResponse(res, 400, false, 'Valid category is required.');
+      return sendResponse(res, 400, false, 'A valid reason for reporting is required.');
     }
 
-    // 2. Duplicate Check
+    // Step 3: Entity ID (Required to link the report)
+    if (!reportedEntityId) {
+      return sendResponse(res, 400, false, 'The ID of the reported item/user is required.');
+    }
+
+    // Step 3: Additional Comments (Optional, but limited length if provided)
+    if (additionalDetails && additionalDetails.length > 5000) {
+      return sendResponse(res, 400, false, 'Additional comments cannot exceed 5000 characters.');
+    }
+
+    // 2. Duplicate Check (Same student, same entity, same reason, within 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const duplicate = await StudentReport.findOne({
       where: {
         studentId,
-        status: { [Op.in]: ['Pending Review', 'In Progress'] },
+        reportedEntityId,
+        category,
+        reportType,
+        status: { [Op.notIn]: ['Withdrawn', 'Dismissed'] },
         createdAt: { [Op.gte]: sevenDaysAgo },
-        [Op.or]: [
-          { title: { [Op.iLike]: title } },
-          { description: { [Op.iLike]: description } },
-        ],
       },
     });
 
     if (duplicate) {
-      const diffTime = Math.abs(new Date() - duplicate.createdAt);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return sendResponse(
         res,
         409,
         false,
-        `Duplicate report found. You already submitted a similar report ${diffDays} day(s) ago.`
+        `You have already reported this ${reportType} for ${category} recently. Our team is reviewing it.`
       );
     }
 
-    // 3. Create Report
+    // 3. Auto-generate Title for the Table View
+    const formattedType = reportType.charAt(0).toUpperCase() + reportType.slice(1);
+    const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1);
+    const title = `Report: ${formattedCategory} in ${formattedType}`;
+
+    // 4. Handle File Upload (Optional)
+    const evidenceFile = req.file ? `/uploads/reports/${req.file.filename}` : null;
+
+    // 5. Create Report
     const reportId = generateReportId();
     const report = await StudentReport.create({
-      ...req.body,
       reportId,
       studentId,
+      reportType,
+      category,
+      title,
+      additionalDetails,
+      evidenceFile,
+      evidenceUrl,
+      reportedEntityId,
       status: 'Pending Review',
       priority: 'Medium',
     });
 
-    logger.info(`Report created: ${reportId} by student ${studentId}`);
+    logger.info(`Report ${reportId} created by student ${studentId} for ${reportType} ${reportedEntityId}`);
 
     return sendResponse(res, 201, true, 'Report submitted successfully', {
+      id: report.id,
       reportId: report.reportId,
       status: report.status,
     });
