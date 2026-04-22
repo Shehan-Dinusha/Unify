@@ -5,24 +5,27 @@ import logger from "../../utils/logger.js";
 
 /**
  * Handle admin retrieval of the overall report queue with advanced filters.
+ * 100% Compatible with ReportModeration.jsx requirement for seeing all reports.
  */
 export const getReportQueue = async (req, res, next) => {
   try {
-    // TODO: Add admin authorization check here
+    // TODO: Add admin authorization check once RBAC middleware is available
     
-    const { status, category, priority, search, page = 1, limit = 10 } = req.query;
+    const { status, category, reportType, priority, search, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
     const where = {};
 
-    if (status) where.status = status;
-    if (category) where.category = category;
-    if (priority) where.priority = priority;
+    if (status && status !== 'all') where.status = status;
+    if (category && category !== 'all') where.category = category;
+    if (reportType && reportType !== 'all') where.reportType = reportType;
+    if (priority && priority !== 'all') where.priority = priority;
+    
     if (search) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search}%` } },
-        { description: { [Op.iLike]: `%${search}%` } },
         { reportId: { [Op.iLike]: `%${search}%` } },
+        { additionalDetails: { [Op.iLike]: `%${search}%` } },
       ];
     }
 
@@ -31,7 +34,6 @@ export const getReportQueue = async (req, res, next) => {
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [
-        ['priority', 'DESC'], // Note: ENUM ordering in SQL might follow definition order (Low, Medium, High, Critical)
         ['createdAt', 'DESC'],
       ],
     });
