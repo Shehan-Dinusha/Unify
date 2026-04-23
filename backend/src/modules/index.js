@@ -45,7 +45,6 @@ import StudentReport from "./StudentReport.model.js";
 // --- New Academic Structure Models ---
 import University from "./University.model.js";
 import Faculty from "./Faculty.model.js";
-import Department from "./Department.model.js";
 import Degree from "./Degree.model.js";
 import Batch from "./Batch.model.js";
 import SemesterVisibility from "./SemesterVisibility.model.js";
@@ -60,19 +59,12 @@ University.hasMany(Faculty, {
 });
 Faculty.belongsTo(University, { foreignKey: "universityId", as: "university" });
 
-Faculty.hasMany(Department, {
+Faculty.hasMany(Degree, {
   foreignKey: "facultyId",
-  as: "departments",
-  onDelete: "CASCADE",
-});
-Department.belongsTo(Faculty, { foreignKey: "facultyId", as: "faculty" });
-
-Department.hasMany(Degree, {
-  foreignKey: "departmentId",
   as: "degrees",
   onDelete: "CASCADE",
 });
-Degree.belongsTo(Department, { foreignKey: "departmentId", as: "department" });
+Degree.belongsTo(Faculty, { foreignKey: "facultyId", as: "faculty" });
 
 // --- Semester Visibility Rules ---
 Degree.hasMany(SemesterVisibility, {
@@ -119,15 +111,6 @@ University.hasMany(StudentProfile, {
 
 StudentProfile.belongsTo(Faculty, { foreignKey: "facultyId", as: "faculty" });
 Faculty.hasMany(StudentProfile, { foreignKey: "facultyId", as: "students" });
-
-StudentProfile.belongsTo(Department, {
-  foreignKey: "departmentId",
-  as: "department",
-});
-Department.hasMany(StudentProfile, {
-  foreignKey: "departmentId",
-  as: "students",
-});
 
 StudentProfile.belongsTo(Degree, { foreignKey: "degreeId", as: "degree" });
 Degree.hasMany(StudentProfile, { foreignKey: "degreeId", as: "students" });
@@ -543,7 +526,6 @@ export {
   StudentReport,
   University,
   Faculty,
-  Department,
   Degree,
   Batch,
   SemesterVisibility,

@@ -31,11 +31,6 @@ const StudentProfile = sequelize.define(
       allowNull: true,
     },
 
-    departmentId: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-
     degreeId: {
       type: DataTypes.INTEGER,
       allowNull: true,
