@@ -42,7 +42,62 @@ import WithdrawalRequest from "./WithdrawalRequest.model.js";
 import Notification from "./Notification.model.js";
 import StudentReport from "./StudentReport.model.js";
 
+// --- New Academic Structure Models ---
+import University from "./University.model.js";
+import Faculty from "./Faculty.model.js";
+import Department from "./Department.model.js";
+import Degree from "./Degree.model.js";
+import Batch from "./Batch.model.js";
+import SemesterVisibility from "./SemesterVisibility.model.js";
+
 // ── Associations ──────────────────────────────────────────────────────────────
+
+// --- University & Academic Structure ---
+University.hasMany(Faculty, {
+  foreignKey: "universityId",
+  as: "faculties",
+  onDelete: "CASCADE",
+});
+Faculty.belongsTo(University, { foreignKey: "universityId", as: "university" });
+
+Faculty.hasMany(Department, {
+  foreignKey: "facultyId",
+  as: "departments",
+  onDelete: "CASCADE",
+});
+Department.belongsTo(Faculty, { foreignKey: "facultyId", as: "faculty" });
+
+Department.hasMany(Degree, {
+  foreignKey: "departmentId",
+  as: "degrees",
+  onDelete: "CASCADE",
+});
+Degree.belongsTo(Department, { foreignKey: "departmentId", as: "department" });
+
+// --- Semester Visibility Rules ---
+Degree.hasMany(SemesterVisibility, {
+  foreignKey: "degreeId",
+  as: "semesterVisibilities",
+  onDelete: "CASCADE",
+});
+SemesterVisibility.belongsTo(Degree, { foreignKey: "degreeId", as: "degree" });
+
+Semester.hasMany(SemesterVisibility, {
+  foreignKey: "semesterId",
+  as: "visibilities",
+  onDelete: "CASCADE",
+});
+SemesterVisibility.belongsTo(Semester, {
+  foreignKey: "semesterId",
+  as: "semester",
+});
+
+Batch.hasMany(SemesterVisibility, {
+  foreignKey: "batchId",
+  as: "semesterVisibilities",
+  onDelete: "CASCADE",
+});
+SemesterVisibility.belongsTo(Batch, { foreignKey: "batchId", as: "batch" });
 
 // --- Profiles ---
 User.hasOne(StudentProfile, {
@@ -51,6 +106,34 @@ User.hasOne(StudentProfile, {
   onDelete: "CASCADE",
 });
 StudentProfile.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// Student Profile relations to Academic Entities
+StudentProfile.belongsTo(University, {
+  foreignKey: "universityId",
+  as: "university",
+});
+University.hasMany(StudentProfile, {
+  foreignKey: "universityId",
+  as: "students",
+});
+
+StudentProfile.belongsTo(Faculty, { foreignKey: "facultyId", as: "faculty" });
+Faculty.hasMany(StudentProfile, { foreignKey: "facultyId", as: "students" });
+
+StudentProfile.belongsTo(Department, {
+  foreignKey: "departmentId",
+  as: "department",
+});
+Department.hasMany(StudentProfile, {
+  foreignKey: "departmentId",
+  as: "students",
+});
+
+StudentProfile.belongsTo(Degree, { foreignKey: "degreeId", as: "degree" });
+Degree.hasMany(StudentProfile, { foreignKey: "degreeId", as: "students" });
+
+StudentProfile.belongsTo(Batch, { foreignKey: "batchId", as: "batch" });
+Batch.hasMany(StudentProfile, { foreignKey: "batchId", as: "students" });
 
 User.hasOne(BusinessProfile, {
   foreignKey: "userId",
@@ -243,6 +326,19 @@ User.hasMany(AdminLog, {
 AdminLog.belongsTo(User, { foreignKey: "adminId", as: "admin" });
 
 // --- Academic Modules ---
+Degree.belongsToMany(AcademicModule, {
+  through: "degree_academic_modules",
+  as: "academicModules",
+  foreignKey: "degreeId",
+  otherKey: "moduleId",
+});
+AcademicModule.belongsToMany(Degree, {
+  through: "degree_academic_modules",
+  as: "degrees",
+  foreignKey: "moduleId",
+  otherKey: "degreeId",
+});
+
 Semester.hasMany(AcademicModule, {
   foreignKey: "semesterId",
   as: "modules",
@@ -445,4 +541,10 @@ export {
   WithdrawalRequest,
   Notification,
   StudentReport,
+  University,
+  Faculty,
+  Department,
+  Degree,
+  Batch,
+  SemesterVisibility,
 };
