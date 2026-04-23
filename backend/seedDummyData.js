@@ -8,6 +8,10 @@ import {
   MarketplaceItem,
   Review,
   Boarding,
+  University,
+  Faculty,
+  Degree,
+  Batch,
 } from "./src/modules/index.js";
 
 async function seedData() {
@@ -45,6 +49,26 @@ async function seedData() {
 
     const passwordHash = await bcrypt.hash("password123", 10);
 
+    // Fetch necessary academic data for students
+    const moratuwa = await University.findOne({
+      where: { name: "University of Moratuwa" },
+    });
+    const engineering = await Faculty.findOne({
+      where: { name: "Engineering" },
+    });
+    const cseDegree = await Degree.findOne({
+      where: { name: "BSc Eng (Hons) in Computer Science & Engineering" },
+    });
+    const batch22 = await Batch.findOne({ where: { name: "22" } });
+
+    const itFaculty = await Faculty.findOne({
+      where: { name: "Information Technology" },
+    });
+    const itDegree = await Degree.findOne({
+      where: { name: "BSc (Hons) in Information Technology" },
+    });
+    const batch21 = await Batch.findOne({ where: { name: "21" } });
+
     // 1. Create a Student User
     const [studentUser] = await User.findOrCreate({
       where: { email: "alex.j@unify.com" },
@@ -62,8 +86,10 @@ async function seedData() {
       defaults: {
         userId: studentUser.id,
         registrationNumber: "ENG-22-045",
-        faculty: "Faculty of Engineering",
-        department: "Computer Science",
+        universityId: moratuwa?.id,
+        facultyId: engineering?.id,
+        degreeId: cseDegree?.id,
+        batchId: batch22?.id,
         tier: "Premium",
       },
     });
@@ -84,7 +110,11 @@ async function seedData() {
       where: { userId: sellerStudent.id },
       defaults: {
         userId: sellerStudent.id,
-        registrationNumber: "SCI-21-089",
+        registrationNumber: "IT-21-089",
+        universityId: moratuwa?.id,
+        facultyId: itFaculty?.id,
+        degreeId: itDegree?.id,
+        batchId: batch21?.id,
         tier: "Standard",
       },
     });
