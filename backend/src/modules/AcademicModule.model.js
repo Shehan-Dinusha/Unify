@@ -21,14 +21,6 @@ const AcademicModule = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    degrees: {
-      type: DataTypes.JSON,
-      allowNull: true,
-    },
   },
   {
     tableName: "academic_modules",

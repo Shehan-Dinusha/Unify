@@ -1,4 +1,3 @@
-//node seedDummyData.js
 import bcrypt from "bcryptjs";
 import {
   sequelize,
@@ -8,14 +7,20 @@ import {
   MarketplaceItem,
   Review,
   Boarding,
-} from "./src/modules/index.js";
+  University,
+  Faculty,
+  Degree,
+  Batch,
+} from "../../modules/index.js";
+import { sendResponse } from "../../utils/response.js";
+import logger from "../../utils/logger.js";
 
-async function seedData() {
-  console.log("Starting comprehensive data seeding for Unify...");
+export const seedDummyData = async (req, res, next) => {
+  logger.info("Starting comprehensive data seeding for Unify...");
 
   try {
     await sequelize.authenticate();
-    console.log("Database connected successfully.");
+    logger.info("Database connected successfully.");
 
     await sequelize.sync({ alter: true });
 
@@ -40,10 +45,30 @@ async function seedData() {
         `SELECT setval('boardings_id_seq', (SELECT MAX(id) FROM boardings));`,
       );
     } catch (err) {
-      console.log("Sequence fix skipped or not required.");
+      logger.info("Sequence fix skipped or not required.");
     }
 
     const passwordHash = await bcrypt.hash("password123", 10);
+
+    // Fetch necessary academic data for students
+    const moratuwa = await University.findOne({
+      where: { name: "University of Moratuwa" },
+    });
+    const engineering = await Faculty.findOne({
+      where: { name: "Engineering" },
+    });
+    const cseDegree = await Degree.findOne({
+      where: { name: "BSc Eng (Hons) in Computer Science & Engineering" },
+    });
+    const batch22 = await Batch.findOne({ where: { name: "22" } });
+
+    const itFaculty = await Faculty.findOne({
+      where: { name: "Information Technology" },
+    });
+    const itDegree = await Degree.findOne({
+      where: { name: "BSc (Hons) in Information Technology" },
+    });
+    const batch21 = await Batch.findOne({ where: { name: "21" } });
 
     // 1. Create a Student User
     const [studentUser] = await User.findOrCreate({
@@ -62,8 +87,10 @@ async function seedData() {
       defaults: {
         userId: studentUser.id,
         registrationNumber: "ENG-22-045",
-        faculty: "Faculty of Engineering",
-        department: "Computer Science",
+        universityId: moratuwa?.id,
+        facultyId: engineering?.id,
+        degreeId: cseDegree?.id,
+        batchId: batch22?.id,
         tier: "Premium",
       },
     });
@@ -84,7 +111,11 @@ async function seedData() {
       where: { userId: sellerStudent.id },
       defaults: {
         userId: sellerStudent.id,
-        registrationNumber: "SCI-21-089",
+        registrationNumber: "IT-21-089",
+        universityId: moratuwa?.id,
+        facultyId: itFaculty?.id,
+        degreeId: itDegree?.id,
+        batchId: batch21?.id,
         tier: "Standard",
       },
     });
@@ -201,18 +232,18 @@ async function seedData() {
       },
     });
 
-    console.log("-----------------------------------------");
-    console.log(
+    logger.info(
       "Mock data heavily populated from frontend mock data equivalents!",
     );
-    console.log("Student: alex.j@unify.com / password123");
-    console.log("Business: campus.cafe@unify.com / password123");
-    console.log("Seller: sarah.m@unify.com / password123");
+    return sendResponse(res, 200, true, "Dummy data seeded successfully!");
   } catch (error) {
-    console.error("Error seeding data:", error);
-  } finally {
-    await sequelize.close();
+    logger.error("Error seeding data:", error);
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to seed dummy data",
+      error.message,
+    );
   }
-}
-
-seedData();
+};

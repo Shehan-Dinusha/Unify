@@ -31,7 +31,6 @@ const StudentReport = sequelize.define(
     reportType: {
       type: DataTypes.ENUM("post", "comment", "user"),
       allowNull: false,
-      comment: "What is being reported (Post, Comment, or User Profile)",
     },
     category: {
       type: DataTypes.ENUM(
@@ -39,10 +38,9 @@ const StudentReport = sequelize.define(
         "spam",
         "harassment",
         "misinformation",
-        "other"
+        "other",
       ),
       allowNull: false,
-      comment: "Why it is being reported (matches UI reportReasons)",
     },
     title: {
       type: DataTypes.STRING(255),
@@ -75,7 +73,7 @@ const StudentReport = sequelize.define(
         "In Progress",
         "Resolved",
         "Withdrawn",
-        "Dismissed"
+        "Dismissed",
       ),
       allowNull: false,
       defaultValue: "Pending Review",
@@ -108,7 +106,7 @@ const StudentReport = sequelize.define(
         fields: ["reportId"],
       },
     ],
-  }
+  },
 );
 
 export default StudentReport;
