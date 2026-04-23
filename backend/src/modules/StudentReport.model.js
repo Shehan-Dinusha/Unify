@@ -31,7 +31,6 @@ const StudentReport = sequelize.define(
     reportType: {
       type: DataTypes.ENUM("post", "comment", "user"),
       allowNull: false,
-      comment: "What is being reported (Post, Comment, or User Profile)",
     },
     category: {
       type: DataTypes.ENUM(
@@ -42,7 +41,6 @@ const StudentReport = sequelize.define(
         "other",
       ),
       allowNull: false,
-      comment: "Why it is being reported (matches UI reportReasons)",
     },
     title: {
       type: DataTypes.STRING(255),
