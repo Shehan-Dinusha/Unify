@@ -1,4 +1,5 @@
 export * as VerificationController from "./verification/index.js";
+export * as FollowerController from "./follower/index.js";
 export * as ReportController from "./report/index.js";
 
 // Future feature controllers will be exported here as well:
