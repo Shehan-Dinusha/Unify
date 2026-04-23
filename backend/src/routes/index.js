@@ -3,6 +3,7 @@ import verificationRoutes from "./verification.routes.js";
 import reviewRoutes from "./review.routes.js";
 import followerRoutes from "./follower.routes.js";
 import reportRoutes from "./report.routes.js";
+import baseRoutes from "./base.routes.js";
 
 const router = express.Router();
 
@@ -11,5 +12,6 @@ router.use("/verifications", verificationRoutes);
 router.use("/reviews", reviewRoutes);
 router.use("/followers", followerRoutes);
 router.use("/reports", reportRoutes);
+router.use("/base", baseRoutes);
 
 export default router;

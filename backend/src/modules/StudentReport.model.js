@@ -39,7 +39,7 @@ const StudentReport = sequelize.define(
         "spam",
         "harassment",
         "misinformation",
-        "other"
+        "other",
       ),
       allowNull: false,
       comment: "Why it is being reported (matches UI reportReasons)",
@@ -67,7 +67,6 @@ const StudentReport = sequelize.define(
     reportedEntityId: {
       type: DataTypes.STRING(100),
       allowNull: false,
-      comment: "The ID of the Post, Comment, or User being reported",
     },
     status: {
       type: DataTypes.ENUM(
@@ -75,7 +74,7 @@ const StudentReport = sequelize.define(
         "In Progress",
         "Resolved",
         "Withdrawn",
-        "Dismissed"
+        "Dismissed",
       ),
       allowNull: false,
       defaultValue: "Pending Review",
@@ -108,7 +107,7 @@ const StudentReport = sequelize.define(
         fields: ["reportId"],
       },
     ],
-  }
+  },
 );
 
 export default StudentReport;

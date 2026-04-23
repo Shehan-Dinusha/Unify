@@ -4,7 +4,9 @@ import {
   Faculty,
   Degree,
   Batch,
-} from "./src/modules/index.js";
+} from "../../modules/index.js";
+import { sendResponse } from "../../utils/response.js";
+import logger from "../../utils/logger.js";
 
 const data = {
   university: "University of Moratuwa",
@@ -56,22 +58,22 @@ const data = {
   ],
 };
 
-const seedAcademicStructure = async () => {
+export const seedAcademicStructure = async (req, res, next) => {
   try {
     await sequelize.authenticate();
-    console.log("Database connected. Starting seed...");
+    logger.info("Database connected. Starting seed...");
 
     // 1. Seed Batches
     for (const batchName of data.batches) {
       await Batch.findOrCreate({ where: { name: batchName } });
     }
-    console.log("✅ Batches seeded");
+    logger.info("✅ Batches seeded");
 
     // 2. Seed University
     const [university] = await University.findOrCreate({
       where: { name: data.university },
     });
-    console.log(`✅ University seeded: ${university.name}`);
+    logger.info(`✅ University seeded: ${university.name}`);
 
     // 3. Seed Faculties and Degrees
     for (const facData of data.faculties) {
@@ -84,15 +86,24 @@ const seedAcademicStructure = async () => {
           where: { name: degreeName, facultyId: faculty.id },
         });
       }
-      console.log(`✅ Seeded Faculty and Degrees for: ${faculty.name}`);
+      logger.info(`✅ Seeded Faculty and Degrees for: ${faculty.name}`);
     }
 
-    console.log("🎉 Academic structure seed completed successfully!");
-    process.exit(0);
+    logger.info("🎉 Academic structure seed completed successfully!");
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Academic structure seed completed successfully!",
+    );
   } catch (error) {
-    console.error("❌ Error seeding academic structure:", error);
-    process.exit(1);
+    logger.error("❌ Error seeding academic structure:", error);
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to seed academic structure",
+      error.message,
+    );
   }
 };
-
-seedAcademicStructure();

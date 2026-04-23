@@ -1,4 +1,3 @@
-//node seedDummyData.js
 import bcrypt from "bcryptjs";
 import {
   sequelize,
@@ -12,14 +11,16 @@ import {
   Faculty,
   Degree,
   Batch,
-} from "./src/modules/index.js";
+} from "../../modules/index.js";
+import { sendResponse } from "../../utils/response.js";
+import logger from "../../utils/logger.js";
 
-async function seedData() {
-  console.log("Starting comprehensive data seeding for Unify...");
+export const seedDummyData = async (req, res, next) => {
+  logger.info("Starting comprehensive data seeding for Unify...");
 
   try {
     await sequelize.authenticate();
-    console.log("Database connected successfully.");
+    logger.info("Database connected successfully.");
 
     await sequelize.sync({ alter: true });
 
@@ -44,7 +45,7 @@ async function seedData() {
         `SELECT setval('boardings_id_seq', (SELECT MAX(id) FROM boardings));`,
       );
     } catch (err) {
-      console.log("Sequence fix skipped or not required.");
+      logger.info("Sequence fix skipped or not required.");
     }
 
     const passwordHash = await bcrypt.hash("password123", 10);
@@ -231,18 +232,18 @@ async function seedData() {
       },
     });
 
-    console.log("-----------------------------------------");
-    console.log(
+    logger.info(
       "Mock data heavily populated from frontend mock data equivalents!",
     );
-    console.log("Student: alex.j@unify.com / password123");
-    console.log("Business: campus.cafe@unify.com / password123");
-    console.log("Seller: sarah.m@unify.com / password123");
+    return sendResponse(res, 200, true, "Dummy data seeded successfully!");
   } catch (error) {
-    console.error("Error seeding data:", error);
-  } finally {
-    await sequelize.close();
+    logger.error("Error seeding data:", error);
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to seed dummy data",
+      error.message,
+    );
   }
-}
-
-seedData();
+};
