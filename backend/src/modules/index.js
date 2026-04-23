@@ -25,6 +25,7 @@ import Material from "./Material.model.js";
 import Report from "./Report.model.js";
 import Order from "./Order.model.js";
 import Review from "./Review.model.js";
+import ReviewFeedback from "./ReviewFeedback.model.js";
 import Conversation from "./Conversation.model.js";
 import Message from "./Message.model.js";
 import BoostPackage from "./BoostPackage.model.js";
@@ -156,6 +157,20 @@ User.hasMany(Review, { foreignKey: "reviewerId", as: "reviewsGiven" });
 
 Review.belongsTo(User, { foreignKey: "targetId", as: "target" });
 User.hasMany(Review, { foreignKey: "targetId", as: "reviewsReceived" });
+
+Review.hasMany(ReviewFeedback, {
+  foreignKey: "reviewId",
+  as: "feedbacks",
+  onDelete: "CASCADE",
+});
+ReviewFeedback.belongsTo(Review, { foreignKey: "reviewId", as: "review" });
+
+User.hasMany(ReviewFeedback, {
+  foreignKey: "userId",
+  as: "reviewFeedbacks",
+  onDelete: "CASCADE",
+});
+ReviewFeedback.belongsTo(User, { foreignKey: "userId", as: "user" });
 
 // --- Chat System ---
 Conversation.belongsTo(User, {
@@ -414,6 +429,7 @@ export {
   Report,
   Order,
   Review,
+  ReviewFeedback,
   Conversation,
   Message,
   BoostPackage,
