@@ -14,6 +14,9 @@ import StudentProfile from "./StudentProfile.model.js";
 import BusinessProfile from "./BusinessProfile.model.js";
 import ClubProfile from "./ClubProfile.model.js";
 import Post from "./Post.model.js";
+import ClubProductPost from "./ClubProductPost.model.js";
+import ClubEventPost from "./ClubEventPost.model.js";
+import NormalPost from "./NormalPost.model.js";
 import Comment from "./Comment.model.js";
 import Boarding from "./Boarding.model.js";
 import LostAndFound from "./LostAndFound.model.js";
@@ -93,6 +96,27 @@ User.hasMany(Post, {
   onDelete: "CASCADE",
 });
 Post.belongsTo(User, { foreignKey: "authorId", as: "author" });
+
+User.hasMany(ClubProductPost, {
+  foreignKey: "authorId",
+  as: "clubProductPosts",
+  onDelete: "CASCADE",
+});
+ClubProductPost.belongsTo(User, { foreignKey: "authorId", as: "author" });
+
+User.hasMany(ClubEventPost, {
+  foreignKey: "authorId",
+  as: "clubEventPosts",
+  onDelete: "CASCADE",
+});
+ClubEventPost.belongsTo(User, { foreignKey: "authorId", as: "author" });
+
+User.hasMany(NormalPost, {
+  foreignKey: "authorId",
+  as: "normalPosts",
+  onDelete: "CASCADE",
+});
+NormalPost.belongsTo(User, { foreignKey: "authorId", as: "author" });
 
 Post.hasMany(Comment, {
   foreignKey: "postId",
@@ -394,6 +418,9 @@ export {
   BusinessProfile,
   ClubProfile,
   Post,
+  ClubProductPost,
+  ClubEventPost,
+  NormalPost,
   Comment,
   Boarding,
   LostAndFound,
