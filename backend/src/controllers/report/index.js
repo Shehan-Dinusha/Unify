@@ -5,3 +5,5 @@ export * from "./updateReport.controller.js";
 export * from "./withdrawReport.controller.js";
 export * from "./getReportQueue.controller.js";
 export * from "./getStatistics.controller.js";
+export * from "./getSocialReports.controller.js";
+export * from "./processSocialReport.controller.js";
