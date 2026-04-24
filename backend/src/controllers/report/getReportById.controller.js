@@ -21,7 +21,27 @@ export const getReportById = async (req, res, next) => {
 
     return sendResponse(res, 200, true, 'Report details retrieved', report);
   } catch (error) {
-    logger.error(`Error in getReportById controller: ${error.message}`);
+    logger.error(`Error in getReportById controller:`, {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      timestamp: new Date().toISOString(),
+    });
+    
+    // Handle specific database errors
+    if (error.name === 'SequelizeValidationError') {
+      return sendResponse(res, 400, false, 'Validation error: ' + error.errors.map(e => e.message).join(', '));
+    }
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return sendResponse(res, 409, false, 'This report already exists.');
+    }
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
+      return sendResponse(res, 400, false, 'Referenced record not found.');
+    }
+    if (error.name === 'SequelizeDatabaseError') {
+      return sendResponse(res, 500, false, 'Database error occurred.');
+    }
+    
     next(error);
   }
 };
