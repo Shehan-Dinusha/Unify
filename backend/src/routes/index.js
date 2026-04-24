@@ -4,6 +4,7 @@ import reviewRoutes from "./review.routes.js";
 import followerRoutes from "./follower.routes.js";
 import reportRoutes from "./report.routes.js";
 import baseRoutes from "./base.routes.js";
+import learningRoutes from "./learning.routes.js";
 
 const router = express.Router();
 
@@ -13,5 +14,6 @@ router.use("/reviews", reviewRoutes);
 router.use("/followers", followerRoutes);
 router.use("/reports", reportRoutes);
 router.use("/base", baseRoutes);
+router.use("/learning", learningRoutes);
 
 export default router;
