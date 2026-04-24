@@ -2,6 +2,7 @@ import { sequelize } from "../../modules/index.js";
 import StudentReport from "../../modules/StudentReport.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { Op } from "sequelize";
 
 /**
  * Handle admin retrieval of summary statistics for reports.
@@ -36,10 +37,35 @@ export const getStatistics = async (req, res, next) => {
       raw: true,
     });
 
+    // Calculate dashboard tile stats
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const resolvedToday = await StudentReport.count({ 
+      where: { 
+        status: 'Resolved',
+        updatedAt: { [Op.gte]: startOfToday }
+      } 
+    });
+
+    const criticalFlags = await StudentReport.count({
+      where: {
+        [Op.or]: [
+          { priority: 'Critical' },
+          { category: 'harassment' },
+          { category: 'inappropriate' }
+        ],
+        status: { [Op.ne]: 'Resolved' }
+      }
+    });
+
     const stats = {
       summary: {
         total,
         pending,
+        totalPending: pending, // For Dashboard Tile
+        criticalFlags, // For Dashboard Tile
+        resolvedToday, // For Dashboard Tile
         inProgress,
         resolved,
       },

@@ -11,25 +11,17 @@ export const updateReport = async (req, res, next) => {
     // TODO: Add admin authorization check here
     
     const { id } = req.params;
-    const { status, adminNotes, priority } = req.body;
-
-    // 1. Manual Validation
-    const validStatuses = ['Pending Review', 'In Progress', 'Resolved', 'Withdrawn', 'Dismissed'];
-    if (status && !validStatuses.includes(status)) {
-      return sendResponse(res, 400, false, 'Invalid status value.');
-    }
-
-    const validPriorities = ['Low', 'Medium', 'High', 'Critical'];
-    if (priority && !validPriorities.includes(priority)) {
-      return sendResponse(res, 400, false, 'Invalid priority value.');
-    }
-
-    if (adminNotes && adminNotes.length > 2000) {
-      return sendResponse(res, 400, false, 'Admin notes cannot exceed 2000 characters.');
-    }
+    const { status, adminNotes, priority, action, notes, reason } = req.body;
 
     // 2. Fetch and Update
-    const report = await StudentReport.findByPk(id);
+    let whereClause = {};
+    if (!isNaN(parseInt(id)) && !id.startsWith('#')) {
+      whereClause.id = parseInt(id);
+    } else {
+      whereClause.reportId = id.toUpperCase();
+    }
+
+    const report = await StudentReport.findOne({ where: whereClause });
 
     if (!report) {
       return sendResponse(res, 404, false, 'Report not found');
@@ -39,12 +31,63 @@ export const updateReport = async (req, res, next) => {
       return sendResponse(res, 400, false, 'Cannot update a withdrawn report');
     }
 
-    if (status) report.status = status;
-    if (adminNotes) report.adminNotes = adminNotes;
-    if (priority) report.priority = priority;
+    if (report.status === 'Resolved' || report.status === 'Dismissed') {
+      return sendResponse(res, 400, false, 'Report is already finalized and cannot be modified.');
+    }
 
-    if (status === 'Resolved') {
-      report.resolvedAt = new Date();
+    // Handle Admin UI Action Payload (action, notes, reason)
+    if (action) {
+      switch (action) {
+        case 'dismiss':
+          report.status = 'Dismissed';
+          report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Dismiss Reason: ${reason}. Notes: ${notes}`;
+          break;
+        case 'resolve':
+          report.status = 'Resolved';
+          report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Resolution: ${notes}`;
+          report.resolvedAt = new Date();
+          break;
+        case 'delete_post':
+          // Attempt to delete post if reportedEntityId is a post ID
+          if (report.reportType === 'post') {
+            const Post = (await import("../../modules/Post.model.js")).default;
+            await Post.destroy({ where: { id: report.reportedEntityId } }).catch(err => logger.warn('Failed to delete post: ' + err));
+          }
+          report.status = 'Resolved';
+          report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Action: Deleted Post. Notes: ${notes}`;
+          report.resolvedAt = new Date();
+          break;
+        case 'suspend_user':
+          // Attempt to suspend user if reportedEntityId is a user ID
+          if (report.reportType === 'user') {
+            const User = (await import("../../modules/User.model.js")).default;
+            await User.update({ status: 'Suspended' }, { where: { id: report.reportedEntityId } }).catch(err => logger.warn('Failed to suspend user: ' + err));
+          }
+          report.status = 'Resolved';
+          report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Action: Suspended User. Reason: ${reason}. Notes: ${notes}`;
+          report.resolvedAt = new Date();
+          break;
+        case 'add_note':
+          report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Admin Note: ${notes}`;
+          if (report.status === 'Pending Review') report.status = 'In Progress';
+          break;
+        default:
+          return sendResponse(res, 400, false, 'Invalid action');
+      }
+    } else {
+      // Legacy status/adminNotes update
+      if (status) report.status = status;
+      if (adminNotes) {
+        report.adminNotes = adminNotes;
+        if (report.status === 'Pending Review') {
+          report.status = 'In Progress';
+        }
+      }
+      if (priority) report.priority = priority;
+
+      if (status === 'Resolved') {
+        report.resolvedAt = new Date();
+      }
     }
 
     await report.save();
