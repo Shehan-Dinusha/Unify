@@ -53,6 +53,33 @@ export const createReport = async (req, res, next) => {
       return sendResponse(res, 400, false, 'Additional comments cannot exceed 5000 characters.');
     }
 
+    // Evidence URL validation (if provided)
+    if (evidenceUrl) {
+      if (evidenceUrl.length > 500) {
+        return sendResponse(res, 400, false, 'Evidence URL cannot exceed 500 characters.');
+      }
+      // Validate URL format
+      try {
+        new URL(evidenceUrl);
+      } catch (_) {
+        return sendResponse(res, 400, false, 'Invalid URL format for evidence link.');
+      }
+    }
+
+    // Validate reportedEntityId format
+    if (!reportedEntityId || reportedEntityId.trim() === '') {
+      return sendResponse(res, 400, false, 'The ID of the reported item/user cannot be empty.');
+    }
+
+    if (reportedEntityId.length > 100) {
+      return sendResponse(res, 400, false, 'Reported entity ID cannot exceed 100 characters.');
+    }
+
+    // Additional details must be minimum length if provided
+    if (additionalDetails && additionalDetails.trim().length < 10) {
+      return sendResponse(res, 400, false, 'Additional comments must be at least 10 characters if provided.');
+    }
+
     // 2. Duplicate Check (Same student, same entity, same reason, within 7 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -109,7 +136,27 @@ export const createReport = async (req, res, next) => {
       status: report.status,
     });
   } catch (error) {
-    logger.error(`Error in createReport controller: ${error.message}`);
+    logger.error(`Error in createReport controller:`, {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      timestamp: new Date().toISOString(),
+    });
+    
+    // Handle specific database errors
+    if (error.name === 'SequelizeValidationError') {
+      return sendResponse(res, 400, false, 'Validation error: ' + error.errors.map(e => e.message).join(', '));
+    }
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return sendResponse(res, 409, false, 'This report already exists.');
+    }
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
+      return sendResponse(res, 400, false, 'Referenced record not found.');
+    }
+    if (error.name === 'SequelizeDatabaseError') {
+      return sendResponse(res, 500, false, 'Database error occurred.');
+    }
+    
     next(error);
   }
 };
