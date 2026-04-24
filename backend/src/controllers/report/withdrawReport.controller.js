@@ -16,9 +16,20 @@ export const withdrawReport = async (req, res, next) => {
       return sendResponse(res, 401, false, 'Student authentication required');
     }
 
+    // ID validation
+    if (!id || isNaN(parseInt(id))) {
+      return sendResponse(res, 400, false, 'Valid report ID is required.');
+    }
+
     // 1. Manual Validation
-    if (withdrawalReason && (withdrawalReason.length < 5 || withdrawalReason.length > 500)) {
-      return sendResponse(res, 400, false, 'Withdrawal reason must be between 5 and 500 characters.');
+    if (withdrawalReason) {
+      const reason = withdrawalReason.trim();
+      if (reason.length < 5) {
+        return sendResponse(res, 400, false, 'Withdrawal reason must be at least 5 characters.');
+      }
+      if (reason.length > 500) {
+        return sendResponse(res, 400, false, 'Withdrawal reason cannot exceed 500 characters.');
+      }
     }
 
     // 2. Fetch and Withdraw
@@ -49,7 +60,27 @@ export const withdrawReport = async (req, res, next) => {
       withdrawnAt: report.withdrawnAt,
     });
   } catch (error) {
-    logger.error(`Error in withdrawReport controller: ${error.message}`);
+    logger.error(`Error in withdrawReport controller:`, {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      timestamp: new Date().toISOString(),
+    });
+    
+    // Handle specific database errors
+    if (error.name === 'SequelizeValidationError') {
+      return sendResponse(res, 400, false, 'Validation error: ' + error.errors.map(e => e.message).join(', '));
+    }
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return sendResponse(res, 409, false, 'This report already exists.');
+    }
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
+      return sendResponse(res, 400, false, 'Referenced record not found.');
+    }
+    if (error.name === 'SequelizeDatabaseError') {
+      return sendResponse(res, 500, false, 'Database error occurred.');
+    }
+    
     next(error);
   }
 };
