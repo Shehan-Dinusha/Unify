@@ -31,6 +31,7 @@ import Message from "./Message.model.js";
 import BoostPackage from "./BoostPackage.model.js";
 import BoostCampaign from "./BoostCampaign.model.js";
 import BoostInteraction from "./BoostInteraction.model.js";
+import BoostLog from "./BoostLog.model.js";
 import AdminLog from "./AdminLog.model.js";
 import UserActivityLog from "./UserActivityLog.model.js";
 import UserFollower from "./UserFollower.model.js";
@@ -267,12 +268,19 @@ Message.belongsTo(User, { foreignKey: "senderId", as: "sender" });
 User.hasMany(Message, { foreignKey: "senderId", as: "sentMessages" });
 
 // --- Advertising / Boosts ---
+User.hasMany(BoostCampaign, {
+  foreignKey: "userId",
+  as: "boostCampaigns",
+  onDelete: "CASCADE",
+});
+BoostCampaign.belongsTo(User, { foreignKey: "userId", as: "owner" });
+
 BoostCampaign.belongsTo(Post, {
   foreignKey: "postId",
   as: "post",
   onDelete: "CASCADE",
 });
-Post.hasOne(BoostCampaign, { foreignKey: "postId", as: "activeCampaign" });
+Post.hasMany(BoostCampaign, { foreignKey: "postId", as: "boostCampaigns" });
 
 BoostCampaign.belongsTo(BoostPackage, {
   foreignKey: "packageId",
@@ -514,6 +522,7 @@ export {
   BoostPackage,
   BoostCampaign,
   BoostInteraction,
+  BoostLog,
   AdminLog,
   UserActivityLog,
   UserFollower,
