@@ -4,13 +4,24 @@ import {
   Faculty,
   Degree,
   Batch,
+  Semester,
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
 const data = {
   university: "University of Moratuwa",
-  batches: ["21", "22", "23", "24", "25"],
+  semesters: [
+    "Semester 01",
+    "Semester 02",
+    "Semester 03",
+    "Semester 04",
+    "Semester 05",
+    "Semester 06",
+    "Semester 07",
+    "Semester 08",
+  ],
+  batches: ["Batch 21", "Batch 22", "Batch 23", "Batch 24", "Batch 25"],
   faculties: [
     {
       name: "Architecture",
@@ -61,7 +72,9 @@ const data = {
 export const seedAcademicStructure = async (req, res, next) => {
   try {
     await sequelize.authenticate();
-    logger.info("Database connected. Starting seed...");
+    // Sync all models to ensure tables exist and are up to date
+    await sequelize.sync({ alter: true });
+    logger.info("Database connected and tables synced. Starting seed...");
 
     // 1. Seed Batches
     for (const batchName of data.batches) {
@@ -69,13 +82,19 @@ export const seedAcademicStructure = async (req, res, next) => {
     }
     logger.info("✅ Batches seeded");
 
-    // 2. Seed University
+    // 2. Seed Semesters
+    for (const semesterName of data.semesters) {
+      await Semester.findOrCreate({ where: { name: semesterName } });
+    }
+    logger.info("✅ Semesters seeded");
+
+    // 3. Seed University
     const [university] = await University.findOrCreate({
       where: { name: data.university },
     });
     logger.info(`✅ University seeded: ${university.name}`);
 
-    // 3. Seed Faculties and Degrees
+    // 4. Seed Faculties and Degrees
     for (const facData of data.faculties) {
       const [faculty] = await Faculty.findOrCreate({
         where: { name: facData.name, universityId: university.id },
