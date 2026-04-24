@@ -1,4 +1,4 @@
-import { sequelize } from "../../modules/index.js";
+import sequelize from "../../config/database.js";
 import StudentReport from "../../modules/StudentReport.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
@@ -47,9 +47,34 @@ export const getStatistics = async (req, res, next) => {
       byType,
     };
 
+    logger.info(`Statistics retrieved by admin`, {
+      summary: stats.summary,
+      timestamp: new Date().toISOString(),
+    });
+
     return sendResponse(res, 200, true, 'Statistics retrieved successfully', stats);
   } catch (error) {
-    logger.error(`Error in getStatistics controller: ${error.message}`);
+    logger.error(`Error in getStatistics controller:`, {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+      timestamp: new Date().toISOString(),
+    });
+    
+    // Handle specific database errors
+    if (error.name === 'SequelizeValidationError') {
+      return sendResponse(res, 400, false, 'Validation error: ' + error.errors.map(e => e.message).join(', '));
+    }
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return sendResponse(res, 409, false, 'This report already exists.');
+    }
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
+      return sendResponse(res, 400, false, 'Referenced record not found.');
+    }
+    if (error.name === 'SequelizeDatabaseError') {
+      return sendResponse(res, 500, false, 'Database error occurred.');
+    }
+    
     next(error);
   }
 };
