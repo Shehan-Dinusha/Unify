@@ -1,64 +1,63 @@
-import Joi from 'joi';
+import { body, query, param } from "express-validator";
 
 /**
- * Validator for Student Directory filtering
+ * Validator for student directory filtering
  */
-export const studentDirectorySchema = Joi.object({
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(10),
-  search: Joi.string().allow('', null).optional(),
-  facultyId: Joi.number().integer().optional(),
-  status: Joi.string().valid('Active', 'Suspended', 'all').optional(),
-});
+export const studentDirectoryValidator = [
+  query('faculty').optional().notEmpty().withMessage('Faculty filter cannot be empty'),
+  query('status').optional().isIn(['Active', 'Suspended', 'all']).withMessage('Invalid status filter'),
+  query('search').optional().allow(''),
+];
 
 /**
- * Validator for Business Directory filtering
+ * Validator for business directory filtering
  */
-export const businessDirectorySchema = Joi.object({
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(10),
-  search: Joi.string().allow('', null).optional(),
-  category: Joi.string().valid('BOARDING', 'FOOD', 'SELF_EMPLOYED', 'all').optional(),
-  status: Joi.string().valid('Active', 'Suspended', 'all').optional(),
-});
+export const businessDirectoryValidator = [
+  query('category').optional().notEmpty().withMessage('Category filter cannot be empty'),
+  query('status').optional().isIn(['Active', 'Suspended', 'all']).withMessage('Invalid status filter'),
+  query('search').optional().allow(''),
+];
 
 /**
  * Validator for updating user status
  */
-export const updateStatusSchema = Joi.object({
-  status: Joi.string().valid('Active', 'Suspended', 'Inactive').required(),
-  reason: Joi.string().allow('', null),
-  suspensionCategory: Joi.string().valid(
+export const updateStatusValidator = [
+  param('id').notEmpty().withMessage('User ID is required').isInt().withMessage('User ID must be an integer'),
+  body('status').notEmpty().withMessage('Status is required').isIn(['Active', 'Suspended', 'Inactive']).withMessage('Invalid status'),
+  body('reason').optional({ checkFalsy: true }),
+  body('suspensionCategory').optional({ checkFalsy: true }).isIn([
     'Violation of Terms',
     'Spam Activity',
     'Harassment'
-  ).allow('', null),
-  sendEmail: Joi.boolean().default(false),
-});
+  ]).withMessage('Invalid suspension category'),
+  body('sendEmail').optional().isBoolean().withMessage('sendEmail must be a boolean'),
+];
 
 /**
- * Validator for adding an admin note
+ * Validator for adding an internal note
  */
-export const addNoteSchema = Joi.object({
-  text: Joi.string().min(3).max(1000).required(),
-});
+export const addNoteValidator = [
+  param('id').notEmpty().withMessage('User ID is required').isInt().withMessage('User ID must be an integer'),
+  body('text').notEmpty().withMessage('Note text is required').isLength({ min: 1, max: 2000 }).withMessage('Note must be between 1 and 2000 characters'),
+];
 
 /**
  * Validator for sending a warning
  */
-export const sendWarningSchema = Joi.object({
-  message: Joi.string().min(5).max(1000).required(),
-  category: Joi.string().valid(
+export const sendWarningValidator = [
+  param('id').notEmpty().withMessage('User ID is required').isInt().withMessage('User ID must be an integer'),
+  body('message').notEmpty().withMessage('Warning message is required').isLength({ min: 5, max: 1000 }).withMessage('Warning message must be between 5 and 1000 characters'),
+  body('category').notEmpty().withMessage('Violation category is required').isIn([
     'Academic Integrity Violation',
     'Code of Conduct Violation',
     'Harassment or Bullying',
     'Spam or Misuse',
     'Inappropriate Content'
-  ).required(),
-  severity: Joi.string().valid(
+  ]).withMessage('Invalid violation category'),
+  body('severity').notEmpty().withMessage('Severity level is required').isIn([
     'Level 1 - Formal Caution',
     'Level 2 - Official Warning',
     'Level 3 - Severe Warning',
     'Level 4 - Final Warning'
-  ).required(),
-});
+  ]).withMessage('Invalid severity level'),
+];

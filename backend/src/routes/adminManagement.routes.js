@@ -2,8 +2,7 @@ import express from 'express';
 import * as StudentController from '../controllers/admin/studentManagement.controller.js';
 import * as BusinessController from '../controllers/admin/businessManagement.controller.js';
 import * as Validator from '../validators/adminManagement.validator.js';
-import { validate } from '../middlewares/validate.middleware.js'; // Assuming this exists based on pattern
-// import { authenticateToken, authorizeAdmin } from '../middlewares/auth.middleware.js';
+import { validate } from '../middlewares/validate.middleware.js';
 
 const router = express.Router();
 
@@ -16,7 +15,8 @@ const bypassAuth = (req, res, next) => next();
 router.get(
   '/students',
   bypassAuth,
-  validate(Validator.studentDirectorySchema, 'query'),
+  Validator.studentDirectoryValidator,
+  validate,
   StudentController.getStudentDirectory
 );
 
@@ -35,14 +35,16 @@ router.get(
 router.put(
   '/students/:id/status',
   bypassAuth,
-  validate(Validator.updateStatusSchema),
+  Validator.updateStatusValidator,
+  validate,
   StudentController.updateStudentStatus
 );
 
 router.post(
   '/students/:id/notes',
   bypassAuth,
-  validate(Validator.addNoteSchema),
+  Validator.addNoteValidator,
+  validate,
   StudentController.addStudentNote
 );
 
@@ -55,13 +57,14 @@ router.post(
 router.get(
   '/students/:id/logs',
   bypassAuth,
-  StudentController.getStudentProfile // Profile already contains logs
+  StudentController.getStudentProfile 
 );
 
 router.post(
   '/students/:id/warning',
   bypassAuth,
-  validate(Validator.sendWarningSchema),
+  Validator.sendWarningValidator,
+  validate,
   StudentController.sendStudentWarning
 );
 
@@ -71,7 +74,8 @@ router.post(
 router.get(
   '/businesses',
   bypassAuth,
-  validate(Validator.businessDirectorySchema, 'query'),
+  Validator.businessDirectoryValidator,
+  validate,
   BusinessController.getBusinessDirectory
 );
 
@@ -90,14 +94,16 @@ router.get(
 router.put(
   '/businesses/:id/status',
   bypassAuth,
-  validate(Validator.updateStatusSchema),
+  Validator.updateStatusValidator,
+  validate,
   BusinessController.updateBusinessStatus
 );
 
 router.post(
   '/businesses/:id/notes',
   bypassAuth,
-  validate(Validator.addNoteSchema),
+  Validator.addNoteValidator,
+  validate,
   BusinessController.addBusinessNote
 );
 

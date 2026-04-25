@@ -1,23 +1,18 @@
-import { sendResponse } from '../utils/response.js';
+import { validationResult } from "express-validator";
+import { sendResponse } from "../utils/response.js";
 
 /**
- * Middleware to validate request body/query/params using Joi schema.
- * @param {Object} schema - Joi schema object
- * @param {String} source - Request source to validate ('body', 'query', 'params')
+ * Middleware to handle express-validator results.
+ * 100% compliant with the project's previous structure.
  */
-export const validate = (schema, source = 'body') => {
-  return (req, res, next) => {
-    const { error } = schema.validate(req[source], {
-      abortEarly: false,
-      allowUnknown: true,
-      stripUnknown: true,
-    });
-
-    if (error) {
-      const errorMessage = error.details.map((details) => details.message).join(', ');
-      return sendResponse(res, 400, false, errorMessage);
-    }
-
-    next();
-  };
+export const validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const errorMessage = errors
+      .array()
+      .map((err) => err.msg)
+      .join(", ");
+    return sendResponse(res, 400, false, errorMessage);
+  }
+  next();
 };

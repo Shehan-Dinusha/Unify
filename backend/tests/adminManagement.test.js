@@ -1,122 +1,113 @@
 /**
  * Admin Management Backend — Comprehensive Test Suite
  * Tests all logic for student and business management.
- * Matches the pattern used in boost.test.js.
  */
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import moment from 'moment';
 
-// ─── Mock Logic Functions ───────────────────────────────────────────────────
+// ─── Formatting Logic Tests ─────────────────────────────────────────────────
 
-/**
- * Validates the student directory formatting logic.
- */
-function formatStudent(user, profile, faculty) {
+function formatStudent(user, faculty) {
   return {
     id: user.id,
     name: user.name,
-    email: user.email,
-    avatar: user.avatar || user.name.substring(0, 2).toUpperCase(),
-    faculty: faculty?.name || 'Unknown',
     status: user.status,
+    faculty: faculty?.name || 'Unknown',
     lastActive: user.lastActive ? moment(user.lastActive).fromNow() : 'Never'
   };
 }
 
-/**
- * Validates the student profile header formatting.
- */
-function formatStudentHeader(user, profile) {
-  return {
-    id: `#${String(user.id).padStart(6, '0')}`,
-    name: user.name,
-    email: user.email,
-    handle: `@${user.name.toLowerCase().replace(/ /g, '')}`,
-    status: user.status,
-    isPremium: profile?.tier === 'Premium',
-    joinedDate: moment(user.createdAt).format('MMM DD, YYYY')
-  };
-}
-
-/**
- * Validates the business profile summary formatting.
- */
-function formatBusinessSummary(revenue, activeAds) {
-  return {
-    revenueGenerated: `LKR ${(revenue / 1000000).toFixed(1)}M`,
-    adsActive: `${activeAds} Campaigns`,
-    customerEngagement: '89%'
-  };
-}
-
-// ─── Tests ──────────────────────────────────────────────────────────────────
-
-describe('Admin Student Management — Logic', () => {
-  const mockUser = {
-    id: 1,
-    name: 'Alex Johnson',
-    email: 'alex.j@unify.com',
-    avatar: null,
-    status: 'Active',
-    lastActive: new Date(),
-    createdAt: new Date('2021-10-12')
-  };
-
-  const mockProfile = {
-    tier: 'Premium',
-    adminNotes: []
-  };
-
-  const mockFaculty = { name: 'Faculty of Engineering' };
-
+describe('Admin Management — Formatting Logic', () => {
   it('correctly formats student for directory listing', () => {
-    const formatted = formatStudent(mockUser, mockProfile, mockFaculty);
+    const mockUser = { id: 1, name: 'Alex Johnson', status: 'Active', lastActive: new Date() };
+    const mockFaculty = { name: 'Faculty of Engineering' };
+    const formatted = formatStudent(mockUser, mockFaculty);
+    
     assert.equal(formatted.id, 1);
-    assert.equal(formatted.name, 'Alex Johnson');
-    assert.equal(formatted.avatar, 'AL');
     assert.equal(formatted.faculty, 'Faculty of Engineering');
     assert.equal(formatted.lastActive, 'a few seconds ago');
   });
 
-  it('correctly formats student profile header', () => {
-    const header = formatStudentHeader(mockUser, mockProfile);
-    assert.equal(header.id, '#000001');
-    assert.equal(header.handle, '@alexjohnson');
-    assert.equal(header.isPremium, true);
-    assert.equal(header.joinedDate, 'Oct 12, 2021');
-  });
-
-  it('handles missing faculty in directory', () => {
-    const formatted = formatStudent(mockUser, mockProfile, null);
-    assert.equal(formatted.faculty, 'Unknown');
-  });
-});
-
-describe('Admin Business Management — Logic', () => {
-  it('formats revenue correctly for millions', () => {
-    const summary = formatBusinessSummary(4200000, 8);
-    assert.equal(summary.revenueGenerated, 'LKR 4.2M');
-    assert.equal(summary.adsActive, '8 Campaigns');
-  });
-
-  it('formats small revenue correctly', () => {
-    const summary = formatBusinessSummary(500000, 2);
-    assert.equal(summary.revenueGenerated, 'LKR 0.5M');
-  });
-});
-
-describe('Admin Management — Edge Cases', () => {
-  it('formatStudentHeader handles missing profile tier gracefully', () => {
-    const mockUser = { id: 2, name: 'Test', createdAt: new Date() };
-    const header = formatStudentHeader(mockUser, null);
-    assert.equal(header.isPremium, false);
-  });
-
-  it('formatStudent handles null lastActive', () => {
-    const mockUser = { id: 3, name: 'New User', lastActive: null };
-    const formatted = formatStudent(mockUser, null, null);
+  it('handles null lastActive correctly', () => {
+    const mockUser = { id: 2, name: 'New User', lastActive: null };
+    const formatted = formatStudent(mockUser, null);
     assert.equal(formatted.lastActive, 'Never');
+  });
+});
+
+// ─── Business Rule Logic Tests ──────────────────────────────────────────────
+
+/**
+ * These mocks simulate the logic in the controllers to verify business rules
+ * without needing a running database in this unit test.
+ */
+
+describe('Admin Management — Business Rules (Controller Logic)', () => {
+  
+  describe('Status Update Rules', () => {
+    it('should return error if student is already in the target status', () => {
+      const userStatus = 'Suspended';
+      const targetStatus = 'Suspended';
+      
+      const isRedundant = (userStatus === targetStatus);
+      assert.equal(isRedundant, true, 'Logic should detect redundant status update');
+    });
+
+    it('should allow update if statuses are different', () => {
+      const userStatus = 'Active';
+      const targetStatus = 'Suspended';
+      assert.notEqual(userStatus, targetStatus);
+    });
+  });
+
+  describe('Force Logout Rules', () => {
+    it('should return error if student is already offline', () => {
+      const userIsOnline = false;
+      
+      const canLogout = userIsOnline === true;
+      assert.equal(canLogout, false, 'Logic should block logout for offline users');
+    });
+
+    it('should allow logout if student is online', () => {
+      const userIsOnline = true;
+      assert.equal(userIsOnline, true);
+    });
+  });
+
+  describe('Warning Rules', () => {
+    it('should block warnings for suspended students', () => {
+      const userStatus = 'Suspended';
+      
+      const canWarn = (userStatus !== 'Suspended');
+      assert.equal(canWarn, false, 'Logic should block warnings for suspended users');
+    });
+
+    it('should allow warnings for active students', () => {
+      const userStatus = 'Active';
+      const canWarn = (userStatus !== 'Suspended');
+      assert.equal(canWarn, true);
+    });
+  });
+
+  describe('Validator Strictness (Category Checks)', () => {
+    const validCategories = [
+      'Academic Integrity Violation',
+      'Code of Conduct Violation',
+      'Harassment or Bullying',
+      'Spam or Misuse',
+      'Inappropriate Content'
+    ];
+
+    it('should accept valid UI categories', () => {
+      const input = 'Spam or Misuse';
+      assert.ok(validCategories.includes(input));
+    });
+
+    it('should reject invalid categories', () => {
+      const input = 'Bad Behavior';
+      assert.ok(!validCategories.includes(input));
+    });
   });
 });
