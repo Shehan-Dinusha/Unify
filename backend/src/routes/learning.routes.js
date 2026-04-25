@@ -8,8 +8,13 @@ import {
   updateModuleCategory,
   getModuleCategories,
   deleteModuleCategory,
+  uploadMaterial,
+  editMaterial,
+  deleteMaterial,
+  getMaterialsByCategory,
 } from "../controllers/learning/index.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
+import uploadService from "../services/upload.service.js";
 import {
   createModuleValidator,
   getModuleDetailsValidator,
@@ -19,6 +24,10 @@ import {
   getModuleCategoriesValidator,
   updateModuleCategoryValidator,
   deleteModuleCategoryValidator,
+  uploadMaterialValidator,
+  editMaterialValidator,
+  deleteMaterialValidator,
+  getMaterialsByCategoryValidator,
 } from "../validators/learning.validator.js";
 
 const router = express.Router();
@@ -66,6 +75,35 @@ router.delete(
   deleteModuleCategoryValidator,
   validateRequest,
   deleteModuleCategory,
+);
+
+router.post(
+  "/modules/:moduleId/materials",
+  uploadService.single("materialFile"),
+  uploadMaterialValidator,
+  validateRequest,
+  uploadMaterial,
+);
+
+router.put(
+  "/materials/:materialId",
+  editMaterialValidator,
+  validateRequest,
+  editMaterial,
+);
+
+router.delete(
+  "/materials/:materialId",
+  deleteMaterialValidator,
+  validateRequest,
+  deleteMaterial,
+);
+
+router.get(
+  "/modules/:moduleId/categories/:categoryId/materials",
+  getMaterialsByCategoryValidator,
+  validateRequest,
+  getMaterialsByCategory,
 );
 
 export default router;
