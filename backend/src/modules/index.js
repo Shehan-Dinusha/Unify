@@ -42,6 +42,8 @@ import Transaction from "./Transaction.model.js";
 import WithdrawalRequest from "./WithdrawalRequest.model.js";
 import Notification from "./Notification.model.js";
 import StudentReport from "./StudentReport.model.js";
+import UserSuspension from "./UserSuspension.model.js";
+import UserSuspensionHistory from "./UserSuspensionHistory.model.js";
 
 // --- New Academic Structure Models ---
 import University from "./University.model.js";
@@ -497,6 +499,27 @@ User.hasMany(StudentReport, {
 });
 StudentReport.belongsTo(User, { foreignKey: "studentId", as: "student" });
 
+// --- Suspended Users ---
+User.hasMany(UserSuspension, {
+  foreignKey: "userId",
+  as: "suspensions",
+  onDelete: "CASCADE",
+});
+UserSuspension.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+UserSuspension.hasMany(UserSuspensionHistory, {
+  foreignKey: "suspensionId",
+  as: "history",
+  onDelete: "CASCADE",
+});
+UserSuspensionHistory.belongsTo(UserSuspension, { foreignKey: "suspensionId", as: "suspension" });
+
+User.hasMany(UserSuspensionHistory, { foreignKey: "performedBy", as: "performedSuspensionActions" });
+UserSuspensionHistory.belongsTo(User, { foreignKey: "performedBy", as: "performedByUser" });
+
+User.hasMany(UserSuspension, { foreignKey: "reactivatedBy", as: "reactivatedSuspensions" });
+UserSuspension.belongsTo(User, { foreignKey: "reactivatedBy", as: "reactivatedByUser" });
+
 // ── Exports ───────────────────────────────────────────────────────────────────
 export {
   sequelize,
@@ -538,4 +561,6 @@ export {
   Degree,
   Batch,
   SemesterVisibility,
+  UserSuspension,
+  UserSuspensionHistory,
 };
