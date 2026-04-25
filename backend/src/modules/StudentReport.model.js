@@ -52,10 +52,10 @@ const StudentReport = sequelize.define(
       allowNull: true,
       comment: "Optional comments from Step 3 of the UI",
     },
-    evidenceFile: {
-      type: DataTypes.STRING(255),
+    evidenceFiles: {
+      type: DataTypes.JSON,
       allowNull: true,
-      comment: "Path to uploaded screenshot/PDF",
+      comment: "Array of paths to uploaded screenshots/PDFs",
     },
     evidenceUrl: {
       type: DataTypes.STRING(500),
