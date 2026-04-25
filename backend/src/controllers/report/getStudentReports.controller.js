@@ -2,6 +2,7 @@ import { Op } from 'sequelize';
 import StudentReport from "../../modules/StudentReport.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import moment from "moment";
 
 /**
  * Retrieves reports for a specific student with filters and pagination.
@@ -44,8 +45,30 @@ export const getStudentReports = async (req, res, next) => {
       pages: Math.ceil(count / limit),
     };
 
+    const formattedReports = rows.map(r => ({
+      id: r.reportId,
+      reportId: r.reportId,
+      title: r.title,
+      category: r.category,
+      categoryIcon: "🔧", // generic fallback
+      dateSubmitted: moment(r.createdAt).format("MMM DD, YYYY"),
+      dateSubmittedFull: moment(r.createdAt).format("MMM DD, YYYY • hh:mm A"),
+      status: r.status,
+      reportType: r.reportType,
+      reason: r.category,
+      reportedEntity: {
+        name: r.reportType === 'user' ? "Reported User" : "Reported Content",
+        faculty: "N/A",
+        entityId: r.reportedEntityId,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.reportedEntityId}`,
+        categoryBadge: r.category
+      },
+      description: r.additionalDetails || "No additional description provided.",
+      statusLabel: r.status
+    }));
+
     return sendResponse(res, 200, true, 'Reports retrieved successfully', {
-      reports: rows,
+      reports: formattedReports,
       pagination,
     });
   } catch (error) {

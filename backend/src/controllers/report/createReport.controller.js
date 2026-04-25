@@ -82,8 +82,11 @@ export const createReport = async (req, res, next) => {
     const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1);
     const title = `Report: ${formattedCategory} in ${formattedType}`;
 
-    // 4. Handle File Upload (Optional)
-    const evidenceFile = req.file ? `/uploads/reports/${req.file.filename}` : null;
+    // 4. Handle File Uploads (Optional)
+    let evidenceFiles = [];
+    if (req.files && req.files.length > 0) {
+      evidenceFiles = req.files.map(f => `/uploads/reports/${f.filename}`);
+    }
 
     // 5. Create Report
     const reportId = generateReportId();
@@ -94,7 +97,7 @@ export const createReport = async (req, res, next) => {
       category,
       title,
       additionalDetails,
-      evidenceFile,
+      evidenceFiles,
       evidenceUrl,
       reportedEntityId,
       status: 'Pending Review',
