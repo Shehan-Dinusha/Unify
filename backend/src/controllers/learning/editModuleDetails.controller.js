@@ -8,10 +8,6 @@ export const editModuleDetails = async (req, res, next) => {
     const { id } = req.params;
     const { title, code, semester, visibility } = req.body;
 
-    if (!id) {
-      return sendResponse(res, 400, false, "Module ID is required.");
-    }
-
     const existingModule = await AcademicModule.findByPk(id);
 
     if (!existingModule) {
@@ -58,15 +54,6 @@ export const editModuleDetails = async (req, res, next) => {
     // 4. Update Degree Visibility
     let newDegrees = null;
     if (visibility) {
-      if (!Array.isArray(visibility) || visibility.length === 0) {
-        return sendResponse(
-          res,
-          400,
-          false,
-          "Visibility must be a non-empty array of degree IDs.",
-        );
-      }
-
       newDegrees = await Degree.findAll({
         where: { id: visibility },
       });

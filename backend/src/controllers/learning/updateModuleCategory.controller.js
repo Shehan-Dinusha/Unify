@@ -11,15 +11,6 @@ export const updateModuleCategory = async (req, res) => {
     const { categoryId } = req.params;
     const { title, iconName } = req.body;
 
-    if (!title || !iconName) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        "Category title and icon name are required",
-      );
-    }
-
     const category = await ModuleCategory.findByPk(categoryId);
     if (!category) {
       return sendResponse(res, 404, false, "Category not found");

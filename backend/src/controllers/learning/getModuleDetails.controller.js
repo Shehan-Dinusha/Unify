@@ -6,10 +6,6 @@ export const getModuleDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return sendResponse(res, 400, false, "Module ID is required.");
-    }
-
     const moduleDetails = await AcademicModule.findByPk(id, {
       attributes: ["id", "name", "code"],
       include: [

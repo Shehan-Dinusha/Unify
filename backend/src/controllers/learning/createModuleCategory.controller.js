@@ -11,15 +11,6 @@ export const createModuleCategory = async (req, res) => {
     const { moduleId } = req.params;
     const { title, iconName } = req.body;
 
-    if (!title || !iconName) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        "Category title and icon name are required",
-      );
-    }
-
     const academicModule = await AcademicModule.findByPk(moduleId);
     if (!academicModule) {
       return sendResponse(res, 404, false, "Module not found");

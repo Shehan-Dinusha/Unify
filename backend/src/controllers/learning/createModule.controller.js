@@ -6,23 +6,6 @@ export const createModule = async (req, res, next) => {
   try {
     const { title, code, semester, visibility } = req.body;
 
-    // 1. Basic Validation
-    if (
-      !title ||
-      !code ||
-      !semester ||
-      !visibility ||
-      !Array.isArray(visibility) ||
-      visibility.length === 0
-    ) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        "Module Title, Code, Semester, and at least one visibility degree are required.",
-      );
-    }
-
     // 2. Validate Degrees and Faculty
     const degrees = await Degree.findAll({
       where: { id: visibility },

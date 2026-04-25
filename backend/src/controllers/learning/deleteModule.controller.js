@@ -6,10 +6,6 @@ export const deleteModule = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return sendResponse(res, 400, false, "Module ID is required.");
-    }
-
     const existingModule = await AcademicModule.findByPk(id);
 
     if (!existingModule) {
