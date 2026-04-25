@@ -6,6 +6,7 @@ import reportRoutes from "./report.routes.js";
 import boostRoutes from "./boost.routes.js";
 import baseRoutes from "./base.routes.js";
 import learningRoutes from "./learning.routes.js";
+import adminManagementRoutes from "./adminManagement.routes.js";
 
 const router = express.Router();
 
@@ -17,5 +18,6 @@ router.use("/reports", reportRoutes);
 router.use("/boosts", boostRoutes);
 router.use("/base", baseRoutes);
 router.use("/learning", learningRoutes);
+router.use("/admin", adminManagementRoutes);
 
 export default router;
