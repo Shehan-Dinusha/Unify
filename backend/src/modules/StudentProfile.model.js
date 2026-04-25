@@ -83,6 +83,13 @@ const StudentProfile = sequelize.define(
       allowNull: false,
       defaultValue: "Standard",
     },
+
+    adminNotes: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+      comment: "Array of objects: { text, adminName, createdAt }",
+    },
   },
   {
     tableName: "student_profiles",
