@@ -12,6 +12,7 @@ import {
   editMaterial,
   deleteMaterial,
   getMaterialsByCategory,
+  getBatchReps,
 } from "../controllers/learning/index.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import uploadService from "../services/upload.service.js";
@@ -28,6 +29,7 @@ import {
   editMaterialValidator,
   deleteMaterialValidator,
   getMaterialsByCategoryValidator,
+  getBatchRepsValidator,
 } from "../validators/learning.validator.js";
 
 const router = express.Router();
@@ -104,6 +106,13 @@ router.get(
   getMaterialsByCategoryValidator,
   validateRequest,
   getMaterialsByCategory,
+);
+
+router.get(
+  "/batch-reps",
+  getBatchRepsValidator,
+  validateRequest,
+  getBatchReps,
 );
 
 export default router;

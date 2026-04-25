@@ -1,4 +1,4 @@
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
 
 export const createModuleValidator = [
   body("title").notEmpty().withMessage("Module Title is required"),
@@ -133,4 +133,12 @@ export const getMaterialsByCategoryValidator = [
     .withMessage("Category ID is required")
     .isInt()
     .withMessage("Category ID must be an integer"),
+];
+
+export const getBatchRepsValidator = [
+  query("degreeId")
+    .notEmpty()
+    .withMessage("Degree ID is required")
+    .isInt()
+    .withMessage("Degree ID must be an integer"),
 ];
