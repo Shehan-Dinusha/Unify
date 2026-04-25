@@ -9,7 +9,7 @@ import {
 import { 
   createSuspensionSchema, 
   reactivateUserSchema 
-} from "../controllers/suspension/suspension.validator.js";
+} from "../validators/suspension.validator.js";
 
 // Dummy middlewares - these should be replaced with actual ones if they exist elsewhere
 const authenticateToken = (req, res, next) => {
@@ -18,23 +18,7 @@ const authenticateToken = (req, res, next) => {
   next();
 };
 
-const validateRequest = (schema) => {
-  return (req, res, next) => {
-    const { error } = schema.validate(req.body, { abortEarly: false });
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: "Validation Error",
-        errors: error.details.map((err) => ({
-          field: err.path.join("."),
-          message: err.message,
-        })),
-        timestamp: new Date().toISOString()
-      });
-    }
-    next();
-  };
-};
+import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 
 const router = express.Router();
 
@@ -42,8 +26,8 @@ router.use(authenticateToken);
 
 router.get("/stats/dashboard", getDashboardStatistics);
 router.get("/:userId", getSuspendedUserById);
-router.post("/:userId/reactivate", validateRequest(reactivateUserSchema), reactivateUser);
+router.post("/:userId/reactivate", reactivateUserSchema, validateRequest, reactivateUser);
 router.get("/", getAllSuspendedUsers);
-router.post("/", validateRequest(createSuspensionSchema), createSuspension);
+router.post("/", createSuspensionSchema, validateRequest, createSuspension);
 
 export default router;

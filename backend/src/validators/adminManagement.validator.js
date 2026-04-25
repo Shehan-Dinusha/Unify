@@ -6,7 +6,7 @@ import { body, query, param } from "express-validator";
 export const studentDirectoryValidator = [
   query('faculty').optional().notEmpty().withMessage('Faculty filter cannot be empty'),
   query('status').optional().isIn(['Active', 'Suspended', 'all']).withMessage('Invalid status filter'),
-  query('search').optional().allow(''),
+  query('search').optional(),
 ];
 
 /**
@@ -15,7 +15,7 @@ export const studentDirectoryValidator = [
 export const businessDirectoryValidator = [
   query('category').optional().notEmpty().withMessage('Category filter cannot be empty'),
   query('status').optional().isIn(['Active', 'Suspended', 'all']).withMessage('Invalid status filter'),
-  query('search').optional().allow(''),
+  query('search').optional(),
 ];
 
 /**
