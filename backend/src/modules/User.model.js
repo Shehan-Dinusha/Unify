@@ -70,6 +70,12 @@ const User = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+
+    lastActive: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: DataTypes.NOW,
+    },
   },
   {
     tableName: "users",
