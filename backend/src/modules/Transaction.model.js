@@ -1,0 +1,93 @@
+import { DataTypes } from "sequelize";
+import sequelize from "../config/database.js";
+
+const Transaction = sequelize.define(
+  "Transaction",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    walletId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    orderId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    type: {
+      type: DataTypes.ENUM(
+        "CREDIT",
+        "DEBIT",
+        "WITHDRAWAL",
+        "REFUND",
+        "PLATFORM_FEE",
+      ),
+      allowNull: false,
+    },
+    category: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      defaultValue: "General", // E.g., 'Club Tickets', 'Biz Boosts', 'Merchandise', 'Donation', 'Platform Fee'
+    },
+    amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
+    currency: {
+      type: DataTypes.STRING(3),
+      allowNull: false,
+      defaultValue: "LKR", // ISO 4217 currency code
+    },
+    tax: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0.0, // VAT or applicable tax amount
+    },
+    platformFee: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0.0, // Platform commission deducted before vendor credit
+    },
+    netAmount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true, // Amount after platformFee deduction — what vendor actually receives
+    },
+    status: {
+      type: DataTypes.ENUM(
+        "PENDING",
+        "PROCESSED",
+        "COMPLETED",
+        "FAILED",
+        "REFUNDED",
+      ),
+      defaultValue: "PENDING",
+    },
+    description: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    stripePaymentIntentId: {
+      type: DataTypes.STRING(255),
+      allowNull: true, // Stripe PaymentIntent ID e.g. 'pi_3OxxxxxxxxxxxxxxxxxxxY'
+    },
+    stripeChargeId: {
+      type: DataTypes.STRING(255),
+      allowNull: true, // Stripe Charge ID for refund reference e.g. 'ch_3Oxxxxxxxxxx'
+    },
+    stripeTransferId: {
+      type: DataTypes.STRING(255),
+      allowNull: true, // Stripe Transfer ID when crediting a connected vendor account
+    },
+    metadata: {
+      type: DataTypes.JSON,
+      allowNull: true, // Arbitrary extra data: { orderId, postId, packageId, etc. }
+    },
+  },
+  {
+    tableName: "transactions",
+    timestamps: true,
+  },
+);
+
+export default Transaction;
