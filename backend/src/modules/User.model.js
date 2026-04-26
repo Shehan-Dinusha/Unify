@@ -12,7 +12,7 @@ const User = sequelize.define(
 
     name: {
       type: DataTypes.STRING(100),
-      allowNull: false,
+      allowNull: true,
       validate: {
         notEmpty: true,
       },
@@ -20,11 +20,10 @@ const User = sequelize.define(
 
     email: {
       type: DataTypes.STRING(255),
-      allowNull: false,
+      allowNull: true,
       unique: true,
       validate: {
         isEmail: true,
-        notEmpty: true,
       },
     },
 
@@ -59,6 +58,17 @@ const User = sequelize.define(
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
+    },
+
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+
+    refreshToken: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
 
     resetToken: {

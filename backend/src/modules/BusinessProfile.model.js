@@ -93,6 +93,11 @@ const BusinessProfile = sequelize.define(
       allowNull: true,
     },
 
+    verificationDocument: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
     averageRating: {
       type: DataTypes.FLOAT,
       allowNull: false,

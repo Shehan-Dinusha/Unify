@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { errorHandler } from "./middlewares/error.middleware.js";
+import { authRateLimiter, apiRateLimiter } from "./middlewares/rateLimit.middleware.js";
 import { sendResponse } from "./utils/response.js";
 import path from "path";
 import apiRoutes from "./routes/index.js";
@@ -36,7 +37,8 @@ app.get("/health", (_req, res) => {
 });
 
 // ── API Routes ────────────────────────────────────────────────────────────────
-app.use("/api/v1", apiRoutes);
+app.use("/api/v1/auth", authRateLimiter);
+app.use("/api/v1", apiRateLimiter, apiRoutes);
 
 // ── Static Files (Temporary prior to S3 migration) ────────────────────────────
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
