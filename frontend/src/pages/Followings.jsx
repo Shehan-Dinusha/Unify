@@ -13,7 +13,7 @@ import {
   getFollowings,
   getSingleFollowing,
   unfollowOrganization,
-} from "../data/mockFollowingsData";
+} from "../services/followerService";
 
 const ITEMS_PER_PAGE = 10; // Keeping 10 for demonstration
 

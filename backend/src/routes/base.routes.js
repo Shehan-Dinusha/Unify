@@ -3,6 +3,7 @@ import {
   resetDb,
   seedAcademicStructure,
   seedDummyData,
+  seedFollowers,
 } from "../controllers/base/index.js";
 
 const router = express.Router();
@@ -11,5 +12,6 @@ const router = express.Router();
 router.post("/reset-db", resetDb);
 router.post("/seed-academic-structure", seedAcademicStructure);
 router.post("/seed-dummy-data", seedDummyData);
+router.post("/seed-followers", seedFollowers);
 
 export default router;
