@@ -54,3 +54,7 @@ const LostAndFound = sequelize.define(
 );
 
 export default LostAndFound;
+    
+  
+   
+       
