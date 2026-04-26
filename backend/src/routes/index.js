@@ -7,6 +7,7 @@ import boostRoutes from "./boost.routes.js";
 import baseRoutes from "./base.routes.js";
 import suspensionRoutes from "./suspension.routes.js";
 import learningRoutes from "./learning.routes.js";
+import lostAndFoundRoutes from "./lostAndFound.routes.js";
 import adminManagementRoutes from "./adminManagement.routes.js";
 
 const router = express.Router();
@@ -20,6 +21,7 @@ router.use("/boosts", boostRoutes);
 router.use("/base", baseRoutes);
 router.use("/admin/suspended-users", suspensionRoutes);
 router.use("/learning", learningRoutes);
+router.use("/lost-and-found", lostAndFoundRoutes);
 router.use("/admin", adminManagementRoutes);
 
 export default router;
