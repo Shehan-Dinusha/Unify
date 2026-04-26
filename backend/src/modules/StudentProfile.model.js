@@ -78,6 +78,12 @@ const StudentProfile = sequelize.define(
       allowNull: true,
     },
 
+    reputationScore: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
+
     tier: {
       type: DataTypes.STRING(50),
       allowNull: false,

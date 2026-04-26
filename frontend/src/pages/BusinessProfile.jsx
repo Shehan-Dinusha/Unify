@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
-import { mockRequests } from '../data/mockData';
-import { businessProfiles } from '../data/mockBusinessProfiles';
+import { useToast } from '../components/common/Toast';
+import { getBusinessProfile, updateBusinessStatus } from '../services/businessService';
 import {
   Mail,
   MapPin,
@@ -22,7 +22,32 @@ import {
 const BusinessProfile = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const biz = businessProfiles.find((b) => String(b.id) === String(id)) || businessProfiles[0];
+  const toast = useToast();
+
+  /* ── Data state ──────────────────────────────────── */
+  const [biz, setBiz] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  /* ── Fetch profile from backend on mount ────────── */
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getBusinessProfile(id);
+        setBiz(result.data);
+      } catch (err) {
+        console.error('[BusinessProfile] Failed to load profile:', err);
+        setError('Failed to load business profile. Please check backend.');
+        toast.error('Connection Error', 'Could not load business profile.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [id]);
 
   /* ── Modal state ─────────────────────────────────── */
   const [modal, setModal] = useState(null);     // 'suspend'
@@ -33,14 +58,53 @@ const BusinessProfile = () => {
 
   const openModal = (m) => setModal(m);
   const closeModal = () => { setModal(null); setSuspendDetail(''); };
-  const confirmAction = (type) => { closeModal(); setSuccess(type); };
+  
+  /* ── Confirm actions — calls real backend ─────────── */
+  const confirmAction = async (type) => {
+    setActionLoading(true);
+    try {
+      if (type === 'suspend') {
+        await updateBusinessStatus(id, {
+          status: 'Suspended',
+          suspensionCategory: suspendReason,
+          reason: suspendDetail,
+          sendEmail,
+        });
+        toast.success('Suspended', `${biz.name}'s business has been suspended.`);
+      } else if (type === 'activate') {
+        await updateBusinessStatus(id, {
+          status: 'Active',
+        });
+        toast.success('Activated', `${biz.name}'s business access has been restored.`);
+      } else if (type === 'message') {
+        // Mock message logic
+        toast.success('Message Sent', `Message sent to ${biz.name} successfully.`);
+      }
+      closeModal();
+      setSuccess(type);
+      
+      // Re-fetch data to update UI
+      try {
+        const result = await getBusinessProfile(id);
+        setBiz(result.data);
+      } catch (e) {
+        console.error('Failed to refresh business data:', e);
+      }
+    } catch (err) {
+      const msg = err.message || 'Action failed. Please try again.';
+      toast.error('Action Failed', msg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const closeSuccess = (dest) => {
     setSuccess(null);
     if (dest === 'dashboard') navigate('/admin');
     else navigate('/active-businesses');
   };
 
-  const statsArray = [biz.stats.revenue, biz.stats.ads, biz.stats.engagement];
+  const statsArray = biz ? [biz.stats.revenue, biz.stats.ads, biz.stats.engagement] : [];
 
   /* ═══════════════════════════════════════════════════════
      MODALS
@@ -78,13 +142,27 @@ const BusinessProfile = () => {
                   ))}
                 </div>
               </div>
-              <textarea value={suspendDetail} onChange={(e) => setSuspendDetail(e.target.value)} placeholder="Enter detailed reason here...." className="w-full h-24 bg-white/5 rounded-2xl border border-white/10 p-md text-body-small text-text-primary placeholder:text-text-secondary resize-none focus:outline-none focus:border-primary-blue/50 transition-colors mb-4" />
+              <textarea 
+                value={suspendDetail} 
+                onChange={(e) => setSuspendDetail(e.target.value)} 
+                placeholder="Enter detailed reason here...." 
+                className={`w-full h-24 bg-white/5 rounded-2xl border ${!suspendDetail.trim() ? 'border-state-error/50' : 'border-white/10'} p-md text-body-small text-text-primary placeholder:text-text-secondary resize-none focus:outline-none focus:border-primary-blue/50 transition-colors mb-2`} 
+              />
+              {!suspendDetail.trim() && (
+                <p className="text-[10px] text-state-error mb-4 ml-1 italic font-medium">* Reason is required to proceed with suspension</p>
+              )}
               <label className="flex items-center gap-2 mb-6 cursor-pointer" onClick={() => setSendEmail(!sendEmail)}>
                 <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${sendEmail ? 'bg-primary-blue border-primary-blue' : 'border-white/20 bg-transparent'}`}>{sendEmail && <CheckCircle2 size={14} className="text-white" />}</div>
                 <span className="text-body-small text-text-secondary">Send email notification to business owner</span>
               </label>
               <div className="flex flex-col gap-3">
-                <button onClick={() => confirmAction('suspend')} className="w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"><UserX size={18} /> Confirm Suspension</button>
+                <button 
+                  onClick={() => suspendDetail.trim() && confirmAction('suspend')} 
+                  disabled={!suspendDetail.trim() || actionLoading}
+                  className={`w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 ${(!suspendDetail.trim() || actionLoading) ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+                >
+                  <UserX size={18} /> {actionLoading ? 'Suspending...' : 'Confirm Suspension'}
+                </button>
                 <button onClick={closeModal} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200">Cancel</button>
               </div>
             </div>
@@ -165,12 +243,49 @@ const BusinessProfile = () => {
   /* ═══════════════════════════════════════════════════════
      MAIN RENDER
      ═══════════════════════════════════════════════════════ */
+  // Loading & Error guards
+  if (loading) {
+    return (
+      <MainLayout user={{ name: 'Admin', role: 'admin' }} pageTitle="Loading Profile...">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-text-secondary text-body-medium">Loading business profile...</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error || !biz) {
+    return (
+      <MainLayout user={{ name: 'Admin', role: 'admin' }} pageTitle="Error">
+        <Card variant="container" className="border-state-error/30 bg-state-error/5">
+          <div className="flex items-center gap-md">
+            <AlertTriangle size={24} className="text-state-error shrink-0" />
+            <div>
+              <p className="text-body-medium-bold text-state-error">Failed to Load Profile</p>
+              <p className="text-body-small text-text-secondary">{error || 'Business not found.'}</p>
+            </div>
+          </div>
+        </Card>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout
       user={{ name: 'Alex Johnson', role: 'admin' }}
       pageTitle={`${biz.name}'s Profile`}
-      verificationCount={mockRequests.length}
     >
+      {biz.status === 'Suspended' && (
+        <div className="mb-lg p-lg rounded-2xl bg-state-error/10 border border-state-error/30 flex items-center gap-md animate-pulse">
+          <div className="w-12 h-12 rounded-full bg-state-error/20 flex items-center justify-center">
+            <AlertTriangle size={24} className="text-state-error" />
+          </div>
+          <div>
+            <p className="text-body-large-bold text-state-error font-inter uppercase tracking-wider">Business Suspended</p>
+            <p className="text-body-small text-text-secondary font-inter">This business has been restricted. All active ads and campaigns are currently hidden.</p>
+          </div>
+        </div>
+      )}
       {/* ── Business Header Card ───────────────────────── */}
       <Card variant="container" className="py-3 px-6 mb-8">
         <div className="flex flex-col sm:flex-row items-center gap-8">
@@ -202,20 +317,23 @@ const BusinessProfile = () => {
 
           {/* Action Buttons - Plump pills from common component */}
           <div className="flex items-center gap-4 shrink-0 w-full sm:w-auto mt-4 sm:mt-0">
-            <Button 
-              variant="danger" 
-              size="medium"
-              onClick={() => openModal('suspend')} 
-              className="flex-1 sm:flex-none h-11 px-8"
-            >
-              Suspend
-            </Button>
+            {biz.status !== 'Suspended' && (
+              <Button 
+                variant="danger" 
+                size="medium"
+                onClick={() => openModal('suspend')} 
+                className="flex-1 sm:flex-none h-11 px-8"
+              >
+                Suspend
+              </Button>
+            )}
             <Button 
               variant="primary" 
               size="medium" 
               icon={Mail}
+              disabled={biz.status === 'Suspended'}
               onClick={() => openModal('message')} 
-              className="flex-1 sm:flex-none h-11 px-10"
+              className={`flex-1 sm:flex-none h-11 px-10 ${biz.status === 'Suspended' ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
             >
               Message
             </Button>

@@ -8,7 +8,7 @@ const api = axios.create({
   },
 });
 
-// Add a request interceptor
+// Add a request interceptor — injects auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -20,11 +20,11 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Add a response interceptor
+// Add a response interceptor — handles global errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle global errors (e.g., 401 Unauthorized)
+    // Handle 401 Unauthorized (when real auth is implemented)
     if (error.response && error.response.status === 401) {
       // localStorage.removeItem('token');
       // window.location.href = '/login';
