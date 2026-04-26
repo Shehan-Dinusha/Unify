@@ -110,7 +110,7 @@ export const toggleOwnerLike = async (reviewId) => {
  */
 export const replyToReview = async (reviewId, content) => {
   try {
-    const response = await api.post(`/reviews/${reviewId}/reply`, { reply: content });
+    const response = await api.post(`/reviews/${reviewId}/reply`, { content });
     return response.data.data;
   } catch (error) {
     console.error("Error replying to review:", error);

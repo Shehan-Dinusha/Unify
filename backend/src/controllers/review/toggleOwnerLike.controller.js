@@ -6,8 +6,8 @@ export const toggleOwnerLike = async (req, res, next) => {
   try {
     const { reviewId } = req.params;
 
-    // Fallback to 4 for testing if req.user is not yet defined
-    const currentUserId = req.user?.id || 4;
+    // Fallback to 3 for testing if req.user is not yet defined
+    const currentUserId = req.user?.id || 3;
 
 
 

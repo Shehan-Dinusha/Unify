@@ -3,7 +3,6 @@ import {
   ChevronDown,
   ThumbsUp,
   ThumbsDown,
-  Flag,
   CornerDownRight,
   Heart,
 } from "lucide-react";
@@ -13,20 +12,20 @@ import Card from "../components/common/Card";
 import LoadMoreButton from "../components/common/LoadMoreButton";
 import StarRating from "../components/common/StarRating";
 import {
-  ReportReviewModal,
-  ReportSuccessModal,
-} from "../components/common/ReportModals";
-import { getReceivedReviews, toggleOwnerLike, replyToReview } from "../services/reviewService";
+  getReceivedReviews,
+  toggleOwnerLike,
+  replyToReview,
+} from "../services/reviewService";
 
-const ReceivedReviewCard = ({ review, onReport, onReply, onLike }) => {
+const ReceivedReviewCard = ({ review, onReply, onLike }) => {
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [isPostingReply, setIsPostingReply] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
+  const [isLikedLocally, setIsLikedLocally] = useState(review.isLikedByOwner);
 
   const hasOwnerReplied = review.hasOwnerReplied;
   const ownerReplyData = review.ownerReply;
-  const isLiked = review.isLikedByOwner;
 
   const handleEditReply = () => {
     setReplyText(ownerReplyData ? ownerReplyData.content : "");
@@ -48,7 +47,10 @@ const ReceivedReviewCard = ({ review, onReport, onReply, onLike }) => {
     if (isLiking) return;
     setIsLiking(true);
     try {
-      await onLike(review.id);
+      const result = await onLike(review.id);
+      if (result) {
+        setIsLikedLocally(result.isLikedByOwner);
+      }
     } finally {
       setIsLiking(false);
     }
@@ -76,7 +78,7 @@ const ReceivedReviewCard = ({ review, onReport, onReply, onLike }) => {
               {review.author.name}
             </span>
             <span className="text-slate-400 text-xs font-normal font-inter leading-5 mt-0.5 truncate">
-              {review.createdAt}
+              {review.author.role} • {review.createdAt}
             </span>
           </div>
         </div>
@@ -185,36 +187,28 @@ const ReceivedReviewCard = ({ review, onReport, onReply, onLike }) => {
             {/* Reaction */}
             <Button
               variant="ghost-hoverless"
-              className="!p-0 !h-auto flex items-center gap-1.5 transition-colors"
+              className="!p-0 !h-auto flex items-center gap-1.5 transition-colors group"
               onClick={handleToggleLike}
             >
               <Heart
                 className={`w-4 h-4 transition-colors ${
-                  isLiked
+                  isLikedLocally
                     ? "fill-red-500 text-red-500"
-                    : "text-gray-400 hover:text-red-400"
+                    : "text-gray-400 group-hover:text-red-400"
                 }`}
               />
-              {isLiked && (
-                <span className="text-xs font-bold font-inter text-red-500">
-                  Liked By Owner
-                </span>
-              )}
+              <span
+                className={`text-sm font-medium font-inter transition-colors ${
+                  isLikedLocally
+                    ? "text-red-500"
+                    : "text-gray-400 group-hover:text-red-400"
+                }`}
+              >
+                {isLikedLocally ? "Liked by Owner" : "Like"}
+              </span>
             </Button>
           </div>
         </div>
-
-        {/* Report to Admin */}
-        <Button
-          variant="ghost-hoverless"
-          className="!p-0 !h-auto flex items-center gap-2 text-gray-400 hover:text-red-400 transition-colors"
-          onClick={() => onReport(review)}
-        >
-          <Flag className="w-4 h-4" />
-          <span className="text-sm font-medium font-inter">
-            Report to Admin
-          </span>
-        </Button>
       </div>
     </Card>
   );
@@ -225,18 +219,17 @@ const ReceivedReviews = () => {
   const [metrics, setMetrics] = useState({
     averageRating: 0,
     totalReviews: 0,
-    distribution: [5, 4, 3, 2, 1].map((stars) => ({ stars, percentage: 0, count: 0 })),
+    distribution: [5, 4, 3, 2, 1].map((stars) => ({
+      stars,
+      percentage: 0,
+      count: 0,
+    })),
   });
   const [activeTab, setActiveTab] = useState("All Reviews");
   const [sortBy, setSortBy] = useState("Newest First");
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Modal State
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [selectedReview, setSelectedReview] = useState(null);
 
   const tabs = ["All Reviews", "Unreplied", "5 stars", "Critical"];
   const sortOptions = [
@@ -250,18 +243,6 @@ const ReceivedReviews = () => {
     name: "Alex Johnson",
     role: "business",
     displayRole: "Business & Organization",
-  };
-
-  const handleReportClick = (review) => {
-    setSelectedReview(review);
-    setIsReportModalOpen(true);
-  };
-
-  const handleReportSubmit = (data) => {
-    // API logic here
-    console.log("Reported Review:", selectedReview?.id, data);
-    setIsReportModalOpen(false);
-    setIsSuccessModalOpen(true);
   };
 
   const [visibleCount, setVisibleCount] = useState(5);
@@ -296,8 +277,7 @@ const ReceivedReviews = () => {
   };
 
   const handleLike = async (reviewId) => {
-    await toggleOwnerLike(reviewId);
-    await fetchReviewsData();
+    return await toggleOwnerLike(reviewId);
   };
 
   // Filtering
@@ -328,7 +308,11 @@ const ReceivedReviews = () => {
 
   if (isLoading) {
     return (
-      <MainLayout user={user} pageTitle="Business Profile" verificationCount={0}>
+      <MainLayout
+        user={user}
+        pageTitle="Business Profile"
+        verificationCount={0}
+      >
         <div className="w-full flex justify-center items-center h-64">
           <div className="text-white text-lg">Loading received reviews...</div>
         </div>
@@ -338,7 +322,11 @@ const ReceivedReviews = () => {
 
   if (error) {
     return (
-      <MainLayout user={user} pageTitle="Business Profile" verificationCount={0}>
+      <MainLayout
+        user={user}
+        pageTitle="Business Profile"
+        verificationCount={0}
+      >
         <div className="w-full flex justify-center items-center h-64">
           <div className="text-red-400 text-lg">{error}</div>
         </div>
@@ -348,17 +336,7 @@ const ReceivedReviews = () => {
 
   return (
     <MainLayout user={user} pageTitle="Reviews" verificationCount={0}>
-      <ReportReviewModal
-        isOpen={isReportModalOpen}
-        onClose={() => setIsReportModalOpen(false)}
-        onSubmit={handleReportSubmit}
-      />
-      <ReportSuccessModal
-        isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-      />
-
-      <div className="w-full max-w-[960px] mx-auto mt-4 sm:mt-8 flex flex-col gap-6 px-4 sm:px-6 lg:px-0 relative">
+      <div className="w-full max-w-[1024px] mx-auto mt-4 sm:mt-8 px-4 sm:px-6 lg:px-0 relative flex flex-col gap-8 lg:gap-[45px]">
         {/* Header Section */}
         <div className="flex flex-col gap-2">
           <h1 className="text-white text-2xl sm:text-3xl font-bold font-inter leading-tight sm:leading-9 m-0">
@@ -480,15 +458,16 @@ const ReceivedReviews = () => {
         {/* Review Cards List */}
         <div className="flex flex-col gap-4">
           {sortedReviews.length > 0 ? (
-            sortedReviews.slice(0, visibleCount).map((review) => (
-              <ReceivedReviewCard
-                key={review.id}
-                review={review}
-                onReport={handleReportClick}
-                onReply={handleReply}
-                onLike={handleLike}
-              />
-            ))
+            sortedReviews
+              .slice(0, visibleCount)
+              .map((review) => (
+                <ReceivedReviewCard
+                  key={review.id}
+                  review={review}
+                  onReply={handleReply}
+                  onLike={handleLike}
+                />
+              ))
           ) : (
             <div className="text-gray-400 text-sm font-inter text-center py-8">
               No reviews found matching the criteria.

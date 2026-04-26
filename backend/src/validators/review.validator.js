@@ -14,7 +14,9 @@ export const submitReviewValidator = [
   body("review")
     .optional()
     .isString()
-    .withMessage("Review content must be a string"),
+    .withMessage("Review content must be a string")
+    .isLength({ max: 500 })
+    .withMessage("Review content cannot exceed 500 characters"),
   body("isAnonymous")
     .optional()
     .isBoolean()

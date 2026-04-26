@@ -205,6 +205,7 @@ const WriteReview = ({ onSubmit }) => {
               className="w-full h-28 bg-gray-800 rounded-lg p-3 text-gray-300 text-base font-inter placeholder-gray-400 outline outline-1 outline-gray-900 focus:outline-primary-blue resize-none pb-8"
               placeholder="What did you like or dislike? How was the service?"
               value={review}
+              maxLength={500}
               onChange={(e) => setReview(e.target.value)}
             />
             <div className="absolute bottom-3 left-3 right-3 flex justify-end items-center pointer-events-none">
@@ -286,7 +287,7 @@ const ReviewCard = ({ review, onDelete, onFeedback }) => {
     try {
       const result = await onFeedback(review.id, "helpful");
       if (result) {
-        setFeedback(result.isHelpful ? "helpful" : null);
+        setFeedback(result.feedbackModified === "removed" ? null : "helpful");
         setHelpfulCount(result.helpfulCount);
         setNotHelpfulCount(result.notHelpfulCount);
       }
@@ -303,7 +304,7 @@ const ReviewCard = ({ review, onDelete, onFeedback }) => {
     try {
       const result = await onFeedback(review.id, "not_helpful");
       if (result) {
-        setFeedback(result.isHelpful ? "not_helpful" : null);
+        setFeedback(result.feedbackModified === "removed" ? null : "not_helpful");
         setHelpfulCount(result.helpfulCount);
         setNotHelpfulCount(result.notHelpfulCount);
       }
@@ -383,10 +384,10 @@ const ReviewCard = ({ review, onDelete, onFeedback }) => {
               onClick={handleNotHelpful}
             >
               <ThumbsDown
-                className={`w-4 h-4 stroke-[2.5] transition-colors ${feedback === "not_helpful" ? "text-state-error fill-state-error/20" : "text-zinc-400"}`}
+                className={`w-4 h-4 stroke-[2.5] transition-colors ${feedback === "not_helpful" ? "text-red-500 fill-red-500/20" : "text-zinc-400"}`}
               />
               <span
-                className={`text-xs font-bold font-inter leading-5 transition-colors ${feedback === "not_helpful" ? "text-state-error" : "text-zinc-400"}`}
+                className={`text-xs font-bold font-inter leading-5 transition-colors ${feedback === "not_helpful" ? "text-red-500" : "text-zinc-400"}`}
               >
                 Not Helpful {notHelpfulCount > 0 && `(${notHelpfulCount})`}
               </span>
