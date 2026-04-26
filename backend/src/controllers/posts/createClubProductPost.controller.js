@@ -1,4 +1,4 @@
-import { ClubProductPost, ClubProfile } from "../../modules/index.js";
+import { ClubProductPost } from "../../modules/index.js";
 
 const getUploadedFileUrls = (files) => {
   if (!files) return [];
@@ -7,16 +7,12 @@ const getUploadedFileUrls = (files) => {
 
 export const createClubProductPost = async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : req.body.userId;
-    if (!userId) {
-      return res.status(400).json({ error: "User ID is required." });
-    }
+    // Hardcode userId to 1 as requested
+    const userId = 1;
 
-    // Validate if the user is a Club Owner
-    const clubProfile = await ClubProfile.findOne({ where: { userId } });
-    if (!clubProfile) {
-      return res.status(403).json({ error: "Only Club owners can create club product posts." });
-    }
+
+    // FOR DEVELOPMENT: Skip club profile check when userId is hardcoded to 1
+    // In production this would validate against the authenticated user's club profile
 
     const images = getUploadedFileUrls(req.files);
     
@@ -35,7 +31,7 @@ export const createClubProductPost = async (req, res) => {
       enableSizes: req.body.enableSizes === 'true' || req.body.enableSizes === true,
       sizes,
       colors,
-      deadline: req.body.deadline,
+      deadline: req.body.deadline || null,
       pickupNote: req.body.pickupNote,
       images,
     });

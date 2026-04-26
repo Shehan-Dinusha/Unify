@@ -4,6 +4,9 @@ import {
   createClubProductPost,
   createClubEventPost,
   createBoardingPost,
+  getFeed,
+  getPost,
+  deletePost,
 } from "../controllers/posts/index.js";
 import uploadService from "../services/upload.service.js";
 
@@ -39,5 +42,30 @@ router.post(
   uploadService.array("images", 10),
   createBoardingPost
 );
+
+// Create Food & Cafe Post (Using createNormalPost controller with FOOD category)
+router.post(
+  "/food-cafe",
+  uploadService.array("images", 10),
+  createNormalPost
+);
+
+// Create Service Post (Using createNormalPost controller with SELF_EMPLOYED category)
+router.post(
+  "/service",
+  uploadService.array("images", 10),
+  createNormalPost
+);
+
+// ── Unified Post Routes ───────────────────────────────────────────────────────
+
+// Get unified feed
+router.get("/feed", getFeed);
+
+// Get specific post dynamically
+router.get("/:type/:id", getPost);
+
+// Delete specific post dynamically
+router.delete("/:type/:id", deletePost);
 
 export default router;

@@ -1,18 +1,58 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
-import { ShoppingBag, ArrowRight, Edit3 } from "lucide-react";
-import { mockClubProduct } from "../data/mockClubProduct";
+import { ShoppingBag, ArrowRight } from "lucide-react";
+import { getImageUrl } from "../utils/formatters";
+import orderService from "../services/orderService";
 
 const ClubCheckout = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
-    const product = mockClubProduct;
+    const [loading, setLoading] = useState(false);
 
-    // Mock values based on design
-    const subtotal = 35.00;
+    const { product, selectedColor, selectedSize, quantity } = location.state || {};
+
+    useEffect(() => {
+        if (!product) {
+            navigate("/marketplace/club");
+        }
+    }, [product, navigate]);
+
+    const handleProceedToPayment = async () => {
+        try {
+            setLoading(true);
+            const orderData = {
+                userId: 1, // Mock student user
+                postId: product.id,
+                qty: quantity || 1,
+                color: selectedColor?.name,
+                colorHex: selectedColor?.hex,
+                size: selectedSize,
+                paymentMethod: "STRIPE"
+            };
+
+            const result = await orderService.createOrder(orderData);
+            
+            navigate("/marketplace/club/payment-success", { 
+                state: { 
+                    order: result.order,
+                    product: product 
+                } 
+            });
+        } catch (error) {
+            console.error("Order creation failed:", error);
+            alert("Failed to place order. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!product) return null;
+
+    const subtotal = parseFloat(product.price) * (quantity || 1);
     const total = subtotal;
 
     return (
@@ -34,26 +74,23 @@ const ClubCheckout = () => {
                                 {/* Product image */}
                                 <div className="w-20 h-20 md:w-32 md:h-32 aspect-square rounded-2xl overflow-hidden bg-white/5 border border-white/10 shrink-0">
                                     <img
-                                        src={product.images[0].src}
-                                        alt={product.images[0].alt}
+                                        src={getImageUrl(product.images?.[0] || product.image || product.coverImage)}
+                                        alt={product.name}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
 
                                 {/* Product info */}
                                 <div className="flex-1 min-w-0">
-                                    {/* Mobile: title + club stacked, price below. Desktop: title+club left, price right */}
                                     <div className="md:flex md:justify-between md:items-start md:gap-sm">
                                         <div>
-                                            {/* No truncate on mobile — let it wrap */}
                                             <h3 className="text-body-medium-bold md:text-body-large-bold text-text-primary leading-snug md:truncate">
-                                                {product.title}
+                                                {product.name}
                                             </h3>
                                             <p className="text-body-extra-small md:text-body-small text-text-tertiary mt-xs md:truncate">
-                                                {product.clubName} · {product.clubSubtitle}
+                                                {product.author?.name || "Club"} · {product.category || "Official Merchandise"}
                                             </p>
                                         </div>
-                                        {/* Price: inline with title on md+, below on mobile */}
                                         <p className="text-body-medium-bold md:text-body-large-bold text-text-primary shrink-0 mt-xs md:mt-0">
                                             Rs.{subtotal.toFixed(2)}
                                         </p>
@@ -61,22 +98,26 @@ const ClubCheckout = () => {
 
                                     {/* Attribute pills */}
                                     <div className="mt-md md:mt-lg flex flex-wrap gap-xs md:gap-sm">
-                                        <div className="px-sm md:px-md py-xs rounded-full bg-white/5 border border-white/10 flex items-center gap-xs">
-                                            <span className="text-[10px] md:text-body-extra-small text-text-tertiary">Size:</span>
-                                            <span className="text-[10px] md:text-body-extra-small-bold text-text-primary uppercase">S</span>
-                                        </div>
-                                        <div className="px-sm md:px-md py-xs rounded-full bg-white/5 border border-white/10 flex items-center gap-xs">
-                                            <span className="text-[10px] md:text-body-extra-small text-text-tertiary">Color:</span>
-                                            <div className="flex items-center gap-xs">
-                                                <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full" style={{ backgroundColor: product.colors[0].swatch }} />
-                                                <span className="text-[10px] md:text-body-extra-small-bold text-text-primary">
-                                                    {product.colors[0].name.split(' ').map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')}
-                                                </span>
+                                        {selectedSize && (
+                                            <div className="px-sm md:px-md py-xs rounded-full bg-white/5 border border-white/10 flex items-center gap-xs">
+                                                <span className="text-[10px] md:text-body-extra-small text-text-tertiary">Size:</span>
+                                                <span className="text-[10px] md:text-body-extra-small-bold text-text-primary uppercase">{selectedSize}</span>
                                             </div>
-                                        </div>
+                                        )}
+                                        {selectedColor && (
+                                            <div className="px-sm md:px-md py-xs rounded-full bg-white/5 border border-white/10 flex items-center gap-xs">
+                                                <span className="text-[10px] md:text-body-extra-small text-text-tertiary">Color:</span>
+                                                <div className="flex items-center gap-xs">
+                                                    <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full" style={{ backgroundColor: selectedColor.hex }} />
+                                                    <span className="text-[10px] md:text-body-extra-small-bold text-text-primary uppercase">
+                                                        {selectedColor.name}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
                                         <div className="px-sm md:px-md py-xs rounded-full bg-white/5 border border-white/10 flex items-center gap-xs">
                                             <span className="text-[10px] md:text-body-extra-small text-text-tertiary">Qty:</span>
-                                            <span className="text-[10px] md:text-body-extra-small-bold text-text-primary">1</span>
+                                            <span className="text-[10px] md:text-body-extra-small-bold text-text-primary">{quantity}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -84,10 +125,10 @@ const ClubCheckout = () => {
 
                             <div className="mt-lg md:mt-xl pt-md md:pt-lg border-t border-white/5 flex justify-end">
                                 <button
-                                    onClick={() => navigate("/marketplace/club/product")}
+                                    onClick={() => navigate(-1)}
                                     className="flex items-center gap-xs text-body-extra-small-bold md:text-body-small-bold text-primary-blue hover:underline"
                                 >
-                                    Edit Item
+                                    Edit Selection
                                 </button>
                             </div>
                         </Card>
@@ -132,7 +173,8 @@ const ClubCheckout = () => {
                                     className="w-full justify-center py-sm md:py-lg group"
                                     icon={ArrowRight}
                                     iconPosition="right"
-                                    onClick={() => navigate("/marketplace/club/payment-success")}
+                                    loading={loading}
+                                    onClick={handleProceedToPayment}
                                 >
                                     Proceed to Payment
                                 </Button>

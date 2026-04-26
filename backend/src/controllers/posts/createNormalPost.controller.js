@@ -1,4 +1,4 @@
-import { NormalPost, ClubProfile, BusinessProfile } from "../../modules/index.js";
+import { NormalPost } from "../../modules/index.js";
 
 const getUploadedFileUrls = (files) => {
   if (!files) return [];
@@ -7,23 +7,31 @@ const getUploadedFileUrls = (files) => {
 
 export const createNormalPost = async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : req.body.userId;
-    if (!userId) {
-      return res.status(400).json({ error: "User ID is required." });
+    const { description, hours, phone, tags: tagsRaw, postType, category: bodyCategory } = req.body;
+
+    // Determine category and hardcoded userId based on postType
+    // userId=1: Club Owner, userId=3: Food Owner, userId=4: Self Employed Pro
+    let category = bodyCategory || "CLUB";
+    let userId = 1; // default: club owner
+
+    if (postType === "food-cafe") {
+      category = "FOOD";
+      userId = 3; // Food Owner (hardcoded for development)
+    } else if (postType === "service") {
+      category = "SELF_EMPLOYED";
+      userId = 4; // Self Employed Pro (hardcoded for development)
+    } else if (postType === "club") {
+      category = "CLUB";
+      userId = 1; // Club Owner (hardcoded for development)
     }
 
-    const { description } = req.body;
-
-    // Validate if the user is a Club Owner or a Food/Cafe Business Owner
-    const clubProfile = await ClubProfile.findOne({ where: { userId } });
-    const businessProfile = await BusinessProfile.findOne({ 
-      where: { userId, category: "FOOD" } 
-    });
-
-    if (!clubProfile && !businessProfile) {
-      return res.status(403).json({ 
-        error: "Only Club or Food/Cafe Service owners can create normal posts." 
-      });
+    let tags = [];
+    if (tagsRaw) {
+      try {
+        tags = typeof tagsRaw === "string" ? JSON.parse(tagsRaw) : tagsRaw;
+      } catch (e) {
+        tags = [];
+      }
     }
 
     const images = getUploadedFileUrls(req.files);
@@ -32,6 +40,10 @@ export const createNormalPost = async (req, res) => {
       authorId: userId,
       description,
       images,
+      category,
+      hours,
+      phone,
+      tags,
     });
 
     res.status(201).json({ success: true, post });

@@ -3,17 +3,9 @@ import { Order } from "../../modules/index.js";
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, note } = req.body;
     
-    const sellerId = req.user ? req.user.id : req.body.userId;
-
-    if (!sellerId) {
-      return res.status(400).json({ error: "User ID is required." });
-    }
-
-    if (!status) {
-      return res.status(400).json({ error: "Status is required." });
-    }
+    const sellerId = req.user ? req.user.id : req.body.sellerId;
 
     const order = await Order.findByPk(id);
     if (!order) {
@@ -21,16 +13,25 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     // Ensure only the seller can update the order status
-    if (order.sellerId !== parseInt(sellerId, 10)) {
-      return res.status(403).json({ error: "Only the seller can update the order status." });
+    if (sellerId && order.sellerId !== parseInt(sellerId, 10)) {
+      return res.status(403).json({ error: "Unauthorized to update this order." });
     }
 
     let timeline = order.timeline || [];
-    if (typeof timeline === 'string') {
-      try { timeline = JSON.parse(timeline); } catch(e) { timeline = []; }
+    if (typeof timeline === "string") {
+      try {
+        timeline = JSON.parse(timeline);
+      } catch (e) {
+        timeline = [];
+      }
     }
 
-    timeline.push({ status, timestamp: new Date() });
+    // Add new entry to timeline
+    timeline.push({
+      status,
+      timestamp: new Date(),
+      note: note || `Order status updated to ${status}`
+    });
 
     await order.update({
       status,

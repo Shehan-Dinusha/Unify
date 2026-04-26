@@ -29,6 +29,23 @@ const NormalPost = sequelize.define(
       type: DataTypes.INTEGER,
       defaultValue: 0,
     },
+    category: {
+      type: DataTypes.ENUM("CLUB", "FOOD", "SELF_EMPLOYED"),
+      allowNull: false,
+      defaultValue: "CLUB",
+    },
+    tags: {
+      type: DataTypes.JSON, // Array of strings
+      allowNull: true,
+    },
+    hours: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     tableName: "normal_posts",

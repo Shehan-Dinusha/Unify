@@ -95,7 +95,7 @@ export const clubRoutes = [
     element: <ProductOrderDashboard />,
   },
   { path: "/club-owner/wallet", element: <ClubWalletPage /> },
-  { path: "/marketplace/club/product", element: <ClubProduct /> },
+  { path: "/marketplace/club/product/:type/:id", element: <ClubProduct /> },
   { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
   {
     path: "/marketplace/club/payment-success",

@@ -1,27 +1,23 @@
 import React, { useState } from "react";
-import { Tag, Calendar, Edit3, X, Upload, Check, ChevronDown, Plus, Trash2, Search } from "lucide-react";
+import { Tag, Calendar, Edit3, X, Upload, Check, ChevronDown, Plus, Trash2, Search, Loader2 } from "lucide-react";
 import Card from "../common/Card";
-import { mockClubProduct } from "../../data/mockClubProduct";
+import postService from "../../services/postService";
 
 const CreateProductForm = ({ onCancel, onPublish }) => {
     const [formData, setFormData] = useState({
-        name: "Hackathon 2024 Hoodie",
-        description: "Level up your coding sessions with the official Hackathon 2024 hoodie. Featuring a premium heavyweight cotton blend.",
-        price: "35.00",
+        name: "",
+        description: "",
+        price: "",
         category: "Apparel",
-        images: [
-            { id: 1, url: mockClubProduct.images[0].src }
-        ],
-        enableSizes: true,
-        sizes: ["XS", "S", "M", "L"],
-        colors: [
-            { id: 1, hex: "#0B1220", name: "Midnight Black" },
-            { id: 2, hex: "#2B2F36", name: "Charcoal" }
-        ],
+        images: [],
+        enableSizes: false,
+        sizes: [],
+        colors: [],
         deadline: "",
-        pickupNote: "Free pickup from CS Lab on Fridays"
+        pickupNote: ""
     });
 
+    const [loading, setLoading] = useState(false);
     const [newColor, setNewColor] = useState({ hex: "#3B82F6", name: "" });
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = React.useRef(null);
@@ -80,16 +76,46 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
         }));
     };
 
+    const handlePublish = async () => {
+        if (!formData.name || !formData.description || !formData.price) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const data = new FormData();
+            data.append("name", formData.name);
+            data.append("description", formData.description);
+            data.append("price", formData.price);
+            data.append("category", formData.category);
+            data.append("enableSizes", formData.enableSizes);
+            data.append("sizes", JSON.stringify(formData.sizes));
+            data.append("colors", JSON.stringify(formData.colors));
+            data.append("deadline", formData.deadline);
+            data.append("pickupNote", formData.pickupNote);
+            
+            formData.images.forEach(img => {
+                if (img.file) {
+                    data.append("images", img.file);
+                }
+            });
+
+            // Mock userId for now
+            data.append("userId", 1);
+
+            await postService.createPost("club-product", data);
+            onPublish();
+        } catch (error) {
+            console.error("Failed to publish product:", error);
+            alert(error.error || "Failed to publish product. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="flex flex-col w-full h-full text-white font-inter">
-            {/* Header 
-            <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold">Create New Product</h2>
-                <div className="p-2 hover:bg-white/5 rounded-full transition-colors cursor-pointer text-text-secondary">
-                    <Search className="w-5 h-5" />
-                </div>
-            </div>*/}
-
             <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-8">
                 {/* Left Column: Form Sections */}
                 <div className="flex flex-col gap-6 pb-8">
@@ -177,10 +203,10 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                        Base Price ($)
+                                        Base Price (Rs.)
                                     </label>
                                     <input
-                                        type="text"
+                                        type="number"
                                         name="price"
                                         value={formData.price}
                                         onChange={handleInputChange}
@@ -249,9 +275,6 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                                             {size} {formData.sizes.includes(size) && <X className="inline w-3 h-3 ml-1" />}
                                         </button>
                                     ))}
-                                    <button className="px-4 py-1.5 rounded-full text-xs font-bold bg-white/5 border border-dashed border-white/20 text-text-secondary hover:bg-white/10 transition-all">
-                                        + Add Size
-                                    </button>
                                 </div>
                             )}
 
@@ -269,9 +292,6 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                                             </button>
                                         </div>
                                     ))}
-                                    <button className="w-8 h-8 rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center text-text-secondary hover:bg-white/10 transition-all">
-                                        <Plus className="w-4 h-4" />
-                                    </button>
                                 </div>
 
                                 <div className="flex gap-2">
@@ -315,6 +335,9 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                                 <div className="relative">
                                     <input
                                         type="date"
+                                        name="deadline"
+                                        value={formData.deadline}
+                                        onChange={handleInputChange}
                                         className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-blue transition-colors text-sm appearance-none"
                                     />
                                     <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary pointer-events-none" />
@@ -368,7 +391,7 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                             <div className="flex items-center gap-2 mb-4">
                                 <span className="text-xs font-medium text-text-secondary">{formData.category}</span>
                                 <span className="w-1 h-1 bg-white/20 rounded-full" />
-                                <span className="text-xs font-medium text-text-secondary">By CS Society</span>
+                                <span className="text-xs font-medium text-text-secondary">By Your Club</span>
                             </div>
 
                             <p className="text-xs text-text-secondary leading-relaxed mb-6 line-clamp-3">
@@ -420,22 +443,22 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[#0B1724]/95 backdrop-blur-md border-t border-white/10 xl:static xl:z-auto xl:p-0 xl:bg-transparent xl:backdrop-blur-none xl:border-t-0 flex gap-4 mt-4 xl:mt-0">
                         <button
                             onClick={onCancel}
-                            className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/10"
+                            disabled={loading}
+                            className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/10 disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
-                            onClick={onPublish}
-                            className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)]"
+                            onClick={handlePublish}
+                            disabled={loading}
+                            className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] disabled:opacity-50 flex items-center justify-center gap-2"
                         >
-                            Publish Now
+                            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                            {loading ? "Publishing..." : "Publish Now"}
                         </button>
                     </div>
                 </div>
             </div>
-
-            <style jsx>{`
-            `}</style>
         </div>
     );
 };

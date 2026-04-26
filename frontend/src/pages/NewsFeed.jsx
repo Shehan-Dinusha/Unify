@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import StatsCard from "../components/common/StatsCard";
 import PostCard from "../components/feed/PostCard";
-import mockPosts from "../data/mockData";
+import postService from "../services/postService";
+import { formatTimeAgo, getImageUrl } from "../utils/formatters";
 
 const NewsFeed = ({ userRole = 'student' }) => {
   const location = useLocation();
@@ -12,6 +13,9 @@ const NewsFeed = ({ userRole = 'student' }) => {
   const searchInputRef = useRef(null);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const user = {
     name: "Alex Johnson",
@@ -20,38 +24,50 @@ const NewsFeed = ({ userRole = 'student' }) => {
   };
 
   useEffect(() => {
+    const fetchFeed = async () => {
+      try {
+        setLoading(true);
+        const data = await postService.getFeed("all");
+        setPosts(data.feed);
+      } catch (err) {
+        setError(err.error || "Failed to load feed");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeed();
+  }, []);
+
+  useEffect(() => {
     // Check if we arrived with a targetPostId in state
-    if (location.state?.targetPostId) {
+    if (location.state?.targetPostId && posts.length > 0) {
       const targetId = location.state.targetPostId;
       const targetRef = postRefs.current[targetId];
 
       if (targetRef) {
-        // Add a slight delay to ensure rendering is complete before scrolling
         setTimeout(() => {
           targetRef.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 100);
       }
     }
-  }, [location.state]);
+  }, [location.state, posts]);
 
-  // Auto-focus search input when search bar opens
   useEffect(() => {
     if (showSearch && searchInputRef.current) {
       searchInputRef.current.focus();
     }
   }, [showSearch]);
 
-  // Filter posts based on search query
   const filteredPosts = searchQuery.trim()
-    ? mockPosts.filter(
+    ? posts.filter(
         (post) =>
-          post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (post.title || post.name)?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          post.author?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           post.description?.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : mockPosts;
+    : posts;
 
-  // Custom header right content with search toggle
   const headerRight = (
     <div className="flex items-center gap-2">
       {showSearch && (
@@ -107,7 +123,6 @@ const NewsFeed = ({ userRole = 'student' }) => {
       headerRight={headerRight}
     >
       <div className="flex flex-col gap-8 w-full max-w-3xl mx-auto">
-        {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
           <Link to="/new-announcements">
             <StatsCard
@@ -141,36 +156,59 @@ const NewsFeed = ({ userRole = 'student' }) => {
           </Link>
         </div>
 
-        {/* Search Results Info */}
-        {searchQuery.trim() && (
-          <div className="text-text-secondary text-sm">
-            {filteredPosts.length > 0
-              ? `Showing ${filteredPosts.length} result${filteredPosts.length !== 1 ? "s" : ""} for "${searchQuery}"`
-              : `No posts found for "${searchQuery}"`}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="w-10 h-10 text-primary-blue animate-spin" />
+            <p className="text-text-secondary animate-pulse">Fetching latest updates...</p>
           </div>
-        )}
+        ) : error ? (
+          <div className="bg-state-error/10 border border-state-error/20 rounded-2xl p-6 text-center">
+            <p className="text-state-error font-semibold">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 text-sm text-text-secondary hover:text-white underline"
+            >
+              Try again
+            </button>
+          </div>
+        ) : (
+          <>
+            {searchQuery.trim() && (
+              <div className="text-text-secondary text-sm">
+                {filteredPosts.length > 0
+                  ? `Showing ${filteredPosts.length} result${filteredPosts.length !== 1 ? "s" : ""} for "${searchQuery}"`
+                  : `No posts found for "${searchQuery}"`}
+              </div>
+            )}
 
-        {/* Posts Section */}
-        <div className="flex flex-col gap-6 w-full">
-          {filteredPosts.map((post) => (
-            <div key={post.id} ref={(el) => (postRefs.current[post.id] = el)}>
-              <PostCard
-                post={post}
-                author={post.author}
-                authorInitial={post.authorInitial}
-                time={post.time}
-                title={post.title}
-                location={post.location}
-                description={post.description}
-                image={post.image}
-                likes={post.likes}
-                comments={post.comments}
-                isPromoted={post.isPromoted}
-                showBoost={user.role === 'business'}
-              />
+            <div className="flex flex-col gap-6 w-full">
+              {filteredPosts.length > 0 ? (
+                filteredPosts.map((post) => (
+                  <div key={`${post.postType}-${post.id}`} ref={(el) => (postRefs.current[post.id] = el)}>
+                    <PostCard
+                      post={post}
+                      author={post.author?.name || "Unknown User"}
+                      authorInitial={post.author?.name?.charAt(0) || "?"}
+                      time={formatTimeAgo(post.createdAt)}
+                      title={post.title || post.name}
+                      location={post.location || post.pickupNote}
+                      description={post.description}
+                      image={getImageUrl(post.coverImage || post.image || post.images?.[0])}
+                      likes={post.likesCount || 0}
+                      comments={0}
+                      isPromoted={post.isPromoted}
+                      showBoost={user.role === 'business'}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                  <p className="text-text-secondary">No posts to show right now.</p>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
     </MainLayout>
   );
