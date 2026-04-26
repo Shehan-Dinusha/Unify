@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Star,
   ThumbsUp,
   ThumbsDown,
   ChevronDown,
@@ -11,7 +10,12 @@ import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import LoadMoreButton from "../components/common/LoadMoreButton";
-import { mockReviews, mockReviewSummary } from "../data/mockReviewData";
+import {
+  getTargetReviews,
+  submitReview,
+  deleteReview,
+  toggleReviewFeedback,
+} from "../services/reviewService";
 import {
   DeleteReviewModal,
   ReviewDeletedModal,
@@ -79,7 +83,7 @@ const RatingSummary = ({ summary }) => {
       </h3>
       <div className="flex items-center gap-4 mb-8">
         <div className="text-white text-[48px] font-bold font-inter leading-[48px]">
-          {summary.averageRating.toFixed(1)}
+          {Number(summary.averageRating).toFixed(1)}
         </div>
         <div className="flex flex-col gap-1">
           <StarRating rating={summary.averageRating} />
@@ -270,21 +274,45 @@ const WriteReview = ({ onSubmit }) => {
   );
 };
 
-const ReviewCard = ({ review, onDelete }) => {
-  const [feedback, setFeedback] = useState(null);
+const ReviewCard = ({ review, onDelete, onFeedback }) => {
+  const [feedback, setFeedback] = useState(review.currentUserFeedback);
+  const [helpfulCount, setHelpfulCount] = useState(review.helpfulCount);
+  const [notHelpfulCount, setNotHelpfulCount] = useState(review.notHelpfulCount);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleHelpful = () => {
-    setFeedback((prev) => (prev === "helpful" ? null : "helpful"));
+  const handleHelpful = async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      const result = await onFeedback(review.id, "helpful");
+      if (result) {
+        setFeedback(result.isHelpful ? "helpful" : null);
+        setHelpfulCount(result.helpfulCount);
+        setNotHelpfulCount(result.notHelpfulCount);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  const handleNotHelpful = () => {
-    setFeedback((prev) => (prev === "not_helpful" ? null : "not_helpful"));
+  const handleNotHelpful = async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      const result = await onFeedback(review.id, "not_helpful");
+      if (result) {
+        setFeedback(result.isHelpful ? "not_helpful" : null);
+        setHelpfulCount(result.helpfulCount);
+        setNotHelpfulCount(result.notHelpfulCount);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
-
-  const helpfulCount = review.helpfulCount + (feedback === "helpful" ? 1 : 0);
-  const baseNotHelpfulCount = review.notHelpfulCount || 0;
-  const notHelpfulCount =
-    baseNotHelpfulCount + (feedback === "not_helpful" ? 1 : 0);
 
   return (
     <Card
@@ -376,26 +404,61 @@ const ReviewCard = ({ review, onDelete }) => {
           )}
         </div>
       ) : (
-        <div className="pt-4 border-t border-blue-500/20 flex justify-start items-center">
-          <button
-            className="w-full sm:w-36 h-12 bg-red-400/5 hover:bg-red-400/10 transition-colors rounded-2xl outline outline-2 outline-offset-[-2px] outline-red-400 flex justify-center items-center gap-2 overflow-hidden"
-            onClick={() => onDelete && onDelete(review.id)}
-          >
-            <Trash2 className="w-4 h-4 text-red-400" />
-            <span className="text-red-400 text-sm font-bold font-inter leading-5">
-              Delete Review
-            </span>
-          </button>
-        </div>
+        <>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-2 sm:mt-0">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <ThumbsUp className="w-4 h-4 stroke-[2.5] text-zinc-400" />
+                <span className="text-xs font-bold font-inter leading-5 text-zinc-400">
+                  Helpful {helpfulCount > 0 && `(${helpfulCount})`}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <ThumbsDown className="w-4 h-4 stroke-[2.5] text-zinc-400" />
+                <span className="text-xs font-bold font-inter leading-5 text-zinc-400">
+                  Not Helpful {notHelpfulCount > 0 && `(${notHelpfulCount})`}
+                </span>
+              </div>
+            </div>
+
+            {/* Static Owner Liked Badge */}
+            {review.isLikedByOwner && (
+              <div className="flex items-center gap-1.5 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
+                <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                <span className="text-[10px] font-bold font-inter text-red-500 uppercase tracking-wide">
+                  Liked by Owner
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="pt-4 border-t border-blue-500/20 flex justify-start items-center mt-4">
+            <button
+              className="w-full sm:w-36 h-12 bg-red-400/5 hover:bg-red-400/10 transition-colors rounded-2xl outline outline-2 outline-offset-[-2px] outline-red-400 flex justify-center items-center gap-2 overflow-hidden"
+              onClick={() => onDelete && onDelete(review.id)}
+            >
+              <Trash2 className="w-4 h-4 text-red-400" />
+              <span className="text-red-400 text-sm font-bold font-inter leading-5">
+                Delete Review
+              </span>
+            </button>
+          </div>
+        </>
       )}
 
       {review.ownerReply && (
         <div className="mt-6 pt-4 border-t border-gray-800 flex gap-3">
-          <img
-            src={review.ownerReply.author.avatar}
-            alt={review.ownerReply.author.name}
-            className="w-9 h-9 rounded-full object-cover"
-          />
+          {review.ownerReply.author?.avatar ? (
+            <img
+              src={review.ownerReply.author.avatar}
+              alt={review.ownerReply.author.name}
+              className="w-9 h-9 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold font-inter shrink-0">
+              {review.ownerReply.author?.name?.charAt(0) || "O"}
+            </div>
+          )}
           <div className="flex-1 bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg p-3 outline outline-1 outline-gray-800 flex flex-col gap-1">
             <div className="flex justify-between items-center h-6">
               <div className="flex items-center gap-2">
@@ -469,10 +532,41 @@ const MarketplaceReviews = () => {
   const [sortBy, setSortBy] = useState("Most Relevant");
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [reviews, setReviews] = useState(mockReviews);
+  const [reviews, setReviews] = useState([]);
+  const [summary, setSummary] = useState({
+    averageRating: 0,
+    totalReviews: 0,
+    distribution: [],
+  });
   const [reviewToDelete, setReviewToDelete] = useState(null);
   const [showDeletedModal, setShowDeletedModal] = useState(false);
   const [visibleCount, setVisibleCount] = useState(5);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const TARGET_ID = 3; // ID of existing Business user "Campus Bites & Cafe"
+
+  const fetchReviewsData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await getTargetReviews(TARGET_ID);
+      setReviews(data.reviews || []);
+      setSummary(data.summary || {
+        averageRating: 0,
+        totalReviews: 0,
+        distribution: [],
+      });
+    } catch (err) {
+      setError("Failed to load reviews.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviewsData();
+  }, []);
 
   useEffect(() => {
     setVisibleCount(5);
@@ -494,33 +588,49 @@ const MarketplaceReviews = () => {
 
   const hasSubmitted = reviews.some((r) => r.isOwn);
 
-  const handleReviewSubmit = ({ rating, review, isAnonymous }) => {
-    const newReview = {
-      id: `rev-${Date.now()}`,
-      author: {
-        name: isAnonymous ? "Anonymous User" : "Sarah Jenkins",
-        role: "Student",
-        avatar: "https://placehold.co/40x40",
-      },
-      createdAt: "Just now",
-      rating,
-      content: review,
-      helpfulCount: 0,
-      isOwn: true,
-    };
-
-    setReviews([newReview, ...reviews]);
-    setShowModal(true);
+  const handleReviewSubmit = async ({ rating, review, isAnonymous }) => {
+    try {
+      await submitReview({
+        targetId: TARGET_ID,
+        rating,
+        review,
+        isAnonymous,
+      });
+      setShowModal(true);
+      // Refetch to get the latest calculated stats and new review from the server
+      await fetchReviewsData();
+    } catch (error) {
+      alert("Failed to submit review. You might already have an active review.");
+    }
   };
 
   const handleDeleteClick = (id) => {
     setReviewToDelete(id);
   };
 
-  const handleConfirmDelete = () => {
-    setReviews(reviews.filter((r) => r.id !== reviewToDelete));
-    setReviewToDelete(null);
-    setShowDeletedModal(true);
+  const handleConfirmDelete = async () => {
+    if (!reviewToDelete) return;
+    try {
+      await deleteReview(reviewToDelete);
+      setReviewToDelete(null);
+      setShowDeletedModal(true);
+      // Refetch to update list and stats
+      await fetchReviewsData();
+    } catch (error) {
+      alert("Failed to delete review.");
+    }
+  };
+
+  const handleFeedbackToggle = async (reviewId, action) => {
+    try {
+      const result = await toggleReviewFeedback(reviewId, action);
+      // We don't necessarily need to refetch the whole page, 
+      // the ReviewCard maintains its own local state for the thumbs up/down
+      return result;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
   };
 
   const getSortedReviews = () => {
@@ -547,14 +657,26 @@ const MarketplaceReviews = () => {
   };
 
   const sortedReviews = getSortedReviews();
-  const summaryReviewsCount =
-    mockReviewSummary.totalReviews + (hasSubmitted ? 1 : 0);
-  const currentSummary = hasSubmitted
-    ? {
-        ...mockReviewSummary,
-        totalReviews: summaryReviewsCount,
-      }
-    : mockReviewSummary;
+
+  if (isLoading) {
+    return (
+      <MainLayout user={user} pageTitle="Marketplace" verificationCount={0}>
+        <div className="w-full flex justify-center items-center h-64">
+          <div className="text-white text-lg">Loading reviews...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout user={user} pageTitle="Marketplace" verificationCount={0}>
+        <div className="w-full flex justify-center items-center h-64">
+          <div className="text-red-400 text-lg">{error}</div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout user={user} pageTitle="Marketplace" verificationCount={0}>
@@ -573,7 +695,13 @@ const MarketplaceReviews = () => {
       <div className="w-full max-w-[1024px] mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-0 flex flex-col items-center gap-8 lg:gap-16">
         {/* Top Section */}
         <div className="flex flex-col lg:flex-row justify-center items-stretch gap-6 lg:gap-12 w-full">
-          <RatingSummary summary={currentSummary} />
+          {summary.totalReviews > 0 ? (
+            <RatingSummary summary={summary} />
+          ) : (
+            <Card variant="card" className="w-full lg:w-96 h-[470px] flex flex-col justify-center items-center">
+              <span className="text-gray-400">No reviews yet</span>
+            </Card>
+          )}
           {hasSubmitted ? (
             <HasReviewedCard />
           ) : (
@@ -586,7 +714,7 @@ const MarketplaceReviews = () => {
           {/* Header */}
           <div className="pb-4 border-b border-gray-800 flex justify-between items-center w-full gap-4">
             <h2 className="text-white text-lg sm:text-xl font-bold font-inter whitespace-nowrap">
-              {summaryReviewsCount} Reviews
+              {summary.totalReviews} Reviews
             </h2>
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
               <span className="hidden sm:inline text-gray-400 text-sm font-bold font-inter">
@@ -636,6 +764,7 @@ const MarketplaceReviews = () => {
                 key={review.id}
                 review={review}
                 onDelete={handleDeleteClick}
+                onFeedback={handleFeedbackToggle}
               />
             ))}
           </div>

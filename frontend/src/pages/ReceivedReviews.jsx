@@ -16,45 +16,61 @@ import {
   ReportReviewModal,
   ReportSuccessModal,
 } from "../components/common/ReportModals";
-import {
-  mockBusinessReviewMetrics,
-  mockReceivedReviews,
-} from "../data/mockReviewData";
+import { getReceivedReviews, toggleOwnerLike, replyToReview } from "../services/reviewService";
 
-const ReceivedReviewCard = ({ review, onReport }) => {
+const ReceivedReviewCard = ({ review, onReport, onReply, onLike }) => {
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
-  const [isLiked, setIsLiked] = useState(false);
+  const [isPostingReply, setIsPostingReply] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
 
-  // Local state to mock owner reply edits immediately
-  const [hasOwnerReplied, setHasOwnerReplied] = useState(
-    review.hasOwnerReplied,
-  );
-  const [ownerReplyData, setOwnerReplyData] = useState(review.ownerReply);
+  const hasOwnerReplied = review.hasOwnerReplied;
+  const ownerReplyData = review.ownerReply;
+  const isLiked = review.isLikedByOwner;
 
   const handleEditReply = () => {
     setReplyText(ownerReplyData ? ownerReplyData.content : "");
     setIsReplying(true);
   };
 
-  const handlePostReply = () => {
-    setOwnerReplyData({
-      content: replyText,
-      createdAt: "Just now",
-    });
-    setHasOwnerReplied(true);
-    setIsReplying(false);
+  const handlePostReply = async () => {
+    if (!replyText.trim() || isPostingReply) return;
+    setIsPostingReply(true);
+    try {
+      await onReply(review.id, replyText);
+      setIsReplying(false);
+    } finally {
+      setIsPostingReply(false);
+    }
+  };
+
+  const handleToggleLike = async () => {
+    if (isLiking) return;
+    setIsLiking(true);
+    try {
+      await onLike(review.id);
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   return (
     <Card variant="container" className="w-full relative">
       <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2 sm:gap-0">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <img
-            className="w-10 h-10 rounded-full object-cover shadow-[0px_0px_0px_1px_rgba(40,46,57,1.00)] shrink-0"
-            src={review.author.avatar}
-            alt={review.author.name}
-          />
+          {review.author.avatar ? (
+            <img
+              className="w-10 h-10 rounded-full object-cover shadow-[0px_0px_0px_1px_rgba(40,46,57,1.00)] shrink-0"
+              src={review.author.avatar}
+              alt={review.author.name}
+            />
+          ) : (
+            <div
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold font-inter ${review.author.bgColor || "bg-gray-600"} shrink-0 shadow-[0px_0px_0px_1px_rgba(40,46,57,1.00)]`}
+            >
+              {review.author.initials}
+            </div>
+          )}
           <div className="flex flex-col flex-1 sm:flex-none overflow-hidden">
             <span className="text-white text-base font-bold font-inter leading-5 truncate">
               {review.author.name}
@@ -119,9 +135,9 @@ const ReceivedReviewCard = ({ review, onReport }) => {
                   variant="primary"
                   className="h-7 w-24 flex justify-center text-xs"
                   onClick={handlePostReply}
-                  disabled={!replyText.trim()}
+                  disabled={!replyText.trim() || isPostingReply}
                 >
-                  Post Reply
+                  {isPostingReply ? "Posting..." : "Post Reply"}
                 </Button>
               </div>
             </div>
@@ -170,7 +186,7 @@ const ReceivedReviewCard = ({ review, onReport }) => {
             <Button
               variant="ghost-hoverless"
               className="!p-0 !h-auto flex items-center gap-1.5 transition-colors"
-              onClick={() => setIsLiked(!isLiked)}
+              onClick={handleToggleLike}
             >
               <Heart
                 className={`w-4 h-4 transition-colors ${
@@ -205,9 +221,17 @@ const ReceivedReviewCard = ({ review, onReport }) => {
 };
 
 const ReceivedReviews = () => {
+  const [reviews, setReviews] = useState([]);
+  const [metrics, setMetrics] = useState({
+    averageRating: 0,
+    totalReviews: 0,
+    distribution: [5, 4, 3, 2, 1].map((stars) => ({ stars, percentage: 0, count: 0 })),
+  });
   const [activeTab, setActiveTab] = useState("All Reviews");
   const [sortBy, setSortBy] = useState("Newest First");
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Modal State
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -242,16 +266,85 @@ const ReceivedReviews = () => {
 
   const [visibleCount, setVisibleCount] = useState(5);
 
+  const fetchReviewsData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await getReceivedReviews();
+      setReviews(data.reviews || []);
+      if (data.summary) {
+        setMetrics(data.summary);
+      }
+    } catch (err) {
+      setError("Failed to load reviews.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviewsData();
+  }, []);
+
   useEffect(() => {
     setVisibleCount(5);
   }, [activeTab, sortBy]);
 
-  const filteredReviews = mockReceivedReviews.filter((review) => {
+  const handleReply = async (reviewId, content) => {
+    await replyToReview(reviewId, content);
+    await fetchReviewsData();
+  };
+
+  const handleLike = async (reviewId) => {
+    await toggleOwnerLike(reviewId);
+    await fetchReviewsData();
+  };
+
+  // Filtering
+  const filteredReviews = reviews.filter((review) => {
+    if (activeTab === "All Reviews") return true;
     if (activeTab === "Unreplied") return !review.hasOwnerReplied;
     if (activeTab === "5 stars") return review.rating === 5;
     if (activeTab === "Critical") return review.rating <= 3;
-    return true; // "All Reviews"
+    return false;
   });
+
+  // Sorting
+  const getSortedReviews = () => {
+    let sortedList = [...filteredReviews];
+
+    if (sortBy === "Highest Rating") {
+      sortedList = sortedList.sort((a, b) => b.rating - a.rating);
+    } else if (sortBy === "Lowest Rating") {
+      sortedList = sortedList.sort((a, b) => a.rating - b.rating);
+    } else if (sortBy === "Oldest First") {
+      sortedList = sortedList.reverse(); // backend default is Newest First
+    }
+
+    return sortedList;
+  };
+
+  const sortedReviews = getSortedReviews();
+
+  if (isLoading) {
+    return (
+      <MainLayout user={user} pageTitle="Business Profile" verificationCount={0}>
+        <div className="w-full flex justify-center items-center h-64">
+          <div className="text-white text-lg">Loading received reviews...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout user={user} pageTitle="Business Profile" verificationCount={0}>
+        <div className="w-full flex justify-center items-center h-64">
+          <div className="text-red-400 text-lg">{error}</div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout user={user} pageTitle="Reviews" verificationCount={0}>
@@ -287,35 +380,35 @@ const ReceivedReviews = () => {
             <div className="flex flex-col gap-1 w-full sm:w-48 shrink-0 items-center sm:items-start text-center sm:text-left">
               <div className="flex items-baseline justify-center sm:justify-start gap-2">
                 <span className="text-white text-5xl font-bold font-inter leading-6">
-                  {mockBusinessReviewMetrics.averageRating}
+                  {metrics.averageRating}
                 </span>
                 <span className="text-gray-400 text-base font-bold font-inter leading-5">
                   out of 5
                 </span>
               </div>
-              <div className="py-2 flex justify-center sm:justify-start">
-                <StarRating rating={mockBusinessReviewMetrics.averageRating} />
+              <div className="flex flex-col gap-1">
+                <StarRating rating={metrics.averageRating} />
+                <div className="text-gray-400 text-sm font-inter mt-1">
+                  Based on {metrics.totalReviews} reviews
+                </div>
               </div>
-              <span className="text-white text-sm font-bold font-inter leading-5 mt-1">
-                {mockBusinessReviewMetrics.totalReviews} total reviews
-              </span>
             </div>
 
             {/* Right Distribution Bars */}
             <div className="flex-1 w-full flex flex-col justify-between pt-1 pb-1 gap-[11px]">
-              {mockBusinessReviewMetrics.distribution.map((item) => (
-                <div key={item.stars} className="flex items-center gap-4">
+              {metrics.distribution.map((dist) => (
+                <div key={dist.stars} className="flex items-center gap-4">
                   <span className="text-white text-sm font-medium font-lexend w-3">
-                    {item.stars}
+                    {dist.stars}
                   </span>
                   <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-amber-400 rounded-full"
-                      style={{ width: `${item.percentage}%` }}
+                      style={{ width: `${dist.percentage}%` }}
                     />
                   </div>
                   <span className="text-gray-400 text-sm font-normal font-lexend w-8 text-right">
-                    {item.percentage}%
+                    {dist.percentage}%
                   </span>
                 </div>
               ))}
@@ -386,22 +479,32 @@ const ReceivedReviews = () => {
 
         {/* Review Cards List */}
         <div className="flex flex-col gap-4">
-          {filteredReviews.slice(0, visibleCount).map((review) => (
-            <ReceivedReviewCard
-              key={review.id}
-              review={review}
-              onReport={handleReportClick}
-            />
-          ))}
+          {sortedReviews.length > 0 ? (
+            sortedReviews.slice(0, visibleCount).map((review) => (
+              <ReceivedReviewCard
+                key={review.id}
+                review={review}
+                onReport={handleReportClick}
+                onReply={handleReply}
+                onLike={handleLike}
+              />
+            ))
+          ) : (
+            <div className="text-gray-400 text-sm font-inter text-center py-8">
+              No reviews found matching the criteria.
+            </div>
+          )}
         </div>
 
         {/* Load More Button */}
-        <LoadMoreButton
-          visibleCount={visibleCount}
-          totalCount={filteredReviews.length}
-          onClick={() => setVisibleCount((prev) => prev + 5)}
-          itemName="Reviews"
-        />
+        {sortedReviews.length > 0 && (
+          <LoadMoreButton
+            visibleCount={visibleCount}
+            totalCount={sortedReviews.length}
+            onClick={() => setVisibleCount((prev) => prev + 5)}
+            itemName="Reviews"
+          />
+        )}
       </div>
     </MainLayout>
   );
