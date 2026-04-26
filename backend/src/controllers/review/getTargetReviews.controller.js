@@ -16,9 +16,7 @@ export const getTargetReviews = async (req, res, next) => {
     // Fallback to 1 for testing if req.user is not yet defined
     const currentUserId = req.user?.id || 1;
 
-    if (!targetId) {
-      return sendResponse(res, 400, false, "Target ID is required.");
-    }
+
 
     const targetExists = await User.findByPk(targetId);
     if (!targetExists) {

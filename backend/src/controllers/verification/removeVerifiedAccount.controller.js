@@ -20,15 +20,7 @@ export const removeVerifiedAccount = async (req, res, next) => {
     const { reason } = req.body;
     const adminId = req.user?.id || 2; // Fallback for testing
 
-    if (!reason || reason.trim() === "") {
-      await transaction.rollback();
-      return sendResponse(
-        res,
-        400,
-        false,
-        "A reason for removing the verified account must be provided.",
-      );
-    }
+
 
     // 1. Fetch the approved request
     const request = await VerificationRequest.findByPk(id, {

@@ -18,15 +18,7 @@ export const rejectVerificationRequest = async (req, res, next) => {
     const { reason } = req.body;
     const adminId = req.user?.id || 2; // Fallback to 2 for testing purposes
 
-    if (!reason || reason.trim() === "") {
-      await transaction.rollback();
-      return sendResponse(
-        res,
-        400,
-        false,
-        "A rejection reason must be provided.",
-      );
-    }
+
 
     // 1. Fetch the strict request constraints
     const request = await VerificationRequest.findByPk(id, {

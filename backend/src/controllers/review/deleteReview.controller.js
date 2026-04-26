@@ -9,9 +9,7 @@ export const deleteReview = async (req, res, next) => {
     // Fallback to 1 for testing if req.user is not yet defined
     const reviewerId = req.user?.id || req.body.reviewerId || 1;
 
-    if (!reviewId) {
-      return sendResponse(res, 400, false, "Review ID is required.");
-    }
+
 
     const existingReview = await Review.findByPk(reviewId);
 
