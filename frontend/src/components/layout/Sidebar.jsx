@@ -215,7 +215,7 @@ const UnifiedSidebar = ({
       {/* Sidebar Content */}
       <aside
         className={`w-72 h-screen bg-dark-1 border-r border-white/10 flex flex-col justify-between items-start 
-          fixed md:sticky top-0 left-0 z-[60] transform transition-transform duration-300 ease-in-out
+          fixed md:sticky top-0 left-0 z-50 transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
