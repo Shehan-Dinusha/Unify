@@ -1,6 +1,6 @@
-import { StudentProfile, User } from "../modules/index.js";
-import { sendResponse } from "../utils/response.js";
-import logger from "../utils/logger.js";
+import { StudentProfile, User } from "../../modules/index.js";
+import { sendResponse } from "../../utils/response.js";
+import logger from "../../utils/logger.js";
 
 /**
  * @desc    Create or Update student profile

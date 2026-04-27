@@ -1,5 +1,5 @@
-import { sendResponse } from "../utils/response.js";
-import logger from "../utils/logger.js";
+import { sendResponse } from "../../utils/response.js";
+import logger from "../../utils/logger.js";
 import path from "path";
 
 /**

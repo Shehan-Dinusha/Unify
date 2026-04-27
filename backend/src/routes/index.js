@@ -10,6 +10,7 @@ import boostRoutes from "./boost.routes.js";
 import baseRoutes from "./base.routes.js";
 import learningRoutes from "./learning.routes.js";
 import uploadRoutes from "./upload.routes.js";
+import educationRoutes from "./education.routes.js";
 
 const router = express.Router();
 
@@ -25,5 +26,6 @@ router.use("/boosts", boostRoutes);
 router.use("/base", baseRoutes);
 router.use("/learning", learningRoutes);
 router.use("/upload", uploadRoutes);
+router.use("/education", educationRoutes);
 
 export default router;

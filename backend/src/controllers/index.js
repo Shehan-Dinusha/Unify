@@ -6,6 +6,7 @@ export * as BoostController from "./boost/index.js";
 export * as AuthController from "./auth/index.js";
 export * as ProfileController from "./profile/index.js";
 export * as UploadController from "./upload/index.js";
+export * as EducationController from "./education/index.js";
 
 // Future feature controllers will be exported here as well:
 // export * as StudentController from "./student/index.js";
