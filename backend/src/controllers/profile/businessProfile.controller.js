@@ -1,4 +1,4 @@
-import { BusinessProfile } from "../../modules/index.js";
+import { BusinessProfile, User } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -34,14 +34,24 @@ export const upsertBusinessProfile = async (req, res) => {
 
     let profile = await BusinessProfile.findOne({ where: { userId } });
 
-    const finalOwnerFirstName = ownerFirstName || firstName;
-    const finalOwnerLastName = ownerLastName || lastName;
+    // Helper to find the first non-empty value among multiple possible field names
+    const getVal = (...keys) => {
+      for (const key of keys) {
+        if (req.body[key] && req.body[key].toString().trim() !== "") {
+          return req.body[key].toString().trim();
+        }
+      }
+      return null;
+    };
+
+    const finalOwnerFirstName = getVal("ownerFirstName", "firstName", "firstname", "first_name");
+    const finalOwnerLastName = getVal("ownerLastName", "lastName", "lastname", "last_name");
 
     const profileData = {
       userId,
       displayName: displayName || businessName || cafeName || clubName || (finalOwnerFirstName ? `${finalOwnerFirstName} ${finalOwnerLastName || ""}`.trim() : null),
       businessName: businessName || cafeName || clubName || (finalOwnerFirstName ? `${finalOwnerFirstName} ${finalOwnerLastName || ""}`.trim() : null),
-      category,
+      category: category ? category.trim().toUpperCase() : null,
       about,
       serviceType,
       addresses,
@@ -61,6 +71,13 @@ export const upsertBusinessProfile = async (req, res) => {
       await req.user.update({ name: `${finalOwnerFirstName} ${finalOwnerLastName}` });
     } else if (displayName || businessName) {
       await req.user.update({ name: displayName || businessName });
+    }
+
+    const uploadedFile = req.files?.avatar?.[0] || req.files?.profileImage?.[0];
+    if (uploadedFile) {
+      const avatarUrl = `/uploads/avatars/${uploadedFile.filename}`;
+      await req.user.update({ avatar: avatarUrl });
+      logger.info(`Avatar updated for user ${userId}: ${avatarUrl}`);
     }
 
     if (profile) {

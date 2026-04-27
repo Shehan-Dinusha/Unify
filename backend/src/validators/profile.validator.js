@@ -2,10 +2,14 @@ import { body } from "express-validator";
 import { University, Faculty, Degree, Batch } from "../modules/index.js";
 
 export const studentProfileValidator = [
-  body("registrationNumber")
-    .trim()
-    .notEmpty()
-    .withMessage("Registration number is required"),
+  body("registrationNumber").custom((value, { req }) => {
+    const regNum = value || req.body.regNumber;
+    if (!regNum) {
+      throw new Error("Registration number is required");
+    }
+    req.body.registrationNumber = regNum; // Sync for controller
+    return true;
+  }),
   
   body("universityId")
     .notEmpty()
@@ -75,11 +79,25 @@ export const studentProfileValidator = [
 ];
 
 export const businessProfileValidator = [
-  body("category")
-    .notEmpty()
-    .withMessage("Category is required")
-    .isIn(["BOARDING", "FOOD", "SELF_EMPLOYED"])
-    .withMessage("Invalid business category"),
+  body("category").custom((value, { req }) => {
+    // Multer populates req.body. Check if it exists
+    const category = req.body.category || value;
+    
+    if (!category) {
+      throw new Error("Category is required");
+    }
+
+    const normalizedCategory = category.trim().toUpperCase();
+    const validCategories = ["BOARDING", "FOOD", "SELF_EMPLOYED"];
+    
+    if (!validCategories.includes(normalizedCategory)) {
+      throw new Error("Invalid business category");
+    }
+    
+    // Update the body with the normalized value so the controller gets it clean
+    req.body.category = normalizedCategory;
+    return true;
+  }),
 
   // Conditional Validation based on category
   body().custom((value, { req }) => {

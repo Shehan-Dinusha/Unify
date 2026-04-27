@@ -21,8 +21,8 @@ const storage = multer.diskStorage({
     else if (file.fieldname === "evidenceFile") {
       subFolder = "reports";
     }
-    // Avatars use 'avatar'
-    else if (file.fieldname === "avatar") {
+    // Avatars use 'avatar' or 'profileImage'
+    else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
       subFolder = "avatars";
     }
 
@@ -42,7 +42,7 @@ const storage = multer.diskStorage({
       prefix = "vdoc";
     } else if (file.fieldname === "evidenceFile") {
       prefix = "rpt";
-    } else if (file.fieldname === "avatar") {
+    } else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
       prefix = "avtr";
     }
 

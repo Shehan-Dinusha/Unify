@@ -15,6 +15,7 @@ import {
   clubProfileValidator,
 } from "../validators/profile.validator.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
+import uploadService from "../services/upload.service.js";
 
 const router = express.Router();
 
@@ -24,6 +25,7 @@ router.use(protect);
 // ── Student Profile ───────────────────────────────────────────────────────────
 router.put(
   "/student",
+  uploadService.fields([{ name: "avatar", maxCount: 1 }, { name: "profileImage", maxCount: 1 }]),
   authorize(ROLES.STUDENT),
   studentProfileValidator,
   validateRequest,
@@ -34,6 +36,7 @@ router.get("/student/me", authorize(ROLES.STUDENT), getMyStudentProfile);
 // ── Business Profile ──────────────────────────────────────────────────────────
 router.put(
   "/business",
+  uploadService.fields([{ name: "avatar", maxCount: 1 }, { name: "profileImage", maxCount: 1 }]),
   authorize(ROLES.BUSINESS),
   businessProfileValidator,
   validateRequest,
@@ -44,6 +47,7 @@ router.get("/business/me", authorize(ROLES.BUSINESS), getMyBusinessProfile);
 // ── Club Profile ──────────────────────────────────────────────────────────────
 router.put(
   "/club",
+  uploadService.fields([{ name: "avatar", maxCount: 1 }, { name: "profileImage", maxCount: 1 }]),
   authorize(ROLES.CLUB),
   clubProfileValidator,
   validateRequest,

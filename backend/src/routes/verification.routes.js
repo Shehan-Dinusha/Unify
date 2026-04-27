@@ -2,11 +2,13 @@ import express from "express";
 import uploadService from "../services/upload.service.js";
 import { VerificationController } from "../controllers/index.js";
 
+import { protect } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 // POST /api/v1/verifications/submit
 router.post(
   "/submit",
+  protect,
   uploadService.single("document"),
   VerificationController.submitVerificationRequest
 );

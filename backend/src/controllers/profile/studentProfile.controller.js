@@ -10,19 +10,29 @@ import logger from "../../utils/logger.js";
 export const upsertStudentProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const {
-      registrationNumber,
-      universityId,
-      facultyId,
-      degreeId,
-      batchId,
-      firstName,
-      lastName,
-      gender,
-      dateOfBirth,
-      addresses,
-      isBatchRep,
-    } = req.body;
+    const userId = req.user.id;
+
+    // Helper to find the first non-empty value among multiple possible field names
+    const getVal = (...keys) => {
+      for (const key of keys) {
+        if (req.body[key] && req.body[key].toString().trim() !== "") {
+          return req.body[key].toString().trim();
+        }
+      }
+      return null;
+    };
+
+    const registrationNumber = getVal("registrationNumber", "regNumber", "reg_number");
+    const universityId = req.body.universityId;
+    const facultyId = req.body.facultyId;
+    const degreeId = req.body.degreeId;
+    const batchId = req.body.batchId;
+    const firstName = getVal("firstName", "firstname", "first_name");
+    const lastName = getVal("lastName", "lastname", "last_name");
+    const gender = req.body.gender;
+    const dateOfBirth = req.body.dateOfBirth || req.body.dob;
+    const addresses = req.body.addresses;
+    const isBatchRep = req.body.isBatchRep;
 
     // Check if profile exists
     let profile = await StudentProfile.findOne({ where: { userId } });
@@ -42,9 +52,16 @@ export const upsertStudentProfile = async (req, res) => {
       isBatchRep: isBatchRep || false,
     };
 
-    // Update User's main name field
+    // Update User's main name field and avatar if provided
     if (firstName && lastName) {
       await req.user.update({ name: `${firstName} ${lastName}` });
+    }
+
+    const uploadedFile = req.files?.avatar?.[0] || req.files?.profileImage?.[0];
+    if (uploadedFile) {
+      const avatarUrl = `/uploads/avatars/${uploadedFile.filename}`;
+      await req.user.update({ avatar: avatarUrl });
+      logger.info(`Avatar updated for user ${userId}: ${avatarUrl}`);
     }
 
     if (profile) {

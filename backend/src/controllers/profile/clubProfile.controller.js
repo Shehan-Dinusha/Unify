@@ -1,4 +1,4 @@
-import { ClubProfile } from "../../modules/index.js";
+import { ClubProfile, User } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -17,7 +17,10 @@ export const upsertClubProfile = async (req, res) => {
       logo,
       coverImage,
       verificationDocument,
+      document, // Frontend alias
     } = req.body;
+    
+    const finalVerificationDoc = verificationDocument || document;
 
     let profile = await ClubProfile.findOne({ where: { userId } });
 
@@ -28,8 +31,16 @@ export const upsertClubProfile = async (req, res) => {
       email,
       logo,
       coverImage,
-      verificationDocument,
+      verificationDocument: finalVerificationDoc,
     };
+
+    const uploadedFile = req.files?.avatar?.[0] || req.files?.profileImage?.[0];
+    if (uploadedFile) {
+      const avatarUrl = `/uploads/avatars/${uploadedFile.filename}`;
+      await req.user.update({ avatar: avatarUrl });
+      profileData.logo = avatarUrl; // Update profile logo as well
+      logger.info(`Logo/Avatar updated for club ${userId}: ${avatarUrl}`);
+    }
 
     if (profile) {
       await profile.update(profileData);
