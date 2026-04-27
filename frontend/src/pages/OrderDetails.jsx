@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
@@ -10,36 +10,106 @@ import {
     MapPin,
     CreditCard,
     ArrowLeft,
-    ShieldCheck
+    ShieldCheck,
+    Loader2,
+    Package,
+    Truck
 } from "lucide-react";
-import { mockOrders } from "../data/mockOrdersData";
+import orderService from "../services/orderService";
+import { getImageUrl } from "../utils/formatters";
 
 const OrderDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [order, setOrder] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
 
-    // Find the order from mock data
-    const order = mockOrders.find(o => o.id === id);
+    useEffect(() => {
+        const fetchOrderDetails = async () => {
+            try {
+                setLoading(true);
+                const response = await orderService.getOrderDetails(id);
+                if (response.success) {
+                    setOrder(response.order);
+                }
+            } catch (err) {
+                console.error("Failed to fetch order details:", err);
+                setError(err.error || "Failed to load order details.");
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    if (!order) {
+        fetchOrderDetails();
+    }, [id]);
+
+    const getTimeline = (order) => {
+        if (!order) return [];
+        
+        const statuses = ["PENDING", "PROCESSING", "SHIPPED", "DELIVERED"];
+        const titles = {
+            PENDING: "Order Placed",
+            PROCESSING: "Processing",
+            SHIPPED: "Shipped",
+            DELIVERED: "Delivered"
+        };
+        const icons = {
+            PENDING: Clock,
+            PROCESSING: Package,
+            SHIPPED: Truck,
+            DELIVERED: CheckCircle
+        };
+
+        const currentStatusIndex = statuses.indexOf(order.status?.toUpperCase());
+        
+        return statuses.map((status, index) => {
+            let itemStatus = "upcoming";
+            if (index < currentStatusIndex) itemStatus = "completed";
+            else if (index === currentStatusIndex) itemStatus = "current";
+            
+            // Find timestamp from backend timeline if it exists
+            const historyItem = order.timeline?.find(t => t.status === status);
+            const date = historyItem ? new Date(historyItem.timestamp).toLocaleDateString("en-US", {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit"
+            }) : null;
+
+            return {
+                title: titles[status],
+                status: itemStatus,
+                icon: icons[status],
+                date: date
+            };
+        });
+    };
+
+    if (loading) {
+        return (
+            <MainLayout user={user} pageTitle="Order Details" verificationCount={0}>
+                <div className="flex flex-col items-center justify-center h-[50vh] text-text-tertiary">
+                    <Loader2 className="w-8 h-8 animate-spin mb-4" />
+                    <p>Loading order details...</p>
+                </div>
+            </MainLayout>
+        );
+    }
+
+    if (error || !order) {
         return (
             <MainLayout user={user} pageTitle="Order Not Found" verificationCount={0}>
                 <div className="flex flex-col items-center justify-center h-[50vh]">
-                    <h2 className="text-heading-medium text-text-primary mb-lg">Order Not Found</h2>
+                    <h2 className="text-heading-medium text-text-primary mb-lg">{error || "Order Not Found"}</h2>
                     <Button onClick={() => navigate("/order-history")}>Back to Orders</Button>
                 </div>
             </MainLayout>
         );
     }
 
-    const iconMap = {
-        CheckCircle: CheckCircle,
-        Clock: Clock,
-        Circle: Circle
-    };
-
-    const timeline = order.timeline || [];
+    const timeline = getTimeline(order);
 
     return (
         <MainLayout user={user} pageTitle="My Orders" verificationCount={0}>
@@ -62,8 +132,8 @@ const OrderDetails = () => {
                                 {/* Product Image */}
                                 <div className="w-full md:w-48 h-48 rounded-2xl overflow-hidden bg-white/5 border border-white/10 shrink-0">
                                     <img
-                                        src={order.image}
-                                        alt={order.title}
+                                        src={getImageUrl(order.clubProduct?.images?.[0] || order.clubProduct?.coverImage)}
+                                        alt={order.clubProduct?.name}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
@@ -73,14 +143,14 @@ const OrderDetails = () => {
                                     <div className="flex justify-between items-start gap-md mb-2">
                                         <div>
                                             <h1 className="text-heading-medium text-text-primary mb-1 leading-tight">
-                                                {order.title}
+                                                {order.clubProduct?.name || "Marketplace Product"}
                                             </h1>
                                             <p className="text-body-small text-text-tertiary">
-                                                Sold by <span className="text-primary-blue font-medium cursor-pointer hover:underline">{order.clubName}</span>
+                                                Sold by <span className="text-primary-blue font-medium cursor-pointer hover:underline">{order.seller?.name || "Club"}</span>
                                             </p>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <p className="text-heading-small text-text-primary">{order.price}</p>
+                                            <p className="text-heading-small text-text-primary">Rs.{parseFloat(order.total).toFixed(2)}</p>
                                         </div>
                                     </div>
 
@@ -120,7 +190,7 @@ const OrderDetails = () => {
                                                 <div className="w-3 h-3 rounded-full bg-[#FF5F00] translate-x-1" />
                                                 <div className="w-3 h-3 rounded-full bg-[#F79E1B] -translate-x-1" />
                                             </div>
-                                            <span className="text-body-medium-bold text-text-primary">{order.paymentMethod}</span>
+                                            <span className="text-body-medium-bold text-text-primary uppercase">{order.paymentMethod}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -139,10 +209,7 @@ const OrderDetails = () => {
                                     </div>
                                     <div>
                                         <p className="text-body-small text-text-secondary leading-relaxed">
-                                            {order.pickupLocation}
-                                        </p>
-                                        <p className="text-body-small text-text-tertiary mt-1">
-                                            {order.pickupRoom}
+                                            {order.pickupLocation || "Pickup details will be provided once order is ready."}
                                         </p>
                                     </div>
                                 </div>
@@ -167,10 +234,7 @@ const OrderDetails = () => {
                                                     item.status === 'current' ? 'bg-primary-blue text-white shadow-[0_0_20px_rgba(43,140,238,0.4)]' :
                                                         'bg-white/5 text-text-tertiary border border-white/5'}
                                             `}>
-                                                {(() => {
-                                                    const IconComponent = iconMap[item.icon] || Circle;
-                                                    return <IconComponent size={item.status === 'upcoming' ? 16 : 20} className={item.status === 'current' ? 'animate-pulse' : ''} />;
-                                                })()}
+                                                <item.icon size={item.status === 'upcoming' ? 16 : 20} className={item.status === 'current' ? 'animate-pulse' : ''} />
                                             </div>
                                             {index !== timeline.length - 1 && (
                                                 <div className={`

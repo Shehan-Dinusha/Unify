@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { 
     ImagePlus, MapPin, Wifi, DollarSign, Users, Phone, BedDouble, 
-    X, Plus, Edit3, Tag as TagIcon, Calendar, ArrowRight 
+    X, Plus, Edit3, Tag as TagIcon, Calendar, ArrowRight, Loader2 
 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import { useNavigate } from "react-router-dom";
+import postService from "../services/postService";
 
 const CreateBoardingPostPage = () => {
     const navigate = useNavigate();
@@ -18,12 +19,13 @@ const CreateBoardingPostPage = () => {
     const [description, setDescription] = useState("");
     const [location, setLocation] = useState("");
     const [amenityInput, setAmenityInput] = useState("");
-    const [amenities, setAmenities] = useState(["Wi-Fi", "AC"]);
+    const [amenities, setAmenities] = useState([]);
     const [price, setPrice] = useState("");
     const [capacity, setCapacity] = useState("");
     const [phone, setPhone] = useState("");
     const [slots, setSlots] = useState("");
 
+    const [loading, setLoading] = useState(false);
     const [images, setImages] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = React.useRef(null);
@@ -57,9 +59,41 @@ const CreateBoardingPostPage = () => {
     };
 
     const handleCancel = () => navigate("/boarding-owner/marketplace");
-    const handlePublish = () => {
-        console.log("Submitting boarding post:", { description, location, amenities, price, capacity, phone, slots });
-        navigate("/boarding-owner/marketplace");
+    
+    const handlePublish = async () => {
+        if (!description || !location || !price || !capacity || !phone || !slots) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const data = new FormData();
+            data.append("description", description);
+            data.append("location", location);
+            data.append("price", price);
+            data.append("capacity", capacity);
+            data.append("slots", slots);
+            data.append("phone", phone);
+            data.append("amenities", JSON.stringify(amenities));
+            
+            images.forEach(img => {
+                if (img.file) {
+                    data.append("images", img.file);
+                }
+            });
+
+            // Mock userId for now
+            data.append("userId", 1);
+
+            await postService.createPost("boarding", data);
+            navigate("/boarding-owner/marketplace");
+        } catch (error) {
+            console.error("Failed to publish boarding post:", error);
+            alert(error.error || "Failed to publish boarding post. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -68,16 +102,11 @@ const CreateBoardingPostPage = () => {
             pageTitle="Create Boarding Post"
             verificationCount={0}
         >
-            {/* Main Wrapper */}
             <div className="max-w-[1400px] mx-auto py-8">
                 <div className="flex flex-col w-full h-full text-white font-inter">
-                    
-                    {/* The Two-Column Grid properly applied here in the Page component */}
                     <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-8">
-                        
                         {/* ── Left Column: Form Sections ── */}
                         <div className="flex flex-col gap-6 pb-8 min-w-0">
-                            
                             {/* Basic Information */}
                             <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
                                 <div className="flex items-center gap-3 mb-6">
@@ -226,14 +255,14 @@ const CreateBoardingPostPage = () => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                                     <div>
                                         <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                            Price (Monthly)
+                                            Price (Monthly) <span className="text-red-500">*</span>
                                         </label>
                                         <div className="relative">
                                             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
-                                                <DollarSign className="w-4 h-4" />
+                                                <span className="text-sm font-bold">Rs.</span>
                                             </div>
                                             <input
-                                                type="text"
+                                                type="number"
                                                 value={price}
                                                 onChange={(e) => setPrice(e.target.value)}
                                                 placeholder="0.00"
@@ -243,14 +272,14 @@ const CreateBoardingPostPage = () => {
                                     </div>
                                     <div>
                                         <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                            Capacity
+                                            Total Capacity <span className="text-red-500">*</span>
                                         </label>
                                         <div className="relative">
                                             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
                                                 <Users className="w-4 h-4" />
                                             </div>
                                             <input
-                                                type="text"
+                                                type="number"
                                                 value={capacity}
                                                 onChange={(e) => setCapacity(e.target.value)}
                                                 placeholder="Total people"
@@ -263,7 +292,7 @@ const CreateBoardingPostPage = () => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     <div>
                                         <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                            Phone Number
+                                            Phone Number <span className="text-red-500">*</span>
                                         </label>
                                         <div className="relative">
                                             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
@@ -273,21 +302,21 @@ const CreateBoardingPostPage = () => {
                                                 type="text"
                                                 value={phone}
                                                 onChange={(e) => setPhone(e.target.value)}
-                                                placeholder="+1 (555) 000-0000"
+                                                placeholder="07X XXX XXXX"
                                                 className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors placeholder:text-text-secondary"
                                             />
                                         </div>
                                     </div>
                                     <div>
                                         <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                            Available Slots
+                                            Available Slots <span className="text-red-500">*</span>
                                         </label>
                                         <div className="relative">
                                             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
                                                 <BedDouble className="w-4 h-4" />
                                             </div>
                                             <input
-                                                type="text"
+                                                type="number"
                                                 value={slots}
                                                 onChange={(e) => setSlots(e.target.value)}
                                                 placeholder="e.g. 1"
@@ -329,7 +358,7 @@ const CreateBoardingPostPage = () => {
                                     )}
                                     {price && (
                                         <div className="absolute bottom-4 left-4 bg-dark-1/70 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 z-10">
-                                            <span className="text-[13px] font-bold text-white">${price}/month</span>
+                                            <span className="text-[13px] font-bold text-white">Rs.{price}/month</span>
                                         </div>
                                     )}
                                 </div>
@@ -339,12 +368,12 @@ const CreateBoardingPostPage = () => {
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex Johnson"
+                                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
                                                 alt="User"
                                                 className="w-9 h-9 rounded-full border border-white/20"
                                             />
                                             <div>
-                                                <p className="text-[13px] font-bold text-white">Business & Organization</p>
+                                                <p className="text-[13px] font-bold text-white">{user.displayRole}</p>
                                                 <p className="text-[11px] text-text-tertiary">Just now</p>
                                             </div>
                                         </div>
@@ -383,17 +412,20 @@ const CreateBoardingPostPage = () => {
                                 <button
                                     type="button"
                                     onClick={handleCancel}
-                                    className="flex-1 py-3 bg-[#1A2536] hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/5"
+                                    disabled={loading}
+                                    className="flex-1 py-3 bg-[#1A2536] hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/5 disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handlePublish}
-                                    className="flex-1 py-3 bg-primary-blue hover:brightness-110 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2 group"
+                                    disabled={loading}
+                                    className="flex-1 py-3 bg-primary-blue hover:brightness-110 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2 group disabled:opacity-50"
                                 >
-                                    Submit Post
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    {loading ? "Publishing..." : "Submit Post"}
+                                    {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                                 </button>
                             </div>
                         </div>

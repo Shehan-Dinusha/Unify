@@ -2,7 +2,7 @@ import { Menu } from "lucide-react";
 
 const Header = ({ title = "News Feed", rightContent, onMenuToggle }) => {
   return (
-    <header className="h-16 w-full px-4 md:px-8 bg-dark-1/80 backdrop-blur-md border-b border-primary-blue/20 flex justify-between items-center sticky top-0 z-[60] font-inter">
+    <header className="h-16 w-full px-4 md:px-8 bg-dark-1/80 backdrop-blur-md border-b border-primary-blue/20 flex justify-between items-center sticky top-0 z-30 font-inter">
       {/* Dynamic Title */}
       <div className="flex items-center gap-2 md:gap-3 min-w-0 mr-2">
         {onMenuToggle && (
