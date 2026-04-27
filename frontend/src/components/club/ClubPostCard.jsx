@@ -277,7 +277,7 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
                             variant="primary"
                             size="medium"
                             className="min-w-[160px]"
-                            onClick={() => navigate("/marketplace/club/product")}
+                            onClick={() => navigate(`/marketplace/club/product/${post.postType}/${post.id}`)}
                         >
                             Buy now
                         </Button>

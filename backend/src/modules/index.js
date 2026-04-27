@@ -14,6 +14,9 @@ import StudentProfile from "./StudentProfile.model.js";
 import BusinessProfile from "./BusinessProfile.model.js";
 import ClubProfile from "./ClubProfile.model.js";
 import Post from "./Post.model.js";
+import ClubProductPost from "./ClubProductPost.model.js";
+import ClubEventPost from "./ClubEventPost.model.js";
+import NormalPost from "./NormalPost.model.js";
 import Comment from "./Comment.model.js";
 import Boarding from "./Boarding.model.js";
 import LostAndFound from "./LostAndFound.model.js";
@@ -41,6 +44,7 @@ import Wallet from "./Wallet.model.js";
 import Transaction from "./Transaction.model.js";
 import WithdrawalRequest from "./WithdrawalRequest.model.js";
 import Notification from "./Notification.model.js";
+import EventBooking from "./EventBooking.model.js";
 import StudentReport from "./StudentReport.model.js";
 import UserSuspension from "./UserSuspension.model.js";
 import UserSuspensionHistory from "./UserSuspensionHistory.model.js";
@@ -165,6 +169,27 @@ User.hasMany(Post, {
 });
 Post.belongsTo(User, { foreignKey: "authorId", as: "author" });
 
+User.hasMany(ClubProductPost, {
+  foreignKey: "authorId",
+  as: "clubProductPosts",
+  onDelete: "CASCADE",
+});
+ClubProductPost.belongsTo(User, { foreignKey: "authorId", as: "author" });
+
+User.hasMany(ClubEventPost, {
+  foreignKey: "authorId",
+  as: "clubEventPosts",
+  onDelete: "CASCADE",
+});
+ClubEventPost.belongsTo(User, { foreignKey: "authorId", as: "author" });
+
+User.hasMany(NormalPost, {
+  foreignKey: "authorId",
+  as: "normalPosts",
+  onDelete: "CASCADE",
+});
+NormalPost.belongsTo(User, { foreignKey: "authorId", as: "author" });
+
 Post.hasMany(Comment, {
   foreignKey: "postId",
   as: "comments",
@@ -217,8 +242,23 @@ User.hasMany(Order, { foreignKey: "buyerId", as: "purchasedOrders" });
 Order.belongsTo(User, { foreignKey: "sellerId", as: "seller" });
 User.hasMany(Order, { foreignKey: "sellerId", as: "salesOrders" });
 
-Order.belongsTo(MarketplaceItem, { foreignKey: "itemId", as: "item" });
-MarketplaceItem.hasMany(Order, { foreignKey: "itemId", as: "orders" });
+Order.belongsTo(ClubProductPost, { foreignKey: "itemId", as: "clubProduct" });
+ClubProductPost.hasMany(Order, { foreignKey: "itemId", as: "orders" });
+
+// --- Event Bookings ---
+User.hasMany(EventBooking, {
+  foreignKey: "userId",
+  as: "eventBookings",
+  onDelete: "CASCADE",
+});
+EventBooking.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+ClubEventPost.hasMany(EventBooking, {
+  foreignKey: "eventId",
+  as: "bookings",
+  onDelete: "CASCADE",
+});
+EventBooking.belongsTo(ClubEventPost, { foreignKey: "eventId", as: "event" });
 
 // --- Reviews ---
 Review.belongsTo(User, { foreignKey: "reviewerId", as: "reviewer" });
@@ -476,6 +516,9 @@ Transaction.belongsTo(Wallet, { foreignKey: "walletId", as: "wallet" });
 Order.hasOne(Transaction, { foreignKey: "orderId", as: "transaction" });
 Transaction.belongsTo(Order, { foreignKey: "orderId", as: "order" });
 
+EventBooking.hasOne(Transaction, { foreignKey: "bookingId", as: "transaction" });
+Transaction.belongsTo(EventBooking, { foreignKey: "bookingId", as: "booking" });
+
 Wallet.hasMany(WithdrawalRequest, {
   foreignKey: "walletId",
   as: "withdrawalRequests",
@@ -528,6 +571,9 @@ export {
   BusinessProfile,
   ClubProfile,
   Post,
+  ClubProductPost,
+  ClubEventPost,
+  NormalPost,
   Comment,
   Boarding,
   LostAndFound,
@@ -555,6 +601,7 @@ export {
   Transaction,
   WithdrawalRequest,
   Notification,
+  EventBooking,
   StudentReport,
   University,
   Faculty,

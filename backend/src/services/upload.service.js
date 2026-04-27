@@ -53,6 +53,8 @@ const fileFilter = (req, file, cb) => {
     "image/jpeg",
     "image/png",
     "image/jpg",
+    "image/webp",
+    "image/gif",
     "image/svg+xml",
   ];
 
@@ -60,7 +62,7 @@ const fileFilter = (req, file, cb) => {
     cb(null, true);
   } else {
     cb(
-      new Error("Invalid file type. Only PDF, JPG, PNG, and SVG are allowed."),
+      new Error(`Invalid file type. Received: ${file.mimetype}. Only PDF, JPG, PNG, WEBP, and GIF are allowed.`),
       false
     );
   }
