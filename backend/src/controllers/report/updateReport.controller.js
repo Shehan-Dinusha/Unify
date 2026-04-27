@@ -1,6 +1,7 @@
 import StudentReport from "../../modules/StudentReport.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { updateStudentReputation } from "../../services/reputation.service.js";
 
 /**
  * Handle admin updates to a report's status, priority, and notes.
@@ -41,21 +42,30 @@ export const updateReport = async (req, res, next) => {
         case 'dismiss':
           report.status = 'Dismissed';
           report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Dismiss Reason: ${reason}. Notes: ${notes}`;
+          if (reason && (reason.toLowerCase().includes('fake') || reason.toLowerCase().includes('spam') || reason.toLowerCase().includes('false'))) {
+            await updateStudentReputation(report.studentId, 'FAKE_REPORT_SPAM');
+          }
           break;
         case 'resolve':
           report.status = 'Resolved';
           report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Resolution: ${notes}`;
           report.resolvedAt = new Date();
+          await updateStudentReputation(report.studentId, 'REPORT_RESOLVED');
           break;
         case 'delete_post':
           // Attempt to delete post if reportedEntityId is a post ID
           if (report.reportType === 'post') {
             const Post = (await import("../../modules/Post.model.js")).default;
-            await Post.destroy({ where: { id: report.reportedEntityId } }).catch(err => logger.warn('Failed to delete post: ' + err));
+            const post = await Post.findByPk(report.reportedEntityId);
+            if (post) {
+               await updateStudentReputation(post.authorId, 'VIOLATION_DELETED');
+               await post.destroy().catch(err => logger.warn('Failed to delete post: ' + err));
+            }
           }
           report.status = 'Resolved';
           report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Action: Deleted Post. Notes: ${notes}`;
           report.resolvedAt = new Date();
+          await updateStudentReputation(report.studentId, 'REPORT_RESOLVED');
           break;
         case 'suspend_user':
           // Attempt to suspend user if reportedEntityId is a user ID
