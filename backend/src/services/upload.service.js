@@ -14,12 +14,16 @@ const storage = multer.diskStorage({
     let subFolder = "general";
     
     // Verifications use 'document' or 'verificationDoc'
-    if (file.fieldname === "document" || file.fieldname === "verificationDoc") {
+    if (file.fieldname === "document" || file.fieldname === "verificationDoc" || file.fieldname === "clubDoc") {
       subFolder = "verifications";
     }
     // Reports use 'evidenceFile'
     else if (file.fieldname === "evidenceFile") {
       subFolder = "reports";
+    }
+    // Avatars use 'avatar'
+    else if (file.fieldname === "avatar") {
+      subFolder = "avatars";
     }
 
     const uploadPath = path.join(process.cwd(), "uploads", subFolder);
@@ -34,10 +38,12 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     // Prefix based on fieldname for easy identification
     let prefix = "file";
-    if (file.fieldname === "document" || file.fieldname === "verificationDoc") {
+    if (file.fieldname === "document" || file.fieldname === "verificationDoc" || file.fieldname === "clubDoc") {
       prefix = "vdoc";
     } else if (file.fieldname === "evidenceFile") {
       prefix = "rpt";
+    } else if (file.fieldname === "avatar") {
+      prefix = "avtr";
     }
 
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
