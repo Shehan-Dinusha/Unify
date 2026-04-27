@@ -25,10 +25,10 @@ const MyOrders = () => {
     const fetchAllHistory = async () => {
         try {
             setLoading(true);
-            // Using mock user ID 1 for now
+            // Using mock user ID 5 for now to match the checkout mock user
             const [ordersRes, bookingsRes] = await Promise.all([
-                orderService.getStudentOrders(1),
-                orderService.getStudentBookings(1)
+                orderService.getStudentOrders(5),
+                orderService.getStudentBookings(5)
             ]);
 
             if (ordersRes.success) setOrders(ordersRes.orders);

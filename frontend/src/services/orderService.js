@@ -15,6 +15,19 @@ const orderService = {
     },
 
     /**
+     * Create a Stripe Checkout Session
+     * @param {Object} sessionData - { orderId, amount, productName, successUrl, cancelUrl }
+     */
+    createCheckoutSession: async (sessionData) => {
+        try {
+            const response = await api.post("/payments/create-checkout-session", sessionData);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
      * Create a new booking (for events/services)
      * @param {Object} bookingData - { userId, eventId, totalAmount, status }
      */

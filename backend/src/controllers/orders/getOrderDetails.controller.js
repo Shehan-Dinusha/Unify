@@ -9,7 +9,7 @@ export const getOrderDetails = async (req, res) => {
         {
           model: ClubProductPost,
           as: "clubProduct", // From earlier associations
-          attributes: ["id", "name", "description", "coverImage", "price", "pickupNote"],
+          attributes: ["id", "name", "description", "images", "price", "pickupNote"],
         },
         {
           model: User,
@@ -19,7 +19,7 @@ export const getOrderDetails = async (req, res) => {
         {
           model: Transaction,
           as: "transaction",
-          attributes: ["id", "status", "amount", "paymentMethod", "createdAt"],
+          attributes: ["id", "status", "amount", "createdAt"],
         }
       ],
     });

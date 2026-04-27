@@ -1,23 +1,58 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
-import { CheckCircle, Mail, MapPin, ClipboardList, ArrowRight } from "lucide-react";
+import { CheckCircle, Mail, MapPin, ClipboardList, ArrowRight, Loader2 } from "lucide-react";
 import { getImageUrl } from "../utils/formatters";
+import orderService from "../services/orderService";
 
 const ClubPaymentSuccess = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
 
-    const { order, product } = location.state || {};
+    const [order, setOrder] = useState(location.state?.order || null);
+    const [product, setProduct] = useState(location.state?.product || null);
+    const [loading, setLoading] = useState(!location.state?.order);
 
     useEffect(() => {
-        if (!order) {
-            navigate("/marketplace/club");
-        }
-    }, [order, navigate]);
+        const fetchOrder = async () => {
+            if (order) return;
+            
+            const params = new URLSearchParams(location.search);
+            const orderId = params.get("order_id");
+            
+            if (orderId) {
+                try {
+                    const result = await orderService.getOrderDetails(orderId);
+                    setOrder(result.order);
+                    if (result.order.clubProduct) {
+                        setProduct(result.order.clubProduct);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch order:", error);
+                    navigate("/marketplace/club");
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                navigate("/marketplace/club");
+            }
+        };
+        
+        fetchOrder();
+    }, [order, location.search, navigate]);
+
+    if (loading) {
+        return (
+            <MainLayout user={user} pageTitle="Club" verificationCount={0}>
+                <div className="flex justify-center items-center h-64">
+                    <Loader2 className="animate-spin text-primary-blue w-8 h-8" />
+                </div>
+            </MainLayout>
+        );
+    }
 
     if (!order) return null;
 

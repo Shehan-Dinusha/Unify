@@ -25,7 +25,7 @@ const ClubCheckout = () => {
         try {
             setLoading(true);
             const orderData = {
-                userId: 1, // Mock student user
+                userId: 5, // Mock student user
                 postId: product.id,
                 qty: quantity || 1,
                 color: selectedColor?.name,
@@ -36,12 +36,22 @@ const ClubCheckout = () => {
 
             const result = await orderService.createOrder(orderData);
             
-            navigate("/marketplace/club/payment-success", { 
-                state: { 
-                    order: result.order,
-                    product: product 
-                } 
+            // Create Stripe Checkout Session
+            const subtotal = parseFloat(product.price) * (quantity || 1);
+            const sessionResponse = await orderService.createCheckoutSession({
+                orderId: result.order.orderId,
+                amount: subtotal,
+                productName: product.name,
+                successUrl: `${window.location.origin}/marketplace/club/payment-success?order_id=${result.order.id}`,
+                cancelUrl: window.location.href, // Cancel goes back to checkout
             });
+            
+            if (sessionResponse.success && sessionResponse.url) {
+                // Redirect to Stripe Checkout page
+                window.location.href = sessionResponse.url;
+            } else {
+                throw new Error("Failed to create checkout session");
+            }
         } catch (error) {
             console.error("Order creation failed:", error);
             alert("Failed to place order. Please try again.");
