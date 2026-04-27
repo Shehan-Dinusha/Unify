@@ -28,11 +28,13 @@ import Material from "./Material.model.js";
 import Report from "./Report.model.js";
 import Order from "./Order.model.js";
 import Review from "./Review.model.js";
+import ReviewFeedback from "./ReviewFeedback.model.js";
 import Conversation from "./Conversation.model.js";
 import Message from "./Message.model.js";
 import BoostPackage from "./BoostPackage.model.js";
 import BoostCampaign from "./BoostCampaign.model.js";
 import BoostInteraction from "./BoostInteraction.model.js";
+import BoostLog from "./BoostLog.model.js";
 import AdminLog from "./AdminLog.model.js";
 import UserActivityLog from "./UserActivityLog.model.js";
 import UserFollower from "./UserFollower.model.js";
@@ -43,8 +45,58 @@ import Transaction from "./Transaction.model.js";
 import WithdrawalRequest from "./WithdrawalRequest.model.js";
 import Notification from "./Notification.model.js";
 import EventBooking from "./EventBooking.model.js";
+import StudentReport from "./StudentReport.model.js";
+import UserSuspension from "./UserSuspension.model.js";
+import UserSuspensionHistory from "./UserSuspensionHistory.model.js";
+
+// --- New Academic Structure Models ---
+import University from "./University.model.js";
+import Faculty from "./Faculty.model.js";
+import Degree from "./Degree.model.js";
+import Batch from "./Batch.model.js";
+import SemesterVisibility from "./SemesterVisibility.model.js";
 
 // ── Associations ──────────────────────────────────────────────────────────────
+
+// --- University & Academic Structure ---
+University.hasMany(Faculty, {
+  foreignKey: "universityId",
+  as: "faculties",
+  onDelete: "CASCADE",
+});
+Faculty.belongsTo(University, { foreignKey: "universityId", as: "university" });
+
+Faculty.hasMany(Degree, {
+  foreignKey: "facultyId",
+  as: "degrees",
+  onDelete: "CASCADE",
+});
+Degree.belongsTo(Faculty, { foreignKey: "facultyId", as: "faculty" });
+
+// --- Semester Visibility Rules ---
+Degree.hasMany(SemesterVisibility, {
+  foreignKey: "degreeId",
+  as: "semesterVisibilities",
+  onDelete: "CASCADE",
+});
+SemesterVisibility.belongsTo(Degree, { foreignKey: "degreeId", as: "degree" });
+
+Semester.hasMany(SemesterVisibility, {
+  foreignKey: "semesterId",
+  as: "visibilities",
+  onDelete: "CASCADE",
+});
+SemesterVisibility.belongsTo(Semester, {
+  foreignKey: "semesterId",
+  as: "semester",
+});
+
+Batch.hasMany(SemesterVisibility, {
+  foreignKey: "batchId",
+  as: "semesterVisibilities",
+  onDelete: "CASCADE",
+});
+SemesterVisibility.belongsTo(Batch, { foreignKey: "batchId", as: "batch" });
 
 // --- Profiles ---
 User.hasOne(StudentProfile, {
@@ -53,6 +105,25 @@ User.hasOne(StudentProfile, {
   onDelete: "CASCADE",
 });
 StudentProfile.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// Student Profile relations to Academic Entities
+StudentProfile.belongsTo(University, {
+  foreignKey: "universityId",
+  as: "university",
+});
+University.hasMany(StudentProfile, {
+  foreignKey: "universityId",
+  as: "students",
+});
+
+StudentProfile.belongsTo(Faculty, { foreignKey: "facultyId", as: "faculty" });
+Faculty.hasMany(StudentProfile, { foreignKey: "facultyId", as: "students" });
+
+StudentProfile.belongsTo(Degree, { foreignKey: "degreeId", as: "degree" });
+Degree.hasMany(StudentProfile, { foreignKey: "degreeId", as: "students" });
+
+StudentProfile.belongsTo(Batch, { foreignKey: "batchId", as: "batch" });
+Batch.hasMany(StudentProfile, { foreignKey: "batchId", as: "students" });
 
 User.hasOne(BusinessProfile, {
   foreignKey: "userId",
@@ -196,6 +267,20 @@ User.hasMany(Review, { foreignKey: "reviewerId", as: "reviewsGiven" });
 Review.belongsTo(User, { foreignKey: "targetId", as: "target" });
 User.hasMany(Review, { foreignKey: "targetId", as: "reviewsReceived" });
 
+Review.hasMany(ReviewFeedback, {
+  foreignKey: "reviewId",
+  as: "feedbacks",
+  onDelete: "CASCADE",
+});
+ReviewFeedback.belongsTo(Review, { foreignKey: "reviewId", as: "review" });
+
+User.hasMany(ReviewFeedback, {
+  foreignKey: "userId",
+  as: "reviewFeedbacks",
+  onDelete: "CASCADE",
+});
+ReviewFeedback.belongsTo(User, { foreignKey: "userId", as: "user" });
+
 // --- Chat System ---
 Conversation.belongsTo(User, {
   foreignKey: "participantOneId",
@@ -225,12 +310,19 @@ Message.belongsTo(User, { foreignKey: "senderId", as: "sender" });
 User.hasMany(Message, { foreignKey: "senderId", as: "sentMessages" });
 
 // --- Advertising / Boosts ---
+User.hasMany(BoostCampaign, {
+  foreignKey: "userId",
+  as: "boostCampaigns",
+  onDelete: "CASCADE",
+});
+BoostCampaign.belongsTo(User, { foreignKey: "userId", as: "owner" });
+
 BoostCampaign.belongsTo(Post, {
   foreignKey: "postId",
   as: "post",
   onDelete: "CASCADE",
 });
-Post.hasOne(BoostCampaign, { foreignKey: "postId", as: "activeCampaign" });
+Post.hasMany(BoostCampaign, { foreignKey: "postId", as: "boostCampaigns" });
 
 BoostCampaign.belongsTo(BoostPackage, {
   foreignKey: "packageId",
@@ -267,6 +359,19 @@ User.hasMany(AdminLog, {
 AdminLog.belongsTo(User, { foreignKey: "adminId", as: "admin" });
 
 // --- Academic Modules ---
+Degree.belongsToMany(AcademicModule, {
+  through: "degree_academic_modules",
+  as: "academicModules",
+  foreignKey: "degreeId",
+  otherKey: "moduleId",
+});
+AcademicModule.belongsToMany(Degree, {
+  through: "degree_academic_modules",
+  as: "degrees",
+  foreignKey: "moduleId",
+  otherKey: "degreeId",
+});
+
 Semester.hasMany(AcademicModule, {
   foreignKey: "semesterId",
   as: "modules",
@@ -429,6 +534,35 @@ User.hasMany(Notification, {
 });
 Notification.belongsTo(User, { foreignKey: "userId", as: "user" });
 
+// --- Student Reports ---
+User.hasMany(StudentReport, {
+  foreignKey: "studentId",
+  as: "studentReports",
+  onDelete: "CASCADE",
+});
+StudentReport.belongsTo(User, { foreignKey: "studentId", as: "student" });
+
+// --- Suspended Users ---
+User.hasMany(UserSuspension, {
+  foreignKey: "userId",
+  as: "suspensions",
+  onDelete: "CASCADE",
+});
+UserSuspension.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+UserSuspension.hasMany(UserSuspensionHistory, {
+  foreignKey: "suspensionId",
+  as: "history",
+  onDelete: "CASCADE",
+});
+UserSuspensionHistory.belongsTo(UserSuspension, { foreignKey: "suspensionId", as: "suspension" });
+
+User.hasMany(UserSuspensionHistory, { foreignKey: "performedBy", as: "performedSuspensionActions" });
+UserSuspensionHistory.belongsTo(User, { foreignKey: "performedBy", as: "performedByUser" });
+
+User.hasMany(UserSuspension, { foreignKey: "reactivatedBy", as: "reactivatedSuspensions" });
+UserSuspension.belongsTo(User, { foreignKey: "reactivatedBy", as: "reactivatedByUser" });
+
 // ── Exports ───────────────────────────────────────────────────────────────────
 export {
   sequelize,
@@ -451,11 +585,13 @@ export {
   Report,
   Order,
   Review,
+  ReviewFeedback,
   Conversation,
   Message,
   BoostPackage,
   BoostCampaign,
   BoostInteraction,
+  BoostLog,
   AdminLog,
   UserActivityLog,
   UserFollower,
@@ -466,4 +602,12 @@ export {
   WithdrawalRequest,
   Notification,
   EventBooking,
+  StudentReport,
+  University,
+  Faculty,
+  Degree,
+  Batch,
+  SemesterVisibility,
+  UserSuspension,
+  UserSuspensionHistory,
 };

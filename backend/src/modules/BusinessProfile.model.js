@@ -93,21 +93,17 @@ const BusinessProfile = sequelize.define(
       allowNull: true,
     },
 
-    verificationDoc: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
-    isVerified: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
-
     averageRating: {
       type: DataTypes.FLOAT,
       allowNull: false,
       defaultValue: 0,
+    },
+
+    adminNotes: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+      comment: "Array of objects: { text, adminName, createdAt }",
     },
   },
   {

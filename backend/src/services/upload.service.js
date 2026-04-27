@@ -2,29 +2,51 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-// Local storage directory (this simulates an S3 bucket space)
-const UPLOAD_DIR = path.join(process.cwd(), "uploads/verifications");
+/**
+ * Universal Upload Service
+ * Handles file storage for Verifications, Reports, and other modules.
+ */
 
-// Ensure directory exists
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-// Multer storage config
+// Storage config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // In actual S3, this would be the bucket configured. For now, it's a local folder.
-    cb(null, UPLOAD_DIR);
+    // Determine folder based on the fieldname
+    let subFolder = "general";
+    
+    // Verifications use 'document' or 'verificationDoc'
+    if (file.fieldname === "document" || file.fieldname === "verificationDoc") {
+      subFolder = "verifications";
+    }
+    // Reports use 'evidenceFile'
+    else if (file.fieldname === "evidenceFile") {
+      subFolder = "reports";
+    }
+
+    const uploadPath = path.join(process.cwd(), "uploads", subFolder);
+
+    // Ensure directory exists
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    // Generate a unique identifier mimicking an S3 Object Key
+    // Prefix based on fieldname for easy identification
+    let prefix = "file";
+    if (file.fieldname === "document" || file.fieldname === "verificationDoc") {
+      prefix = "vdoc";
+    } else if (file.fieldname === "evidenceFile") {
+      prefix = "rpt";
+    }
+
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
-    cb(null, `batchrep-${uniqueSuffix}${ext}`);
+    cb(null, `${prefix}-${uniqueSuffix}${ext}`);
   },
 });
 
-// File filter to limit to images/PDFs
+// File filter (Supports PDF, JPG, PNG, and SVG)
 const fileFilter = (req, file, cb) => {
   const allowedMimeTypes = [
     "application/pdf",
@@ -35,6 +57,7 @@ const fileFilter = (req, file, cb) => {
     "image/gif",
     "image/svg+xml",
   ];
+
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {

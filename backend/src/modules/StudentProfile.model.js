@@ -21,29 +21,23 @@ const StudentProfile = sequelize.define(
       allowNull: true, // handled in controller
     },
 
-    university: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-      defaultValue: "University of Moratuwa",
-    },
-
-    faculty: {
-      type: DataTypes.STRING(255),
+    universityId: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
 
-    department: {
-      type: DataTypes.STRING(255),
+    facultyId: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
 
-    degree: {
-      type: DataTypes.STRING(255),
+    degreeId: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
 
-    batch: {
-      type: DataTypes.STRING(50),
+    batchId: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
 
@@ -88,6 +82,13 @@ const StudentProfile = sequelize.define(
       type: DataTypes.STRING(50),
       allowNull: false,
       defaultValue: "Standard",
+    },
+
+    adminNotes: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+      comment: "Array of objects: { text, adminName, createdAt }",
     },
   },
   {
