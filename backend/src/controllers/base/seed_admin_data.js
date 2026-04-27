@@ -10,9 +10,9 @@
 import {
   User, StudentProfile, BusinessProfile, UserActivityLog,
   AdminLog, Wallet, Faculty, University, Post, Comment, StudentReport,
-  Transaction, BoostCampaign, BoostPackage
-} from './src/modules/index.js';
-import sequelize from './src/config/database.js';
+  Transaction, BoostCampaign, BoostPackage, ClubProfile
+} from '../../modules/index.js';
+import sequelize from '../../config/database.js';
 import bcrypt from 'bcryptjs';
 import moment from 'moment';
 
@@ -85,7 +85,7 @@ async function seedAdminData() {
           tier: 'Premium',
           registrationNumber: 'ENG-22-045',
           joinDate: new Date('2021-10-12'),
-          reputationScore: 2450,
+          reputationScore: 500,
           adminNotes: [
             { text: 'User has been flagged for review twice this month. Monitor activity closely.', adminName: 'Admin_Sarah', createdAt: new Date().toISOString() },
             { text: 'User has been flagged for review twice this month. Monitor activity closely.', adminName: 'Admin_Sarah', createdAt: new Date().toISOString() },
@@ -115,7 +115,7 @@ async function seedAdminData() {
           tier: 'Standard',
           registrationNumber: 'UoC-2023-8842',
           joinDate: new Date('2022-03-15'),
-          reputationScore: 1820,
+          reputationScore: 500,
           adminNotes: [
             { text: 'No issues reported. Active and engaged user.', adminName: 'Admin_Alex', createdAt: new Date().toISOString() },
           ],
@@ -140,7 +140,7 @@ async function seedAdminData() {
           tier: 'Premium',
           registrationNumber: 'SCI-2022-1104',
           joinDate: new Date('2022-06-20'),
-          reputationScore: 3250,
+          reputationScore: 500,
           adminNotes: [
             { text: 'One pending content review.', adminName: 'Admin_Sarah', createdAt: new Date().toISOString() },
           ],
@@ -165,7 +165,7 @@ async function seedAdminData() {
           tier: 'Standard',
           registrationNumber: 'MGT-2023-0571',
           joinDate: new Date('2023-01-10'),
-          reputationScore: 1280,
+          reputationScore: 500,
           adminNotes: [],
         },
         activityLogs: [],
@@ -186,7 +186,7 @@ async function seedAdminData() {
           tier: 'Standard',
           registrationNumber: 'ENG-23-012',
           joinDate: new Date('2023-04-12'),
-          reputationScore: 4890,
+          reputationScore: 500,
           adminNotes: [],
         },
         activityLogs: [],
@@ -218,7 +218,7 @@ async function seedAdminData() {
           tier: s.profile.tier,
           registrationNumber: s.profile.registrationNumber,
           joinDate: s.profile.joinDate,
-          reputationScore: s.profile.reputationScore || 0,
+          reputationScore: 500,
           adminNotes: s.profile.adminNotes,
         }
       });
@@ -226,7 +226,7 @@ async function seedAdminData() {
       if (!profileCreated) {
         await profile.update({
           facultyId: faculty?.id || null,
-          reputationScore: s.profile.reputationScore || 0,
+          reputationScore: 500,
           tier: s.profile.tier,
           registrationNumber: s.profile.registrationNumber,
         });
@@ -361,7 +361,7 @@ async function seedAdminData() {
           name: 'University Chess Club',
           email: 'chess@uom.lk',
           phone: '+94112340000',
-          role: 'Business',
+          role: 'Club',
           status: 'Active',
           isOnline: true,
           lastActive: new Date(),
@@ -370,7 +370,6 @@ async function seedAdminData() {
         profile: {
           displayName: 'University Chess Club',
           businessName: 'UoM Chess Club',
-          category: 'CLUBS',
           about: 'The official chess club of University of Moratuwa.',
           email: 'chess@uom.lk',
           phone: '+94 11 234 0000',
@@ -417,16 +416,42 @@ async function seedAdminData() {
       });
 
       // Always sync user
-      await user.update({ isOnline: true, status: b.user.status, avatar: b.user.avatar });
-
-      // Sync BusinessProfile
-      const [profile, profileCreated] = await BusinessProfile.findOrCreate({
-        where: { userId: user.id },
-        defaults: { ...b.profile, userId: user.id }
+      await user.update({ 
+        isOnline: true, 
+        status: b.user.status, 
+        avatar: b.user.avatar,
+        role: b.user.role // Ensure role is synced
       });
 
-      if (!profileCreated) {
-        await profile.update(b.profile);
+      if (user.role === 'Club') {
+        const [profile, profileCreated] = await ClubProfile.findOrCreate({
+          where: { userId: user.id },
+          defaults: { 
+            userId: user.id,
+            clubName: b.profile.displayName,
+            about: b.profile.about,
+            email: b.profile.email,
+            logo: b.profile.logo
+          }
+        });
+        if (!profileCreated) {
+          await profile.update({
+            clubName: b.profile.displayName,
+            about: b.profile.about,
+            email: b.profile.email,
+            logo: b.profile.logo
+          });
+        }
+      } else {
+        // Sync BusinessProfile
+        const [profile, profileCreated] = await BusinessProfile.findOrCreate({
+          where: { userId: user.id },
+          defaults: { ...b.profile, userId: user.id }
+        });
+
+        if (!profileCreated) {
+          await profile.update(b.profile);
+        }
       }
 
       // Ensure Wallet

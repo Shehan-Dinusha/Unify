@@ -27,7 +27,7 @@ const BusinessProfile = sequelize.define(
     },
 
     category: {
-      type: DataTypes.ENUM("BOARDING", "FOOD", "SELF_EMPLOYED", "CLUBS"),
+      type: DataTypes.ENUM("BOARDING", "FOOD", "SELF_EMPLOYED"),
       allowNull: false,
     },
 

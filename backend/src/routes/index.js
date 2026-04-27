@@ -11,7 +11,6 @@ import studentManagementRoutes from "./studentManagement.routes.js";
 import businessManagementRoutes from "./businessManagement.routes.js";
 import adminToolsRoutes from "./adminTools.routes.js";
 import lostAndFoundRoutes from "./lostAndFound.routes.js";
-import adminManagementRoutes from "./adminManagement.routes.js";
 
 const router = express.Router();
 
@@ -28,6 +27,5 @@ router.use("/admin/students", studentManagementRoutes);
 router.use("/admin/businesses", businessManagementRoutes);
 router.use("/admin/tools", adminToolsRoutes);
 router.use("/lost-and-found", lostAndFoundRoutes);
-router.use("/admin", adminManagementRoutes);
 
 export default router;

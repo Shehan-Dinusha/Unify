@@ -2,6 +2,7 @@ import { Op } from 'sequelize';
 import { 
   User, 
   BusinessProfile, 
+  ClubProfile,
   BoostCampaign, 
   UserActivityLog, 
   AdminLog, 
@@ -23,14 +24,14 @@ export const getBusinessDirectory = async (req, res, next) => {
     const { page = 1, limit = 10, search, category, status } = req.query;
     const offset = (page - 1) * limit;
 
-    let userWhere = { role: 'Business' };
-    let profileWhere = {};
+    let userWhere = { role: { [Op.in]: ['Business', 'Club'] } };
 
     if (search) {
       userWhere[Op.or] = [
         { name: { [Op.iLike]: `%${search}%` } },
         { email: { [Op.iLike]: `%${search}%` } },
-        { '$businessProfile.businessName$': { [Op.iLike]: `%${search}%` } }
+        { '$businessProfile.businessName$': { [Op.iLike]: `%${search}%` } },
+        { '$clubProfile.clubName$': { [Op.iLike]: `%${search}%` } }
       ];
     }
 
@@ -39,48 +40,71 @@ export const getBusinessDirectory = async (req, res, next) => {
     }
 
     if (category && category !== 'all') {
-      const catMap = {
-        'Self Employee': 'SELF_EMPLOYED',
-        'Boarding': 'BOARDING',
-        'Food & Cafe': 'FOOD',
-        'Clubs & Society': 'CLUBS'
-      };
-      profileWhere.category = catMap[category] || category;
+      if (category === 'Clubs & Society') {
+        userWhere.role = 'Club';
+      } else {
+        userWhere.role = 'Business';
+        const catMap = {
+          'Self Employee': 'SELF_EMPLOYED',
+          'Boarding': 'BOARDING',
+          'Food & Cafe': 'FOOD'
+        };
+        userWhere['$businessProfile.category$'] = catMap[category] || category;
+      }
     }
 
-    const { count, rows: businesses } = await User.findAndCountAll({
+    const { count, rows: entities } = await User.findAndCountAll({
       where: userWhere,
-      include: [{
-        model: BusinessProfile,
-        as: 'businessProfile',
-        where: Object.keys(profileWhere).length > 0 ? profileWhere : undefined,
-        required: Object.keys(profileWhere).length > 0 ? true : false,
-      }],
+      include: [
+        {
+          model: BusinessProfile,
+          as: 'businessProfile',
+          required: false, // Must be false for role='Club' rows to appear when NOT filtering
+        },
+        {
+          model: ClubProfile,
+          as: 'clubProfile',
+          required: false,
+        }
+      ],
       subQuery: false,
-      attributes: ['id', 'name', 'email', 'avatar', 'status', 'createdAt'],
+      attributes: ['id', 'name', 'email', 'avatar', 'status', 'createdAt', 'role'],
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [['createdAt', 'DESC']]
     });
 
-    const formattedBusinesses = businesses.map(b => ({
-      id: b.id,
-      name: b.businessProfile?.businessName || b.name,
-      email: b.email,
-      avatar: b.avatar || (b.businessProfile?.businessName || b.name).substring(0, 2).toUpperCase(),
-      category: b.businessProfile?.category === 'SELF_EMPLOYED' ? 'Self Employee' :
-                b.businessProfile?.category === 'FOOD' ? 'Food & Cafe' :
-                b.businessProfile?.category === 'BOARDING' ? 'Boarding' : 
-                b.businessProfile?.category === 'CLUBS' ? 'Clubs & Society' : 'General',
-      registrationDate: moment(b.createdAt).format('MMM DD, YYYY'),
-      status: b.status
-    }));
+    const formattedEntities = entities.map(e => {
+      let categoryLabel = 'General';
+      let name = e.name;
 
-    return sendResponse(res, 200, true, 'Business directory retrieved', {
+      if (e.role === 'Club') {
+        categoryLabel = 'Clubs & Society';
+        name = e.clubProfile?.clubName || e.name;
+      } else if (e.businessProfile) {
+        name = e.businessProfile.businessName || e.name;
+        const cat = e.businessProfile.category;
+        categoryLabel = cat === 'SELF_EMPLOYED' ? 'Self Employee' :
+                        cat === 'FOOD' ? 'Food & Cafe' :
+                        cat === 'BOARDING' ? 'Boarding' : 'General';
+      }
+
+      return {
+        id: e.id,
+        name: name,
+        email: e.email,
+        avatar: e.avatar || name.substring(0, 2).toUpperCase(),
+        category: categoryLabel,
+        registrationDate: moment(e.createdAt).format('MMM DD, YYYY'),
+        status: e.status
+      };
+    });
+
+    return sendResponse(res, 200, true, 'Directory retrieved', {
       total: count,
       page: parseInt(page),
       limit: parseInt(limit),
-      businesses: formattedBusinesses
+      businesses: formattedEntities
     });
   } catch (error) {
     logger.error(`Error in getBusinessDirectory: ${error.message}`);
@@ -104,9 +128,9 @@ export const getBusinessStats = async (req, res, next) => {
       totalRevenue,
       businessCountWithRevenue
     ] = await Promise.all([
-      User.count({ where: { role: 'Business', status: 'Active' } }),
-      User.count({ where: { role: 'Business', status: 'Active', createdAt: { [Op.lt]: startOfThisMonth } } }),
-      User.count({ where: { role: 'Business', status: 'Suspended' } }),
+      User.count({ where: { role: { [Op.in]: ['Business', 'Club'] }, status: 'Active' } }),
+      User.count({ where: { role: { [Op.in]: ['Business', 'Club'] }, status: 'Active', createdAt: { [Op.lt]: startOfThisMonth } } }),
+      User.count({ where: { role: { [Op.in]: ['Business', 'Club'] }, status: 'Suspended' } }),
       Transaction.sum('amount', { where: { type: 'CREDIT', status: 'COMPLETED' } }),
       Transaction.count({
         distinct: true,
@@ -151,11 +175,17 @@ export const getBusinessProfile = async (req, res, next) => {
     const { id } = req.params;
 
     const user = await User.findOne({
-      where: { id, role: 'Business' },
-      include: [{
-        model: BusinessProfile,
-        as: 'businessProfile'
-      }]
+      where: { id, role: { [Op.in]: ['Business', 'Club'] } },
+      include: [
+        {
+          model: BusinessProfile,
+          as: 'businessProfile'
+        },
+        {
+          model: ClubProfile,
+          as: 'clubProfile'
+        }
+      ]
     });
 
     if (!user) {
@@ -243,17 +273,21 @@ export const getBusinessProfile = async (req, res, next) => {
       return `${diff > 0 ? '+' : ''}${diff.toFixed(0)}%`;
     };
 
+    const isClub = user.role === 'Club';
+    const profileName = isClub ? (user.clubProfile?.clubName || user.name) : (user.businessProfile?.businessName || user.name);
+    const categoryLabel = isClub ? 'Clubs & Society' : 
+                         (user.businessProfile?.category === 'SELF_EMPLOYED' ? 'Self Employee' :
+                          user.businessProfile?.category === 'FOOD' ? 'Food & Cafe' :
+                          user.businessProfile?.category === 'BOARDING' ? 'Boarding' : 'General');
+
     const formattedProfile = {
       id: user.id,
-      name: user.businessProfile?.businessName || user.name,
-      businessId: `#BIZ-${String(user.id).padStart(4, '0')}`,
+      name: profileName,
+      businessId: isClub ? `#CLUB-${String(user.id).padStart(4, '0')}` : `#BIZ-${String(user.id).padStart(4, '0')}`,
       location: user.businessProfile?.addresses?.[0]?.city || 'Katubedda',
       isVerified: user.status === 'Active',
       logo: user.avatar || `https://api.dicebear.com/7.x/shapes/svg?seed=${user.name.replace(/ /g, '')}`,
-      category: user.businessProfile?.category === 'SELF_EMPLOYED' ? 'Self Employee' :
-                user.businessProfile?.category === 'FOOD' ? 'Food & Cafe' :
-                user.businessProfile?.category === 'BOARDING' ? 'Boarding' : 
-                user.businessProfile?.category === 'CLUBS' ? 'Clubs & Society' : 'General',
+      category: categoryLabel,
       registrationDate: moment(user.createdAt).format('MMM DD, YYYY'),
       status: user.status,
       stats: {

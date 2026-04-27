@@ -55,7 +55,7 @@ export const seedSystemData = async (req, res, next) => {
     const studentData = [
       {
         user: { name: 'Alex Johnson', email: 'alex.j@unify.com', phone: '+94771234501', role: 'Student', status: 'Active', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=AlexJohnson' },
-        profile: { facultyName: 'Faculty of Engineering', tier: 'Premium', registrationNumber: 'ENG-22-045', joinDate: new Date('2021-10-12'), reputationScore: 2450 }
+        profile: { facultyName: 'Faculty of Engineering', tier: 'Premium', registrationNumber: 'ENG-22-045', joinDate: new Date('2021-10-12'), reputationScore: 500 }
       },
       {
         user: { name: 'Kasun Perera', email: 'kasun@uom.lk', phone: '+94771234502', role: 'Student', status: 'Active', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=KasunPerera' },
@@ -67,7 +67,7 @@ export const seedSystemData = async (req, res, next) => {
       },
       {
         user: { name: 'Sarah Miller', email: 'sarah.m@unify.com', phone: '+94771234505', role: 'Student', status: 'Active', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SarahMiller' },
-        profile: { facultyName: 'Faculty of Engineering', tier: 'Standard', registrationNumber: 'ENG-23-012', joinDate: new Date('2023-04-12'), reputationScore: 4890 }
+        profile: { facultyName: 'Faculty of Engineering', tier: 'Standard', registrationNumber: 'ENG-23-012', joinDate: new Date('2023-04-12'), reputationScore: 500 }
       }
     ];
 
