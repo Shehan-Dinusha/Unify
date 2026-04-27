@@ -1,0 +1,118 @@
+import {
+  Material,
+  AcademicModule,
+  ModuleCategory,
+} from "../../modules/index.js";
+import { sendResponse } from "../../utils/response.js";
+import s3Service from "../../services/s3.service.js";
+import fs from "fs";
+
+export const uploadMaterial = async (req, res) => {
+  try {
+    const { moduleId } = req.params;
+    const { title, category, attachmentType, linkUrl } = req.body;
+
+    // Assume user is authenticated and uploaderId is available in req.user
+    const uploaderId = req.user ? req.user.id : 1;
+
+    // Validate if module exists
+    const moduleExists = await AcademicModule.findByPk(moduleId);
+    if (!moduleExists) {
+      return sendResponse(res, 404, false, "Module not found", null);
+    }
+
+    let categoryId = null;
+    if (category) {
+      // Find category
+      const moduleCat = await ModuleCategory.findOne({
+        where: { moduleId, title: category },
+      });
+
+      if (!moduleCat) {
+        return sendResponse(res, 404, false, "Category not found", null);
+      }
+      categoryId = moduleCat.id;
+    }
+
+    let url = "";
+    let fileType = "Link";
+    let fileSize = null;
+
+    if (attachmentType === "Upload File") {
+      if (!req.file) {
+        return sendResponse(
+          res,
+          400,
+          false,
+          "File is required when attachmentType is Upload File",
+          null,
+        );
+      }
+
+      // Upload file to S3
+      const fileKey = await s3Service.uploadFile(
+        req.file.path,
+        req.file.originalname,
+        req.file.mimetype,
+        "learning_materials",
+      );
+
+      url = fileKey; // Save the S3 key in the url field
+      fileType = req.file.mimetype;
+      fileSize = req.file.size.toString();
+
+      // Clean up the local temporary file
+      try {
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+      } catch (err) {
+        console.error("Failed to clean up local file:", err);
+      }
+    } else {
+      if (!linkUrl) {
+        return sendResponse(
+          res,
+          400,
+          false,
+          "Link is required when attachmentType is Attach Link",
+          null,
+        );
+      }
+      url = linkUrl;
+    }
+
+    const material = await Material.create({
+      moduleId,
+      uploaderId,
+      categoryId: categoryId || null,
+      name: title,
+      fileType,
+      fileSize,
+      url,
+    });
+
+    // Provide a presigned URL in the response if it's a file
+    const responseData = material.toJSON();
+    if (attachmentType === "Upload File") {
+      responseData.url = await s3Service.getFileUrl(material.url);
+    }
+
+    return sendResponse(
+      res,
+      201,
+      true,
+      "Material uploaded successfully",
+      responseData,
+    );
+  } catch (error) {
+    console.error("Error uploading material:", error);
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Internal server error while uploading material",
+      null,
+    );
+  }
+};
