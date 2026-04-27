@@ -8,7 +8,7 @@ import {
   forgotPassword,
   verifyResetOTP,
   resetPassword,
-} from "../controllers/auth.controller.js";
+} from "../controllers/auth/index.js";
 import {
   registerValidator,
   verifyOTPValidator,

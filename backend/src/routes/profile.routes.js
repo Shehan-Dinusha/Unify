@@ -4,15 +4,11 @@ import { ROLES } from "../utils/constants.js";
 import {
   upsertStudentProfile,
   getMyStudentProfile,
-} from "../controllers/studentProfile.controller.js";
-import {
   upsertBusinessProfile,
   getMyBusinessProfile,
-} from "../controllers/businessProfile.controller.js";
-import {
   upsertClubProfile,
   getMyClubProfile,
-} from "../controllers/clubProfile.controller.js";
+} from "../controllers/profile/index.js";
 import {
   studentProfileValidator,
   businessProfileValidator,
