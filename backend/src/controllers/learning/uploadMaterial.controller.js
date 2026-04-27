@@ -4,6 +4,8 @@ import {
   ModuleCategory,
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
+import s3Service from "../../services/s3.service.js";
+import fs from "fs";
 
 export const uploadMaterial = async (req, res) => {
   try {
@@ -46,9 +48,27 @@ export const uploadMaterial = async (req, res) => {
           null,
         );
       }
-      url = req.file.path; // Or you could manipulate path to be relative
+
+      // Upload file to S3
+      const fileKey = await s3Service.uploadFile(
+        req.file.path,
+        req.file.originalname,
+        req.file.mimetype,
+        "learning_materials",
+      );
+
+      url = fileKey; // Save the S3 key in the url field
       fileType = req.file.mimetype;
       fileSize = req.file.size.toString();
+
+      // Clean up the local temporary file
+      try {
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+      } catch (err) {
+        console.error("Failed to clean up local file:", err);
+      }
     } else {
       if (!linkUrl) {
         return sendResponse(
@@ -72,12 +92,18 @@ export const uploadMaterial = async (req, res) => {
       url,
     });
 
+    // Provide a presigned URL in the response if it's a file
+    const responseData = material.toJSON();
+    if (attachmentType === "Upload File") {
+      responseData.url = await s3Service.getFileUrl(material.url);
+    }
+
     return sendResponse(
       res,
       201,
       true,
       "Material uploaded successfully",
-      material,
+      responseData,
     );
   } catch (error) {
     console.error("Error uploading material:", error);

@@ -6,6 +6,7 @@ import {
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import { formatRelativeDate } from "../../utils/date.js";
+import s3Service from "../../services/s3.service.js";
 
 export const getMaterialsByCategory = async (req, res) => {
   try {
@@ -38,15 +39,29 @@ export const getMaterialsByCategory = async (req, res) => {
     });
 
     // Format response data
-    const formattedMaterials = materials.map((material) => {
-      const { uploaderId, createdAt, updatedAt, ...rest } = material.get({
-        plain: true,
-      });
-      return {
-        ...rest,
-        modifiedDate: formatRelativeDate(material.updatedAt),
-      };
-    });
+    const formattedMaterials = await Promise.all(
+      materials.map(async (material) => {
+        const { uploaderId, createdAt, updatedAt, ...rest } = material.get({
+          plain: true,
+        });
+
+        // Generate presigned URL if it's a file
+        let fileUrl = rest.url;
+        if (rest.fileType !== "Link" && fileUrl && !fileUrl.startsWith("http")) {
+          try {
+             fileUrl = await s3Service.getFileUrl(fileUrl);
+          } catch(e) {
+             console.error("Failed to generate presigned URL for", rest.url, e);
+          }
+        }
+
+        return {
+          ...rest,
+          url: fileUrl,
+          modifiedDate: formatRelativeDate(material.updatedAt),
+        };
+      })
+    );
 
     return sendResponse(
       res,

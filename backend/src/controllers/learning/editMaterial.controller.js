@@ -1,5 +1,6 @@
 import { Material, ModuleCategory } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
+import s3Service from "../../services/s3.service.js";
 
 export const editMaterial = async (req, res) => {
   try {
@@ -26,12 +27,21 @@ export const editMaterial = async (req, res) => {
 
     await material.save();
 
+    const responseData = material.toJSON();
+    if (material.fileType !== "Link" && material.url && !material.url.startsWith("http")) {
+      try {
+        responseData.url = await s3Service.getFileUrl(material.url);
+      } catch (e) {
+        console.error("Failed to generate presigned URL during edit:", e);
+      }
+    }
+
     return sendResponse(
       res,
       200,
       true,
       "Material updated successfully",
-      material,
+      responseData,
     );
   } catch (error) {
     console.error("Error editing material:", error);
