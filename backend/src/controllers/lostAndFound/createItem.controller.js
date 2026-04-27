@@ -10,7 +10,7 @@ export const createItem = catchAsync(async (req, res, next) => {
 
   //------------------------------------------------------------------------------
 /*
-  // ✅ Check authentication
+  //  Check authentication
   if (!req.user) {
     return sendResponse(res, 401, false, "Unauthorized");
   }
