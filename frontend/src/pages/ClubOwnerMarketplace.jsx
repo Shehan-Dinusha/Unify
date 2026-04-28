@@ -1,18 +1,53 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import ClubPostCard from "../components/club/ClubPostCard";
 import TrendingNow from "../components/club/TrendingNow";
-import { mockClubFeed, mockTrendingNow } from "../data/mockClubData";
+import { mockTrendingNow } from "../data/mockClubData";
 import CreatePostModal from "../components/marketplace/CreatePostModal";
-import { useState } from "react";
+import postService from "../services/postService";
+import { getImageUrl, formatTimeAgo } from "../utils/formatters";
+import { Loader2 } from "lucide-react";
 
 const ClubOwnerMarketplace = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const user = { 
         name: "Alex Johnson", 
         role: "club", 
         displayRole: "Clubs & Societies" 
     };
+
+    const fetchFeed = async () => {
+        try {
+            setLoading(true);
+            // "club" feed returns: ClubProductPost + ClubEventPost + CLUB NormalPosts
+            const data = await postService.getFeed("club");
+            const mappedPosts = data.feed.map(post => ({
+                ...post,
+                id: post.id,
+                image: getImageUrl(post.coverImage || post.images?.[0] || post.image),
+                clubName: post.author?.name || "Your Club",
+                clubSeed: post.author?.name || "club",
+                time: formatTimeAgo(post.createdAt),
+                category: post.category || (post.postType === "club-event" ? "Event" : "Product"),
+                text: post.description,
+                price: post.price ? `Rs. ${Number(post.price).toFixed(2)}` : null,
+                stats: { likes: post.likesCount || 0 },
+                comments: [],
+            }));
+            setPosts(mappedPosts);
+        } catch (err) {
+            console.error("Failed to fetch club owner feed:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchFeed();
+    }, []);
 
     const headerRight = (
         <div className="flex items-center gap-2">
@@ -45,9 +80,21 @@ const ClubOwnerMarketplace = () => {
             <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-2xl">
                 {/* Feed */}
                 <div className="flex flex-col gap-2xl">
-                    {mockClubFeed.map((post) => (
-                        <ClubPostCard key={post.id} post={post} isOwner={true} />
-                    ))}
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20 gap-4">
+                            <Loader2 className="w-10 h-10 text-primary-blue animate-spin" />
+                            <p className="text-text-secondary">Loading club posts...</p>
+                        </div>
+                    ) : posts.length > 0 ? (
+                        posts.map((post) => (
+                            <ClubPostCard key={`${post.postType}-${post.id}`} post={post} isOwner={true} />
+                        ))
+                    ) : (
+                        <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                            <p className="text-text-secondary text-lg font-semibold">No posts yet.</p>
+                            <p className="text-text-tertiary text-sm mt-2">Click "Create Post" to publish your first product or event!</p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Trending */}
@@ -58,7 +105,11 @@ const ClubOwnerMarketplace = () => {
 
             <CreatePostModal 
                 isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
+                onClose={() => {
+                    setIsModalOpen(false);
+                    // Refresh feed after publishing a new post
+                    fetchFeed();
+                }} 
             />
         </MainLayout>
     );

@@ -8,16 +8,10 @@ export const replyToReview = async (req, res, next) => {
     const { reviewId } = req.params;
     const { content } = req.body;
 
-    // Fallback to 4 for testing if req.user is not yet defined
-    const currentUserId = req.user?.id || 4;
+    // Fallback to 3 for testing if req.user is not yet defined
+    const currentUserId = req.user?.id || 3;
 
-    if (!reviewId) {
-      return sendResponse(res, 400, false, "Review ID is required.");
-    }
 
-    if (!content || typeof content !== "string" || content.trim() === "") {
-      return sendResponse(res, 400, false, "Reply content is required.");
-    }
 
     const review = await Review.findByPk(reviewId);
 

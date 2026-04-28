@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Determine folder based on the fieldname
     let subFolder = "general";
-    
+
     // Verifications use 'document' or 'verificationDoc'
     if (file.fieldname === "document" || file.fieldname === "verificationDoc" || file.fieldname === "clubDoc") {
       subFolder = "verifications";
@@ -21,9 +21,15 @@ const storage = multer.diskStorage({
     else if (file.fieldname === "evidenceFile") {
       subFolder = "reports";
     }
+<<<<<<< HEAD
     // Avatars use 'avatar' or 'profileImage'
     else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
       subFolder = "avatars";
+=======
+    // Materials use 'materialFile'
+    else if (file.fieldname === "materialFile") {
+      subFolder = "materials";
+>>>>>>> dev
     }
 
     const uploadPath = path.join(process.cwd(), "uploads", subFolder);
@@ -32,7 +38,7 @@ const storage = multer.diskStorage({
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
-    
+
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
@@ -42,8 +48,13 @@ const storage = multer.diskStorage({
       prefix = "vdoc";
     } else if (file.fieldname === "evidenceFile") {
       prefix = "rpt";
+<<<<<<< HEAD
     } else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
       prefix = "avtr";
+=======
+    } else if (file.fieldname === "materialFile") {
+      prefix = "mat";
+>>>>>>> dev
     }
 
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -52,30 +63,57 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter (Supports PDF, JPG, PNG, and SVG)
+// File filter
 const fileFilter = (req, file, cb) => {
-  const allowedMimeTypes = [
+  const defaultMimeTypes = [
     "application/pdf",
     "image/jpeg",
     "image/png",
     "image/jpg",
+    "image/webp",
+    "image/gif",
     "image/svg+xml",
   ];
+
+  const materialMimeTypes = [
+    ...defaultMimeTypes,
+    // docs and text files
+    "application/msword", // .doc
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+    "application/vnd.ms-powerpoint", // .ppt
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+    "application/vnd.ms-excel", // .xls
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+    "text/plain", // .txt
+    "text/csv", // .csv
+    // videos
+    "video/mp4",
+    "video/x-matroska", // .mkv
+    "video/quicktime", // .mov
+    "video/webm",
+    "video/x-msvideo", // .avi
+  ];
+
+  const isMaterialFile =
+    file.fieldname === "materialFile" || file.fieldname === "material";
+  const allowedMimeTypes = isMaterialFile
+    ? materialMimeTypes
+    : defaultMimeTypes;
 
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(
-      new Error("Invalid file type. Only PDF, JPG, PNG, and SVG are allowed."),
-      false
-    );
+    const errorMsg = isMaterialFile
+      ? "Invalid file type. Only PDF, Images, Documents, and Videos are allowed for materials."
+      : "Invalid file type. Only PDF, JPG, PNG, and SVG are allowed.";
+    cb(new Error(errorMsg), false);
   }
 };
 
 const uploadService = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // Allowed 50MB limit to accommodate videos
 });
 
 export default uploadService;

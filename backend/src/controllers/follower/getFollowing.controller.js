@@ -1,4 +1,4 @@
-import { User, UserFollower, ClubProfile } from "../../modules/index.js";
+import { User, ClubProfile, sequelize } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
 
 export const getStudentFollowings = catchAsync(async (req, res) => {
@@ -35,14 +35,16 @@ export const getStudentFollowings = catchAsync(async (req, res) => {
     );
   }
 
+
+
   // Determine sorting strategy
   let orderClause = [];
   switch (sortOrder) {
     case "newest":
-      orderClause = [[UserFollower, "createdAt", "DESC"]];
+      orderClause = [[sequelize.literal('"UserFollower"."createdAt"'), "DESC"]];
       break;
     case "oldest":
-      orderClause = [[UserFollower, "createdAt", "ASC"]];
+      orderClause = [[sequelize.literal('"UserFollower"."createdAt"'), "ASC"]];
       break;
     case "desc":
       orderClause = [["name", "DESC"]];

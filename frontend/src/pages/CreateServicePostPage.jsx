@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { 
     ImagePlus, MapPin, Tag as TagIcon, Clock, Phone,
-    X, Plus, Edit3, ArrowRight, Wrench
+    X, Plus, Edit3, ArrowRight, Wrench, Loader2
 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import { useNavigate } from "react-router-dom";
+import postService from "../services/postService";
 
 const CreateServicePostPage = () => {
     const navigate = useNavigate();
@@ -17,10 +18,11 @@ const CreateServicePostPage = () => {
 
     const [description, setDescription] = useState("");
     const [tagInput, setTagInput] = useState("");
-    const [tags, setTags] = useState(["Rental", "Delivery"]);
+    const [tags, setTags] = useState([]);
     const [hours, setHours] = useState("");
     const [phone, setPhone] = useState("");
 
+    const [loading, setLoading] = useState(false);
     const [images, setImages] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = React.useRef(null);
@@ -54,9 +56,39 @@ const CreateServicePostPage = () => {
     };
 
     const handleCancel = () => navigate("/services-owner/marketplace");
-    const handlePublish = () => {
-        console.log("Submitting service post:", { description, tags, hours, phone });
-        navigate("/services-owner/marketplace");
+    
+    const handlePublish = async () => {
+        if (!description || !hours || !phone) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const data = new FormData();
+            data.append("description", description);
+            data.append("hours", hours);
+            data.append("phone", phone);
+            data.append("tags", JSON.stringify(tags));
+            
+            images.forEach(img => {
+                if (img.file) {
+                    data.append("images", img.file);
+                }
+            });
+
+            // Mock userId and set postType for category inference
+            data.append("userId", 1);
+            data.append("postType", "service");
+
+            await postService.createPost("service", data);
+            navigate("/services-owner/marketplace");
+        } catch (error) {
+            console.error("Failed to publish service post:", error);
+            alert(error.error || "Failed to publish post. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -148,7 +180,7 @@ const CreateServicePostPage = () => {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-2">
                                         <div>
                                             <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                                Working Hours
+                                                Working Hours <span className="text-red-500">*</span>
                                             </label>
                                             <div className="relative">
                                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
@@ -165,7 +197,7 @@ const CreateServicePostPage = () => {
                                         </div>
                                         <div>
                                             <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                                Phone Number
+                                                Phone Number <span className="text-red-500">*</span>
                                             </label>
                                             <div className="relative">
                                                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
@@ -175,7 +207,7 @@ const CreateServicePostPage = () => {
                                                     type="text"
                                                     value={phone}
                                                     onChange={(e) => setPhone(e.target.value)}
-                                                    placeholder="+1 (555) 000-0000"
+                                                    placeholder="07X XXX XXXX"
                                                     className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors placeholder:text-text-secondary"
                                                 />
                                             </div>
@@ -259,12 +291,12 @@ const CreateServicePostPage = () => {
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             <img
-                                                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bike Rental"
+                                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
                                                 alt="User"
                                                 className="w-9 h-9 rounded-full border border-white/20"
                                             />
                                             <div>
-                                                <p className="text-[13px] font-bold text-white">Bike Rental</p>
+                                                <p className="text-[13px] font-bold text-white">{user.displayRole}</p>
                                                 <p className="text-[11px] text-text-tertiary">Just now</p>
                                             </div>
                                         </div>
@@ -295,17 +327,20 @@ const CreateServicePostPage = () => {
                                 <button
                                     type="button"
                                     onClick={handleCancel}
-                                    className="flex-1 py-3 bg-[#1A2536] hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/5"
+                                    disabled={loading}
+                                    className="flex-1 py-3 bg-[#1A2536] hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/5 disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handlePublish}
-                                    className="flex-1 py-3 bg-primary-blue hover:brightness-110 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2 group"
+                                    disabled={loading}
+                                    className="flex-1 py-3 bg-primary-blue hover:brightness-110 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2 group disabled:opacity-50"
                                 >
-                                    Submit Post
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    {loading ? "Publishing..." : "Submit Post"}
+                                    {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                                 </button>
                             </div>
                         </div>

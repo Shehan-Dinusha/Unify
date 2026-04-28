@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { ImagePlus, Edit3 } from "lucide-react";
+import { ImagePlus, Edit3, Loader2 } from "lucide-react";
 import Card from "../common/Card";
 
 const CreateNormalPostForm = ({ onCancel, onPublish }) => {
     const [description, setDescription] = useState("");
+    const [loading, setLoading] = useState(false);
     const [images, setImages] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = React.useRef(null);
@@ -23,6 +24,22 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
 
     const removeImage = (id) => {
         setImages(prev => prev.filter(img => img.id !== id));
+    };
+
+    const handlePublishClick = async () => {
+        if (!description.trim()) {
+            alert("Please enter a description for your post.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await onPublish({ description }, images);
+        } catch (error) {
+            alert(error.error || "Failed to publish post. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -89,7 +106,7 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
                             {/* Description */}
                             <div>
                                 <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                    Description
+                                    Description <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
                                     value={description}
@@ -132,9 +149,13 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
                         {/* Club header stub */}
                         <div className="p-6 space-y-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20" />
+                                <img
+                                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex Johnson"
+                                    alt="User"
+                                    className="w-10 h-10 rounded-full border border-white/20"
+                                />
                                 <div>
-                                    <div className="text-sm font-semibold">Your Club Name</div>
+                                    <div className="text-sm font-semibold">Alex Johnson</div>
                                     <div className="text-xs text-text-secondary">Just now · General</div>
                                 </div>
                             </div>
@@ -157,16 +178,19 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/10"
+                            disabled={loading}
+                            className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/10 disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
                             type="button"
-                            onClick={() => onPublish && onPublish({ description })}
-                            className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)]"
+                            onClick={handlePublishClick}
+                            disabled={loading}
+                            className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2"
                         >
-                            Submit
+                            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                            {loading ? "Publishing..." : "Submit"}
                         </button>
                     </div>
                 </div>

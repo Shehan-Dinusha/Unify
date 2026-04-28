@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MapPin, Send, ChevronLeft, ChevronRight } from "lucide-react";
 import Card from "../common/Card";
+import { getImageUrl } from "../../utils/formatters";
 
 /* ─── Action Button ──────────────────────────────────────────── */
 const ActionBtn = ({ svgSrc, label, count, showCount, activeColor = "text-primary", onClick, active }) => (
@@ -28,20 +29,28 @@ const ActionBtn = ({ svgSrc, label, count, showCount, activeColor = "text-primar
 /* ─── Image Carousel ─────────────────────────────────────────── */
 const ImageCarousel = ({ images, title }) => {
     const [idx, setIdx] = useState(0);
-    const prev = (e) => { e.stopPropagation(); setIdx(i => (i - 1 + images.length) % images.length); };
-    const next = (e) => { e.stopPropagation(); setIdx(i => (i + 1) % images.length); };
+    const imgList = Array.isArray(images) ? images : [images].filter(Boolean);
+    
+    if (imgList.length === 0) return (
+        <div className="w-full h-[320px] bg-white/5 flex items-center justify-center">
+            <p className="text-text-tertiary">No image available</p>
+        </div>
+    );
+
+    const prev = (e) => { e.stopPropagation(); setIdx(i => (i - 1 + imgList.length) % imgList.length); };
+    const next = (e) => { e.stopPropagation(); setIdx(i => (i + 1) % imgList.length); };
 
     return (
         <div className="relative w-full h-[320px] bg-white/5 overflow-hidden">
             <img
                 key={idx}
-                src={images[idx]}
+                src={getImageUrl(imgList[idx])}
                 alt={title}
                 className="w-full h-full object-cover transition-opacity duration-300"
             />
 
             {/* Nav arrows */}
-            {images.length > 1 && (
+            {imgList.length > 1 && (
                 <>
                     <button onClick={prev}
                         className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white rounded-full p-1 transition-all z-20">
@@ -53,7 +62,7 @@ const ImageCarousel = ({ images, title }) => {
                     </button>
                     {/* Dots */}
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
-                        {images.map((_, i) => (
+                        {imgList.map((_, i) => (
                             <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); }}
                                 className={`w-2 h-2 rounded-full transition-all ${i === idx ? "bg-white" : "bg-white/40"}`} />
                         ))}
@@ -128,11 +137,11 @@ const CommentSection = ({ postComments, onAddComment }) => {
 /* ─── Main Card ──────────────────────────────────────────────── */
 const FoodCafeCard = ({ post, onClick }) => {
     const [liked, setLiked] = useState(false);
-    const [likes, setLikes] = useState(post.stats?.likes ?? 0);
+    const [likes, setLikes] = useState(post.likesCount || post.stats?.likes || 0);
     const [saved, setSaved] = useState(false);
     const [reported, setReported] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);
-    const [postComments, setPostComments] = useState(post.comments ?? []);
+    const [postComments, setPostComments] = useState(post.comments || []);
 
     const handleAddComment = (text) => {
         setPostComments(prev => [...prev, {
@@ -143,7 +152,7 @@ const FoodCafeCard = ({ post, onClick }) => {
     return (
         <Card variant="card" padding="p-0" className="overflow-hidden" onClick={onClick}>
             {/* Image carousel */}
-            <ImageCarousel images={post.images} title={post.title} />
+            <ImageCarousel images={post.images || post.image || post.coverImage} title={post.title || post.name} />
 
             {/* Content */}
             <div className="p-lg ">
@@ -151,13 +160,17 @@ const FoodCafeCard = ({ post, onClick }) => {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <img
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.userSeed)}`}
-                            alt={post.user}
+                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.author?.name || post.userSeed || "user")}`}
+                            alt={post.author?.name || post.user}
                             className="w-10 h-10 rounded-full border border-white/20"
                         />
                         <div>
-                            <p className="text-body-medium-bold text-text-primary group-hover:text-primary-blue transition-colors font-bold">{post.user}</p>
-                            <p className="text-body-small text-text-tertiary">{post.time}</p>
+                            <p className="text-body-medium-bold text-text-primary group-hover:text-primary-blue transition-colors font-bold">
+                                {post.author?.name || post.user || "Anonymous"}
+                            </p>
+                            <p className="text-body-small text-text-tertiary">
+                                {post.time || "Recently"}
+                            </p>
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
 
 export const createModuleValidator = [
   body("title").notEmpty().withMessage("Module Title is required"),
@@ -76,4 +76,69 @@ export const deleteModuleCategoryValidator = [
     .withMessage("Category ID is required")
     .isInt()
     .withMessage("Category ID must be an integer"),
+];
+
+export const uploadMaterialValidator = [
+  param("moduleId")
+    .notEmpty()
+    .withMessage("Module ID is required")
+    .isInt()
+    .withMessage("Module ID must be an integer"),
+  body("title").notEmpty().withMessage("Material title is required"),
+  body("attachmentType")
+    .isIn(["Upload File", "Attach Link"])
+    .withMessage(
+      "Attachment type must be either 'Upload File' or 'Attach Link'",
+    ),
+  body("linkUrl")
+    .if(body("attachmentType").equals("Attach Link"))
+    .notEmpty()
+    .withMessage("Link URL is required when attachment type is 'Attach Link'")
+    .isURL()
+    .withMessage("A valid URL is required"),
+];
+
+export const editMaterialValidator = [
+  param("materialId")
+    .notEmpty()
+    .withMessage("Material ID is required")
+    .isInt()
+    .withMessage("Material ID must be an integer"),
+  body("title")
+    .optional()
+    .notEmpty()
+    .withMessage("Material title cannot be empty"),
+  body("categoryId")
+    .optional()
+    .isInt()
+    .withMessage("Category ID must be an integer"),
+];
+
+export const deleteMaterialValidator = [
+  param("materialId")
+    .notEmpty()
+    .withMessage("Material ID is required")
+    .isInt()
+    .withMessage("Material ID must be an integer"),
+];
+
+export const getMaterialsByCategoryValidator = [
+  param("moduleId")
+    .notEmpty()
+    .withMessage("Module ID is required")
+    .isInt()
+    .withMessage("Module ID must be an integer"),
+  param("categoryId")
+    .notEmpty()
+    .withMessage("Category ID is required")
+    .isInt()
+    .withMessage("Category ID must be an integer"),
+];
+
+export const getBatchRepsValidator = [
+  query("degreeId")
+    .notEmpty()
+    .withMessage("Degree ID is required")
+    .isInt()
+    .withMessage("Degree ID must be an integer"),
 ];

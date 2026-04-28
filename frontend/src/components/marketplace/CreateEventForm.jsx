@@ -76,6 +76,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
         location: "",
     });
 
+    const [loading, setLoading] = useState(false);
     const [coverImage, setCoverImage] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = React.useRef(null);
@@ -91,9 +92,9 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
     };
 
     const [tiers, setTiers] = useState([
-        { id: 1, label: "Ticketing Details", enabled: false, price: "", isFree: false },
-        { id: 2, label: "Ticketing Details", enabled: false, price: "", isFree: false },
-        { id: 3, label: "Ticketing Details", enabled: false, price: "", isFree: false },
+        { id: 1, label: "Early Bird", enabled: false, price: "", isFree: false },
+        { id: 2, label: "Standard", enabled: false, price: "", isFree: false },
+        { id: 3, label: "VIP", enabled: false, price: "", isFree: false },
     ]);
 
     const handleChange = (e) => {
@@ -103,6 +104,31 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
 
     const updateTier = (id, patch) =>
         setTiers((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+
+    const handlePublishClick = async () => {
+        if (!formData.name || !formData.description || !formData.date || !formData.location) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const eventPayload = {
+                ...formData,
+                tickets: tiers.filter(t => t.enabled).map(t => ({
+                    name: t.label,
+                    price: t.isFree ? 0 : parseFloat(t.price) || 0,
+                    isFree: t.isFree
+                }))
+            };
+
+            await onPublish(eventPayload, coverImage);
+        } catch (error) {
+            alert(error.error || "Failed to publish event. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="flex flex-col w-full h-full text-white font-inter">
@@ -169,7 +195,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                             {/* Event Name */}
                             <div>
                                 <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                    Event Name
+                                    Event Name <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -184,7 +210,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                             {/* Description */}
                             <div>
                                 <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                    Description
+                                    Description <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
                                     name="description"
@@ -200,7 +226,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                        Date
+                                        Date <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
                                         <input
@@ -233,7 +259,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                             {/* Location */}
                             <div>
                                 <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                    Location
+                                    Location <span className="text-red-500">*</span>
                                 </label>
                                 <div className="relative">
                                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
@@ -327,9 +353,9 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                     <div className="flex flex-col gap-2">
                                         {tiers.filter((t) => t.enabled).map((t, i) => (
                                             <div key={t.id} className="flex justify-between items-center text-sm">
-                                                <span>{t.label} {i + 1}</span>
+                                                <span>{t.label}</span>
                                                 <span className="font-bold text-primary-blue">
-                                                    {t.isFree ? "Free" : t.price ? `$${t.price}` : "—"}
+                                                    {t.isFree ? "Free" : t.price ? `Rs.${t.price}` : "—"}
                                                 </span>
                                             </div>
                                         ))}
@@ -348,17 +374,20 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/10"
+                            disabled={loading}
+                            className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition-all border border-white/10 disabled:opacity-50"
                         >
                             Cancel
                         </button>
                         <button
                             type="button"
-                            onClick={() => onPublish && onPublish(formData, tiers)}
-                            className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2"
+                            onClick={handlePublishClick}
+                            disabled={loading}
+                            className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2 disabled:opacity-50"
                         >
-                            Publish Event
-                            <ChevronRight className="w-4 h-4" />
+                            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                            {loading ? "Publishing..." : "Publish Event"}
+                            {!loading && <ChevronRight className="w-4 h-4" />}
                         </button>
                     </div>
                 </div>

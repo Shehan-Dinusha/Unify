@@ -78,10 +78,23 @@ const StudentProfile = sequelize.define(
       allowNull: true,
     },
 
+    reputationScore: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 500,
+    },
+
     tier: {
       type: DataTypes.STRING(50),
       allowNull: false,
       defaultValue: "Standard",
+    },
+
+    adminNotes: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+      comment: "Array of objects: { text, adminName, createdAt }",
     },
   },
   {
