@@ -16,11 +16,7 @@ export const upsertClubProfile = async (req, res) => {
       email,
       logo,
       coverImage,
-      verificationDocument,
-      document, // Frontend alias
     } = req.body;
-    
-    const finalVerificationDoc = verificationDocument || document;
 
     let profile = await ClubProfile.findOne({ where: { userId } });
 
@@ -31,7 +27,6 @@ export const upsertClubProfile = async (req, res) => {
       email,
       logo,
       coverImage,
-      verificationDocument: finalVerificationDoc,
     };
 
     const uploadedFile = req.files?.avatar?.[0] || req.files?.profileImage?.[0];

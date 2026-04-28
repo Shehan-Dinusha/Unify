@@ -29,7 +29,6 @@ export const upsertBusinessProfile = async (req, res) => {
       email,
       phone,
       website,
-      verificationDocument,
     } = req.body;
 
     let profile = await BusinessProfile.findOne({ where: { userId } });
@@ -63,7 +62,6 @@ export const upsertBusinessProfile = async (req, res) => {
       email,
       phone,
       website,
-      verificationDocument,
     };
 
     // Update User's name if provided

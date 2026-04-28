@@ -72,32 +72,6 @@ const BusinessProfile = sequelize.define(
       allowNull: true,
     },
 
-    // 🔥 contact fields (frontend expects these)
-    email: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-
-    phone: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
-    },
-
-    website: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-    },
-
-    logo: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
-    verificationDocument: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
     averageRating: {
       type: DataTypes.FLOAT,
       allowNull: false,

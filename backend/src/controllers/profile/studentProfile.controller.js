@@ -10,7 +10,6 @@ import logger from "../../utils/logger.js";
 export const upsertStudentProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const userId = req.user.id;
 
     // Helper to find the first non-empty value among multiple possible field names
     const getVal = (...keys) => {
