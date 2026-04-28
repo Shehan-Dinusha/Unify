@@ -46,11 +46,6 @@ const ClubProfile = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
-
-    verificationDocument: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
   },
   {
     tableName: "club_profiles",

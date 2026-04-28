@@ -9,7 +9,7 @@ import logger from "../utils/logger.js";
 
 const sesClient = new SESClient({
   region: process.env.AWS_REGION || "ap-south-1",
-  // Credentials will be automatically picked up from environment variables:
+  // Credentials are automatically picked up from environment variables:
   // AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 });
 
