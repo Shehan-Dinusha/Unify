@@ -17,8 +17,8 @@ const storage = multer.diskStorage({
     if (file.fieldname === "document" || file.fieldname === "verificationDoc") {
       subFolder = "verifications";
     }
-    // Reports use 'evidenceFile'
-    else if (file.fieldname === "evidenceFile") {
+    // Reports use 'evidenceFiles' (array upload)
+    else if (file.fieldname === "evidenceFiles" || file.fieldname === "evidenceFile") {
       subFolder = "reports";
     }
     // Materials use 'materialFile'
@@ -40,7 +40,7 @@ const storage = multer.diskStorage({
     let prefix = "file";
     if (file.fieldname === "document" || file.fieldname === "verificationDoc") {
       prefix = "vdoc";
-    } else if (file.fieldname === "evidenceFile") {
+    } else if (file.fieldname === "evidenceFiles" || file.fieldname === "evidenceFile") {
       prefix = "rpt";
     } else if (file.fieldname === "materialFile") {
       prefix = "mat";

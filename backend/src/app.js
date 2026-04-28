@@ -10,7 +10,10 @@ import apiRoutes from "./routes/index.js";
 const app = express();
 
 // ── Security ──────────────────────────────────────────────────────────────────
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },  // Allow evidence images from :5000 to load on :5173
+  contentSecurityPolicy: false, // Disable CSP to allow inline styles/scripts and cross-origin images
+}));
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
@@ -47,7 +50,11 @@ app.get("/health", (_req, res) => {
 app.use("/api/v1", apiRoutes);
 
 // ── Static Files (Temporary prior to S3 migration) ────────────────────────────
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/uploads", (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(process.cwd(), "uploads")));
 
 // ── 404 Handler ───────────────────────────────────────────────────────────────
 app.use((_req, _res, next) => {
