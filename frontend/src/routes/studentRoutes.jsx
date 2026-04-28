@@ -18,6 +18,7 @@ import MySavedPosts from "../pages/MySavedPosts";
 import MyReviewHistory from "../pages/MyReviewHistory";
 import MyOrders from "../pages/MyOrders";
 import OrderDetails from "../pages/OrderDetails";
+import BookingDetails from "../pages/BookingDetails";
 import StudentReportIssue from "../pages/StudentReportIssue";
 import StudentReportSuccess from "../pages/StudentReportSuccess";
 import StudentSubmittedReports from "../pages/StudentSubmittedReports";
@@ -53,6 +54,7 @@ export const studentRoutes = [
   // Orders & reports
   { path: "/order-history", element: <MyOrders /> },
   { path: "/order-details/:id", element: <OrderDetails /> },
+  { path: "/booking-details/:id", element: <BookingDetails /> },
   { path: "/student/report-issue", element: <StudentReportIssue /> },
   { path: "/student/report-success", element: <StudentReportSuccess /> },
   { path: "/student/reports", element: <StudentSubmittedReports /> },

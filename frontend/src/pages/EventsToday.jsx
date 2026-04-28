@@ -1,35 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import EventItemCard from '../components/events/EventItemCard';
-import { Calendar } from 'lucide-react';
-
-// Using the requested mockData records (id: 3 and 4)
-const eventsTodayData = [
-    {
-        id: 1,
-        postId: 3,
-        title: "Open mic Night",
-        location: "Student Center Atrium",
-        description: "Free entry for all students. Snacks provided. It's going to be a night filled with amazing performances from our talented students.",
-        image: "/img_post3.jpg"
-    },
-    {
-        id: 2,
-        postId: 4,
-        title: "Career Fair Prep Workshop",
-        location: "Lecture Hall B",
-        description: "This introductory lecture will explore the foundations of computer science, including problem-solving techniques, programming basics, and real-world applications. Hosted by Prof. Alan Turing, this session is perfect for students considering a major in CS or anyone interested in understanding the technology shaping our world.",
-        image: "/img_post4.jpg"
-    }
-];
+import { Calendar, Loader2 } from 'lucide-react';
+import postService from '../services/postService';
+import { getImageUrl } from '../utils/formatters';
 
 const EventsToday = () => {
     const navigate = useNavigate();
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    
     const user = {
         name: "Alex Johnson",
         role: "student"
     };
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                setLoading(true);
+                const data = await postService.getFeed("event");
+                setEvents(data.feed);
+            } catch (err) {
+                console.error("Failed to fetch events:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEvents();
+    }, []);
 
     const handleEventClick = (postId) => {
         navigate('/news-feed', { state: { targetPostId: postId } });
@@ -50,18 +51,27 @@ const EventsToday = () => {
             verificationCount={0}
         >
             <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto mt-4 px-4 md:px-0">
-
-                {eventsTodayData.map((event) => (
-                    <EventItemCard
-                        key={event.id}
-                        title={event.title}
-                        location={event.location}
-                        description={event.description}
-                        image={event.image}
-                        onClick={() => handleEventClick(event.postId)}
-                    />
-                ))}
-
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                        <Loader2 className="w-10 h-10 text-primary-blue animate-spin" />
+                        <p className="text-text-secondary">Finding upcoming events...</p>
+                    </div>
+                ) : events.length > 0 ? (
+                    events.map((event) => (
+                        <EventItemCard
+                            key={event.id}
+                            title={event.name}
+                            location={event.location}
+                            description={event.description}
+                            image={getImageUrl(event.coverImage || event.image)}
+                            onClick={() => handleEventClick(event.id)}
+                        />
+                    ))
+                ) : (
+                    <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                        <p className="text-text-secondary">No events scheduled for today.</p>
+                    </div>
+                )}
             </div>
         </MainLayout>
     );

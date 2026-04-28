@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Select from '../components/common/Select';
-import { mockRequests } from '../data/mockData';
-import { businessProfiles } from '../data/mockBusinessProfiles';
-import { Search, RotateCcw } from 'lucide-react';
+import { Search, RotateCcw, AlertTriangle } from 'lucide-react';
 import Input from '../components/common/Input';
+import { useToast } from '../components/common/Toast';
+import { getBusinessDirectory, getBusinessStats } from '../services/businessService';
 
-// ─── Mock Data ──────────────────────────────────────────────────────────────
+// ─── Stat Definitions ───────────────────────────────────────────────────────
 
 const businessStats = [
     {
@@ -52,16 +52,7 @@ const categoryColors = {
     'Clubs & Society': 'bg-primary-accent/20 text-primary-accent border border-primary-accent/30',
 };
 
-// Local state derived from centralized business profiles
-const businessesData = businessProfiles.map(p => ({
-    id: p.id,
-    name: p.name,
-    email: p.businessInfo?.email || 'contact@business.lk',
-    category: p.category,
-    registrationDate: p.registrationDate,
-    status: p.status,
-    avatar: p.logo
-}));
+
 
 const categoryOptions = [
     { value: 'all', label: 'All Categories' },
@@ -74,7 +65,7 @@ const categoryOptions = [
 const statusOptions = [
     { value: 'all', label: 'All Status' },
     { value: 'Active', label: '● Active' },
-    { value: 'Inactive', label: '● Inactive' },
+    { value: 'Suspended', label: '● Suspended' },
 ];
 
 // ─── Table column layout (using CSS grid template) ───────────────────────────
@@ -85,10 +76,88 @@ const COLS = '2fr 1fr 1.2fr 1fr 1fr';
 
 const ActiveBusinesses = () => {
     const navigate = useNavigate();
+    const toast = useToast();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All Businesses');
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
+
+    // ── Data State ──────────────────────────────────────────
+    const [businesses, setBusinesses] = useState([]);
+    const [stats, setStats] = useState(businessStats); // Default stats layout
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // ── Fetch Stats on mount ────────────────────────────────
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const result = await getBusinessStats();
+                const d = result.data || {};
+                setStats([
+                    { 
+                        value: String(d.verifiedBusinesses ?? 0), 
+                        title: 'Verified Businesses', 
+                        change: d.verifiedTrend || '0% this month', 
+                        changeClass: 'text-state-success',
+                        icon: '✅',
+                        iconBg: 'bg-gradient-to-br from-primary-blue/10 to-transparent' 
+                    },
+                    { 
+                        value: String(d.pendingApprovals ?? 0), 
+                        title: 'Awaiting Review', 
+                        change: '⏳ Awaiting Review',
+                        changeClass: 'text-state-warning',
+                        icon: '⏳', 
+                        iconBg: 'bg-gradient-to-br from-state-warning/10 to-transparent' 
+                    },
+                    { 
+                        value: d.avgSubscription || 'Rs. 0', 
+                        title: 'Avg. Subscription', 
+                        change: d.avgSubscriptionTrend || 'Stable', 
+                        changeClass: 'text-state-success',
+                        icon: '💰',
+                        iconBg: 'bg-gradient-to-br from-state-success/10 to-transparent' 
+                    },
+                    { 
+                        value: d.retentionRate || '98.2%', 
+                        title: 'Retention Rate', 
+                        change: `💎 ${d.retentionLabel || 'High Loyalty'}`,
+                        changeClass: 'text-primary-accent',
+                        icon: '📈', 
+                        iconBg: 'bg-gradient-to-br from-primary-accent/10 to-transparent' 
+                    },
+                ]);
+            } catch (err) {
+                console.error('[ActiveBusinesses] Failed to load stats:', err);
+                toast.error('Connection Error', 'Failed to load business stats.');
+            }
+        };
+        fetchStats();
+    }, []);
+
+    // ── Fetch Businesses when filters change ────────────────
+    useEffect(() => {
+        const fetchBusinesses = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const result = await getBusinessDirectory({
+                    search: searchQuery,
+                    status: statusFilter,
+                    category: categoryFilter,
+                });
+                setBusinesses(result.data?.businesses || result.data || []);
+            } catch (err) {
+                console.error('[ActiveBusinesses] Failed to load businesses:', err);
+                setError('Failed to connect to the server. Please check backend.');
+                toast.error('Connection Error', 'Failed to load business directory.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchBusinesses();
+    }, [searchQuery, statusFilter, categoryFilter]);
 
     const handleResetFilters = () => {
         setSearchQuery('');
@@ -97,33 +166,19 @@ const ActiveBusinesses = () => {
         setStatusFilter('all');
     };
 
-    const filtered = businessesData.filter((b) => {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch = b.name.toLowerCase().includes(query) ||
-            b.category.toLowerCase().includes(query) ||
-            b.email.toLowerCase().includes(query);
-
-        const matchesCategory = categoryFilter === 'all' || b.category === categoryFilter;
-        const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
-
-        return matchesSearch && matchesCategory && matchesStatus;
-    });
-
     return (
         <MainLayout
             user={{ name: 'Alex Johnson', role: 'admin' }}
             pageTitle="Active Businesses"
-            verificationCount={mockRequests.length}
         >
             {/* ── Stats Row ─────────────────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-lg">
-                {businessStats.map((tile, i) => (
+                {stats.map((tile, i) => (
                     <Card
                         key={i}
                         variant="container"
                         className="hover:border-primary-blue/30 transition-colors h-auto md:h-44 md:relative"
                     >
-                        {/* Desktop: absolute positioned (original) */}
                         <div className="hidden md:block">
                             <div className={`absolute top-lg left-lg w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
                                 <span className="text-lg">{tile.icon}</span>
@@ -136,7 +191,6 @@ const ActiveBusinesses = () => {
                                 <p className={`text-body-extra-small mt-xs ${tile.changeClass} truncate`}>{tile.change}</p>
                             </div>
                         </div>
-                        {/* Mobile: flex-based layout */}
                         <div className="flex flex-col gap-sm md:hidden">
                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${tile.iconBg}`}>
                                 <span className="text-lg">{tile.icon}</span>
@@ -150,6 +204,19 @@ const ActiveBusinesses = () => {
                     </Card>
                 ))}
             </div>
+
+            {/* ── Error State ──────────────────────────────────── */}
+            {error && (
+                <Card variant="container" className="mb-lg border-state-error/30 bg-state-error/5">
+                    <div className="flex items-center gap-md">
+                        <AlertTriangle size={24} className="text-state-error shrink-0" />
+                        <div>
+                            <p className="text-body-medium-bold text-state-error">Backend Unavailable</p>
+                            <p className="text-body-small text-text-secondary">{error}</p>
+                        </div>
+                    </div>
+                </Card>
+            )}
 
             {/* ── Business Directory Header ─────────────────────── */}
             <div className="flex flex-col md:flex-row items-start md:items-start justify-between gap-md mb-lg">
@@ -229,11 +296,18 @@ const ActiveBusinesses = () => {
                     <span className="text-body-small-bold text-text-secondary text-right">Actions</span>
                 </div>
 
+                {/* Loading State */}
+                {loading && (
+                    <div className="px-lg py-xl text-center text-text-secondary text-body-small">
+                        Loading businesses...
+                    </div>
+                )}
+
                 {/* Table Rows */}
-                {filtered.map((biz, idx) => (
+                {!loading && !error && businesses.map((biz, idx) => (
                     <div
                         key={biz.id}
-                        className={`grid gap-md px-lg py-md items-center hover:bg-white/5 transition-colors ${idx < filtered.length - 1 ? 'border-b border-white/5' : ''
+                        className={`grid gap-md px-lg py-md items-center hover:bg-white/5 transition-colors ${idx < businesses.length - 1 ? 'border-b border-white/5' : ''
                             }`}
                         style={{ gridTemplateColumns: COLS }}
                     >
@@ -263,8 +337,8 @@ const ActiveBusinesses = () => {
 
                         {/* Status */}
                         <div className="flex items-center gap-xs">
-                            <div className="w-2 h-2 rounded-full bg-state-success shrink-0" />
-                            <span className="text-body-small text-state-success">{biz.status}</span>
+                            <div className={`w-2 h-2 rounded-full shrink-0 ${biz.status === 'Active' ? 'bg-state-success' : 'bg-state-error'}`} />
+                            <span className={`text-body-small ${biz.status === 'Active' ? 'text-state-success' : 'text-state-error'}`}>{biz.status}</span>
                         </div>
 
                         {/* Action */}
@@ -277,11 +351,17 @@ const ActiveBusinesses = () => {
                         </div>
                     </div>
                 ))}
+                
+                {!loading && !error && businesses.length === 0 && (
+                    <div className="px-lg py-xl text-center text-text-secondary text-body-small">
+                        No businesses found matching your filters.
+                    </div>
+                )}
             </div>
 
             {/* ── Mobile Cards View ──────────────────────────────── */}
             <div className="grid grid-cols-1 gap-md md:hidden">
-                {filtered.map((biz) => (
+                {!loading && !error && businesses.map((biz) => (
                     <Card
                         key={biz.id}
                         variant="container"
@@ -300,8 +380,8 @@ const ActiveBusinesses = () => {
                                     <p className="text-body-extra-small text-text-secondary truncate">{biz.email}</p>
                                 </div>
                                 <div className="flex items-center gap-xs">
-                                    <div className="w-2 h-2 rounded-full bg-state-success shrink-0" />
-                                    <span className="text-body-extra-small text-state-success">{biz.status}</span>
+                                    <div className={`w-2 h-2 rounded-full shrink-0 ${biz.status === 'Active' ? 'bg-state-success' : 'bg-state-error'}`} />
+                                    <span className={`text-body-extra-small ${biz.status === 'Active' ? 'text-state-success' : 'text-state-error'}`}>{biz.status}</span>
                                 </div>
                             </div>
 

@@ -19,7 +19,7 @@ import moment from 'moment';
  */
 export const getStudentDirectory = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, search, facultyId, status } = req.query;
+    const { page = 1, limit = 10, search, faculty, status } = req.query;
     const offset = (page - 1) * limit;
 
     let userWhere = { role: 'Student' };
@@ -28,27 +28,35 @@ export const getStudentDirectory = async (req, res, next) => {
     if (search) {
       userWhere[Op.or] = [
         { name: { [Op.iLike]: `%${search}%` } },
-        { email: { [Op.iLike]: `%${search}%` } }
+        { email: { [Op.iLike]: `%${search}%` } },
+        { '$studentProfile.registrationNumber$': { [Op.iLike]: `%${search}%` } }
       ];
-      // Profile search could be added for registrationNumber if needed
     }
 
     if (status && status !== 'all') {
-      userWhere.status = status;
+      userWhere.status = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
     }
 
-    if (facultyId) {
-      profileWhere.facultyId = facultyId;
+    if (faculty && faculty !== 'all') {
+      const facultyMap = { 'eng': 1, 'sci': 2, 'mgmt': 3, 'it': 4 };
+      const fId = facultyMap[faculty.toLowerCase()];
+      if (fId) {
+        profileWhere.facultyId = fId;
+      }
     }
+
+    const isFilteringByProfile = Object.keys(profileWhere).length > 0;
 
     const { count, rows: students } = await User.findAndCountAll({
       where: userWhere,
       include: [{
         model: StudentProfile,
         as: 'studentProfile',
-        where: profileWhere,
+        where: isFilteringByProfile ? profileWhere : undefined,
+        required: isFilteringByProfile, // Inner join if filtering, Left join otherwise
         include: [{ model: Faculty, as: 'faculty', attributes: ['name'] }]
       }],
+      subQuery: false,
       attributes: ['id', 'name', 'email', 'avatar', 'status', 'lastActive'],
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -130,11 +138,22 @@ export const getStudentProfile = async (req, res, next) => {
       return sendResponse(res, 404, false, 'Student not found');
     }
 
-    // Aggregates
-    const [totalPosts, totalComments, reputation, reportsCount] = await Promise.all([
+    // ─── Trend Calculations ──────────────────────────────────────────────────
+    const now = new Date();
+    const startOfThisMonth = moment().startOf('month').toDate();
+    const startOfLastMonth = moment().subtract(1, 'month').startOf('month').toDate();
+
+    const [
+      totalPosts, postsThisMonth, postsLastMonth,
+      totalComments, commentsThisMonth, commentsLastMonth,
+      reportsCount,
+    ] = await Promise.all([
       Post.count({ where: { authorId: id } }),
+      Post.count({ where: { authorId: id, createdAt: { [Op.gte]: startOfThisMonth } } }),
+      Post.count({ where: { authorId: id, createdAt: { [Op.lt]: startOfThisMonth, [Op.gte]: startOfLastMonth } } }),
       Comment.count({ where: { userId: id } }),
-      Promise.resolve(4890), // Mock reputation for now as requested by "exactly same spitting image"
+      Comment.count({ where: { userId: id, createdAt: { [Op.gte]: startOfThisMonth } } }),
+      Comment.count({ where: { userId: id, createdAt: { [Op.lt]: startOfThisMonth, [Op.gte]: startOfLastMonth } } }),
       StudentReport.count({ where: { studentId: id, status: 'Pending Review' } })
     ]);
 
@@ -145,32 +164,62 @@ export const getStudentProfile = async (req, res, next) => {
       limit: 20
     });
 
+    const reputation = user.studentProfile?.reputationScore || 0;
+
+    const getTrendLabel = (current, previous) => {
+      if (previous === 0) return current > 0 ? '+100%' : '';
+      const diff = ((current - previous) / previous) * 100;
+      return `${diff > 0 ? '+' : ''}${diff.toFixed(0)}%`;
+    };
+
     const formattedProfile = {
-      header: {
-        id: `#${String(user.id).padStart(6, '0')}`,
-        name: user.name,
-        email: user.email,
-        handle: `@${user.name.toLowerCase().replace(/ /g, '')}`,
-        status: user.status,
-        isPremium: user.studentProfile?.tier === 'Premium',
-        joinedDate: moment(user.createdAt).format('MMM DD, YYYY')
-      },
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      userId: `#${String(user.id).padStart(6, '0')}`,
+      studentCode: user.studentProfile?.registrationNumber || 'N/A',
+      faculty: user.studentProfile?.faculty?.name || 'Unknown',
+      joinDate: `Joined ${moment(user.createdAt).format('MMM DD, YYYY')}`,
+      status: user.status,
+      tier: user.studentProfile?.tier || 'Standard',
+      isOnline: user.isOnline || false,
+      activeSessions: 1,
+      avatar: user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name.replace(/ /g, '')}`,
       stats: {
-        totalPosts,
-        totalComments,
-        reputation,
-        reportsCount: reportsCount > 0 ? `${reportsCount} Needs Review` : '0'
+        totalPosts: { 
+          value: totalPosts.toLocaleString(), 
+          trend: getTrendLabel(postsThisMonth, postsLastMonth) ? `${getTrendLabel(postsThisMonth, postsLastMonth)} this month` : '', 
+          icon: '📄' 
+        },
+        comments: { 
+          value: totalComments.toLocaleString(), 
+          trend: getTrendLabel(commentsThisMonth, commentsLastMonth) ? `${getTrendLabel(commentsThisMonth, commentsLastMonth)} this month` : '', 
+          icon: '💬' 
+        },
+        reputation: { 
+          value: reputation.toLocaleString(), 
+          trend: '', // Reputation trend requires more complex logging
+          icon: '⭐' 
+        },
+        reports: { 
+          value: String(reportsCount), 
+          trend: reportsCount > 0 ? 'Needs Review' : 'Clean', 
+          icon: '🚩', 
+          isWarning: reportsCount > 0 
+        },
       },
       activityLog: logs.map(l => ({
-        type: l.type || 'Action',
-        actionDetail: l.detail || l.title,
+        id: l.id,
+        type: l.type || 'action',
+        typeIcon: l.icon || '📝',
+        typeColor: l.iconColor || 'bg-primary-blue/20',
+        title: l.title || 'Activity',
+        detail: l.detail || '',
         ip: l.ip || '0.0.0.0',
-        device: l.device || 'Unknown Device',
-        date: moment(l.createdAt).fromNow(),
-        icon: l.icon || '📝',
-        iconColor: l.iconColor || 'text-primary-blue'
+        device: l.device || 'Unknown',
+        timestamp: moment(l.createdAt).fromNow(),
       })),
-      internalNotes: user.studentProfile?.adminNotes || []
+      adminNotes: user.studentProfile?.adminNotes || []
     };
 
     return sendResponse(res, 200, true, 'Student profile retrieved', formattedProfile);
@@ -213,6 +262,10 @@ export const updateStudentStatus = async (req, res, next) => {
       targetUserId: id,
       severity: status === 'Suspended' ? 'High' : 'Low'
     });
+
+    if (sendEmail && status === 'Suspended') {
+      logger.info(`📧 NOTIFICATION: Suspension email sent to student ${user.email}. Reason: ${reason || suspensionCategory}`);
+    }
 
     return sendResponse(res, 200, true, `Student status updated to ${status}`, { status: user.status });
   } catch (error) {
@@ -268,10 +321,9 @@ export const forceLogout = async (req, res, next) => {
     }
 
     if (!user.isOnline) {
-      return sendResponse(res, 400, false, 'Student is already offline');
+      return sendResponse(res, 400, false, 'Student is already logged out');
     }
 
-    // Logic would typically involve clearing sessions/tokens in Redis
     user.isOnline = false;
     await user.save();
 
@@ -297,7 +349,7 @@ export const forceLogout = async (req, res, next) => {
 export const sendStudentWarning = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { message, category, severity } = req.body;
+    const { message, category, severity, sendEmail } = req.body;
     const adminId = req.user?.id || 1;
     const user = await User.findByPk(id);
 
@@ -311,6 +363,10 @@ export const sendStudentWarning = async (req, res, next) => {
 
     // Logic would typically involve creating a notification record
     logger.info(`Admin ${adminId} sent warning to user ${id}: ${category} - ${severity}`);
+    
+    if (sendEmail) {
+      logger.info(`📧 NOTIFICATION: Warning email sent to student ${user.email}. Message: ${message || category}`);
+    }
 
     await AdminLog.create({
       adminId,

@@ -1,27 +1,60 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
-import { CheckCircle, Mail, MapPin, ClipboardList, ArrowRight } from "lucide-react";
-import { mockClubProduct } from "../data/mockClubProduct";
+import { CheckCircle, Mail, MapPin, ClipboardList, ArrowRight, Loader2 } from "lucide-react";
+import { getImageUrl } from "../utils/formatters";
+import orderService from "../services/orderService";
 
 const ClubPaymentSuccess = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
-    const product = mockClubProduct;
 
-    // Mock order data
-    const order = {
-        id: "#ORD-8392-CS",
-        totalPaid: "Rs.35.00",
-        size: "S",
-        color: "Midnight Black",
-        qty: 1,
-        email: "student@uni.edu",
-        pickupLocation: "CS Lab (Building 4, Room 202)",
-        pickupTime: "Fridays: 2:00 PM - 5:00 PM",
-    };
+    const [order, setOrder] = useState(location.state?.order || null);
+    const [product, setProduct] = useState(location.state?.product || null);
+    const [loading, setLoading] = useState(!location.state?.order);
+
+    useEffect(() => {
+        const fetchOrder = async () => {
+            if (order) return;
+            
+            const params = new URLSearchParams(location.search);
+            const orderId = params.get("order_id");
+            
+            if (orderId) {
+                try {
+                    const result = await orderService.getOrderDetails(orderId);
+                    setOrder(result.order);
+                    if (result.order.clubProduct) {
+                        setProduct(result.order.clubProduct);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch order:", error);
+                    navigate("/marketplace/club");
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                navigate("/marketplace/club");
+            }
+        };
+        
+        fetchOrder();
+    }, [order, location.search, navigate]);
+
+    if (loading) {
+        return (
+            <MainLayout user={user} pageTitle="Club" verificationCount={0}>
+                <div className="flex justify-center items-center h-64">
+                    <Loader2 className="animate-spin text-primary-blue w-8 h-8" />
+                </div>
+            </MainLayout>
+        );
+    }
+
+    if (!order) return null;
 
     return (
         <MainLayout user={user} pageTitle="Club" verificationCount={0}>
@@ -49,11 +82,11 @@ const ClubPaymentSuccess = () => {
                         <div className="flex justify-between items-start mb-lg">
                             <div>
                                 <p className="text-[10px] md:text-body-extra-small text-text-tertiary uppercase tracking-wider">Order ID</p>
-                                <p className="text-body-small-bold md:text-body-medium-bold text-text-primary mt-xs">{order.id}</p>
+                                <p className="text-body-small-bold md:text-body-medium-bold text-text-primary mt-xs">{order.orderId}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-[10px] md:text-body-extra-small text-text-tertiary uppercase tracking-wider">Total Paid</p>
-                                <p className="text-body-small-bold md:text-body-medium-bold text-text-primary mt-xs">{order.totalPaid}</p>
+                                <p className="text-body-small-bold md:text-body-medium-bold text-text-primary mt-xs">Rs.{parseFloat(order.total).toFixed(2)}</p>
                             </div>
                         </div>
 
@@ -63,15 +96,15 @@ const ClubPaymentSuccess = () => {
                         <div className="flex items-center gap-md">
                             <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl overflow-hidden bg-white/5 border border-white/10 shrink-0">
                                 <img
-                                    src={product.images[0].src}
-                                    alt={product.images[0].alt}
+                                    src={getImageUrl(product?.images?.[0] || product?.image)}
+                                    alt={product?.name}
                                     className="w-full h-full object-cover"
                                 />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-body-small-bold text-text-primary truncate">{product.title}</p>
+                                <p className="text-body-small-bold text-text-primary truncate">{product?.name}</p>
                                 <p className="text-[11px] md:text-body-extra-small text-text-tertiary mt-xs truncate">
-                                    Size: {order.size} • Color: {order.color}
+                                    {order.size && `Size: ${order.size}`} {order.color && `• Color: ${order.color}`}
                                 </p>
                                 <span className="inline-block mt-xs px-sm py-[2px] rounded-full bg-primary-blue/15 text-primary-blue text-[10px] md:text-[11px] font-bold">
                                     Qty: {order.qty}
@@ -92,8 +125,7 @@ const ClubPaymentSuccess = () => {
                                 <div className="min-w-0">
                                     <p className="text-body-small-bold text-text-primary">Confirmation Email</p>
                                     <p className="text-[11px] md:text-body-extra-small text-text-tertiary mt-xs leading-relaxed">
-                                        We've sent the details to{" "}
-                                        <span className="text-text-secondary">{order.email}</span>
+                                        We've sent the details to your registered email.
                                     </p>
                                 </div>
                             </div>
@@ -108,11 +140,8 @@ const ClubPaymentSuccess = () => {
                                 </div>
                                 <div className="min-w-0">
                                     <p className="text-body-small-bold text-text-primary">Pickup Details</p>
-                                    <p className="text-[11px] md:text-body-extra-small text-text-tertiary mt-xs leading-relaxed truncate">
-                                        {order.pickupLocation}
-                                    </p>
-                                    <p className="text-[11px] md:text-body-extra-small text-text-tertiary leading-relaxed">
-                                        {order.pickupTime}
+                                    <p className="text-[11px] md:text-body-extra-small text-text-tertiary mt-xs leading-relaxed">
+                                        {order.pickupLocation || "Ready for pickup once order is confirmed."}
                                     </p>
                                 </div>
                             </div>

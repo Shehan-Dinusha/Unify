@@ -17,6 +17,10 @@ const Transaction = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    bookingId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     type: {
       type: DataTypes.ENUM(
         "CREDIT",
