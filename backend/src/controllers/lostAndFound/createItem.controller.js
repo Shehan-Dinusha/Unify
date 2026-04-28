@@ -24,9 +24,11 @@ export const createItem = catchAsync(async (req, res, next) => {
 */
   //------------------------------------------------------------------------------
 
-  let imageUrl = null;
-  if (req.file) {
-    imageUrl = `/uploads/lost-found/${req.file.filename}`;
+  let imageUrls = [];
+  if (req.files && req.files.length > 0) {
+    imageUrls = req.files.map(
+      (file) => `/uploads/lost-found/${file.filename}`
+    );
   }
 
   //------------------------------------------------------------------------------
@@ -39,7 +41,7 @@ export const createItem = catchAsync(async (req, res, next) => {
     location,
     date,
     timeOfDay,
-    image: imageUrl,
+    images: imageUrls,
     status: "Active"
   });
 

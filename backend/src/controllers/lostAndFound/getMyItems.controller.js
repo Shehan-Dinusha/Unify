@@ -32,7 +32,7 @@ export const getMyItems = catchAsync(async (req, res, next) => {
     title: item.title,
     location: item.location,
     time: item.createdAt,
-    image: item.image,
+    images: item.images || [],
     status: item.status, // Included so frontend knows if it is "Resolved"
     postedBy: {
       name: item.user?.name || "Unknown",

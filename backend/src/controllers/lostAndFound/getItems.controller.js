@@ -36,7 +36,7 @@ export const getItems = catchAsync(async (req, res, next) => {
     title: item.title,
     location: item.location,
     time: item.createdAt, // Or format how UI desires
-    image: item.image,
+    images: item.images || [],
     postedBy: {
       name: item.user?.name || "Unknown",
       avatar: item.user?.avatar || "https://placehold.co/40x40",

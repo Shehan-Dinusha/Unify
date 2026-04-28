@@ -23,9 +23,11 @@ export const editItem = catchAsync(async (req, res, next) => {
     return sendResponse(res, 403, false, "You do not have permission to edit this item.");
   }
 
-  // Update image if a new one was uploaded
-  if (req.file) {
-    updates.image = `/uploads/lost-found/${req.file.filename}`;
+  // Handle multiple images
+  if (req.files && req.files.length > 0) {
+    updates.images = req.files.map(
+      (file) => `/uploads/lost-found/${file.filename}`
+    );
   }
 
   // Apply updates and save

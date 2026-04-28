@@ -22,7 +22,7 @@ const router = express.Router();
 // 1. Create a new Item (uses multipart/form-data for image)
 router.post(
   "/",
-  uploadService.single("image"), // extracts req.file & req.body
+  uploadService.array("images", 5), // extracts req.file & req.body
   createLostFoundItemValidator,
   validateRequest,
   createItem
@@ -53,7 +53,7 @@ router.get(
 // 5. Edit an item
 router.put(
   "/:id",
-  uploadService.single("image"), // Allows updating the image too
+  uploadService.array("images", 5), // Allows updating the images too
   editLostFoundItemValidator,
   validateRequest,
   editItem
