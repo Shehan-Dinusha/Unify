@@ -49,11 +49,13 @@ const OTP = sequelize.define(
     tableName: "otps",
     timestamps: true,
     indexes: [
-      {
-        fields: ["email"],
-      },
+      { fields: ["email"] },
+      { fields: ["expiresAt"] },           // speeds up cron expiry cleanup
+      { fields: ["isUsed"] },              // speeds up cron used-OTP cleanup
+      { fields: ["expiresAt", "isUsed"] }, // composite for combined WHERE clause
     ],
   },
+
 );
 
 export default OTP;

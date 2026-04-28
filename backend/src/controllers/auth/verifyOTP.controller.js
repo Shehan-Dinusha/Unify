@@ -26,6 +26,8 @@ export const verifyOTP = async (req, res) => {
 
     otpRecord.isUsed = true;
     await otpRecord.save();
+    await otpRecord.destroy(); // Remove immediately — no longer needed after verification
+
 
     const user = await User.findOne({ where: email ? { email } : { phone } });
     if (user) {

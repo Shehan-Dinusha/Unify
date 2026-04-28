@@ -27,9 +27,11 @@ export const resetPassword = async (req, res) => {
 
     await user.update({ passwordHash });
 
-    // Mark OTP as used
+    // Mark used then immediately delete — password reset complete, OTP no longer needed
     otpRecord.isUsed = true;
     await otpRecord.save();
+    await otpRecord.destroy();
+
 
     return sendResponse(res, 200, true, "Password reset successful. You can now login.");
   } catch (error) {
