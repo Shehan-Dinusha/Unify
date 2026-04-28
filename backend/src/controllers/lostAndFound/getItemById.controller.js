@@ -36,7 +36,7 @@ export const getItemById = catchAsync(async (req, res, next) => {
     location: item.location,
     date: item.date,
     timeOfDay: item.timeOfDay,
-    image: item.image,
+    images: item.images || [],
     postedBy: {
       name: item.user?.name || "Unknown",
       avatar: item.user?.avatar || "https://placehold.co/40x40",
