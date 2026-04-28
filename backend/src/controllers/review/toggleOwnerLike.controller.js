@@ -6,12 +6,10 @@ export const toggleOwnerLike = async (req, res, next) => {
   try {
     const { reviewId } = req.params;
 
-    // Fallback to 4 for testing if req.user is not yet defined
-    const currentUserId = req.user?.id || 4;
+    // Fallback to 3 for testing if req.user is not yet defined
+    const currentUserId = req.user?.id || 3;
 
-    if (!reviewId) {
-      return sendResponse(res, 400, false, "Review ID is required.");
-    }
+
 
     const review = await Review.findByPk(reviewId);
 

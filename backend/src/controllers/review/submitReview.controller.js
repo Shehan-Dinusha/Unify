@@ -11,19 +11,7 @@ export const submitReview = async (req, res, next) => {
     // Fallback to 1 for testing if req.user is not yet defined
     const reviewerId = req.user?.id || req.body.reviewerId || 1;
 
-    if (!targetId || !rating) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        "Target ID and rating are required.",
-      );
-    }
 
-    // Validate rating
-    if (rating < 1 || rating > 5) {
-      return sendResponse(res, 400, false, "Rating must be between 1 and 5.");
-    }
 
     // Check if reviewer and target exist
     const reviewerExists = await User.findByPk(reviewerId);

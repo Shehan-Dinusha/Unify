@@ -5,8 +5,8 @@ import { formatRelativeDate } from "../../utils/date.js";
 
 export const getMyReviews = async (req, res, next) => {
   try {
-    // Fallback to 6 for testing if req.user is not yet defined
-    const currentUserId = req.user?.id || 6;
+    // Fallback to 1 for testing if req.user is not yet defined
+    const currentUserId = req.user?.id || 1;
 
     const rawReviews = await Review.findAll({
       where: { reviewerId: currentUserId },

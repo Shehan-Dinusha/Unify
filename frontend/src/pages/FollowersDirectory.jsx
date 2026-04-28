@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { MessageSquare, Loader2 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import LoadMoreButton from "../components/common/LoadMoreButton";
-import { getFollowers } from "../data/mockFollowersData";
+import { getClubFollowers as getFollowers } from "../services/followerService";
 
 const ITEMS_PER_PAGE = 14;
 

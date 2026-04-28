@@ -9,16 +9,25 @@ import {
   replyToReview,
   getMyReviews,
 } from "../controllers/review/index.js";
+import { validateRequest } from "../middlewares/expressValidator.middleware.js";
+import {
+  submitReviewValidator,
+  deleteReviewValidator,
+  getTargetReviewsValidator,
+  toggleReviewFeedbackValidator,
+  toggleOwnerLikeValidator,
+  replyToReviewValidator,
+} from "../validators/review.validator.js";
 
 const router = express.Router();
 
-router.post("/submit", submitReview);
-router.delete("/:id", deleteReview);
-router.get("/target/:targetId", getTargetReviews);
+router.post("/submit", submitReviewValidator, validateRequest, submitReview);
+router.delete("/:id", deleteReviewValidator, validateRequest, deleteReview);
+router.get("/target/:targetId", getTargetReviewsValidator, validateRequest, getTargetReviews);
 router.get("/received", getReceivedReviews);
 router.get("/me", getMyReviews);
-router.post("/:reviewId/feedback", toggleReviewFeedback);
-router.post("/:reviewId/owner-like", toggleOwnerLike);
-router.post("/:reviewId/reply", replyToReview);
+router.post("/:reviewId/feedback", toggleReviewFeedbackValidator, validateRequest, toggleReviewFeedback);
+router.post("/:reviewId/owner-like", toggleOwnerLikeValidator, validateRequest, toggleOwnerLike);
+router.post("/:reviewId/reply", replyToReviewValidator, validateRequest, replyToReview);
 
 export default router;
