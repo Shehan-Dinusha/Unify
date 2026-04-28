@@ -2,6 +2,7 @@ import { Review, User, BusinessProfile } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { formatRelativeDate } from "../../utils/date.js";
+import { getFileUrl } from "../../services/s3.service.js";
 
 export const getMyReviews = async (req, res, next) => {
   try {
@@ -77,46 +78,57 @@ export const getMyReviews = async (req, res, next) => {
     };
 
     // 2. Format Reviews List
-    const formattedReviews = rawReviews.map((modelReview) => {
-      const review = modelReview.toJSON();
+    const formattedReviews = await Promise.all(
+      rawReviews.map(async (modelReview) => {
+        const review = modelReview.toJSON();
 
-      const targetUser = review.target || {};
-      const bizProfile = targetUser.businessProfile || {};
+        const targetUser = review.target || {};
+        const bizProfile = targetUser.businessProfile || {};
 
-      const targetName =
-        bizProfile.businessName ||
-        bizProfile.displayName ||
-        targetUser.name ||
-        "Unknown Business";
-      const category = bizProfile.category;
+        let targetAvatarUrl = targetUser.avatar || null;
+        if (targetAvatarUrl && !targetAvatarUrl.startsWith("http")) {
+          try {
+            targetAvatarUrl = await getFileUrl(targetAvatarUrl);
+          } catch (error) {
+            // fallback
+          }
+        }
 
-      let parsedOwnerReply = null;
-      if (review.ownerReply) {
-        parsedOwnerReply = {
-          content: review.ownerReply,
-          author: {
-            name: targetName,
-            avatar: targetUser.avatar,
-          },
-          createdAt: formatRelativeDate(review.updatedAt),
+        const targetName =
+          bizProfile.businessName ||
+          bizProfile.displayName ||
+          targetUser.name ||
+          "Unknown Business";
+        const category = bizProfile.category;
+
+        let parsedOwnerReply = null;
+        if (review.ownerReply) {
+          parsedOwnerReply = {
+            content: review.ownerReply,
+            author: {
+              name: targetName,
+              avatar: targetAvatarUrl,
+            },
+            createdAt: formatRelativeDate(review.updatedAt),
+          };
+        }
+
+        return {
+          id: review.id,
+          targetId: review.targetId,
+          targetName,
+          targetAvatar: targetAvatarUrl,
+          category,
+          rating: review.rating,
+          content: review.content,
+          helpfulCount: review.helpfulCount || 0,
+          notHelpfulCount: review.notHelpfulCount || 0,
+          isLikedByOwner: review.isLikedByOwner || false,
+          createdAt: formatRelativeDate(review.createdAt),
+          ownerReply: parsedOwnerReply,
         };
-      }
-
-      return {
-        id: review.id,
-        targetId: review.targetId,
-        targetName,
-        targetAvatar: targetUser.avatar,
-        category,
-        rating: review.rating,
-        content: review.content,
-        helpfulCount: review.helpfulCount || 0,
-        notHelpfulCount: review.notHelpfulCount || 0,
-        isLikedByOwner: review.isLikedByOwner || false,
-        createdAt: formatRelativeDate(review.createdAt),
-        ownerReply: parsedOwnerReply,
-      };
-    });
+      }),
+    );
 
     return sendResponse(res, 200, true, "My reviews fetched successfully", {
       reviews: formattedReviews,
