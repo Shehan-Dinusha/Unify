@@ -19,7 +19,7 @@ const generateReportId = () => {
  */
 export const createReport = async (req, res, next) => {
   try {
-    const studentId = req.user?.id || 1;
+    const studentId = req.user?.id || 4; // Default to seeded student ID for testing
     
     const { 
       reportType, 

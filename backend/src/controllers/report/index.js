@@ -7,3 +7,4 @@ export * from "./getReportQueue.controller.js";
 export * from "./getStatistics.controller.js";
 export * from "./getSocialReports.controller.js";
 export * from "./processSocialReport.controller.js";
+export * from "./getSocialReportStats.controller.js";

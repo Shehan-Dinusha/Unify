@@ -266,7 +266,7 @@ const PostCard = ({
           <button
             onClick={() =>
               reportNavigate("/student/report-issue", {
-                state: { postData: { author, title }, from: "/news-feed" },
+                state: { postData: post, from: "/news-feed" },
               })
             }
             className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error"

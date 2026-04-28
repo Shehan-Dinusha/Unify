@@ -2,9 +2,15 @@ import Stripe from "stripe";
 import logger from "../../utils/logger.js";
 import { processOrderPayment, processBookingPayment } from "../../services/payment.service.js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
 
 export const handleWebhook = async (req, res) => {
+  if (!stripe) {
+    logger.warn("Stripe webhook called but STRIPE_SECRET_KEY is not configured.");
+    return res.status(503).json({ error: "Payment service not configured." });
+  }
   const sig = req.headers["stripe-signature"];
   let event;
 

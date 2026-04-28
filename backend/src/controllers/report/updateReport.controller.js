@@ -38,22 +38,29 @@ export const updateReport = async (req, res, next) => {
 
     // Handle Admin UI Action Payload (action, notes, reason)
     if (action) {
+      const appendNote = (line) => {
+        report.adminNotes = report.adminNotes ? report.adminNotes + '\n' + line : line;
+      };
+
       switch (action) {
         case 'dismiss':
+          if (!reason) return sendResponse(res, 400, false, 'Dismiss reason is required');
           report.status = 'Dismissed';
-          report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Dismiss Reason: ${reason}. Notes: ${notes}`;
+          appendNote(`Dismiss Reason: ${reason}. Notes: ${notes || ''}`);
           if (reason && (reason.toLowerCase().includes('fake') || reason.toLowerCase().includes('spam') || reason.toLowerCase().includes('false'))) {
             await updateStudentReputation(report.studentId, 'FAKE_REPORT_SPAM');
           }
           break;
+
         case 'resolve':
           report.status = 'Resolved';
-          report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Resolution: ${notes}`;
+          appendNote(`Resolution: ${notes || 'Marked as resolved by admin'}`);
           report.resolvedAt = new Date();
           await updateStudentReputation(report.studentId, 'REPORT_RESOLVED');
           break;
+
         case 'delete_post':
-          // Attempt to delete post if reportedEntityId is a post ID
+          // ✅ Delete post content — does NOT finalize the report
           if (report.reportType === 'post') {
             const Post = (await import("../../modules/Post.model.js")).default;
             const post = await Post.findByPk(report.reportedEntityId);
@@ -62,25 +69,28 @@ export const updateReport = async (req, res, next) => {
                await post.destroy().catch(err => logger.warn('Failed to delete post: ' + err));
             }
           }
-          report.status = 'Resolved';
-          report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Action: Deleted Post. Notes: ${notes}`;
-          report.resolvedAt = new Date();
-          await updateStudentReputation(report.studentId, 'REPORT_RESOLVED');
+          // Keep status as In Progress — admin can still resolve/dismiss
+          if (report.status === 'Pending Review') report.status = 'In Progress';
+          appendNote(`Action Taken: Deleted Post. Notes: ${notes || ''}`);
           break;
+
         case 'suspend_user':
-          // Attempt to suspend user if reportedEntityId is a user ID
+          // ✅ Suspend user — does NOT finalize the report
           if (report.reportType === 'user') {
             const User = (await import("../../modules/User.model.js")).default;
             await User.update({ status: 'Suspended' }, { where: { id: report.reportedEntityId } }).catch(err => logger.warn('Failed to suspend user: ' + err));
           }
-          report.status = 'Resolved';
-          report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Action: Suspended User. Reason: ${reason}. Notes: ${notes}`;
-          report.resolvedAt = new Date();
+          // Keep status as In Progress — admin can still resolve/dismiss
+          if (report.status === 'Pending Review') report.status = 'In Progress';
+          appendNote(`Action Taken: Suspended User. Reason: ${reason || 'Violation of guidelines'}. Notes: ${notes || ''}`);
           break;
+
         case 'add_note':
-          report.adminNotes = (report.adminNotes ? report.adminNotes + "\n" : "") + `Admin Note: ${notes}`;
+          if (!notes || !notes.trim()) return sendResponse(res, 400, false, 'Note content is required');
+          appendNote(`Admin Note: ${notes.trim()}`);
           if (report.status === 'Pending Review') report.status = 'In Progress';
           break;
+
         default:
           return sendResponse(res, 400, false, 'Invalid action');
       }

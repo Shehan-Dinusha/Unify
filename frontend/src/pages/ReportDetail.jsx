@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Select from '../components/common/Select';
-import { mockReports, mockRequests } from '../data/mockData';
+import { useToast } from '../components/common/Toast';
+import {
+    fetchReportById, dismissReport, resolveReport,
+    deleteReportedContent, suspendReportedUser, addReportNote,
+} from '../services/reportService';
 import {
     AlertTriangle, X, Heart, MessageSquare, Flag, EyeOff,
     CheckCircle2, FileText, Trash2, UserX, Clock, Info,
@@ -14,16 +18,19 @@ import {
 /* ─── HELPERS ────────────────────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
     const map = {
-        Pending:     'bg-state-error/20 text-state-error border-state-error/30',
-        'In Review': 'bg-state-warning/20 text-state-warning border-state-warning/30',
-        Resolved:    'bg-state-success/20 text-state-success border-state-success/30',
-        Dismissed:   'bg-white/10 text-text-secondary border-white/20',
+        Pending:          'bg-state-error/20 text-state-error border-state-error/30',
+        'Pending Review': 'bg-state-warning/20 text-state-warning border-state-warning/30',
+        'In Review':      'bg-state-warning/20 text-state-warning border-state-warning/30',
+        'In Progress':    'bg-primary-blue/20 text-primary-blue border-primary-blue/30',
+        Resolved:         'bg-state-success/20 text-state-success border-state-success/30',
+        Dismissed:        'bg-white/10 text-text-secondary border-white/20',
     };
     return (
         <span className={`inline-flex items-center gap-xs text-body-extra-small-bold px-sm py-xs rounded-lg border ${map[status] || map.Pending}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${
                 status === 'Pending' ? 'bg-state-error' :
-                status === 'In Review' ? 'bg-state-warning' :
+                (status === 'Pending Review' || status === 'In Review') ? 'bg-state-warning' :
+                status === 'In Progress' ? 'bg-primary-blue' :
                 status === 'Resolved' ? 'bg-state-success' : 'bg-text-secondary'
             }`} />
             {status}
@@ -51,9 +58,32 @@ const TypeBadge = ({ type }) => {
 const ReportDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const toast = useToast();
 
-    // Find report by id param
-    const report = mockReports.find(r => r.id === id) || mockReports[0];
+    // ── Data State (mirrors StudentUserProfile pattern) ──────────────
+    const [report, setReport]   = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError]     = useState(null);
+    const [showAllViolations, setShowAllViolations] = useState(false);
+
+    /* ── Fetch report on mount ──────────────────────────── */
+    useEffect(() => {
+        const loadReport = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const result = await fetchReportById(id);
+                setReport(result.data);
+            } catch (err) {
+                console.error('[ReportDetail] Failed to load report:', err);
+                setError('Failed to load report details. Please check the backend.');
+                toast.error('Connection Error', 'Failed to load report details.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadReport();
+    }, [id]);
 
     /* ── state ──────────────────────────────────────────── */
     const [modal, setModal]               = useState(null);
@@ -61,6 +91,7 @@ const ReportDetail = () => {
     const [resolutionNote, setResolutionNote] = useState('');
     const [sensitiveRevealed, setSensitiveRevealed] = useState(false);
     const [noteToast, setNoteToast]       = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
 
     const [deleteCategory, setDeleteCategory] = useState('');
     const [notifyUser, setNotifyUser]         = useState(true);
@@ -76,27 +107,102 @@ const ReportDetail = () => {
     const deleteOptions  = [{ value:'',label:'Select a reason...' },{ value:'Hate Speech',label:'Hate Speech' },{ value:'Nudity',label:'Nudity / Sexual Content' },{ value:'Spam',label:'Spam' },{ value:'Harassment',label:'Harassment / Bullying' },{ value:'Violence',label:'Violence / Threats' }];
 
     /* ── helpers ────────────────────────────────────────── */
-    const avatar = (name) => `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(/\s/g,'')}`;
+    const avatar = (name, url) => url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${(name || 'User').replace(/\s/g,'')}`;
 
     const openModal  = (m) => setModal(m);
     const closeModal = ()  => { setModal(null); setDeleteCategory(''); setDismissReason(''); setDismissNotes(''); setResolveNote(''); setSuspendDetail(''); };
 
-    const handleAddNote = () => {
+    const handleAddNote = async () => {
         if (!resolutionNote.trim()) return;
-        setNoteToast(true); setResolutionNote('');
-        setTimeout(() => setNoteToast(false), 3000);
+        try {
+            await addReportNote(id, resolutionNote);
+            setNoteToast(true); setResolutionNote('');
+            setTimeout(() => setNoteToast(false), 3000);
+            // Re-fetch to update activity log
+            const refreshed = await fetchReportById(id);
+            setReport(refreshed.data);
+        } catch (err) {
+            console.error('[ReportDetail] Failed to add note:', err);
+            toast.error('Error', 'Failed to add note.');
+        }
     };
 
-    const confirmAction = (type) => { closeModal(); setSuccess(type); };
+    const confirmAction = async (type) => {
+        setActionLoading(true);
+        try {
+            if (type === 'dismissed') await dismissReport(id, dismissReason, dismissNotes);
+            else if (type === 'resolved') await resolveReport(id, resolveNote);
+            else if (type === 'deleted') await deleteReportedContent(id, deleteCategory, notifyUser);
+            else if (type === 'suspended') await suspendReportedUser(id, suspendReason, suspendDetail, sendEmail);
 
-    const closeSuccess = (dest) => {
+            const successMsg = {
+                dismissed: 'Report has been dismissed.',
+                resolved: 'Report has been marked as resolved.',
+                deleted: 'Content has been deleted.',
+                suspended: 'User account has been suspended.'
+            };
+            toast.success('Action Completed', successMsg[type] || 'Action processed successfully.');
+            closeModal();
+            setSuccess(type);
+            // For non-finalizing actions (delete/suspend), re-fetch immediately so UI reflects updated activity log
+            if (type === 'deleted' || type === 'suspended') {
+                try {
+                    const refreshed = await fetchReportById(id);
+                    setReport(refreshed.data);
+                } catch (_) {}
+            }
+        } catch (err) {
+            console.error(`[ReportDetail] Action ${type} failed:`, err);
+            const errorMsg = err.response?.data?.message || `Failed to process ${type}. Please try again.`;
+            toast.error('Action Failed', errorMsg);
+            closeModal();
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const closeSuccess = async (dest) => {
         setSuccess(null);
+        // Re-fetch to reflect new status + activity log
+        try {
+            const refreshed = await fetchReportById(id);
+            setReport(refreshed.data);
+        } catch (err) {
+            console.error('[ReportDetail] Failed to refresh:', err);
+        }
         if (dest === 'dashboard') navigate('/admin');
-        else navigate('/report-moderation');
+        else if (dest === 'queue') navigate('/report-moderation');
     };
+
+    /* ── Loading / Error states ─────────────────────────── */
+    if (loading) {
+        return (
+            <MainLayout user={{ name: 'Alex Johnson', role: 'admin' }} pageTitle="Report Moderation">
+                <div className="flex items-center justify-center h-64 text-text-secondary text-body-small">Loading report details...</div>
+            </MainLayout>
+        );
+    }
+    if (error || !report) {
+        return (
+            <MainLayout user={{ name: 'Alex Johnson', role: 'admin' }} pageTitle="Report Moderation">
+                <Card variant="container" className="border-state-error/30 bg-state-error/5">
+                    <div className="flex items-center gap-md">
+                        <AlertTriangle size={24} className="text-state-error shrink-0" />
+                        <div>
+                            <p className="text-body-medium-bold text-state-error">Failed to Load Report</p>
+                            <p className="text-body-small text-text-secondary">{error || 'Report not found.'}</p>
+                        </div>
+                    </div>
+                </Card>
+            </MainLayout>
+        );
+    }
 
     /* ── Detail UI ──────────────────────────────────────── */
     const r = report;
+    // Use dbStatus when available (returned by backend after our fix)
+    const effectiveStatus = r.dbStatus || r.status;
+    const isFinalized = effectiveStatus === 'Resolved' || effectiveStatus === 'Dismissed';
 
     /* ═══════════════════════════════════════════════════════
        MODALS
@@ -154,7 +260,7 @@ const ReportDetail = () => {
                                 <div><span className="text-body-small-bold text-text-primary">Notify User</span><p className="text-body-extra-small text-text-secondary">Send an automated message explaining the violation.</p></div>
                             </label>
                             <div className="flex flex-col gap-3 mt-auto">
-                                <button onClick={() => confirmAction('deleted')} className="w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
+                                <button disabled={actionLoading || !deleteCategory} onClick={() => confirmAction('deleted')} className={`w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 ${(!deleteCategory || actionLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                     <Trash2 size={18} /> Delete Permanently
                                 </button>
                                 <button onClick={closeModal} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200">
@@ -196,7 +302,7 @@ const ReportDetail = () => {
                             <textarea value={dismissNotes} onChange={(e) => setDismissNotes(e.target.value)} placeholder='Provide context for future audits...' className="w-full h-24 bg-white/5 rounded-2xl border border-white/10 p-md text-body-small text-text-primary placeholder:text-text-secondary resize-none focus:outline-none focus:border-primary-blue/50 transition-colors" />
                         </div>
                         <div className="flex flex-col gap-3">
-                            <button onClick={() => confirmAction('dismissed')} className="w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
+                            <button disabled={actionLoading || !dismissReason} onClick={() => confirmAction('dismissed')} className={`w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 ${(!dismissReason || actionLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                 <AlertTriangle size={18} /> Dismiss Report
                             </button>
                             <button onClick={closeModal} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200">
@@ -236,7 +342,7 @@ const ReportDetail = () => {
                             <textarea value={resolveNote} onChange={(e) => setResolveNote(e.target.value)} placeholder="Briefly explain the resolution..." className="w-full h-24 bg-white/5 rounded-2xl border border-white/10 p-md text-body-small text-text-primary placeholder:text-text-secondary resize-none focus:outline-none focus:border-primary-blue/50 transition-colors" />
                         </div>
                         <div className="flex flex-col gap-3">
-                            <button onClick={() => confirmAction('resolved')} className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
+                            <button disabled={actionLoading} onClick={() => confirmAction('resolved')} className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 disabled:opacity-50">
                                 <CheckCircle2 size={18} /> Confirm Resolve
                             </button>
                             <button onClick={closeModal} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200">
@@ -267,7 +373,7 @@ const ReportDetail = () => {
                             <button onClick={closeModal} className="p-2 text-text-secondary hover:text-text-primary transition-colors"><X size={20} /></button>
                         </div>
                         <div className="bg-white/5 rounded-xl border border-white/10 p-md flex items-center gap-3 mb-5">
-                            <img src={avatar(r.offender.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
+                            <img src={avatar(r.offender.name, r.offender.avatar)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
                             <div className="flex-1 min-w-0"><p className="text-body-small-bold text-text-primary">{r.offender.name}</p><p className="text-body-extra-small text-text-secondary">{r.offender.handle.replace('@','')}@example.com</p></div>
                             <span className="inline-flex items-center gap-xs text-body-extra-small-bold px-sm py-xs rounded-lg bg-state-success/10 text-state-success border border-state-success/30"><span className="w-1.5 h-1.5 rounded-full bg-state-success" />ACTIVE</span>
                         </div>
@@ -286,7 +392,7 @@ const ReportDetail = () => {
                             <span className="text-body-small text-text-secondary">Send email notification to user</span>
                         </label>
                         <div className="flex flex-col gap-3">
-                            <button onClick={() => confirmAction('suspended')} className="w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
+                            <button disabled={actionLoading || !suspendDetail.trim()} onClick={() => confirmAction('suspended')} className={`w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 ${(!suspendDetail.trim() || actionLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                 <UserX size={18} /> Confirm Suspension
                             </button>
                             <button onClick={closeModal} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200">
@@ -330,20 +436,28 @@ const ReportDetail = () => {
                             <h2 className="text-xl font-bold text-white mb-3">Suspension Applied</h2>
                             <p className="text-text-secondary text-sm leading-relaxed mb-5">The user has been moved to the suspended list. Their access has been revoked immediately.</p>
                             <div className="w-full bg-white/5 rounded-xl border border-white/10 p-md flex items-center gap-3 text-left">
-                                <img src={avatar(r.offender?.name || 'User')} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
+                                <img src={avatar(r.offender?.name || 'User', r.offender?.avatar)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
                                 <div className="flex-1 min-w-0"><p className="text-body-small-bold text-text-primary">{r.offender?.name}</p><p className="text-body-extra-small text-text-secondary">alex.j@example.com</p><p className="text-body-extra-small text-primary-blue">ID: #{r.offender?.id}</p></div>
                                 <span className="px-2.5 py-1 bg-state-error/20 text-state-error text-xs font-bold rounded-md border border-state-error/30">Suspended</span>
                             </div>
                         </>}
                     </div>
                     <div className="px-8 pb-8 pt-2 flex flex-col gap-3">
-                        <button onClick={() => closeSuccess('dashboard')} className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
-                            <ArrowLeft size={18} /> Return to Dashboard
-                        </button>
+                        {/* Finalizing actions (resolve/dismiss) → primary = Return to Dashboard */}
+                        {(success === 'resolved' || success === 'dismissed') && (
+                            <button onClick={() => closeSuccess('dashboard')} className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
+                                <ArrowLeft size={18} /> Return to Dashboard
+                            </button>
+                        )}
+                        {/* Non-finalizing actions (delete/suspend) → primary = Back to Report */}
+                        {(success === 'deleted' || success === 'suspended') && (
+                            <button onClick={() => setSuccess(null)} className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
+                                <RotateCcw size={18} /> Continue Moderating
+                            </button>
+                        )}
                         <button onClick={() => setSuccess(null)} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200">
                             <RotateCcw size={18} className="text-text-secondary" /> Back to Report
                         </button>
-                        {success === 'suspended' && <button className="text-body-small-bold text-state-error hover:underline transition-all mt-1">Made a mistake? Undo this action</button>}
                     </div>
                 </Card>
                 </div>
@@ -358,7 +472,6 @@ const ReportDetail = () => {
         <MainLayout
             user={{ name: 'Alex Johnson', role: 'admin' }}
             pageTitle="Report Moderation"
-            verificationCount={mockRequests.length}
         >
             <div className="flex flex-col gap-lg">
                 {/* Toast */}
@@ -369,19 +482,52 @@ const ReportDetail = () => {
                     </div>
                 )}
 
+                {/* Status Banner (Prominent like Suspended Profile) */}
+                {isFinalized && (
+                    <div className={`w-full p-4 rounded-2xl border flex items-center gap-4 mb-2 animate-in fade-in slide-in-from-top-4 duration-500 ${
+                        effectiveStatus === 'Resolved' 
+                            ? 'bg-state-success/10 border-state-success/30 text-state-success shadow-lg shadow-state-success/5' 
+                            : 'bg-white/5 border-white/20 text-text-secondary'
+                    }`}>
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
+                            effectiveStatus === 'Resolved' ? 'bg-state-success/20' : 'bg-white/10'
+                        }`}>
+                            {effectiveStatus === 'Resolved' ? <CheckCircle2 size={24} /> : <AlertTriangle size={24} />}
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-body-medium-bold">This report has been {effectiveStatus.toLowerCase()}.</h3>
+                            <p className="text-body-small opacity-80">
+                                {effectiveStatus === 'Resolved' 
+                                    ? 'Administrative action has been taken and the case is now closed.' 
+                                    : 'This report was reviewed and dismissed. No further action will be taken.'}
+                            </p>
+                        </div>
+                        <div className="hidden md:block">
+                            <span className="text-body-extra-small font-bold opacity-60 uppercase tracking-widest">Case Finalized</span>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-md">
                     <div>
                         <div className="flex items-center gap-3 flex-wrap">
                             <h1 className="text-heading-small text-text-primary">Report #{r.id.replace('R-','')}</h1>
-                            <StatusBadge status="Pending" />
+                            <StatusBadge status={r.status} />
                         </div>
                         <div className="flex items-center gap-3 mt-2 flex-wrap">
                             <TypeBadge type={r.type} />
                             <span className="text-body-small text-text-secondary">Submitted {r.submittedAgo} • Priority <span className="text-state-error font-bold">{r.priority}</span></span>
                         </div>
                     </div>
-                    <Button variant="primary" size="medium" icon={CheckCircle2} onClick={() => openModal('resolve')}>Mark as Resolved</Button>
+                    {!isFinalized && <Button variant="primary" size="medium" icon={CheckCircle2} onClick={() => openModal('resolve')}>Mark as Resolved</Button>}
+                    {isFinalized && (
+                        <span className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-[100px] text-sm font-bold font-inter ${
+                            r.status === 'Resolved' ? 'bg-state-success/10 text-state-success border border-state-success/30' : 'bg-white/10 text-text-secondary border border-white/20'
+                        }`}>
+                            <CheckCircle2 size={16} /> {r.status}
+                        </span>
+                    )}
                 </div>
 
                 {/* 3-Column Grid */}
@@ -393,7 +539,7 @@ const ReportDetail = () => {
                             <span className="text-body-extra-small text-text-secondary">ID: {r.reportedContent.id}</span>
                         </div>
                         <div className="flex items-center gap-md mb-3">
-                            <img src={avatar(r.reportedContent.author)} alt={r.reportedContent.author} className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0" />
+                            <img src={avatar(r.reportedContent.author, r.reportedContent.avatar)} alt={r.reportedContent.author} className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0" />
                             <div className="min-w-0">
                                 <div className="flex items-center gap-1.5">
                                     <span className="text-body-small-bold text-text-primary">{r.reportedContent.author}</span>
@@ -420,7 +566,7 @@ const ReportDetail = () => {
                         <div className="border-t border-white/10 mt-4 pt-4">
                             <p className="text-body-extra-small text-text-tertiary uppercase tracking-wider mb-3">Reported By</p>
                             <div className="flex items-center gap-md mb-3">
-                                <img src={avatar(r.reportedBy.name)} alt={r.reportedBy.name} className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0" />
+                                <img src={avatar(r.reportedBy.name, r.reportedBy.avatar)} alt={r.reportedBy.name} className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0" />
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <span className="text-body-small-bold text-text-primary">{r.reportedBy.name}</span>
@@ -433,10 +579,38 @@ const ReportDetail = () => {
                                 <span className="text-body-extra-small text-text-secondary">• Reported via {r.reportedBy.source}</span>
                                 <span className="text-body-extra-small text-text-secondary">Reputation <span className="text-text-primary font-bold">{r.reportedBy.reputation}</span></span>
                             </div>
-                            <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+                            <div className="bg-white/5 rounded-xl p-3 border border-white/5 mb-4">
                                 <p className="text-body-extra-small text-text-tertiary mb-1">Reporter&apos;s Note:</p>
                                 <p className="text-body-small text-text-secondary italic">{r.reportedBy.note}</p>
                             </div>
+
+                            {/* Evidence Section (Relocated for better context) */}
+                            {r.evidence && r.evidence.length > 0 && (
+                                <div className="pt-2">
+                                    <p className="text-body-extra-small text-text-tertiary uppercase tracking-wider mb-3">Submitted Evidence</p>
+                                    <div className="flex flex-wrap gap-2.5">
+                                        {r.evidence.map((ev, i) => (
+                                            <a 
+                                                key={i} 
+                                                href={ev.url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="w-[72px] h-[72px] rounded-xl overflow-hidden border border-white/10 hover:border-primary-blue/30 transition-all cursor-pointer bg-white/5 flex flex-col items-center justify-center p-1.5 group"
+                                                title={`View ${ev.name}`}
+                                            >
+                                                {ev.type === 'image' ? (
+                                                    <img src={ev.url} alt="Evidence" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                                                ) : (
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <FileText size={20} className="text-state-error/70" />
+                                                        <span className="text-[9px] text-text-tertiary truncate w-full text-center">{ev.name}</span>
+                                                    </div>
+                                                )}
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </Card>
 
@@ -444,12 +618,12 @@ const ReportDetail = () => {
                     <Card variant="card" padding="p-lg">
                         <div className="flex items-center gap-2 mb-5"><UserX size={16} className="text-primary-blue" /><span className="text-body-medium-bold text-text-primary">Offender Profile</span></div>
                         <div className="flex flex-col items-center text-center mb-5">
-                            <img src={avatar(r.offender.name)} alt={r.offender.name} className="w-16 h-16 rounded-full object-cover border-2 border-white/20" />
+                            <img src={avatar(r.offender.name, r.offender.avatar)} alt={r.offender.name} className="w-16 h-16 rounded-full object-cover border-2 border-white/20" />
                             <h3 className="text-body-large-bold text-text-primary mt-3">{r.offender.name}</h3>
                             <p className="text-body-small text-text-secondary">{r.offender.handle} • ID: {r.offender.id}</p>
                             <div className="flex items-center gap-3 mt-4">
-                                <Button variant="outline" size="small">View Profile</Button>
-                                <Button variant="outline" size="small">Message</Button>
+                                <Button variant="outline" size="small" onClick={() => navigate(`/student-management/${r.offender.id}`)}>View Profile</Button>
+                                <Button variant="outline" size="small" onClick={() => navigate('/messages')}>Message</Button>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3 mb-5">
@@ -459,19 +633,33 @@ const ReportDetail = () => {
                             <div><p className="text-body-extra-small text-text-tertiary">Region</p><p className="text-body-small-bold text-text-primary">🏳 {r.offender.region}</p></div>
                         </div>
                         <div className="border-t border-white/10 pt-4">
-                            <h4 className="text-body-small-bold text-text-primary mb-3">Violation History</h4>
-                            {r.violationHistory.length === 0
-                                ? <p className="text-body-extra-small text-text-secondary italic">No prior violations</p>
-                                : <div className="flex flex-col gap-3">
-                                    {r.violationHistory.map((v, i) => (
-                                        <div key={i} className="flex items-center justify-between">
-                                            <div><p className="text-body-small-bold text-text-primary">{v.type}</p><p className="text-body-extra-small text-state-error">{v.date}</p></div>
-                                            <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${v.statusColor}`}>{v.status}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            }
-                            <button className="w-full mt-4 text-center text-body-small-bold text-primary-blue hover:underline">View All History</button>
+                            {r.violationHistory.length > 0 && (
+                                <>
+                                    <h4 className="text-body-small-bold text-text-primary mb-3">Violation History</h4>
+                                    <div className="flex flex-col gap-3">
+                                        {(showAllViolations ? r.violationHistory : r.violationHistory.slice(0, 3)).map((v, i) => (
+                                            <div key={i} className="flex items-center justify-between">
+                                                <div><p className="text-body-small-bold text-text-primary">{v.type}</p><p className="text-body-extra-small text-state-error">{v.date}</p></div>
+                                                <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${v.status === 'Action Taken' ? 'bg-state-error/20 text-state-error' : v.status === 'Dismissed' ? 'bg-white/10 text-text-secondary' : 'bg-state-warning/20 text-state-warning'}`}>{v.status}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {r.violationHistory.length > 3 && (
+                                        <button 
+                                            className="w-full mt-4 text-center text-body-small-bold text-primary-blue hover:underline"
+                                            onClick={() => setShowAllViolations(!showAllViolations)}
+                                        >
+                                            {showAllViolations ? 'Show Less' : `View All History (${r.violationHistory.length})`}
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                            {r.violationHistory.length === 0 && (
+                                <>
+                                    <h4 className="text-body-small-bold text-text-primary mb-3">Violation History</h4>
+                                    <p className="text-body-extra-small text-text-secondary italic">No prior violations</p>
+                                </>
+                            )}
                         </div>
                     </Card>
 
@@ -484,10 +672,18 @@ const ReportDetail = () => {
                                 <textarea value={resolutionNote} onChange={(e) => setResolutionNote(e.target.value)} placeholder="Add internal note explaining the decision..." className="w-full h-20 bg-white/5 rounded-xl border border-white/10 p-3 text-body-small text-text-primary placeholder:text-text-secondary resize-none focus:outline-none focus:border-primary-blue/50 transition-colors" />
                             </div>
                             <div className="flex flex-col gap-2.5">
-                                <Button variant="outline" fullWidth size="small" icon={AlertTriangle} onClick={handleAddNote}>Add Note</Button>
-                                <Button variant="outline" fullWidth size="small" icon={X} onClick={() => openModal('dismiss')}>Dismiss Report</Button>
-                                <Button variant="dangerOutline" fullWidth size="small" icon={Trash2} onClick={() => openModal('delete')}>Delete Post</Button>
-                                <Button variant="dangerOutline" fullWidth size="small" icon={UserX} onClick={() => openModal('suspend')}>Suspend User</Button>
+                                {/* Add Note — disabled only when fully finalized */}
+                                <Button variant="outline" fullWidth size="small" icon={AlertTriangle} onClick={handleAddNote} disabled={isFinalized}>Add Note</Button>
+                                {/* Dismiss — finalizes the report */}
+                                <Button variant="outline" fullWidth size="small" icon={X} onClick={() => openModal('dismiss')} disabled={isFinalized}>
+                                    {effectiveStatus === 'Dismissed' ? '✓ Dismissed' : 'Dismiss Report'}
+                                </Button>
+                                {/* Delete Post/Comment — intermediate action, disabled only when finalized */}
+                                <Button variant="dangerOutline" fullWidth size="small" icon={Trash2} onClick={() => openModal('delete')} disabled={isFinalized}>
+                                    Delete {String(r.reportedContent.id).startsWith('comment_') ? 'Comment' : 'Post'}
+                                </Button>
+                                {/* Suspend User — intermediate action, disabled only when finalized */}
+                                <Button variant="dangerOutline" fullWidth size="small" icon={UserX} onClick={() => openModal('suspend')} disabled={isFinalized}>Suspend User</Button>
                             </div>
                         </Card>
 
