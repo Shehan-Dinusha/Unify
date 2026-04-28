@@ -29,7 +29,8 @@ export const createClubEventPost = async (req, res) => {
     }
 
     const files = req.files || [];
-    const coverImage = files.length > 0 ? { url: `/uploads/verifications/${files[0].filename}` } : null;
+    const coverImage = files.length > 0 ? { url: files[0].location || `/uploads/verifications/${files[0].filename}` } : null;
+
 
     let tiers = req.body.tiers || req.body.tickets;
     if (typeof tiers === 'string') tiers = JSON.parse(tiers);
