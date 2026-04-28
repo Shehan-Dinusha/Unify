@@ -86,7 +86,79 @@ const orderService = {
         } catch (error) {
             throw error.response?.data || error.message;
         }
+    },
+
+    /**
+     * Fetch orders for a club (seller)
+     */
+    getClubOrders: async (userId) => {
+        try {
+            const response = await api.get(`/orders/club/${userId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
+     * Update order status
+     */
+    updateOrderStatus: async (orderId, statusData) => {
+        try {
+            const response = await api.patch(`/orders/${orderId}/status`, statusData);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /* ─── Analytics Methods ─── */
+
+    getClubOrderStats: async (userId) => {
+        try {
+            const response = await api.get(`/orders/analytics/stats/${userId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    getClubOrderTrends: async (userId, days = 30) => {
+        try {
+            const response = await api.get(`/orders/analytics/trends/${userId}?days=${days}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    getClubTopProducts: async (userId) => {
+        try {
+            const response = await api.get(`/orders/analytics/top-products/${userId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    getClubBuyerDemographics: async (userId) => {
+        try {
+            const response = await api.get(`/orders/analytics/demographics/${userId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    getClubRevenueBreakdown: async (userId) => {
+        try {
+            const response = await api.get(`/orders/analytics/revenue/${userId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
     }
 };
+
 
 export default orderService;

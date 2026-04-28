@@ -2,7 +2,7 @@ import { Boarding } from "../../modules/index.js";
 
 const getUploadedFileUrls = (files) => {
   if (!files) return [];
-  return files.map((file) => `/uploads/verifications/${file.filename}`);
+  return files.map((file) => file.location || `/uploads/verifications/${file.filename}`);
 };
 
 export const createBoardingPost = async (req, res) => {

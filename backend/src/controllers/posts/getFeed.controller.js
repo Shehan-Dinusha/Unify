@@ -1,4 +1,29 @@
 import { NormalPost, ClubProductPost, ClubEventPost, Boarding, User } from "../../modules/index.js";
+import { getFileUrl } from "../../services/s3.service.js";
+
+const resolveImageUrl = async (img) => {
+  if (!img) return img;
+  if (img.includes("X-Amz-Signature")) return img;
+  const s3UrlMatch = img.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
+  if (s3UrlMatch) {
+    try { return await getFileUrl(s3UrlMatch[1]); } catch { return img; }
+  }
+  if (!img.startsWith("http") && !img.startsWith("/")) {
+    try { return await getFileUrl(img); } catch { return img; }
+  }
+  return img;
+};
+
+const resolvePostImages = async (post) => {
+  const resolved = { ...post };
+  if (Array.isArray(resolved.images) && resolved.images.length > 0) {
+    resolved.images = await Promise.all(resolved.images.map(resolveImageUrl));
+  }
+  if (resolved.coverImage) {
+    resolved.coverImage = await resolveImageUrl(resolved.coverImage);
+  }
+  return resolved;
+};
 
 export const getFeed = async (req, res) => {
   try {
@@ -54,8 +79,8 @@ export const getFeed = async (req, res) => {
     } else if (type === "event") {
       tasks.push(fetchPosts(ClubEventPost, "club-event"));
     } else if (type === "popular") {
-      tasks.push(fetchPosts(ClubProductPost, "club-product", "author", {}, [["likesCount", "DESC"]]));
-      tasks.push(fetchPosts(ClubEventPost, "club-event", "author", {}, [["likesCount", "DESC"]]));
+      tasks.push(fetchPosts(ClubProductPost, "club-product", "author", {}, [["likesCount", "DESC"], ["createdAt", "DESC"]]));
+      tasks.push(fetchPosts(ClubEventPost, "club-event", "author", {}, [["likesCount", "DESC"], ["createdAt", "DESC"]]));
     }
 
     // Fetch concurrently
@@ -66,13 +91,20 @@ export const getFeed = async (req, res) => {
 
     // Sort accordingly
     if (type === "popular") {
-      combinedFeed.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0));
+      combinedFeed.sort((a, b) => {
+        const likesDiff = (b.likesCount || 0) - (a.likesCount || 0);
+        if (likesDiff !== 0) return likesDiff;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      });
       combinedFeed = combinedFeed.slice(0, 10);
     } else {
       combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
-    res.status(200).json({ success: true, feed: combinedFeed });
+    // Resolve S3 image keys/private URLs to presigned URLs
+    const resolvedFeed = await Promise.all(combinedFeed.map(resolvePostImages));
+
+    res.status(200).json({ success: true, feed: resolvedFeed });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

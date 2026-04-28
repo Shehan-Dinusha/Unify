@@ -30,12 +30,6 @@ const generateFileKey = (folder, originalName) => {
 
 /**
  * Uploads a local file stream to S3.
- * 
- * @param {string} filePath - The local file path to upload
- * @param {string} originalName - Original file name for determining extension
- * @param {string} mimeType - The file's MIME type
- * @param {string} folder - The folder prefix inside S3
- * @returns {Promise<string>} - The object key of the uploaded file
  */
 export const uploadFile = async (filePath, originalName, mimeType, folder = "materials") => {
   const fileStream = fs.createReadStream(filePath);
@@ -51,6 +45,24 @@ export const uploadFile = async (filePath, originalName, mimeType, folder = "mat
   await s3Client.send(command);
   return fileKey;
 };
+
+/**
+ * Uploads a file buffer to S3.
+ */
+export const uploadBuffer = async (buffer, originalName, mimeType, folder = "general") => {
+  const fileKey = generateFileKey(folder, originalName);
+
+  const command = new PutObjectCommand({
+    Bucket: process.env.BUCKET_NAME,
+    Key: fileKey,
+    Body: buffer,
+    ContentType: mimeType,
+  });
+
+  await s3Client.send(command);
+  return fileKey;
+};
+
 
 /**
  * Generates a presigned URL for an S3 object.
@@ -85,6 +97,8 @@ export const deleteFile = async (fileKey) => {
 
 export default {
   uploadFile,
+  uploadBuffer,
   getFileUrl,
   deleteFile,
 };
+

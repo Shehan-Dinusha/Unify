@@ -1,18 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import ClubPostCard from "../components/club/ClubPostCard";
 import { mockClubFeed } from "../data/mockClubData";
 import { BarChart, DonutChart, ProgressBar } from "../components/chart";
-
-import {
-    dashboardStats,
-    chartData,
-    topProducts,
-    revenueBreakdown,
-    buyerDemographics,
-    dashboardRecentOrders,
-} from "../data/mockClubDashboard";
+import orderService from "../services/orderService";
 import { useNavigate } from "react-router-dom";
 import {
     ShoppingBag, Clock, CheckCircle2,
@@ -20,7 +12,6 @@ import {
 } from "lucide-react";
 
 /* ─── Sub-components ─────────────────────────────────────────── */
-
 
 const StatCard = ({ label, value, sub, subLabel, subPositive, icon: Icon, iconBg, iconColor, badge, badgeColor }) => (
     <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-5 flex flex-col gap-3">
@@ -50,23 +41,66 @@ const StatCard = ({ label, value, sub, subLabel, subPositive, icon: Icon, iconBg
     </Card>
 );
 
-
-
 /* ─── Main Page ──────────────────────────────────────────────── */
 const ClubOwnerDashboard = () => {
     const navigate = useNavigate();
     const [chartFilter, setChartFilter] = useState("Month");
-    // Feed visibility state: postId → true (in feed) | false (hidden)
+    
+    // API Data States
+    const [stats, setStats] = useState({ totalOrders: 0, pendingOrders: 0, completedOrders: 0 });
+    const [trends, setTrends] = useState([]);
+    const [topProducts, setTopProducts] = useState([]);
+    const [demographics, setDemographics] = useState([]);
+    const [revenueBreakdown, setRevenueBreakdown] = useState([]);
+    const [recentOrders, setRecentOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const [feedVisible, setFeedVisible] = useState(
         () => Object.fromEntries(mockClubFeed.map((p) => [p.id, true]))
     );
+
     const user = {
+        id: 1, // Using hardcoded ID 1 as per current project pattern
         name: "Alex Johnson",
         role: "club",
         displayRole: "Clubs & Societies Dashboard"
     };
 
-    const { totalOrders, pendingOrders, completedOrders } = dashboardStats;
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            setLoading(true);
+            try {
+                const [
+                    statsRes,
+                    trendsRes,
+                    topProductsRes,
+                    demographicsRes,
+                    revenueRes,
+                    ordersRes
+                ] = await Promise.all([
+                    orderService.getClubOrderStats(user.id),
+                    orderService.getClubOrderTrends(user.id, chartFilter === "Month" ? 30 : 365),
+                    orderService.getClubTopProducts(user.id),
+                    orderService.getClubBuyerDemographics(user.id),
+                    orderService.getClubRevenueBreakdown(user.id),
+                    orderService.getClubOrders(user.id)
+                ]);
+
+                if (statsRes.success) setStats(statsRes.data);
+                if (trendsRes.success) setTrends(trendsRes.data);
+                if (topProductsRes.success) setTopProducts(topProductsRes.data);
+                if (demographicsRes.success) setDemographics(demographicsRes.data);
+                if (revenueRes.success) setRevenueBreakdown(revenueRes.data);
+                if (ordersRes.success) setRecentOrders(ordersRes.orders.slice(0, 5)); // Take last 5
+            } catch (error) {
+                console.error("Error fetching dashboard data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, [user.id, chartFilter]);
 
     const headerRight = (
         <button
@@ -77,6 +111,16 @@ const ClubOwnerDashboard = () => {
             Wallet
         </button>
     );
+
+    if (loading) {
+        return (
+            <MainLayout user={user} pageTitle="Club Order Dashboard">
+                <div className="flex items-center justify-center h-[60vh]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-blue"></div>
+                </div>
+            </MainLayout>
+        );
+    }
 
     return (
         <MainLayout
@@ -91,7 +135,7 @@ const ClubOwnerDashboard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                     <StatCard
                         label="Total Orders"
-                        value={totalOrders.toLocaleString()}
+                        value={stats.totalOrders.toLocaleString()}
                         sub="+13.4%"
                         subLabel="vs last week"
                         subPositive={true}
@@ -101,7 +145,7 @@ const ClubOwnerDashboard = () => {
                     />
                     <StatCard
                         label="Pending Fulfillment"
-                        value={pendingOrders}
+                        value={stats.pendingOrders}
                         badge="Action Needed"
                         badgeColor="bg-state-warning/20 text-state-warning"
                         subLabel="items today"
@@ -111,7 +155,7 @@ const ClubOwnerDashboard = () => {
                     />
                     <StatCard
                         label="Completed Orders"
-                        value={completedOrders.toLocaleString()}
+                        value={stats.completedOrders.toLocaleString()}
                         sub="96.7%"
                         subLabel="completion rate"
                         subPositive={true}
@@ -140,29 +184,27 @@ const ClubOwnerDashboard = () => {
                             </div>
                         </div>
                         {(() => {
-                            const bars = chartData[chartFilter];
-                            const isMonth = chartFilter === "Month";
-                            const values = bars.map((b) => b.h);
-                            const labels = isMonth
-                                ? bars.map((b, i) => (i + 1) % 5 === 0 ? b.label : "")
-                                : bars.map((b) => b.label);
-                            const maxVal = 100;
-                            // Highlight today's bar: day-of-month (0-indexed) for Month,
-                            // current month index for Year
-                            const today = new Date();
-                            const todayIdx = isMonth
-                                ? Math.min(today.getDate() - 1, bars.length - 1)
-                                : today.getMonth();
-                            const yLabels = ["100", "75", "50", "25", "0"];
-                            const yVals = [100, 75, 50, 25, 0];
+                            const values = trends.map(t => parseInt(t.count));
+                            const labels = trends.map((t, i) => {
+                                if (chartFilter === "Month") {
+                                    return (i + 1) % 5 === 0 ? t.date.split("-")[2] : "";
+                                }
+                                return i % 2 === 0 ? t.date.split("-")[1] : "";
+                            });
+                            const maxVal = Math.max(...values, 10) * 1.2;
+                            const todayIdx = trends.length - 1;
+                            
+                            const yVals = [100, 75, 50, 25, 0].map(v => (v * maxVal) / 100);
+                            const yLabels = yVals.map(v => Math.round(v).toString());
+
                             return (
                                 <BarChart
                                     data={values}
                                     labels={labels}
                                     maxVal={maxVal}
                                     peakIdx={todayIdx}
-                                    yLabels={yLabels}
-                                    yVals={yVals}
+                                    yLabels={yLabels.reverse()}
+                                    yVals={[0, 25, 50, 75, 100].map(v => (v * maxVal) / 100)}
                                     statLabel="Orders"
                                 />
                             );
@@ -173,21 +215,27 @@ const ClubOwnerDashboard = () => {
                     <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
                         <h3 className="font-bold text-base mb-5">Top Products</h3>
                         <div className="flex flex-col gap-4">
-                            {topProducts.map((p, i) => (
-                                <div key={p.name} className="flex items-center gap-3">
+                            {topProducts.length > 0 ? topProducts.map((p, i) => (
+                                <div key={p.itemId} className="flex items-center gap-3">
                                     <div className="relative">
-                                        <img src={p.img} alt={p.name} className="w-10 h-10 rounded-xl object-cover" />
+                                        <img 
+                                            src={p.clubProduct?.images?.[0]?.src || "https://via.placeholder.com/40"} 
+                                            alt={p.clubProduct?.title} 
+                                            className="w-10 h-10 rounded-xl object-cover" 
+                                        />
                                         <span className="absolute -top-1 -left-1 w-4 h-4 bg-primary-blue text-white text-[8px] font-bold rounded-full flex items-center justify-center">
                                             {i + 1}
                                         </span>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold truncate">{p.name}</p>
-                                        <p className="text-text-secondary text-[11px]">{p.sold}</p>
+                                        <p className="text-sm font-semibold truncate">{p.clubProduct?.title || "Unknown Product"}</p>
+                                        <p className="text-text-secondary text-[11px]">{p.salesCount} sold</p>
                                     </div>
-                                    <span className="text-primary-blue text-sm font-bold shrink-0">{p.revenue}</span>
+                                    <span className="text-primary-blue text-sm font-bold shrink-0">Rs.{parseFloat(p.totalRevenue).toLocaleString()}</span>
                                 </div>
-                            ))}
+                            )) : (
+                                <p className="text-text-secondary text-xs text-center py-4">No sales yet</p>
+                            )}
                         </div>
                     </Card>
                 </div>
@@ -198,33 +246,40 @@ const ClubOwnerDashboard = () => {
                     <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
                         <div className="flex items-center justify-between mb-5">
                             <h3 className="font-bold text-base">Revenue Breakdown</h3>
-                            <span className="text-text-secondary text-xs">Last 30 Days</span>
+                            <span className="text-text-secondary text-xs">By Category</span>
                         </div>
-                        {/* Donut centered */}
                         <div className="flex justify-center mb-5">
                             <DonutChart
-                                segments={revenueBreakdown.map((s) => ({ value: s.pct, color: s.color }))}
+                                segments={revenueBreakdown.map((s, i) => ({ 
+                                    value: parseFloat(s.percentage), 
+                                    color: ["#2B8CEE", "#60A5FA", "#FB923C", "#FACC15"][i % 4] 
+                                }))}
                                 size={120}
                                 strokeWidth={16}
-                                centerLabel="9.1k"
+                                centerLabel={revenueBreakdown.reduce((acc, curr) => acc + curr.revenue, 0).toLocaleString()}
                                 centerSubLabel="TOTAL"
                             />
                         </div>
-                        {/* Full-width legend — no truncation */}
                         <div className="flex flex-col gap-3">
-                            {revenueBreakdown.map((s) => (
-                                <div key={s.label}>
+                            {revenueBreakdown.map((s, i) => (
+                                <div key={s.category}>
                                     <div className="flex items-center justify-between mb-1">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-                                            <span className="text-xs text-text-secondary">{s.label}</span>
+                                            <div 
+                                                className="w-2.5 h-2.5 rounded-full shrink-0" 
+                                                style={{ backgroundColor: ["#2B8CEE", "#60A5FA", "#FB923C", "#FACC15"][i % 4] }} 
+                                            />
+                                            <span className="text-xs text-text-secondary">{s.category}</span>
                                         </div>
-                                        <span className="text-xs font-bold">{s.pct}%</span>
+                                        <span className="text-xs font-bold">{s.percentage}%</span>
                                     </div>
                                     <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                                         <div
                                             className="h-full rounded-full transition-all duration-500"
-                                            style={{ width: `${s.pct}%`, backgroundColor: s.color }}
+                                            style={{ 
+                                                width: `${s.percentage}%`, 
+                                                backgroundColor: ["#2B8CEE", "#60A5FA", "#FB923C", "#FACC15"][i % 4] 
+                                            }}
                                         />
                                     </div>
                                 </div>
@@ -244,24 +299,18 @@ const ClubOwnerDashboard = () => {
                             <span className="text-text-secondary text-xs">Top Faculties</span>
                         </div>
                         <div className="flex flex-col gap-4">
-                            {buyerDemographics.map((d) => {
-                                // Map Tailwind color classes to hex for the ProgressBar component
-                                const colorMap = {
-                                    "bg-primary-blue": "#2B8CEE",
-                                    "bg-blue-400": "#60A5FA",
-                                    "bg-orange-400": "#FB923C",
-                                    "bg-yellow-400": "#FACC15",
-                                };
+                            {demographics.map((d, i) => {
+                                const colors = ["#2B8CEE", "#60A5FA", "#FB923C", "#FACC15"];
                                 return (
-                                    <div key={d.label} className="flex flex-col gap-1.5">
+                                    <div key={d.faculty} className="flex flex-col gap-1.5">
                                         <div className="flex justify-between">
-                                            <span className="text-text-secondary text-xs">{d.label}</span>
-                                            <span className="font-bold text-xs">{d.pct}%</span>
+                                            <span className="text-text-secondary text-xs">{d.faculty}</span>
+                                            <span className="font-bold text-xs">{d.percentage}%</span>
                                         </div>
                                         <ProgressBar
-                                            value={d.pct}
+                                            value={parseFloat(d.percentage)}
                                             max={100}
-                                            color={colorMap[d.color] ?? "#2B8CEE"}
+                                            color={colors[i % colors.length]}
                                             className="h-2"
                                         />
                                     </div>
@@ -290,39 +339,47 @@ const ClubOwnerDashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {dashboardRecentOrders.map((order, i) => {
+                                    {recentOrders.length > 0 ? recentOrders.map((order, i) => {
                                         const statusStyle =
-                                            order.status === "COMPLETED"
+                                            order.status === "Order Completed" || order.status === "COMPLETED"
                                                 ? "bg-state-success/15 text-state-success"
-                                                : order.status === "IN PROGRESS"
+                                                : ["Order Placed", "Seller Confirmed", "IN PROGRESS"].includes(order.status)
                                                     ? "bg-primary-blue/15 text-primary-blue"
                                                     : "bg-state-warning/15 text-state-warning";
                                         return (
-                                            <tr key={order.id} className={`border-b border-white/5 hover:bg-white/[0.03] transition-colors ${i === dashboardRecentOrders.length - 1 ? "border-b-0" : ""}`}>
+                                            <tr key={order.id} className={`border-b border-white/5 hover:bg-white/[0.03] transition-colors ${i === recentOrders.length - 1 ? "border-b-0" : ""}`}>
                                                 <td className="px-5 py-4 text-text-secondary font-mono text-xs">{order.orderId}</td>
                                                 <td className="px-5 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <img src={order.image} alt={order.title} className="w-8 h-8 rounded-lg object-cover shrink-0" />
-                                                        <span className="font-medium text-xs truncate max-w-[180px]">{order.title}</span>
+                                                        <img 
+                                                            src={order.clubProduct?.images?.[0]?.src || "https://via.placeholder.com/32"} 
+                                                            alt={order.clubProduct?.name} 
+                                                            className="w-8 h-8 rounded-lg object-cover shrink-0" 
+                                                        />
+                                                        <span className="font-medium text-xs truncate max-w-[180px]">{order.clubProduct?.name || "Product"}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-5 py-4 text-text-secondary text-xs">{order.orderDate}</td>
+                                                <td className="px-5 py-4 text-text-secondary text-xs">{new Date(order.createdAt).toLocaleDateString()}</td>
                                                 <td className="px-5 py-4">
                                                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${statusStyle}`}>
                                                         {order.status}
                                                     </span>
                                                 </td>
-                                                <td className="px-5 py-4 text-right font-bold text-primary-blue text-xs">{order.total}</td>
+                                                <td className="px-5 py-4 text-right font-bold text-primary-blue text-xs">Rs.{parseFloat(order.total).toLocaleString()}</td>
                                             </tr>
                                         );
-                                    })}
+                                    }) : (
+                                        <tr>
+                                            <td colSpan="5" className="px-5 py-8 text-center text-text-secondary text-xs">No orders yet</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                     </Card>
                 </div>
 
-                {/* ── Your Posts (feed cards with visibility toggle) ── */}
+                {/* ── Your Posts ── */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold text-base">Your Posts</h3>
@@ -335,7 +392,6 @@ const ClubOwnerDashboard = () => {
                             const isInFeed = feedVisible[post.id];
                             return (
                                     <div key={post.id} className="relative group">
-                                        {/* Post card — dimmed when hidden */}
                                         <div className={`transition-all duration-300 ${
                                             isInFeed ? "opacity-100" : "opacity-40 grayscale-[30%] pointer-events-none"
                                         }`}>
@@ -347,7 +403,6 @@ const ClubOwnerDashboard = () => {
                                             />
                                         </div>
 
-                                        {/* Floating Toggle Banner */}
                                         <div className="absolute top-4 right-4 z-10">
                                             <div className="flex items-center gap-3 px-3 py-2 bg-[#0B1220]/75 backdrop-blur-md rounded-full shadow-lg border border-white/10 transition-all hover:bg-[#0B1220]/90 pointer-events-auto">
                                                 <div className="flex items-center gap-2 pr-2 border-r border-white/10">

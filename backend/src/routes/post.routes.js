@@ -8,54 +8,73 @@ import {
   getPost,
   deletePost,
 } from "../controllers/posts/index.js";
-import uploadService from "../services/upload.service.js";
+import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import {
+  createNormalPostValidator,
+  createClubProductPostValidator,
+  createClubEventPostValidator,
+  createBoardingPostValidator,
+  postParamsValidator,
+} from "../validators/post.validator.js";
+
 
 const router = express.Router();
-
-// You can add your authentication middleware here when ready, 
-// e.g., router.use(verifyToken);
 
 // Create Normal Post (Supports multiple images)
 router.post(
   "/normal",
-  uploadService.array("images", 10),
+  uploadToS3({ type: "array", fieldName: "images", folder: "posts", maxCount: 10 }),
+  createNormalPostValidator,
+  validate,
   createNormalPost
 );
 
 // Create Club Product Post (Supports multiple images)
 router.post(
   "/club-product",
-  uploadService.array("images", 10),
+  uploadToS3({ type: "array", fieldName: "images", folder: "posts/products", maxCount: 10 }),
+  createClubProductPostValidator,
+  validate,
   createClubProductPost
 );
 
 // Create Club Event Post (Supports one cover image)
 router.post(
   "/club-event",
-  uploadService.array("coverImage", 1), // Using array for consistency, or uploadService.single
+  uploadToS3({ type: "array", fieldName: "coverImage", folder: "posts/events", maxCount: 1 }),
+  createClubEventPostValidator,
+  validate,
   createClubEventPost
 );
 
 // Create Boarding Post (Supports multiple images)
 router.post(
   "/boarding",
-  uploadService.array("images", 10),
+  uploadToS3({ type: "array", fieldName: "images", folder: "posts/boarding", maxCount: 10 }),
+  createBoardingPostValidator,
+  validate,
   createBoardingPost
 );
 
-// Create Food & Cafe Post (Using createNormalPost controller with FOOD category)
+// Create Food & Cafe Post
 router.post(
   "/food-cafe",
-  uploadService.array("images", 10),
+  uploadToS3({ type: "array", fieldName: "images", folder: "posts/food", maxCount: 10 }),
+  createNormalPostValidator,
+  validate,
   createNormalPost
 );
 
-// Create Service Post (Using createNormalPost controller with SELF_EMPLOYED category)
+// Create Service Post
 router.post(
   "/service",
-  uploadService.array("images", 10),
+  uploadToS3({ type: "array", fieldName: "images", folder: "posts/services", maxCount: 10 }),
+  createNormalPostValidator,
+  validate,
   createNormalPost
 );
+
 
 // ── Unified Post Routes ───────────────────────────────────────────────────────
 
@@ -63,9 +82,9 @@ router.post(
 router.get("/feed", getFeed);
 
 // Get specific post dynamically
-router.get("/:type/:id", getPost);
+router.get("/:type/:id", postParamsValidator, validate, getPost);
 
 // Delete specific post dynamically
-router.delete("/:type/:id", deletePost);
+router.delete("/:type/:id", postParamsValidator, validate, deletePost);
 
 export default router;
