@@ -5,13 +5,15 @@ import logger from "../../utils/logger.js";
 /**
  * @desc    Verify Reset OTP
  * @route   POST /api/auth/verify-reset-otp
+ * Supports both email and phone number.
  */
 export const verifyResetOTP = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { email, phone, otp } = req.body;
+    const whereClause = email ? { email } : { phone };
 
     const otpRecord = await OTP.findOne({
-      where: { email, code: otp, type: "PASSWORD_RESET", isUsed: false },
+      where: { ...whereClause, code: otp, type: "PASSWORD_RESET", isUsed: false },
       order: [["createdAt", "DESC"]],
     });
 

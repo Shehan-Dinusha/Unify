@@ -95,11 +95,23 @@ export const resendOTPValidator = [
 ];
 
 export const forgotPasswordValidator = [
-  body("email").isEmail().withMessage("Valid email is required"),
+  oneOf(
+    [
+      body("email").isEmail().withMessage("Invalid email format"),
+      body("phone").notEmpty().withMessage("Phone number is required"),
+    ],
+    { message: "Either a valid email or phone number is required" },
+  ),
 ];
 
 export const verifyResetOTPValidator = [
-  body("email").isEmail().withMessage("Email is required"),
+  oneOf(
+    [
+      body("email").isEmail().withMessage("Invalid email format"),
+      body("phone").notEmpty().withMessage("Phone number is required"),
+    ],
+    { message: "Either a valid email or phone number is required" },
+  ),
   body("otp")
     .trim()
     .notEmpty()
@@ -109,7 +121,13 @@ export const verifyResetOTPValidator = [
 ];
 
 export const resetPasswordValidator = [
-  body("email").isEmail().withMessage("Email is required"),
+  oneOf(
+    [
+      body("email").isEmail().withMessage("Invalid email format"),
+      body("phone").notEmpty().withMessage("Phone number is required"),
+    ],
+    { message: "Either a valid email or phone number is required" },
+  ),
   body("otp")
     .trim()
     .notEmpty()

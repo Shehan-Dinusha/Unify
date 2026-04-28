@@ -6,20 +6,22 @@ import logger from "../../utils/logger.js";
 /**
  * @desc    Reset Password (using OTP)
  * @route   POST /api/auth/reset-password
+ * Supports both email and phone number.
  */
 export const resetPassword = async (req, res) => {
   try {
-    const { email, otp, password } = req.body;
+    const { email, phone, otp, password } = req.body;
+    const whereClause = email ? { email } : { phone };
 
     const otpRecord = await OTP.findOne({
-      where: { email, code: otp, type: "PASSWORD_RESET", isUsed: false },
+      where: { ...whereClause, code: otp, type: "PASSWORD_RESET", isUsed: false },
     });
 
     if (!otpRecord || new Date() > otpRecord.expiresAt) {
       return sendResponse(res, 400, false, "Invalid or expired reset code");
     }
 
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: whereClause });
     if (!user) return sendResponse(res, 404, false, "User not found");
 
     const salt = await bcrypt.genSalt(10);
@@ -31,7 +33,6 @@ export const resetPassword = async (req, res) => {
     otpRecord.isUsed = true;
     await otpRecord.save();
     await otpRecord.destroy();
-
 
     return sendResponse(res, 200, true, "Password reset successful. You can now login.");
   } catch (error) {
