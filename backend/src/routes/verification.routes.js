@@ -12,11 +12,13 @@ import {
   removeVerifiedAccountValidator,
 } from "../validators/verification.validator.js";
 
+import { protect } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 // POST /api/v1/verifications/submit
 router.post(
   "/submit",
+  protect,
   uploadService.single("document"),
   submitVerificationRequestValidator,
   validateRequest,

@@ -55,6 +55,7 @@ import Faculty from "./Faculty.model.js";
 import Degree from "./Degree.model.js";
 import Batch from "./Batch.model.js";
 import SemesterVisibility from "./SemesterVisibility.model.js";
+import OTP from "./OTP.model.js";
 
 // ── Associations ──────────────────────────────────────────────────────────────
 
@@ -608,6 +609,10 @@ export {
   Degree,
   Batch,
   SemesterVisibility,
+<<<<<<< HEAD
+  OTP,
+=======
   UserSuspension,
   UserSuspensionHistory,
+>>>>>>> dev
 };

@@ -9,7 +9,7 @@ import {
 
 const router = express.Router();
 
-// These endpoints are for development and testing
+// Development/Testing endpoints
 router.post("/reset-db", resetDb);
 router.post("/seed-academic-structure", seedAcademicStructure);
 router.post("/seed-dummy-data", seedDummyData);
