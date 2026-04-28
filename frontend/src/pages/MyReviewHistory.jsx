@@ -98,6 +98,9 @@ const ReviewHistoryCard = ({ review, onDelete }) => {
                   Owner
                 </span>
               </div>
+              <span className="text-gray-400 text-xs font-normal font-inter leading-5">
+                {review.ownerReply.createdAt}
+              </span>
             </div>
             <p className="text-slate-300 text-sm font-normal font-inter leading-5">
               {review.ownerReply.content}
@@ -198,16 +201,9 @@ const MyReviewHistory = () => {
   // Simple filtering
   const filteredReviews = reviews.filter((review) => {
     if (activeTab === "All Reviews") return true;
-    if (activeTab === "Boarding" && review.category === "Boarding") return true;
-    if (activeTab === "Food/Cafe" && review.category === "Food & Cafe")
-      return true;
-    if (
-      activeTab === "Services" &&
-      (review.category === "Freelance Services" ||
-        review.category === "Tech Services")
-    ) {
-      return true;
-    }
+    if (activeTab === "Boarding" && review.category === "BOARDING") return true;
+    if (activeTab === "Food/Cafe" && review.category === "FOOD") return true;
+    if (activeTab === "Services" && review.category === "SELF_EMPLOYED") return true;
     return false;
   });
 

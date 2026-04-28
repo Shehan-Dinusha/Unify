@@ -96,12 +96,17 @@ const ReceivedReviewCard = ({ review, onReply, onLike }) => {
       {hasOwnerReplied && ownerReplyData && !isReplying && (
         <div className="pl-4 pb-4 w-full">
           <div className="p-4 bg-gray-800 rounded-lg border-l-2 border-blue-500 flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <span className="text-blue-500 text-xs font-bold font-inter leading-5">
-                You Replied
-              </span>
+            <div className="flex justify-between items-center h-6">
+              <div className="flex items-center gap-2">
+                <span className="text-white text-xs font-bold font-inter leading-5">
+                  You
+                </span>
+                <span className="px-1.5 py-0.5 bg-blue-600/10 text-blue-600 text-xs font-bold font-inter rounded leading-none">
+                  Owner
+                </span>
+              </div>
               <span className="text-gray-400 text-xs font-normal font-inter leading-5">
-                • {ownerReplyData.createdAt}
+                {ownerReplyData.createdAt}
               </span>
             </div>
             <p className="text-neutral-100 text-sm font-normal font-inter leading-5 whitespace-pre-line">
@@ -122,7 +127,7 @@ const ReceivedReviewCard = ({ review, onReply, onLike }) => {
             />
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mt-2">
               <span className="text-gray-400 text-xs font-normal font-lexend leading-4">
-                Replying as Campus Eats Owner
+                Replying as {review.businessName || "Business"}
               </span>
               <div className="flex items-center gap-2 self-end sm:self-auto">
                 <Button
@@ -157,6 +162,9 @@ const ReceivedReviewCard = ({ review, onReply, onLike }) => {
               Helpful {review.helpfulCount > 0 && `(${review.helpfulCount})`}
             </span>
             <ThumbsDown className="w-4 h-4 text-gray-400 shrink-0 ml-2" />
+            <span className="text-sm font-medium font-inter">
+              {review.notHelpfulCount > 0 && `(${review.notHelpfulCount})`}
+            </span>
           </div>
 
           <div className="hidden sm:block h-5 w-px bg-gray-800 mx-1 shrink-0" />
@@ -285,7 +293,7 @@ const ReceivedReviews = () => {
     if (activeTab === "All Reviews") return true;
     if (activeTab === "Unreplied") return !review.hasOwnerReplied;
     if (activeTab === "5 stars") return review.rating === 5;
-    if (activeTab === "Critical") return review.rating <= 3;
+    if (activeTab === "Critical") return review.rating < 3;
     return false;
   });
 

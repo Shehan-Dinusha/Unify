@@ -470,6 +470,9 @@ const ReviewCard = ({ review, onDelete, onFeedback }) => {
                   Owner
                 </span>
               </div>
+              <span className="text-gray-400 text-xs font-normal font-inter leading-5">
+                {review.ownerReply.createdAt}
+              </span>
             </div>
             <p className="text-slate-300 text-sm font-normal font-inter leading-5">
               {review.ownerReply.content}

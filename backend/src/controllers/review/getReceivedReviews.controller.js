@@ -3,6 +3,7 @@ import {
   User,
   StudentProfile,
   ClubProfile,
+  BusinessProfile,
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
@@ -44,6 +45,19 @@ export const getReceivedReviews = async (req, res, next) => {
               model: ClubProfile,
               as: "clubProfile",
               attributes: ["isVerified"],
+              required: false,
+            },
+          ],
+        },
+        {
+          model: User,
+          as: "target",
+          attributes: ["id", "name", "role", "avatar"],
+          include: [
+            {
+              model: BusinessProfile,
+              as: "businessProfile",
+              attributes: ["businessName", "displayName"],
               required: false,
             },
           ],
@@ -142,6 +156,11 @@ export const getReceivedReviews = async (req, res, next) => {
         };
       }
 
+      const targetUser = review.target || {};
+      const bizProfile = targetUser.businessProfile || {};
+      const businessName =
+        bizProfile.businessName || bizProfile.displayName || targetUser.name || "Business";
+
       return {
         id: review.id,
         rating: review.rating,
@@ -153,6 +172,7 @@ export const getReceivedReviews = async (req, res, next) => {
         author,
         hasOwnerReplied,
         ownerReply: parsedOwnerReply,
+        businessName,
       };
     });
 

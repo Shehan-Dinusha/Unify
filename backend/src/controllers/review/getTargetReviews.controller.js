@@ -1,9 +1,10 @@
 import {
   Review,
-  ReviewFeedback,
   User,
   StudentProfile,
   ClubProfile,
+  ReviewFeedback,
+  BusinessProfile,
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
@@ -26,6 +27,8 @@ export const getTargetReviews = async (req, res, next) => {
     if (targetExists.role !== "Business") {
       return sendResponse(res, 400, false, "Target is not a Business account.");
     }
+
+    const targetUserId = targetExists.id;
 
     const rawReviews = await Review.findAll({
       where: { targetId },
@@ -55,6 +58,19 @@ export const getTargetReviews = async (req, res, next) => {
           attributes: ["userId", "isHelpful"],
           where: { userId: currentUserId },
           required: false,
+        },
+        {
+          model: User,
+          as: "target",
+          attributes: ["id", "name", "role", "avatar"],
+          include: [
+            {
+              model: BusinessProfile,
+              as: "businessProfile",
+              attributes: ["businessName", "displayName"],
+              required: false,
+            },
+          ],
         },
       ],
       order: [["createdAt", "DESC"]],
@@ -145,10 +161,18 @@ export const getTargetReviews = async (req, res, next) => {
 
       let parsedOwnerReply = null;
       if (review.ownerReply) {
+        const targetUser = review.target || {};
+        const bizProfile = targetUser.businessProfile || {};
+        const ownerName =
+          bizProfile.businessName ||
+          bizProfile.displayName ||
+          targetUser.name ||
+          "Owner";
+
         parsedOwnerReply = {
           content: review.ownerReply,
           author: {
-            name: "Owner",
+            name: ownerName,
             avatar: null,
           },
           createdAt: formatRelativeDate(review.updatedAt),
