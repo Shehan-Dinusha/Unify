@@ -1,9 +1,12 @@
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import User from "../../modules/User.model.js";
 import StudentProfile from "../../modules/StudentProfile.model.js";
+import Degree from "../../modules/Degree.model.js";
+import Batch from "../../modules/Batch.model.js";
 import { Op } from "sequelize";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 /**
  * Handle fetching all APPROVED verification requests (Verified Entities) for Admins.
@@ -65,7 +68,11 @@ export const getVerifiedEntities = async (req, res, next) => {
             {
               model: StudentProfile,
               as: "studentProfile",
-              attributes: ["degree", "batch"],
+              attributes: ["id"],
+              include: [
+                { model: Degree, as: "degree", attributes: ["name"] },
+                { model: Batch, as: "batch", attributes: ["name"] },
+              ],
               required: false, // Left join: Not all Users (like native Clubs) have a student profile
             },
           ],
@@ -75,19 +82,26 @@ export const getVerifiedEntities = async (req, res, next) => {
     });
 
     // Map the database entities explicitly to what mockVerified provides in frontend!
-    const formattedVerified = verifiedRequests.map((request) => {
-      // Return shape identically matching mockVerified
-      return {
-        id: request.id,
-        name: request.user?.name || "Unknown User",
-        type: request.requestedRole,
-        verifiedDate: request.updatedAt, // Frontend can parse the ISO date or map to "Sep 12, 2023"
-        avatar: request.user?.avatar || "https://placehold.co/56x56",
-        email: request.user?.email || "No email available",
-        degree: request.user?.studentProfile?.degree || null,
-        batch: request.user?.studentProfile?.batch || null,
-      };
-    });
+    const formattedVerified = await Promise.all(
+      verifiedRequests.map(async (request) => {
+        // Return shape identically matching mockVerified
+        const resolvedAvatar = await resolveAvatarUrl(
+          request.user?.avatar,
+          request.user?.name,
+        );
+
+        return {
+          id: request.id,
+          name: request.user?.name || "Unknown User",
+          type: request.requestedRole,
+          verifiedDate: request.updatedAt, // Frontend can parse the ISO date or map to "Sep 12, 2023"
+          avatar: resolvedAvatar,
+          email: request.user?.email || "No email available",
+          degree: request.user?.studentProfile?.degree?.name || null,
+          batch: request.user?.studentProfile?.batch?.name || null,
+        };
+      }),
+    );
 
     return sendResponse(
       res,

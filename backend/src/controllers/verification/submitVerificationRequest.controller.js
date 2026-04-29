@@ -1,7 +1,7 @@
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
-import fs from "fs";
+import { resolveVerificationUrl } from "../../utils/verificationUrl.util.js";
 
 export const submitVerificationRequest = async (req, res, next) => {
   try {
@@ -9,23 +9,27 @@ export const submitVerificationRequest = async (req, res, next) => {
     const requestedRole = req.body.requestedRole || "Batch Rep";
 
     if (!req.file) {
-      return sendResponse(res, 400, false, "Verification document is required.");
-    }
-
-    const existingRequest = await VerificationRequest.findOne({ where: { userId } });
-    if (existingRequest) {
-      if (req.file && fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
-      }
       return sendResponse(
         res,
         400,
         false,
-        "You already have an active verification submission. Please delete it before submitting a new one."
+        "Verification document is required.",
       );
     }
 
-    const documentUrl = `/uploads/verifications/${req.file.filename}`;
+    const existingRequest = await VerificationRequest.findOne({
+      where: { userId },
+    });
+    if (existingRequest) {
+      return sendResponse(
+        res,
+        400,
+        false,
+        "You already have an active verification submission. Please delete it before submitting a new one.",
+      );
+    }
+
+    const documentUrl = req.file.s3Key || req.file.key;
 
     const documentMetadata = {
       originalName: req.file.originalname,
@@ -43,7 +47,18 @@ export const submitVerificationRequest = async (req, res, next) => {
 
     logger.info(`Verification request submitted for user ID: ${userId}`);
 
-    return sendResponse(res, 201, true, "Verification document submitted successfully.", newRequest);
+    const resolvedDocUrl = await resolveVerificationUrl(newRequest.documentUrl);
+
+    return sendResponse(
+      res,
+      201,
+      true,
+      "Verification document submitted successfully.",
+      {
+        ...newRequest.toJSON(),
+        documentUrl: resolvedDocUrl,
+      },
+    );
   } catch (error) {
     logger.error("Error submitting verification request", error);
     next(error);

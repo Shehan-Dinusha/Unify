@@ -1,6 +1,7 @@
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { resolveVerificationUrl } from "../../utils/verificationUrl.util.js";
 
 /**
  * Handle fetching the document URL and metadata for a specific verification request.
@@ -17,11 +18,18 @@ export const getVerificationDocument = async (req, res, next) => {
     }
 
     if (!request.documentUrl) {
-      return sendResponse(res, 404, false, "No document associated with this request.");
+      return sendResponse(
+        res,
+        404,
+        false,
+        "No document associated with this request.",
+      );
     }
 
+    const resolvedUrl = await resolveVerificationUrl(request.documentUrl);
+
     return sendResponse(res, 200, true, "Document retrieved successfully.", {
-      documentUrl: request.documentUrl,
+      documentUrl: resolvedUrl,
       documentMetadata: request.documentMetadata,
     });
   } catch (error) {

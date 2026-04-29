@@ -3,6 +3,8 @@ import User from "../../modules/User.model.js";
 import { Op } from "sequelize";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { resolveVerificationUrl } from "../../utils/verificationUrl.util.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 const formatFileSize = (bytes) => {
   if (!bytes || bytes === 0) return "0 Bytes";
@@ -23,19 +25,19 @@ export const getPendingVerifications = async (req, res, next) => {
     const lastViewedParam = req.query.lastViewed;
     const countQueries = [
       VerificationRequest.count({ where: { status: "PENDING" } }),
-      VerificationRequest.count({ 
-        where: { 
-          status: "APPROVED", 
-          updatedAt: { [Op.gte]: startOfDay } 
-        } 
-      }),
-      VerificationRequest.count({ 
-        where: { 
-          status: "DECLINED", 
-          updatedAt: { [Op.gte]: startOfDay } 
+      VerificationRequest.count({
+        where: {
+          status: "APPROVED",
+          updatedAt: { [Op.gte]: startOfDay },
         },
-        paranoid: false // Includes soft-deleted requests for accurate admin metric retention!
-      })
+      }),
+      VerificationRequest.count({
+        where: {
+          status: "DECLINED",
+          updatedAt: { [Op.gte]: startOfDay },
+        },
+        paranoid: false, // Includes soft-deleted requests for accurate admin metric retention!
+      }),
     ];
 
     if (lastViewedParam && !isNaN(new Date(lastViewedParam))) {
@@ -44,9 +46,9 @@ export const getPendingVerifications = async (req, res, next) => {
         VerificationRequest.count({
           where: {
             status: "PENDING",
-            createdAt: { [Op.gt]: new Date(lastViewedParam) }
-          }
-        })
+            createdAt: { [Op.gt]: new Date(lastViewedParam) },
+          },
+        }),
       );
     } else {
       // Fallback: If no lastViewed is passed, just count how many were created 'Today'
@@ -54,13 +56,14 @@ export const getPendingVerifications = async (req, res, next) => {
         VerificationRequest.count({
           where: {
             status: "PENDING",
-            createdAt: { [Op.gte]: startOfDay }
-          }
-        })
+            createdAt: { [Op.gte]: startOfDay },
+          },
+        }),
       );
     }
 
-    const [pendingCount, approvedToday, rejectedToday, newPendingCount] = await Promise.all(countQueries);
+    const [pendingCount, approvedToday, rejectedToday, newPendingCount] =
+      await Promise.all(countQueries);
 
     const pendingRequests = await VerificationRequest.findAll({
       where: { status: "PENDING" },
@@ -68,33 +71,41 @@ export const getPendingVerifications = async (req, res, next) => {
         {
           model: User,
           as: "user",
-          attributes: ["id", "name"], // Add avatar safely here if user model stores it later
+          attributes: ["id", "name", "avatar"], // Added avatar
         },
       ],
       order: [["createdAt", "DESC"]], // Show newest first
     });
 
     // Map to exactly match what the frontend VerificationQueue.jsx components expect!
-    const formattedRequests = pendingRequests.map((request) => {
-      const mimeType = request.documentMetadata?.mimeType || "";
-      let fileType = "unknown";
-      if (mimeType.includes("pdf")) fileType = "pdf";
-      else if (mimeType.includes("image")) fileType = "image";
-      else if (mimeType.includes("word") || mimeType.includes("document")) fileType = "doc";
+    const formattedRequests = await Promise.all(
+      pendingRequests.map(async (request) => {
+        const mimeType = request.documentMetadata?.mimeType || "";
+        let fileType = "unknown";
+        if (mimeType.includes("pdf")) fileType = "pdf";
+        else if (mimeType.includes("image")) fileType = "image";
+        else if (mimeType.includes("word") || mimeType.includes("document"))
+          fileType = "doc";
 
-      return {
-        id: request.id,
-        name: request.user?.name || "Unknown User",
-        type: request.requestedRole,
-        time: request.createdAt, // Send ISO date, frontend should format to "X hrs ago"
-        avatar: "https://placehold.co/48x48", // Placeholder avatar until robust profile system implemented
-        file: request.documentMetadata?.originalName || "Document",
-        fileSize: formatFileSize(request.documentMetadata?.size),
-        fileType: fileType,
-        status: request.status.toLowerCase(),
-        url: request.documentUrl,
-      };
-    });
+        const [resolvedDocUrl, resolvedAvatar] = await Promise.all([
+          resolveVerificationUrl(request.documentUrl),
+          resolveAvatarUrl(request.user?.avatar, request.user?.name),
+        ]);
+
+        return {
+          id: request.id,
+          name: request.user?.name || "Unknown User",
+          type: request.requestedRole,
+          time: request.createdAt, // Send ISO date, frontend should format to "X hrs ago"
+          avatar: resolvedAvatar,
+          file: request.documentMetadata?.originalName || "Document",
+          fileSize: formatFileSize(request.documentMetadata?.size),
+          fileType: fileType,
+          status: request.status.toLowerCase(),
+          url: resolvedDocUrl,
+        };
+      }),
+    );
 
     return sendResponse(
       res,
@@ -106,10 +117,10 @@ export const getPendingVerifications = async (req, res, next) => {
           totalPending: pendingCount,
           newPending: newPendingCount || 0,
           approvedToday,
-          rejectedToday
+          rejectedToday,
         },
-        requests: formattedRequests
-      }
+        requests: formattedRequests,
+      },
     );
   } catch (error) {
     logger.error("Error fetching pending verifications", error);
