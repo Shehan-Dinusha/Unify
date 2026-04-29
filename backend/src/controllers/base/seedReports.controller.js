@@ -1,12 +1,16 @@
-import { Report, StudentReport, User, Post } from "./modules/index.js";
-import sequelize from "./config/database.js";
+import { Report, StudentReport } from "../../modules/index.js";
+import { sendResponse } from "../../utils/response.js";
+import logger from "../../utils/logger.js";
 import moment from "moment";
 
-const seed = async () => {
+/**
+ * Controller to seed both Social and Student Reports.
+ * 100% Consistent with the base seeding pattern.
+ */
+export const seedReports = async (req, res, next) => {
+  logger.info("Starting report data seeding...");
+  
   try {
-    await sequelize.authenticate();
-    console.log("Connection established successfully.");
-
     // Reporter: Achini Jayasuriya (ID 4)
     // Offender: Kaveesha Silva (ID 5)
     const reporterId = 4;
@@ -50,7 +54,7 @@ const seed = async () => {
     ];
 
     await Report.bulkCreate(socialReports);
-    console.log("Social reports seeded.");
+    logger.info("Social reports seeded successfully.");
 
     // 2. Create Student Submitted Reports (student dashboard)
     const studentReports = [
@@ -96,13 +100,11 @@ const seed = async () => {
     ];
 
     await StudentReport.bulkCreate(studentReports);
-    console.log("Student reports seeded.");
+    logger.info("Student reports seeded successfully.");
 
-    process.exit(0);
+    return sendResponse(res, 201, true, "Report data seeded successfully!");
   } catch (error) {
-    console.error("Seeding failed:", error);
-    process.exit(1);
+    logger.error(`Seeding failed: ${error.message}`);
+    return sendResponse(res, 500, false, "Failed to seed report data", error.message);
   }
 };
-
-seed();

@@ -3,6 +3,7 @@ import { StudentReport, User, Post, Comment, MarketplaceItem, Boarding } from ".
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import moment from "moment";
+import s3Service from "../../services/s3.service.js";
 
 const generateTimeline = (report) => {
   const s = report.status;
@@ -56,48 +57,6 @@ const generateTimeline = (report) => {
     },
   ];
   return timeline;
-};
-
-const mapEvidence = (filesData, externalUrl) => {
-  const evidence = [];
-  const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
-  let files = [];
-
-  if (filesData) {
-    if (Array.isArray(filesData)) {
-      files = filesData;
-    } else if (typeof filesData === 'string') {
-      try {
-        files = JSON.parse(filesData);
-        if (!Array.isArray(files)) files = [files];
-      } catch (e) {
-        files = filesData.includes(',') ? filesData.split(',').map(f => f.trim()) : [filesData];
-      }
-    }
-  }
-
-  if (Array.isArray(files)) {
-    files.filter(f => f && typeof f === 'string').forEach(file => {
-      const ext = file.split('.').pop().toLowerCase();
-      const type = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? 'image' : 'pdf';
-      const name = file.split('/').pop() || 'Evidence';
-      evidence.push({
-        name,
-        type,
-        url: file.startsWith('http') ? file : `${baseUrl}${file}`
-      });
-    });
-  }
-
-  if (externalUrl) {
-    evidence.push({
-      name: 'External Link',
-      type: 'link',
-      url: externalUrl
-    });
-  }
-
-  return evidence;
 };
 
 /**
@@ -205,6 +164,45 @@ export const getReportById = async (req, res, next) => {
       return { author: "Admin", avatar: "A", date: moment(r.updatedAt).format("MMM DD, YYYY [at] h:mm A"), message: msg || "Your report has been processed." };
     };
 
+    // --- Evidence URL Generation (S3 Compatible) ---
+    const rawFiles = report.evidenceFiles;
+    const externalUrl = report.evidenceUrl;
+    let files = [];
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+
+    if (rawFiles) {
+      if (Array.isArray(rawFiles)) files = rawFiles;
+      else if (typeof rawFiles === 'string') {
+        try {
+          files = JSON.parse(rawFiles);
+          if (!Array.isArray(files)) files = [files];
+        } catch (e) {
+          files = rawFiles.includes(',') ? rawFiles.split(',').map(f => f.trim()) : [rawFiles];
+        }
+      }
+    }
+
+    const evidence = await Promise.all(
+      files.filter(f => f && typeof f === 'string').map(async (file) => {
+        let url = file;
+        // Generate presigned URL for S3 keys (Identify by 'reports/' prefix)
+        if (file.startsWith('reports/') && !file.startsWith('http')) {
+          try { url = await s3Service.getFileUrl(file); } 
+          catch (err) { logger.warn(`S3 Presign failed for ${file}: ${err.message}`); }
+        } else if (file.startsWith('/uploads/')) {
+          url = `${baseUrl}${file}`;
+        }
+        
+        return {
+          name: file.split('/').pop() || 'Evidence',
+          type: ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(file.split('.').pop().toLowerCase()) ? 'image' : 'pdf',
+          url
+        };
+      })
+    );
+
+    if (externalUrl) evidence.push({ name: 'External Link', type: 'link', url: externalUrl });
+
     const formattedData = {
       id: report.id,
       internalId: report.id,
@@ -225,7 +223,7 @@ export const getReportById = async (req, res, next) => {
         categoryBadge: categoryDisplayMap[report.category] || report.category
       },
       description: entityDescription !== "No additional details found." ? entityDescription : (report.additionalDetails || "No additional description provided."),
-      evidence: mapEvidence(report.evidenceFiles, report.evidenceUrl),
+      evidence,
       timeline: generateTimeline(report),
       activityLog: buildActivityLog(report),
       adminNote: buildAdminNote(report),

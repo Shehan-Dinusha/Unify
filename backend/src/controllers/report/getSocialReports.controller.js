@@ -3,37 +3,7 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import moment from "moment";
 import { Op } from "sequelize";
-
-/**
- * Parses evidence files from various storage formats into a unified array.
- */
-const parseEvidence = (raw, externalUrl = null) => {
-  let files = [];
-  const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
-
-  if (raw) {
-    if (Array.isArray(raw)) {
-      files = raw;
-    } else if (typeof raw === 'string') {
-      try {
-        files = JSON.parse(raw);
-        if (!Array.isArray(files)) files = [files];
-      } catch (e) {
-        files = raw.includes(',') ? raw.split(',').map(f => f.trim()) : [raw];
-      }
-    }
-  }
-
-  const mapped = files.filter(f => f && typeof f === 'string').map(file => ({
-    name: file.split('/').pop() || 'Evidence',
-    type: ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(file.split('.').pop().toLowerCase()) ? 'image' : 'pdf',
-    url: file.startsWith('http') ? file : `${baseUrl}${file}`
-  }));
-
-  if (externalUrl) mapped.push({ name: 'External Link', type: 'link', url: externalUrl });
-
-  return mapped;
-};
+import s3Service from "../../services/s3.service.js";
 
 /**
  * Builds an activity log from the adminNotes field.
@@ -254,6 +224,45 @@ export const getSocialReportById = async (req, res, next) => {
     offender.handle = offender.name ? `@${offender.name.toLowerCase().replace(/\s+/g, '_')}` : '@unknown';
     reportedContent.handle = offender.handle;
 
+    // --- Evidence URL Generation (S3 Compatible) ---
+    const rawFiles = isStudentReport ? r.evidenceFiles : r.evidence;
+    const externalUrl = isStudentReport ? r.evidenceUrl : null;
+    let files = [];
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+
+    if (rawFiles) {
+      if (Array.isArray(rawFiles)) files = rawFiles;
+      else if (typeof rawFiles === 'string') {
+        try {
+          files = JSON.parse(rawFiles);
+          if (!Array.isArray(files)) files = [files];
+        } catch (e) {
+          files = rawFiles.includes(',') ? rawFiles.split(',').map(f => f.trim()) : [rawFiles];
+        }
+      }
+    }
+
+    const evidence = await Promise.all(
+      files.filter(f => f && typeof f === 'string').map(async (file) => {
+        let url = file;
+        // Generate presigned URL for S3 keys (Identify by 'reports/' prefix)
+        if (file.startsWith('reports/') && !file.startsWith('http')) {
+          try { url = await s3Service.getFileUrl(file); } 
+          catch (err) { logger.warn(`S3 Presign failed for ${file}: ${err.message}`); }
+        } else if (file.startsWith('/uploads/')) {
+          url = `${baseUrl}${file}`;
+        }
+        
+        return {
+          name: file.split('/').pop() || 'Evidence',
+          type: ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(file.split('.').pop().toLowerCase()) ? 'image' : 'pdf',
+          url
+        };
+      })
+    );
+
+    if (externalUrl) evidence.push({ name: 'External Link', type: 'link', url: externalUrl });
+
     return sendResponse(res, 200, true, 'Detail retrieved', {
       id: isStudentReport ? `SR-${r.id}` : `R-${r.id + 4000}`,
       type: categoryDisplayMap[r.category] || r.category || r.type,
@@ -280,7 +289,7 @@ export const getSocialReportById = async (req, res, next) => {
         source: isStudentReport ? 'Mobile App' : 'Web Portal',
         reputation: '4.8/5.0'
       },
-      evidence: parseEvidence(isStudentReport ? r.evidenceFiles : r.evidence, isStudentReport ? r.evidenceUrl : null),
+      evidence,
       activityLog: buildActivityLog(r),
       violationHistory: [
         { type: 'Spam', date: '2023-11-12', status: 'Dismissed' },
