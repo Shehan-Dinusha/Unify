@@ -1,7 +1,7 @@
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
-import fs from "fs";
+
 
 export const submitVerificationRequest = async (req, res, next) => {
   try {
@@ -14,9 +14,6 @@ export const submitVerificationRequest = async (req, res, next) => {
 
     const existingRequest = await VerificationRequest.findOne({ where: { userId } });
     if (existingRequest) {
-      if (req.file && fs.existsSync(req.file.path)) {
-        fs.unlinkSync(req.file.path);
-      }
       return sendResponse(
         res,
         400,
@@ -25,7 +22,7 @@ export const submitVerificationRequest = async (req, res, next) => {
       );
     }
 
-    const documentUrl = `/uploads/verifications/${req.file.filename}`;
+    const documentUrl = req.file.location; // S3 Key/Location
 
     const documentMetadata = {
       originalName: req.file.originalname,
