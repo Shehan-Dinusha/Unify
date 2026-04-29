@@ -1,5 +1,5 @@
 import express from "express";
-import uploadService from "../services/upload.service.js";
+import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
 import { VerificationController } from "../controllers/index.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import {
@@ -11,7 +11,6 @@ import {
   getVerificationDocumentValidator,
   removeVerifiedAccountValidator,
 } from "../validators/verification.validator.js";
-
 import { protect } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
@@ -19,7 +18,7 @@ const router = express.Router();
 router.post(
   "/submit",
   protect,
-  uploadService.single("document"),
+  uploadToS3({ type: "single", fieldName: "document", folder: "verifications" }),
   submitVerificationRequestValidator,
   validateRequest,
   VerificationController.submitVerificationRequest
