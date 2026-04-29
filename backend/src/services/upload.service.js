@@ -21,15 +21,13 @@ const storage = multer.diskStorage({
     else if (file.fieldname === "evidenceFiles" || file.fieldname === "evidenceFile") {
       subFolder = "reports";
     }
-<<<<<<< HEAD
     // Avatars use 'avatar' or 'profileImage'
     else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
       subFolder = "avatars";
-=======
+    }
     // Materials use 'materialFile'
     else if (file.fieldname === "materialFile") {
       subFolder = "materials";
->>>>>>> dev
     }
 
     const uploadPath = path.join(process.cwd(), "uploads", subFolder);
@@ -48,13 +46,10 @@ const storage = multer.diskStorage({
       prefix = "vdoc";
     } else if (file.fieldname === "evidenceFiles" || file.fieldname === "evidenceFile") {
       prefix = "rpt";
-<<<<<<< HEAD
     } else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
       prefix = "avtr";
-=======
     } else if (file.fieldname === "materialFile") {
       prefix = "mat";
->>>>>>> dev
     }
 
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -103,17 +98,16 @@ const fileFilter = (req, file, cb) => {
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    const errorMsg = isMaterialFile
-      ? "Invalid file type. Only PDF, Images, Documents, and Videos are allowed for materials."
-      : "Invalid file type. Only PDF, JPG, PNG, and SVG are allowed.";
-    cb(new Error(errorMsg), false);
+    cb(new Error("File type not supported for this field"), false);
   }
 };
 
 const uploadService = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, // Allowed 50MB limit to accommodate videos
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit
+  },
 });
 
 export default uploadService;

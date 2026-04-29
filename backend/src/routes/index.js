@@ -1,15 +1,12 @@
 import express from "express";
 import verificationRoutes from "./verification.routes.js";
-<<<<<<< HEAD
 import authRoutes from "./auth.routes.js";
 import profileRoutes from "./profile.routes.js";
 import testRbacRoutes from "./test_rbac.routes.js";
-=======
 import postRoutes from "./post.routes.js";
 import orderRoutes from "./order.routes.js";
 import bookingRoutes from "./booking.routes.js";
 import paymentRoutes from "./payment.routes.js";
->>>>>>> dev
 import reviewRoutes from "./review.routes.js";
 import followerRoutes from "./follower.routes.js";
 import reportRoutes from "./report.routes.js";
@@ -17,15 +14,12 @@ import boostRoutes from "./boost.routes.js";
 import baseRoutes from "./base.routes.js";
 import suspensionRoutes from "./suspension.routes.js";
 import learningRoutes from "./learning.routes.js";
-<<<<<<< HEAD
 import uploadRoutes from "./upload.routes.js";
 import educationRoutes from "./education.routes.js";
-=======
 import studentManagementRoutes from "./studentManagement.routes.js";
 import businessManagementRoutes from "./businessManagement.routes.js";
 import adminToolsRoutes from "./adminTools.routes.js";
 import lostAndFoundRoutes from "./lostAndFound.routes.js";
->>>>>>> dev
 
 const router = express.Router();
 
@@ -45,14 +39,11 @@ router.use("/boosts", boostRoutes);
 router.use("/base", baseRoutes);
 router.use("/admin/suspended-users", suspensionRoutes);
 router.use("/learning", learningRoutes);
-<<<<<<< HEAD
 router.use("/upload", uploadRoutes);
 router.use("/education", educationRoutes);
-=======
 router.use("/admin/students", studentManagementRoutes);
 router.use("/admin/businesses", businessManagementRoutes);
 router.use("/admin/tools", adminToolsRoutes);
 router.use("/lost-and-found", lostAndFoundRoutes);
->>>>>>> dev
 
 export default router;

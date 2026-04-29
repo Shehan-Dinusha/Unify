@@ -5,6 +5,7 @@ import {
   seedDummyData,
   seedFollowers,
   seedReviews,
+  seedReports,
 } from "../controllers/base/index.js";
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.post("/seed-academic-structure", seedAcademicStructure);
 router.post("/seed-dummy-data", seedDummyData);
 router.post("/seed-followers", seedFollowers);
 router.post("/seed-reviews", seedReviews);
+router.post("/seed-reports", seedReports);
 
 export default router;
 // touch
