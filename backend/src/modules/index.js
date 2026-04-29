@@ -609,10 +609,7 @@ export {
   Degree,
   Batch,
   SemesterVisibility,
-<<<<<<< HEAD
   OTP,
-=======
   UserSuspension,
   UserSuspensionHistory,
->>>>>>> dev
 };

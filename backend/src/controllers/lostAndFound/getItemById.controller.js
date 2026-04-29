@@ -1,5 +1,6 @@
 import { LostAndFound, User, StudentProfile, Degree } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
+import s3Service from "../../services/s3.service.js";
 
 export const getItemById = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -27,6 +28,15 @@ export const getItemById = catchAsync(async (req, res, next) => {
     return sendResponse(res, 404, false, "Item not found.");
   }
 
+  let signedImageUrls = [];
+  if (item.images && item.images.length > 0) {
+    signedImageUrls = await Promise.all(
+      item.images.map(async (s3Key) => {
+         return await s3Service.getFileUrl(s3Key);
+      })
+    );
+  }
+
   const formattedItem = {
     id: item.id,
     postId: `LF-${item.id}`,
@@ -36,7 +46,7 @@ export const getItemById = catchAsync(async (req, res, next) => {
     location: item.location,
     date: item.date,
     timeOfDay: item.timeOfDay,
-    images: item.images || [],
+    images: signedImageUrls,
     postedBy: {
       name: item.user?.name || "Unknown",
       avatar: item.user?.avatar || "https://placehold.co/40x40",

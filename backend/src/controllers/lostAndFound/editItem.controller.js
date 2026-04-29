@@ -1,5 +1,7 @@
 import { LostAndFound } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
+import s3Service from "../../services/s3.service.js";
+import fs from "fs";
 
 export const editItem = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -25,9 +27,23 @@ export const editItem = catchAsync(async (req, res, next) => {
 
   // Handle multiple images
   if (req.files && req.files.length > 0) {
-    updates.images = req.files.map(
-      (file) => `/uploads/lost-found/${file.filename}`
-    );
+    const uploadPromises = req.files.map(async (file) => {
+      try {
+        const fileKey = await s3Service.uploadFile(
+          file.path,
+          file.originalname,
+          file.mimetype,
+          "lost-and-found"
+        );
+        if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+        return fileKey;
+      } catch (err) {
+        console.error("Failed to upload to S3 or cleanup local file:", err);
+        return null;
+      }
+    });
+    const results = await Promise.all(uploadPromises);
+    updates.images = results.filter((key) => key !== null);
   }
 
   // Apply updates and save

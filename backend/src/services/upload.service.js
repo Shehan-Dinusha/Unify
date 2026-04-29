@@ -21,15 +21,13 @@ const storage = multer.diskStorage({
     else if (file.fieldname === "evidenceFile") {
       subFolder = "reports";
     }
-<<<<<<< HEAD
     // Avatars use 'avatar' or 'profileImage'
     else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
       subFolder = "avatars";
-=======
+    }
     // Materials use 'materialFile'
     else if (file.fieldname === "materialFile") {
       subFolder = "materials";
->>>>>>> dev
     }
 
     const uploadPath = path.join(process.cwd(), "uploads", subFolder);
@@ -48,13 +46,10 @@ const storage = multer.diskStorage({
       prefix = "vdoc";
     } else if (file.fieldname === "evidenceFile") {
       prefix = "rpt";
-<<<<<<< HEAD
     } else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
       prefix = "avtr";
-=======
     } else if (file.fieldname === "materialFile") {
       prefix = "mat";
->>>>>>> dev
     }
 
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);

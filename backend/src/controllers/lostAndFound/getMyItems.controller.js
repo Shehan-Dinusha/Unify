@@ -1,5 +1,6 @@
 import { LostAndFound, User, StudentProfile, Degree } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
+import s3Service from "../../services/s3.service.js";
 
 export const getMyItems = catchAsync(async (req, res, next) => {
   //if (!req.user) return sendResponse(res, 401, false, "Unauthorized");
@@ -26,20 +27,33 @@ export const getMyItems = catchAsync(async (req, res, next) => {
     order: [["createdAt", "DESC"]]
   });
 
-  const formattedItems = items.map(item => ({
-    id: item.id,
-    type: item.type.toLowerCase(),
-    title: item.title,
-    location: item.location,
-    time: item.createdAt,
-    images: item.images || [],
-    status: item.status, // Included so frontend knows if it is "Resolved"
-    postedBy: {
-      name: item.user?.name || "Unknown",
-      avatar: item.user?.avatar || "https://placehold.co/40x40",
-      degree: item.user?.studentProfile?.degree?.name || "Unknown Degree"
+  const formattedItemsPromises = items.map(async (item) => {
+    let signedImageUrls = [];
+    if (item.images && item.images.length > 0) {
+      signedImageUrls = await Promise.all(
+        item.images.map(async (s3Key) => {
+           return await s3Service.getFileUrl(s3Key);
+        })
+      );
     }
-  }));
+
+    return {
+      id: item.id,
+      type: item.type.toLowerCase(),
+      title: item.title,
+      location: item.location,
+      time: item.createdAt,
+      images: signedImageUrls,
+      status: item.status, // Included so frontend knows if it is "Resolved"
+      postedBy: {
+        name: item.user?.name || "Unknown",
+        avatar: item.user?.avatar || "https://placehold.co/40x40",
+        degree: item.user?.studentProfile?.degree?.name || "Unknown Degree"
+      }
+    };
+  });
+
+  const formattedItems = await Promise.all(formattedItemsPromises);
 
   return sendResponse(res, 200, true, "My items fetched successfully.", formattedItems);
 });
