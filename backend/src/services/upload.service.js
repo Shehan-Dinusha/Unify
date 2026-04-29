@@ -14,22 +14,24 @@ const storage = multer.diskStorage({
     let subFolder = "general";
 
     // Verifications use 'document' or 'verificationDoc'
-    if (file.fieldname === "document" || file.fieldname === "verificationDoc" || file.fieldname === "clubDoc") {
+    if (
+      file.fieldname === "document" ||
+      file.fieldname === "verificationDoc" ||
+      file.fieldname === "clubDoc"
+    ) {
       subFolder = "verifications";
     }
     // Reports use 'evidenceFile'
     else if (file.fieldname === "evidenceFile") {
       subFolder = "reports";
     }
-<<<<<<< HEAD
     // Avatars use 'avatar' or 'profileImage'
     else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
       subFolder = "avatars";
-=======
+    }
     // Materials use 'materialFile'
     else if (file.fieldname === "materialFile") {
       subFolder = "materials";
->>>>>>> dev
     }
 
     const uploadPath = path.join(process.cwd(), "uploads", subFolder);
@@ -44,17 +46,21 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     // Prefix based on fieldname for easy identification
     let prefix = "file";
-    if (file.fieldname === "document" || file.fieldname === "verificationDoc" || file.fieldname === "clubDoc") {
+    if (
+      file.fieldname === "document" ||
+      file.fieldname === "verificationDoc" ||
+      file.fieldname === "clubDoc"
+    ) {
       prefix = "vdoc";
     } else if (file.fieldname === "evidenceFile") {
       prefix = "rpt";
-<<<<<<< HEAD
-    } else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
+    } else if (
+      file.fieldname === "avatar" ||
+      file.fieldname === "profileImage"
+    ) {
       prefix = "avtr";
-=======
     } else if (file.fieldname === "materialFile") {
       prefix = "mat";
->>>>>>> dev
     }
 
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
