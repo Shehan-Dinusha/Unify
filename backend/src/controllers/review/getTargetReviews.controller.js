@@ -9,7 +9,7 @@ import {
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { formatRelativeDate } from "../../utils/date.js";
-import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getTargetReviews = async (req, res, next) => {
   try {
@@ -128,14 +128,10 @@ export const getTargetReviews = async (req, res, next) => {
             let actualRole = review.reviewer.role;
             let isVerified = false;
 
-            let avatarUrl = review.reviewer.avatar;
-            if (avatarUrl && !avatarUrl.startsWith("http")) {
-              try {
-                avatarUrl = await getFileUrl(avatarUrl);
-              } catch (error) {
-                // fallback
-              }
-            }
+            const avatarUrl = await resolveAvatarUrl(
+              review.reviewer.avatar,
+              review.reviewer.name,
+            );
 
             // Determine specific identity
             if (
@@ -178,14 +174,10 @@ export const getTargetReviews = async (req, res, next) => {
             targetUser.name ||
             "Owner";
 
-          let ownerAvatarUrl = targetUser.avatar || null;
-          if (ownerAvatarUrl && !ownerAvatarUrl.startsWith("http")) {
-            try {
-              ownerAvatarUrl = await getFileUrl(ownerAvatarUrl);
-            } catch (error) {
-              // fallback
-            }
-          }
+          const ownerAvatarUrl = await resolveAvatarUrl(
+            targetUser.avatar,
+            ownerName,
+          );
 
           parsedOwnerReply = {
             content: review.ownerReply,

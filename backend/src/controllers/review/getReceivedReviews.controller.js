@@ -8,7 +8,7 @@ import {
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { formatRelativeDate } from "../../utils/date.js";
-import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getReceivedReviews = async (req, res, next) => {
   try {
@@ -120,14 +120,10 @@ export const getReceivedReviews = async (req, res, next) => {
             let actualRole = review.reviewer.role;
             let isVerified = false;
 
-            let avatarUrl = review.reviewer.avatar;
-            if (avatarUrl && !avatarUrl.startsWith("http")) {
-              try {
-                avatarUrl = await getFileUrl(avatarUrl);
-              } catch (error) {
-                // fallback
-              }
-            }
+            const avatarUrl = await resolveAvatarUrl(
+              review.reviewer.avatar,
+              review.reviewer.name,
+            );
 
             if (
               review.reviewer.role === "Student" &&

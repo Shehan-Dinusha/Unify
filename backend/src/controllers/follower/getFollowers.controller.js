@@ -1,6 +1,6 @@
 import { User } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
-import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getClubFollowers = catchAsync(async (req, res) => {
   // Use `req.user?.id` normally, but allow `req.query.clubId` for testing since auth is pending
@@ -52,15 +52,7 @@ export const getClubFollowers = catchAsync(async (req, res) => {
   // Map followers for frontend consumption
   const mappedFollowers = await Promise.all(
     followers.map(async (user) => {
-      let avatarUrl =
-        "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.name);
-      if (user.avatar) {
-        try {
-          avatarUrl = await getFileUrl(user.avatar);
-        } catch (error) {
-          avatarUrl = user.avatar;
-        }
-      }
+      const avatarUrl = await resolveAvatarUrl(user.avatar, user.name);
 
       return {
         id: user.id,

@@ -2,7 +2,7 @@ import { Review, User, BusinessProfile } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { formatRelativeDate } from "../../utils/date.js";
-import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getMyReviews = async (req, res, next) => {
   try {
@@ -85,21 +85,17 @@ export const getMyReviews = async (req, res, next) => {
         const targetUser = review.target || {};
         const bizProfile = targetUser.businessProfile || {};
 
-        let targetAvatarUrl = targetUser.avatar || null;
-        if (targetAvatarUrl && !targetAvatarUrl.startsWith("http")) {
-          try {
-            targetAvatarUrl = await getFileUrl(targetAvatarUrl);
-          } catch (error) {
-            // fallback
-          }
-        }
-
         const targetName =
           bizProfile.businessName ||
           bizProfile.displayName ||
           targetUser.name ||
           "Unknown Business";
         const category = bizProfile.category;
+
+        const targetAvatarUrl = await resolveAvatarUrl(
+          targetUser.avatar,
+          targetName,
+        );
 
         let parsedOwnerReply = null;
         if (review.ownerReply) {
