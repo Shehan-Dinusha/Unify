@@ -1,29 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Select from '../components/common/Select';
-import { mockReports, mockRequests } from '../data/mockData';
+import { useToast } from '../components/common/Toast';
+import { fetchAllReports, getReportStats } from '../services/reportService';
 import {
-    RotateCcw, TrendingUp, ShieldAlert, ShieldCheck,
+    RotateCcw, TrendingUp, ShieldAlert, ShieldCheck, AlertTriangle,
 } from 'lucide-react';
 
 /* ─── HELPERS ────────────────────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
     const map = {
-        Pending:     'bg-state-error/20 text-state-error border-state-error/30',
-        'In Review': 'bg-state-warning/20 text-state-warning border-state-warning/30',
-        Resolved:    'bg-state-success/20 text-state-success border-state-success/30',
-        Dismissed:   'bg-white/10 text-text-secondary border-white/20',
+        Pending:          'bg-state-error/20 text-state-error border-state-error/30',
+        'Pending Review': 'bg-state-error/20 text-state-error border-state-error/30',
+        'In Review':      'bg-state-warning/20 text-state-warning border-state-warning/30',
+        'In Progress':    'bg-state-warning/20 text-state-warning border-state-warning/30',
+        Resolved:         'bg-state-success/20 text-state-success border-state-success/30',
+        Dismissed:        'bg-white/10 text-text-secondary border-white/20',
+        Withdrawn:        'bg-white/10 text-text-secondary border-white/20',
     };
+    const dotColor = {
+        Pending: 'bg-state-error', 'Pending Review': 'bg-state-error',
+        'In Review': 'bg-state-warning', 'In Progress': 'bg-state-warning',
+        Resolved: 'bg-state-success',
+        Dismissed: 'bg-text-secondary', Withdrawn: 'bg-text-secondary',
+    };
+    // Normalize display label
+    const displayLabel = status === 'In Progress' ? 'In Review' : status;
     return (
         <span className={`inline-flex items-center gap-xs text-body-extra-small-bold px-sm py-xs rounded-lg border ${map[status] || map.Pending}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${
-                status === 'Pending' ? 'bg-state-error' :
-                status === 'In Review' ? 'bg-state-warning' :
-                status === 'Resolved' ? 'bg-state-success' : 'bg-text-secondary'
-            }`} />
-            {status}
+            <span className={`w-1.5 h-1.5 rounded-full ${dotColor[status] || 'bg-text-secondary'}`} />
+            {displayLabel}
         </span>
     );
 };
@@ -47,24 +55,68 @@ const TypeBadge = ({ type }) => {
    ═══════════════════════════════════════════════════════════════════════ */
 const ReportModeration = () => {
     const navigate = useNavigate();
+    const toast = useToast();
 
     const [filterType, setFilterType]     = useState('');
     const [filterStatus, setFilterStatus] = useState('');
 
-    const stats = [
-        { icon: TrendingUp,  iconBg: 'bg-state-warning/20', iconColor: 'text-state-warning', value: '42',  label: 'Total Pending',  cardBg: 'bg-gradient-to-br from-state-warning/10 to-transparent' },
-        { icon: ShieldAlert,  iconBg: 'bg-state-error/20',   iconColor: 'text-state-error',   value: '15',  label: 'Critical Flags', cardBg: 'bg-gradient-to-br from-state-error/10 to-transparent' },
-        { icon: ShieldCheck, iconBg: 'bg-state-success/20',  iconColor: 'text-state-success', value: '128', label: 'Resolved Today', cardBg: 'bg-gradient-to-br from-state-success/10 to-transparent' },
-    ];
+    // ── Data State (mirrors StudentManagement pattern) ──────────────────
+    const [reports, setReports]   = useState([]);
+    const [stats, setStats]       = useState([]);
+    const [loading, setLoading]   = useState(true);
+    const [error, setError]       = useState(null);
+
+    // ── Fetch Stats on mount ────────────────────────────────────────────
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const result = await getReportStats();
+                const d = result.data || {};
+                setStats([
+                    { icon: TrendingUp,  iconBg: 'bg-state-warning/20', iconColor: 'text-state-warning', value: String(d.totalPending ?? 0),  label: 'Total Pending',  cardBg: 'bg-gradient-to-br from-state-warning/10 to-transparent' },
+                    { icon: ShieldAlert,  iconBg: 'bg-state-error/20',   iconColor: 'text-state-error',   value: String(d.criticalFlags ?? 0), label: 'Critical Flags', cardBg: 'bg-gradient-to-br from-state-error/10 to-transparent' },
+                    { icon: ShieldCheck, iconBg: 'bg-state-success/20',  iconColor: 'text-state-success', value: String(d.resolvedToday ?? 0), label: 'Resolved Today', cardBg: 'bg-gradient-to-br from-state-success/10 to-transparent' },
+                ]);
+            } catch (err) {
+                console.error('[ReportModeration] Failed to load stats:', err);
+                toast.error('Connection Error', 'Failed to load report stats. Please check your backend.');
+            }
+        };
+        fetchStats();
+    }, []);
+
+    // ── Fetch Reports when filters change ───────────────────────────────
+    useEffect(() => {
+        const loadReports = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const result = await fetchAllReports({
+                    type: filterType,
+                    status: filterStatus,
+                });
+                setReports(result.data || []);
+            } catch (err) {
+                console.error('[ReportModeration] Failed to load reports:', err);
+                setError('Failed to connect to the server. Please make sure the backend is running.');
+                toast.error('Connection Error', 'Failed to load report queue.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadReports();
+    }, [filterType, filterStatus]);
 
     const typeOptions   = [{ value:'',label:'All Report Types' },{ value:'Hate Speech',label:'Hate Speech' },{ value:'Nudity',label:'Nudity' },{ value:'Spam',label:'Spam' },{ value:'Harassment',label:'Harassment' }];
-    const statusOptions = [{ value:'',label:'All Status' },{ value:'Pending',label:'● Pending' },{ value:'In Review',label:'● In Review' },{ value:'Resolved',label:'● Resolved' },{ value:'Dismissed',label:'● Dismissed' }];
-
-    const filteredReports = mockReports.filter(r => {
-        if (filterType && r.type !== filterType) return false;
-        if (filterStatus && r.status !== filterStatus) return false;
-        return true;
-    });
+    // Status values must match what the backend getSocialReportQueue maps (admin UI statuses)
+    const statusOptions = [
+        { value:'',          label:'All Status' },
+        { value:'Pending',   label:'● Pending' },
+        { value:'In Review', label:'● In Review' },
+        { value:'Resolved',  label:'● Resolved' },
+        { value:'Dismissed', label:'● Dismissed' },
+        { value:'Withdrawn', label:'● Withdrawn' },
+    ];
 
     const avatar = (name) => `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(/\s/g,'')}`;
 
@@ -75,7 +127,6 @@ const ReportModeration = () => {
         <MainLayout
             user={{ name: 'Alex Johnson', role: 'admin' }}
             pageTitle="Report Moderation"
-            verificationCount={mockRequests.length}
         >
             <div className="flex flex-col gap-lg">
                 {/* Stats — icon above, text below, centered */}
@@ -115,6 +166,19 @@ const ReportModeration = () => {
                     </button>
                 </div>
 
+                {/* Error State */}
+                {error && (
+                    <Card variant="container" className="border-state-error/30 bg-state-error/5">
+                        <div className="flex items-center gap-md">
+                            <AlertTriangle size={24} className="text-state-error shrink-0" />
+                            <div>
+                                <p className="text-body-medium-bold text-state-error">Backend Unavailable</p>
+                                <p className="text-body-small text-text-secondary">{error}</p>
+                            </div>
+                        </div>
+                    </Card>
+                )}
+
                 {/* Desktop Table */}
                 <div className="relative overflow-hidden border border-white/20 rounded-2xl bg-white/5 backdrop-blur-sm hidden md:block">
                     <div className="grid gap-md px-lg py-md border-b border-white/10" style={{ gridTemplateColumns: '0.8fr 1fr 1.5fr 1fr 0.8fr 1fr' }}>
@@ -125,8 +189,15 @@ const ReportModeration = () => {
                         <span className="text-body-small-bold text-text-secondary">Status</span>
                         <span className="text-body-small-bold text-text-secondary text-right">Actions</span>
                     </div>
-                    {filteredReports.map((r, idx) => (
-                        <div key={r.id} className={`grid gap-md px-lg py-md items-center hover:bg-white/5 transition-colors ${idx < filteredReports.length - 1 ? 'border-b border-white/5' : ''}`} style={{ gridTemplateColumns: '0.8fr 1fr 1.5fr 1fr 0.8fr 1fr' }}>
+
+                    {loading && (
+                        <div className="px-lg py-xl text-center text-text-secondary text-body-small">
+                            Loading reports...
+                        </div>
+                    )}
+
+                    {!loading && !error && reports.map((r, idx) => (
+                        <div key={r.id} className={`grid gap-md px-lg py-md items-center hover:bg-white/5 transition-colors ${idx < reports.length - 1 ? 'border-b border-white/5' : ''}`} style={{ gridTemplateColumns: '0.8fr 1fr 1.5fr 1fr 0.8fr 1fr' }}>
                             <span className="text-body-small-bold text-text-primary">#{r.id}</span>
                             <TypeBadge type={r.type} />
                             <div className="flex items-center gap-md min-w-0">
@@ -142,14 +213,14 @@ const ReportModeration = () => {
                             </div>
                         </div>
                     ))}
-                    {filteredReports.length === 0 && (
+                    {!loading && !error && reports.length === 0 && (
                         <div className="px-lg py-12 text-center text-body-small text-text-secondary">No reports found matching the current filters.</div>
                     )}
                 </div>
 
                 {/* Mobile Cards */}
                 <div className="grid grid-cols-1 gap-md md:hidden">
-                    {filteredReports.map(r => (
+                    {!loading && !error && reports.map(r => (
                         <Card key={r.id} variant="container" className="hover:bg-white/5 transition-colors">
                             <div className="flex flex-col gap-md">
                                 <div className="flex items-center gap-md">
@@ -170,7 +241,7 @@ const ReportModeration = () => {
                             </div>
                         </Card>
                     ))}
-                    {filteredReports.length === 0 && <div className="p-8 text-center text-body-small text-text-secondary">No reports found.</div>}
+                    {!loading && !error && reports.length === 0 && <div className="p-8 text-center text-body-small text-text-secondary">No reports found.</div>}
                 </div>
             </div>
         </MainLayout>

@@ -5,11 +5,16 @@ import {
   createLostFoundItemValidator,
   getLostFoundItemsQueryValidator,
   getLostFoundItemDetailsValidator,
+  editLostFoundItemValidator,     
+  deleteLostFoundItemValidator  
 } from "../validators/lostAndFound.validator.js";
 import {
   createItem,
   getItems,
-  getItemById
+  getItemById,
+  getMyItems,
+  editItem,
+  deleteItem
 } from "../controllers/lostAndFound/index.js";
 
 const router = express.Router();
@@ -17,7 +22,7 @@ const router = express.Router();
 // 1. Create a new Item (uses multipart/form-data for image)
 router.post(
   "/",
-  uploadService.single("image"), // extracts req.file & req.body
+  uploadService.array("images", 5), // extracts req.file & req.body
   createLostFoundItemValidator,
   validateRequest,
   createItem
@@ -31,12 +36,34 @@ router.get(
   getItems
 );
 
-// 3. Fetch single item for Detail View Modal
+// 3. Fetch ONLY items belonging to the logged-in user
+router.get(
+  "/my-items", 
+  getMyItems
+);
+
+// 4. Fetch single item for Detail View Modal
 router.get(
   "/:id",
   getLostFoundItemDetailsValidator,
   validateRequest,
   getItemById
+);
+
+// 5. Edit an item
+router.put(
+  "/:id",
+  uploadService.array("images", 5), // Allows updating the images too
+  editLostFoundItemValidator,
+  validateRequest,
+  editItem
+);
+// 6. Delete an item
+router.delete(
+  "/:id", 
+  deleteLostFoundItemValidator, 
+  validateRequest, 
+  deleteItem
 );
 
 export default router;

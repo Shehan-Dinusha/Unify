@@ -40,3 +40,18 @@ export const getLostFoundItemsQueryValidator = [
     .optional()
     .isIn(["Lost", "Found", "All"]).withMessage("Filter type must be 'Lost', 'Found', or 'All'")
 ];
+
+export const editLostFoundItemValidator = [
+  param("id")
+    .notEmpty().withMessage("Item ID is required")
+    .isInt().withMessage("Item ID must be an integer"),
+  body("title").optional().trim().isString().withMessage("Title must be a string"),
+  body("description").optional().trim().isString(),
+  body("location").optional().trim().isString(),
+  body("status").optional().isIn(["Active", "Resolved"]).withMessage("Invalid status"),
+];
+export const deleteLostFoundItemValidator = [
+  param("id")
+    .notEmpty().withMessage("Item ID is required")
+    .isInt().withMessage("Item ID must be an integer"),
+];
