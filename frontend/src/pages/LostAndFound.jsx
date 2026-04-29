@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   MapPin,
@@ -13,24 +13,53 @@ import {
   CheckCircle,
 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
-import { mockLostAndFoundItems } from "../data/mockData";
+import { getItems, getItemById } from "../services/lostAndFoundService";
 import CreatePostModal from "../components/lost-found/CreatePostModal";
 import ReportItemForm from "../components/lost-found/ReportItemForm";
 
 /* ─── Item card ──────────────────────────────────────────────── */
-const ItemCard = ({ item, onSelect }) => (
-  <div
-    onClick={() => onSelect?.(item.id)}
-    className="group rounded-2xl overflow-hidden bg-dark-2 border border-white/5 hover:border-primary-blue/30 transition-all duration-200 cursor-pointer"
-  >
+const ItemCard = ({ item, onSelect }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [intervalId, setIntervalId] = useState(null);
+
+  const startSlide = () => {
+    if (!item.images || item.images.length <= 1) return;
+
+    const id = setInterval(() => {
+      setCurrentIndex((prev) =>
+        prev === item.images.length - 1 ? 0 : prev + 1
+      );
+    }, 1000);
+
+    setIntervalId(id);
+  };
+
+  const stopSlide = () => {
+    if (intervalId) clearInterval(intervalId);
+    setCurrentIndex(0);
+  };
+
+  return (
+    <div
+      onClick={() => onSelect?.(item.id)}
+      className="group rounded-2xl overflow-hidden bg-dark-2 border border-white/5 hover:border-primary-blue/30 transition-all duration-200 cursor-pointer"
+    >
     {/* Image */}
-    <div className="relative w-full h-40 sm:h-48 bg-white/5 overflow-hidden">
-      <img
-        src={item.image}
-        alt={item.title}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-      />
-      {/* Badge */}
+    <div
+      className="relative w-full h-40 sm:h-48 bg-white/5 overflow-hidden"
+      onMouseEnter={startSlide}
+      onMouseLeave={stopSlide}
+    >
+    <img
+      src={
+        item.images && item.images.length > 0
+        ? item.images[currentIndex]
+        : "https://placehold.co/400x300"
+      }
+      alt={item.title}
+      className="w-full h-full object-cover transition-all duration-300"
+    />
+    {/* Badge */}
       <span
         className={`absolute top-3 left-3 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-md ${
           item.type === "lost"
@@ -54,11 +83,14 @@ const ItemCard = ({ item, onSelect }) => (
       <span className="text-[12px] text-text-tertiary">{item.time}</span>
     </div>
   </div>
-);
+  );
+
+};
 
 /* ─── Item Detail View ───────────────────────────────────────── */
 const ItemDetailView = ({ item, onBack }) => {
   const isLost = item.type === "lost";
+  const [activeImage, setActiveImage] = useState(0);
 
   return (
     <div className="flex flex-col gap-5 w-full max-w-5xl mx-auto px-2 sm:px-0">
@@ -72,10 +104,15 @@ const ItemDetailView = ({ item, onBack }) => {
           {/* Image */}
           <div className="relative rounded-2xl overflow-hidden bg-white/5">
             <img
-              src={item.image}
+              src={
+                item.images && item.images.length > 0
+                  ? item.images[activeImage]
+                  : "https://placehold.co/800x600"
+              }           
               alt={item.title}
               className="w-full h-[280px] sm:h-[340px] object-cover"
             />
+              
             {/* Badge */}
             <span
               className={`absolute top-4 left-4 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg ${
@@ -88,6 +125,24 @@ const ItemDetailView = ({ item, onBack }) => {
               {item.type}
             </span>
           </div>
+
+          {/* Thumbnails */}
+          {item.images && item.images.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto">
+              {item.images.map((img, index) => (
+                <img
+                  key={index}
+                  src={img}
+                  onClick={() => setActiveImage(index)}
+                  className={`w-16 h-16 object-cover rounded-lg cursor-pointer border ${
+                    activeImage === index
+                      ? "border-primary-blue"
+                      : "border-white/10"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Full Description */}
           <div className="rounded-2xl border border-white/10 bg-dark-2 p-5 flex flex-col gap-3">
@@ -198,13 +253,55 @@ const ItemDetailView = ({ item, onBack }) => {
 /* ─── Filter tabs ────────────────────────────────────────────── */
 const FILTERS = ["All", "Lost Items", "Found Items"];
 
+/* ─── Item Detail View Wrapper ───────────────────────────────── */
+const ItemDetailViewWrapper = ({ id, onBack }) => {
+  const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchItem = async () => {
+      try {
+        const data = await getItemById(id);
+        setItem(data);
+      } catch (error) {
+        console.error("Failed to fetch item details", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchItem();
+  }, [id]);
+
+  if (loading) return <div className="text-center text-text-secondary py-10">Loading item...</div>;
+  if (!item) return <div className="text-center text-text-secondary py-10">Item not found. <button onClick={onBack} className="text-primary-blue hover:underline">Go back</button></div>;
+
+  return <ItemDetailView item={item} onBack={onBack} />;
+};
+
 /* ─── Page ───────────────────────────────────────────────────── */
 const LostAndFound = () => {
   const [activeFilter, setActiveFilter] = useState("All");
+  const [items, setItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Sync view state with URL search params so the browser back button works
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get("view") || "list";
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getItems("All");
+        setItems(data);
+      } catch (err) {
+        console.error("Failed to fetch lost and found items:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchItems();
+  }, []);
 
   const setView = useCallback(
     (newView) => {
@@ -222,10 +319,10 @@ const LostAndFound = () => {
 
   const filteredItems =
     activeFilter === "All"
-      ? mockLostAndFoundItems
+      ? items
       : activeFilter === "Lost Items"
-        ? mockLostAndFoundItems.filter((i) => i.type === "lost")
-        : mockLostAndFoundItems.filter((i) => i.type === "found");
+        ? items.filter((i) => i.type === "lost")
+        : items.filter((i) => i.type === "found");
 
   /* Create Post button — only visible on the list view */
   const headerRight = view === "list" ? (
@@ -245,28 +342,7 @@ const LostAndFound = () => {
       headerRight={headerRight}
     >
       {view === "detail" ? (
-        (() => {
-          const selectedId = Number(searchParams.get("id"));
-          const selectedItem = mockLostAndFoundItems.find(
-            (i) => i.id === selectedId
-          );
-          return selectedItem ? (
-            <ItemDetailView
-              item={selectedItem}
-              onBack={() => setView("list")}
-            />
-          ) : (
-            <div className="text-center text-text-secondary py-10">
-              Item not found.{" "}
-              <button
-                onClick={() => setView("list")}
-                className="text-primary-blue hover:underline"
-              >
-                Go back
-              </button>
-            </div>
-          );
-        })()
+        <ItemDetailViewWrapper id={Number(searchParams.get("id"))} onBack={() => setView("list")} />
       ) : view === "lostForm" || view === "foundForm" ? (
         <ReportItemForm
           type={view === "lostForm" ? "lost" : "found"}
@@ -292,22 +368,26 @@ const LostAndFound = () => {
           </div>
 
           {/* Items Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
-            {filteredItems.map((item) => (
-              <ItemCard
-                key={item.id}
-                item={item}
-                onSelect={(id) =>
-                  setSearchParams(
-                    { view: "detail", id: String(id) },
-                    { replace: false }
-                  )
-                }
-              />  
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="text-center text-text-secondary py-10">Loading...</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+              {filteredItems.map((item) => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  onSelect={(id) =>
+                    setSearchParams(
+                      { view: "detail", id: String(id) },
+                      { replace: false }
+                    )
+                  }
+                />  
+              ))}
+            </div>
+          )}
 
-          {activeFilter === "All" && (
+          {activeFilter === "All" && !isLoading && filteredItems.length > 0 && (
             <button className="mx-auto flex items-center gap-2 text-body-small text-text-secondary hover:text-text-primary transition-colors py-3">
               Load more items
               <svg

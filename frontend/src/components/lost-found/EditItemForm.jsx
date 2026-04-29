@@ -1,17 +1,21 @@
 import React, { useState, useRef } from "react";
 import { Camera, Trash2 } from "lucide-react";
+import { editItem } from "../../services/lostAndFoundService";
 
 const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
   // Local state initialized with item data
   const [title, setTitle] = useState(item.title || "");
   const [description, setDescription] = useState(item.description || "");
-  const [date, setDate] = useState(""); // If we had a specific date in mock data, we'd parse it here
-  const [time, setTime] = useState(""); 
+  const [date, setDate] = useState(item.date || ""); 
+  const [time, setTime] = useState(item.timeOfDay || ""); 
   const [location, setLocation] = useState(item.location || "");
-  const [status, setStatus] = useState("Active"); // 'Active' or 'Resolved'
+  const [status, setStatus] = useState(item.status || "Active");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Image editing state
-  const [imagePreview, setImagePreview] = useState(item.image);
+  const fallbackImage = item.images && item.images.length > 0 ? item.images[0] : "";
+  const [imagePreview, setImagePreview] = useState(fallbackImage);
+  const [imageFile, setImageFile] = useState(null); // Actual binary file
   const fileInputRef = useRef(null);
 
   const isLost = item.type === "lost";
@@ -22,6 +26,7 @@ const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
       const reader = new FileReader();
       reader.onload = (ev) => {
         setImagePreview(ev.target.result);
+        setImageFile(file); // Save actual file for backend POST
       };
       reader.readAsDataURL(file);
     }
@@ -29,16 +34,29 @@ const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
     e.target.value = "";
   };
 
-  const handleSave = () => {
-    // In a real app, we'd pass back the updated object
-    onSave({
-      ...item,
-      title,
-      description,
-      location,
-      status, // e.g., to notify parent if it should be moved to 'Resolved'
-      image: imagePreview
-    });
+  const handleSave = async () => {
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("location", location);
+      formData.append("status", status);
+      if (date) formData.append("date", date);
+      if (time) formData.append("timeOfDay", time);
+
+      if (imageFile) {
+        formData.append("images", imageFile);
+      }
+
+      const updatedData = await editItem(item.id, formData);
+      onSave(updatedData); // Pass updated API model back to UI
+    } catch (error) {
+      console.error("Failed to update item:", error);
+      alert("Failed to update post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -84,7 +102,11 @@ const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
                 className="hidden"
               />
               <button
-                onClick={() => setImagePreview("")}
+                type="button"
+                onClick={() => {
+                  setImagePreview("");
+                  setImageFile(null);
+                }}
                 className="w-[42px] h-[42px] shrink-0 rounded-xl border border-state-error/30 text-state-error hover:bg-state-error/10 flex items-center justify-center transition-colors"
                 title="Remove photo"
               >
@@ -206,14 +228,17 @@ const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-primary-blue hover:brightness-110 text-white text-body-small-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                disabled={isSubmitting}
+                className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-white text-body-small-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+                  isSubmitting ? "bg-gray-500 cursor-not-allowed" : "bg-primary-blue hover:brightness-110"
+                }`}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16L21 8V19C21 20.1046 20.1046 21 19 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M17 21V13H7V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M7 3V8H15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Save Changes
+                {isSubmitting ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>
