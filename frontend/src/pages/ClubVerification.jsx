@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Info,
   ArrowRight,
@@ -16,56 +16,110 @@ import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import FileUpload from "../components/common/FileUpload";
 import DocumentPreviewModal from "../components/common/DocumentPreviewModal";
-import { mockFullDocument } from "../data/mockData";
+import verificationService from "../services/verificationService";
+import { useToast } from "../components/common/Toast";
 
 const ClubVerification = () => {
   const navigate = useNavigate();
-  const [submissionStatus, setSubmissionStatus] = useState(() => {
-    const status = localStorage.getItem("unify_club_verification_status");
-    if (status === "PENDING") return "pending";
-    if (status === "APPROVED") return "approved";
-    if (status === "REJECTED") return "declined";
-    return "idle";
-  }); // 'idle' | 'pending' | 'approved' | 'declined'
+  const toast = useToast();
+  const [submissionStatus, setSubmissionStatus] = useState("idle"); // 'idle' | 'pending' | 'approved' | 'declined'
   const [submittedFile, setSubmittedFile] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [declineReason, setDeclineReason] = useState("");
+  const [approvedRole, setApprovedRole] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Mock Data
-  const declineReason =
-    "The submitted constitution document is missing the required Faculty Advisor signature on page 3. Please acquire the signature and resubmit.";
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  const fetchStatus = async () => {
+    try {
+      setLoading(true);
+      const response = await verificationService.getStatus();
+      if (response.success && response.data.hasRequest) {
+        setSubmissionStatus(response.data.status);
+        setDeclineReason(response.data.declineReason || "");
+        setApprovedRole(response.data.role || "");
+
+        // If they have a document already, simulate a "file" for the UI link
+        if (response.data.document) {
+          setSubmittedFile({
+            name: response.data.document.name,
+            size: response.data.document.size,
+            url: response.data.document.url,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching status:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFileSelect = (file) => {
     setSubmittedFile(file);
   };
 
-  const handleSubmit = () => {
-    if (submittedFile) {
-      console.log("Submitting file:", submittedFile.name);
-      // Sync with global status
-      localStorage.setItem("unify_club_verification_status", "PENDING");
-      // Mark as submitted so the profile banner switches to 'See Verification Status'
-      localStorage.setItem("unify_club_verification_submitted", "true");
-      setSubmissionStatus("pending");
-      // Navigate back to profile after a brief moment
-      setTimeout(() => navigate("/profile?role=club_society"), 800);
+  const handleSubmit = async () => {
+    if (!submittedFile) return;
+
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("document", submittedFile);
+      formData.append("requestedRole", "Club");
+
+      const response = await verificationService.submitRequest(formData);
+      if (response.success) {
+        toast.success("Verification submitted successfully!");
+        setSubmissionStatus("pending");
+        setTimeout(() => navigate("/profile?role=club_society"), 1500);
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to submit verification",
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleWithdrawConfirm = () => {
-    console.log("Withdrawing application");
-    localStorage.removeItem("unify_club_verification_submitted");
-    setSubmissionStatus("idle");
-    setSubmittedFile(null);
-    setShowWithdrawModal(false);
+  const handleWithdrawConfirm = async () => {
+    try {
+      setLoading(true);
+      const response = await verificationService.withdrawRequest();
+      if (response.success) {
+        toast.success("Success", "Submission withdrawn successfully");
+        setSubmissionStatus("idle");
+        setSubmittedFile(null);
+        setConfirmPassword("");
+        setShowWithdrawModal(false);
+      }
+    } catch (error) {
+      toast.error(
+        "Error",
+        error.response?.data?.message || "Failed to withdraw submission",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return "0 Bytes";
+    if (!bytes || bytes === 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const handlePreview = (doc) => {
+    setSubmittedFile(doc);
+    setShowPreviewModal(true);
   };
 
   // Helper to render logic for icon, title, badge based on status
@@ -206,14 +260,16 @@ const ClubVerification = () => {
                 )}
                 {submissionStatus === "approved" && (
                   <>
-                    The verification for Robotics Club is complete.
+                    The verification for {approvedRole || "your account"} is
+                    complete.
                     <br />
-                    You have been granted the full club privileges.
+                    You have been granted full privileges.
                   </>
                 )}
                 {submissionStatus === "declined" && (
                   <>
-                    Your club registration request for "Robotics & AI Society"
+                    Your registration request for{" "}
+                    {approvedRole || "your account"}
                     has been reviewed and declined by the administration.
                   </>
                 )}
@@ -272,7 +328,10 @@ const ClubVerification = () => {
                 {/* File Card */}
                 <div className="bg-dark-4 rounded-xl border border-white/5 overflow-hidden group hover:border-white/10 transition-colors">
                   <div className="p-2 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 overflow-hidden">
+                    <div
+                      className="flex items-center gap-3 overflow-hidden cursor-pointer"
+                      onClick={() => handlePreview(submittedFile)}
+                    >
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
                           submissionStatus === "declined"
@@ -288,13 +347,12 @@ const ClubVerification = () => {
                         <span
                           className={`text-sm font-bold truncate ${submissionStatus === "declined" ? "text-red-400 line-through" : "text-text-primary"}`}
                         >
-                          {submittedFile?.name || "Club_Constitution.pdf"}
+                          {submittedFile?.name || "verfication_document.pdf"}
                         </span>
                         <span className="text-text-secondary text-xs">
                           {submittedFile
                             ? formatFileSize(submittedFile.size)
-                            : "3.2 MB"}{" "}
-                          • Uploaded Today
+                            : "File details available upon preview"}
                         </span>
                       </div>
                     </div>
@@ -302,7 +360,7 @@ const ClubVerification = () => {
                     {/* View/Download Actions */}
                     <div className="flex gap-1">
                       <button
-                        onClick={() => setShowPreviewModal(true)}
+                        onClick={() => handlePreview(submittedFile)}
                         className="p-1.5 hover:bg-white/10 rounded-lg text-text-secondary hover:text-white transition-colors"
                         title="View Document"
                       >
@@ -414,67 +472,13 @@ const ClubVerification = () => {
       )}
 
       {/* Document Preview Modal */}
-      <DocumentPreviewModal
-        isOpen={showPreviewModal}
-        onClose={() => setShowPreviewModal(false)}
-        document={{
-          ...mockFullDocument,
-          // Override with actual file if present
-          file: submittedFile,
-          name: submittedFile?.name || mockFullDocument.name,
-          size: submittedFile
-            ? formatFileSize(submittedFile.size)
-            : mockFullDocument.size,
-        }}
-      />
-
-      {/* DEBUG: Temporary controls to visualize states */}
-      <div className="absolute bottom-4 right-4 flex flex-wrap justify-end max-w-[calc(100vw-32px)] sm:max-w-none gap-2 z-50 bg-black/50 p-2 rounded-lg backdrop-blur-sm border border-white/10">
-        <button
-          onClick={() => {
-            localStorage.setItem(
-              "unify_club_verification_status",
-              "NOT_SUBMITTED",
-            );
-            localStorage.removeItem("unify_club_verification_submitted");
-            setSubmissionStatus("idle");
-          }}
-          className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
-        >
-          Idle
-        </button>
-        <button
-          onClick={() => {
-            localStorage.setItem("unify_club_verification_status", "PENDING");
-            localStorage.setItem("unify_club_verification_submitted", "true");
-            setSubmissionStatus("pending");
-          }}
-          className="px-3 py-1 bg-amber-900/50 hover:bg-amber-900/70 text-amber-400 text-xs rounded border border-amber-500/30 transition-colors"
-        >
-          Pending
-        </button>
-        <button
-          onClick={() => {
-            localStorage.setItem("unify_club_verification_status", "APPROVED");
-            localStorage.setItem("unify_club_verification_submitted", "true");
-            setSubmissionStatus("approved");
-          }}
-          className="px-3 py-1 bg-green-900/50 hover:bg-green-900/70 text-green-400 text-xs rounded border border-green-500/30 transition-colors"
-        >
-          Approved
-        </button>
-        <button
-          onClick={() => {
-            localStorage.setItem("unify_club_verification_status", "REJECTED");
-            localStorage.setItem("unify_club_verification_submitted", "true");
-            localStorage.setItem("unify_club_verification_reason", declineReason);
-            setSubmissionStatus("declined");
-          }}
-          className="px-3 py-1 bg-red-900/50 hover:bg-red-900/70 text-red-400 text-xs rounded border border-red-500/30 transition-colors"
-        >
-          Declined
-        </button>
-      </div>
+      {submittedFile && (
+        <DocumentPreviewModal
+          isOpen={showPreviewModal}
+          onClose={() => setShowPreviewModal(false)}
+          document={submittedFile}
+        />
+      )}
     </div>
   );
 };

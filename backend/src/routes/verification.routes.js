@@ -10,6 +10,7 @@ import {
   getVerificationStatus,
   deleteVerificationRequest,
   removeVerifiedAccount,
+  revokeBatchRepStatus,
 } from "../controllers/verification/index.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import {
@@ -20,6 +21,7 @@ import {
   deleteVerificationRequestValidator,
   getVerificationDocumentValidator,
   removeVerifiedAccountValidator,
+  revokeBatchRepStatusValidator,
 } from "../validators/verification.validator.js";
 
 const router = express.Router();
@@ -85,6 +87,14 @@ router.delete(
   removeVerifiedAccountValidator,
   validateRequest,
   removeVerifiedAccount,
+);
+
+// POST /api/v1/verifications/revoke-batch-rep
+router.post(
+  "/revoke-batch-rep",
+  revokeBatchRepStatusValidator,
+  validateRequest,
+  revokeBatchRepStatus,
 );
 
 export default router;

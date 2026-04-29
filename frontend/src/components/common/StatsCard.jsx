@@ -9,6 +9,7 @@ const StatsCard = ({
   value,
   subValue,
   subValueClass = "text-state-success",
+  loading = false,
 }) => {
   return (
     <Card variant="container" className="h-40 relative group transition-colors">
@@ -21,11 +22,19 @@ const StatsCard = ({
         <p className="text-body-small-bold text-text-secondary">{title}</p>
       </div>
       <div className="absolute top-[100px] left-lg flex items-end gap-sm">
-        <span className="text-heading-medium text-text-primary">{value}</span>
-        {subValue && (
-          <span className={`text-body-small-bold pb-xs ${subValueClass}`}>
-            {subValue}
-          </span>
+        {loading ? (
+          <div className="h-8 w-16 bg-white/5 animate-pulse rounded" />
+        ) : (
+          <>
+            <span className="text-heading-medium text-text-primary">
+              {value}
+            </span>
+            {subValue && (
+              <span className={`text-body-small-bold pb-xs ${subValueClass}`}>
+                {subValue}
+              </span>
+            )}
+          </>
         )}
       </div>
     </Card>

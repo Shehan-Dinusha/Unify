@@ -1,7 +1,9 @@
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
+import User from "../../modules/User.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { deleteVerificationFile } from "../../utils/verificationUrl.util.js";
+import bcrypt from "bcryptjs";
 
 export const deleteVerificationRequest = async (req, res, next) => {
   try {

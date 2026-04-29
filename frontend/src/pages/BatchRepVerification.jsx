@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Info,
   ArrowRight,
@@ -21,49 +21,125 @@ import Card from "../components/common/Card";
 import FileUpload from "../components/common/FileUpload";
 import DocumentPreviewModal from "../components/common/DocumentPreviewModal";
 import RevokePrivilegesModal from "../components/common/RevokePrivilegesModal";
-import { mockBatchRepDocuments } from "../data/mockData";
+import verificationService from "../services/verificationService";
+import { useToast } from "../components/common/Toast";
 
 const BatchRepVerification = () => {
   const navigate = useNavigate();
-  const [submissionStatus, setSubmissionStatus] = useState(() => {
-    const status = localStorage.getItem("unify_student_rep_status");
-    if (status === "PENDING") return "pending";
-    if (status === "APPROVED") return "approved";
-    if (status === "REJECTED") return "declined";
-    return "idle";
-  }); // 'idle' | 'pending' | 'approved' | 'declined'
+  const toast = useToast();
+  const [submissionStatus, setSubmissionStatus] = useState("idle"); // 'idle' | 'pending' | 'approved' | 'declined'
   const [submittedFile, setSubmittedFile] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showRevokeModal, setShowRevokeModal] = useState(false);
   const [previewDocument, setPreviewDocument] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [declineReason, setDeclineReason] = useState("");
+  const [approvedRole, setApprovedRole] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Mock Data for declined reason
-  const declineReason =
-    "The uploaded nomination document is missing the required signature from the Department Head. Please ensure the document is signed and stamped before re-uploading.";
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  const fetchStatus = async () => {
+    try {
+      setLoading(true);
+      const response = await verificationService.getStatus();
+      if (response.success && response.data.hasRequest) {
+        setSubmissionStatus(response.data.status);
+        setDeclineReason(response.data.declineReason || "");
+        setApprovedRole(response.data.role || "");
+
+        if (response.data.document) {
+          setSubmittedFile({
+            name: response.data.document.name,
+            size: response.data.document.size,
+            url: response.data.document.url,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching status:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFileSelect = (file) => {
     setSubmittedFile(file);
   };
 
-  const handleSubmit = () => {
-    if (submittedFile) {
-      // Sync with global status
-      localStorage.setItem("unify_student_rep_status", "PENDING");
-      // Mark as submitted so the profile banner switches to 'See Verification Status'
-      localStorage.setItem("unify_student_rep_submitted", "true");
-      setSubmissionStatus("pending");
-      // Navigate back to profile after a brief moment so the user sees the pending state
-      setTimeout(() => navigate("/profile?role=student"), 800);
+  const handleSubmit = async () => {
+    if (!submittedFile) return;
+
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("document", submittedFile);
+      formData.append("requestedRole", "Batch Rep");
+
+      const response = await verificationService.submitRequest(formData);
+      if (response.success) {
+        toast.success("Verification submitted successfully!");
+        setSubmissionStatus("pending");
+        setTimeout(() => navigate("/profile?role=student"), 1500);
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to submit verification",
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleWithdrawConfirm = () => {
-    localStorage.setItem("unify_student_rep_status", "NOT_SUBMITTED");
-    localStorage.removeItem("unify_student_rep_submitted");
-    setSubmissionStatus("idle");
-    setSubmittedFile(null);
-    setShowWithdrawModal(false);
+  const handleWithdrawConfirm = async () => {
+    try {
+      setLoading(true);
+      const response = await verificationService.withdrawRequest();
+      if (response.success) {
+        toast.success("Success", "Submission withdrawn successfully");
+        setSubmissionStatus("idle");
+        setSubmittedFile(null);
+        setConfirmPassword("");
+        setShowWithdrawModal(false);
+      }
+    } catch (error) {
+      toast.error(
+        "Error",
+        error.response?.data?.message || "Failed to withdraw submission",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRevokeConfirm = async () => {
+    if (!confirmPassword) {
+      toast.error("Error", "Please enter your password to confirm.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response =
+        await verificationService.revokeBatchRepStatus(confirmPassword);
+      if (response.success) {
+        toast.success("Success", "Batch Rep status revoked successfully");
+        setSubmissionStatus("idle");
+        setSubmittedFile(null);
+        setConfirmPassword("");
+        setShowRevokeModal(false);
+      }
+    } catch (error) {
+      toast.error(
+        "Error",
+        error.response?.data?.message || "Failed to revoke status",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatFileSize = (bytes) => {
@@ -219,14 +295,17 @@ const BatchRepVerification = () => {
                 )}
                 {submissionStatus === "approved" && (
                   <>
-                    Your verification is complete. You have been granted Batch
-                    Representative privileges for the current academic term.
+                    The verification for{" "}
+                    {approvedRole || "Batch Representative"} is complete.
+                    <br />
+                    You have been granted full representative privileges.
                   </>
                 )}
                 {submissionStatus === "declined" && (
                   <>
-                    Your request for Batch Representative has been reviewed and
-                    declined by the administration.
+                    Your registration request for{" "}
+                    {approvedRole || "Batch Representative"}
+                    has been reviewed and declined by the administration.
                   </>
                 )}
               </p>
@@ -286,9 +365,7 @@ const BatchRepVerification = () => {
                   <div className="p-2 flex items-center justify-between gap-3">
                     <div
                       className="flex items-center gap-3 overflow-hidden cursor-pointer"
-                      onClick={() =>
-                        handlePreview(submittedFile || mockBatchRepDocuments[0])
-                      }
+                      onClick={() => handlePreview(submittedFile)}
                     >
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
@@ -310,8 +387,7 @@ const BatchRepVerification = () => {
                         <span className="text-zinc-400 text-xs">
                           {submittedFile
                             ? formatFileSize(submittedFile.size)
-                            : "3.2 MB"}{" "}
-                          • Uploaded Today
+                            : "File details available in preview"}
                         </span>
                       </div>
                     </div>
@@ -319,11 +395,7 @@ const BatchRepVerification = () => {
                     {/* View/Download Actions */}
                     <div className="flex gap-1">
                       <button
-                        onClick={() =>
-                          handlePreview(
-                            submittedFile || mockBatchRepDocuments[0],
-                          )
-                        }
+                        onClick={() => handlePreview(submittedFile)}
                         className="p-1.5 hover:bg-white/10 rounded-lg text-text-secondary hover:text-white transition-colors"
                         title="View Document"
                       >
@@ -459,60 +531,65 @@ const BatchRepVerification = () => {
       )}
 
       {/* Revoke Privileges Modal */}
-      <RevokePrivilegesModal
-        isOpen={showRevokeModal}
-        onClose={() => setShowRevokeModal(false)}
-        onConfirm={() => {
-          localStorage.setItem("unify_student_rep_status", "NOT_SUBMITTED");
-          localStorage.removeItem("unify_student_rep_submitted");
-          setSubmissionStatus("idle");
-        }}
-      />
+      {showRevokeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl px-4">
+          <Card
+            variant="card"
+            padding="p-0"
+            className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-white/10 shadow-2xl"
+          >
+            <div className="p-6 sm:p-8 flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6">
+                <Trash2 className="w-8 h-8 text-state-error" />
+              </div>
 
-      {/* DEBUG: Temporary controls to visualize states */}
-      <div className="absolute bottom-4 right-4 flex flex-wrap justify-end max-w-[calc(100vw-32px)] sm:max-w-none gap-2 z-50 bg-black/50 p-2 rounded-lg backdrop-blur-sm border border-white/10">
-        <button
-          onClick={() => {
-            localStorage.setItem("unify_student_rep_status", "NOT_SUBMITTED");
-            localStorage.removeItem("unify_student_rep_submitted");
-            setSubmissionStatus("idle");
-          }}
-          className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
-        >
-          Idle
-        </button>
-        <button
-          onClick={() => {
-            localStorage.setItem("unify_student_rep_status", "PENDING");
-            localStorage.setItem("unify_student_rep_submitted", "true");
-            setSubmissionStatus("pending");
-          }}
-          className="px-3 py-1 bg-amber-900/50 hover:bg-amber-900/70 text-amber-400 text-xs rounded border border-amber-500/30 transition-colors"
-        >
-          Pending
-        </button>
-        <button
-          onClick={() => {
-            localStorage.setItem("unify_student_rep_status", "APPROVED");
-            localStorage.setItem("unify_student_rep_submitted", "true");
-            setSubmissionStatus("approved");
-          }}
-          className="px-3 py-1 bg-green-900/50 hover:bg-green-900/70 text-green-400 text-xs rounded border border-green-500/30 transition-colors"
-        >
-          Approved
-        </button>
-        <button
-          onClick={() => {
-            localStorage.setItem("unify_student_rep_status", "REJECTED");
-            localStorage.setItem("unify_student_rep_submitted", "true");
-            localStorage.setItem("unify_student_rep_reason", declineReason);
-            setSubmissionStatus("declined");
-          }}
-          className="px-3 py-1 bg-red-900/50 hover:bg-red-900/70 text-red-400 text-xs rounded border border-red-500/30 transition-colors"
-        >
-          Declined
-        </button>
-      </div>
+              <h2 className="text-xl font-bold text-white mb-3">
+                Revoke Batch Rep Status?
+              </h2>
+              <p className="text-text-secondary text-sm leading-relaxed mb-6">
+                Are you sure you want to resign as Batch Representative? This
+                will{" "}
+                <span className="text-white font-bold text-state-error">
+                  remove all administrative privileges
+                </span>{" "}
+                and remove your verified badge.
+              </p>
+
+              <div className="w-full space-y-2 mb-6 text-left">
+                <label className="text-body-small-bold text-text-secondary ml-1">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="Enter your account password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full h-11 px-4 bg-dark-4 border border-white/10 rounded-xl text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary-blue/50 transition-colors"
+                />
+              </div>
+
+              <div className="flex gap-4 w-full">
+                <Button
+                  onClick={() => {
+                    setShowRevokeModal(false);
+                    setConfirmPassword("");
+                  }}
+                  className="flex-1 bg-white/5 hover:bg-white/10 text-text-secondary h-11 border-none font-medium"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleRevokeConfirm}
+                  variant="danger"
+                  className="flex-1 h-11 shadow-lg shadow-state-error/20 font-semibold"
+                >
+                  Revoke Status
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

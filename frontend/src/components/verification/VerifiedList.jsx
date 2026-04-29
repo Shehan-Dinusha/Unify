@@ -1,32 +1,68 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import StatsCard from "../common/StatsCard";
 import VerifiedEntityCard from "./VerifiedEntityCard";
-import { mockVerified } from "../../data/mockData";
+import verificationService from "../../services/verificationService";
+import { useToast } from "../common/Toast";
 
 const VerifiedList = () => {
+  const toast = useToast();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [verifiedEntities, setVerifiedEntities] = useState([]);
+  const [stats, setStats] = useState({
+    totalVerified: 0,
+    totalClubs: 0,
+    totalBatchReps: 0,
+    newVerifiedClubs: 0,
+    newVerifiedReps: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  const filteredVerified = mockVerified.filter((item) => {
+  useEffect(() => {
+    fetchVerified();
+  }, []);
+
+  const fetchVerified = async () => {
+    try {
+      setLoading(true);
+      const response = await verificationService.getVerifiedEntities();
+      if (response.success) {
+        setVerifiedEntities(response.data.entities);
+        setStats(response.data.stats);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch verified entities");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredVerified = (
+    Array.isArray(verifiedEntities) ? verifiedEntities : []
+  ).filter((item) => {
     const matchesFilter = filter === "All" || item.type === filter;
     const matchesSearch = item.name
-      .toLowerCase()
+      ?.toLowerCase()
       .includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
-  // Stats calculations
-  const totalVerified = mockVerified.length;
-  const verifiedClubs = mockVerified.filter((i) => i.type === "Club").length;
-  const verifiedReps = mockVerified.filter(
-    (i) => i.type === "Batch Rep",
-  ).length;
-
-  const handleRemoveVerification = (entity) => {
-    console.log("Remove verification for:", entity.name);
-    // Implement modal logic here later or pass up
+  const handleRemoveVerification = async (entity) => {
+    try {
+      const response = await verificationService.removeVerifiedAccount(
+        entity.id,
+      );
+      if (response.success) {
+        toast.success("Success", `Removed verification for ${entity.name}`);
+        setVerifiedEntities((prev) =>
+          Array.isArray(prev) ? prev.filter((e) => e.id !== entity.id) : [],
+        );
+      }
+    } catch (error) {
+      toast.error("Error", "Failed to remove verification");
+    }
   };
 
   return (
@@ -38,25 +74,28 @@ const VerifiedList = () => {
           iconAlt="Verified Clubs"
           iconBgClass="bg-blue-900/30"
           title="Verified Clubs"
-          value={verifiedClubs}
-          subValue="+3 new"
+          value={stats?.totalClubs || 0}
+          subValue={`+${stats?.newVerifiedClubs || 0} new`}
           subValueClass="text-state-success"
+          loading={loading}
         />
         <StatsCard
           iconSrc="/icon_batch_rep.svg"
           iconAlt="Batch Reps"
           iconBgClass="bg-purple-900/30"
           title="Batch Reps"
-          value={verifiedReps}
-          subValue="+1 new"
+          value={stats?.totalBatchReps || 0}
+          subValue={`+${stats?.newVerifiedReps || 0} new`}
           subValueClass="text-state-success"
+          loading={loading}
         />
         <StatsCard
           iconSrc="/icon_verified_badge.svg"
           iconAlt="Total Verified"
           iconBgClass="bg-blue-500/5"
           title="Total Verified"
-          value={totalVerified}
+          value={stats?.totalVerified || 0}
+          loading={loading}
         />
       </div>
 

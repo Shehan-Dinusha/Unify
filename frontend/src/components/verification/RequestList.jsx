@@ -3,19 +3,22 @@ import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import StatsCard from "../common/StatsCard";
+import Avatar from "../common/Avatar";
 
-const RequestList = ({ requests, onVerify, onReject }) => {
+const RequestList = ({ requests, onVerify, onReject, loading }) => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredRequests = requests.filter((req) => {
-    const matchesFilter = filter === "All" || req.type === filter;
-    const matchesSearch = req.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  const filteredRequests = (Array.isArray(requests) ? requests : []).filter(
+    (req) => {
+      const matchesFilter = filter === "All" || req.type === filter;
+      const matchesSearch = req.name
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      return matchesFilter && matchesSearch;
+    },
+  );
 
   const handleView = (req) => {
     if (req.type === "Club") {
@@ -34,7 +37,7 @@ const RequestList = ({ requests, onVerify, onReject }) => {
           iconAlt="Pending"
           iconBgClass="bg-yellow-900/30"
           title="Total Pending"
-          value={requests.length}
+          value={Array.isArray(requests) ? requests.length : 0}
           subValue="+2 new"
           subValueClass="text-state-success"
         />
@@ -116,10 +119,10 @@ const RequestList = ({ requests, onVerify, onReject }) => {
               {/* Header Section */}
               <div className="flex justify-between items-start">
                 <div className="flex gap-sm">
-                  <img
+                  <Avatar
                     src={req.avatar}
-                    alt={req.name}
-                    className="w-12 h-12 rounded-full border border-white/10 object-cover"
+                    name={req.name}
+                    className="w-12 h-12 rounded-full border border-white/10"
                   />
                   <div>
                     <h3 className="text-body-medium-bold text-text-primary px-1">

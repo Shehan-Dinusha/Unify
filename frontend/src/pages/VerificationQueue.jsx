@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import VerifiedList from "../components/verification/VerifiedList";
 import RequestList from "../components/verification/RequestList";
-import { mockRequests } from "../data/mockData";
+import verificationService from "../services/verificationService";
+import { useToast } from "../components/common/Toast";
 import {
   VerificationConfirmationModal,
   VerificationSuccessModal,
@@ -11,7 +12,10 @@ import {
 } from "../components/common/VerificationModals";
 
 const VerificationQueue = () => {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState("requests");
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Modal State
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -25,15 +29,47 @@ const VerificationQueue = () => {
   const [rejectedRequest, setRejectedRequest] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      const response = await verificationService.getPendingRequests();
+      if (response.success) {
+        setRequests(Array.isArray(response.data) ? response.data : []);
+      }
+    } catch (error) {
+      toast.error("Error", "Failed to fetch pending requests");
+      setRequests([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleVerifyClick = (request) => {
     setSelectedRequest(request);
   };
 
-  const handleConfirmVerify = () => {
-    // In a real app, you would make an API call here
-    setVerifiedRequest(selectedRequest);
-    setSelectedRequest(null);
-    setShowSuccessModal(true);
+  const handleConfirmVerify = async () => {
+    try {
+      const response = await verificationService.approveRequest(
+        selectedRequest.id,
+      );
+      if (response.success) {
+        setRequests((prev) =>
+          Array.isArray(prev)
+            ? prev.filter((r) => r.id !== selectedRequest.id)
+            : [],
+        );
+        setVerifiedRequest(selectedRequest);
+        setSelectedRequest(null);
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      toast.error("Error", "Failed to approve verification");
+    }
   };
 
   const handleCloseSuccess = () => {
@@ -47,11 +83,26 @@ const VerificationQueue = () => {
     setShowRejectionModal(true);
   };
 
-  const handleConfirmReject = (reason, customReason) => {
-    // In a real app, API call here
-    setRejectionReason(customReason ? customReason : reason);
-    setShowRejectionModal(false);
-    setShowRejectionSuccessModal(true);
+  const handleConfirmReject = async (reason, customReason) => {
+    const finalReason = customReason || reason;
+    try {
+      const response = await verificationService.rejectRequest(
+        rejectedRequest.id,
+        finalReason,
+      );
+      if (response.success) {
+        setRequests((prev) =>
+          Array.isArray(prev)
+            ? prev.filter((r) => r.id !== rejectedRequest.id)
+            : [],
+        );
+        setRejectionReason(finalReason);
+        setShowRejectionModal(false);
+        setShowRejectionSuccessModal(true);
+      }
+    } catch (error) {
+      toast.error("Error", "Failed to reject verification");
+    }
   };
 
   const handleCloseRejectionSuccess = () => {
@@ -104,13 +155,14 @@ const VerificationQueue = () => {
       user={{ name: "Alex Johnson", role: "admin" }}
       pageTitle="Verification Queue"
       headerRight={headerActions}
-      verificationCount={mockRequests.length}
+      verificationCount={requests.length}
     >
       {activeTab === "requests" ? (
         <RequestList
-          requests={mockRequests}
+          requests={requests}
           onVerify={handleVerifyClick}
           onReject={handleRejectClick}
+          loading={loading}
         />
       ) : (
         <VerifiedList />
