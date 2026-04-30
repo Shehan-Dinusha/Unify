@@ -352,3 +352,4 @@ export const VerificationRejectedSuccessModal = ({
     </ModalBackdrop>
   );
 };
+

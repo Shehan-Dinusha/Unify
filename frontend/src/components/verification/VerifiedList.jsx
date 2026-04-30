@@ -5,6 +5,10 @@ import StatsCard from "../common/StatsCard";
 import VerifiedEntityCard from "./VerifiedEntityCard";
 import verificationService from "../../services/verificationService";
 import { useToast } from "../common/Toast";
+import {
+  VerificationRejectionModal,
+  VerificationRejectedSuccessModal,
+} from "../common/VerificationModals";
 
 const VerifiedList = () => {
   const toast = useToast();
@@ -20,6 +24,12 @@ const VerifiedList = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  // States for Removal Modal
+  const [showRemovalModal, setShowRemovalModal] = useState(false);
+  const [showRemovalSuccessModal, setShowRemovalSuccessModal] = useState(false);
+  const [entityToRemove, setEntityToRemove] = useState(null);
+  const [removalReason, setRemovalReason] = useState("");
+
   useEffect(() => {
     fetchVerified();
   }, []);
@@ -29,11 +39,19 @@ const VerifiedList = () => {
       setLoading(true);
       const response = await verificationService.getVerifiedEntities();
       if (response.success) {
-        setVerifiedEntities(response.data.entities);
-        setStats(response.data.stats);
+        setVerifiedEntities(response.data?.verified || []);
+        setStats(
+          response.data?.stats || {
+            totalVerified: 0,
+            totalClubs: 0,
+            totalBatchReps: 0,
+            newVerifiedClubs: 0,
+            newVerifiedReps: 0,
+          },
+        );
       }
     } catch (error) {
-      toast.error("Failed to fetch verified entities");
+      toast.error("Error", "Failed to fetch verified entities");
     } finally {
       setLoading(false);
     }
@@ -49,20 +67,37 @@ const VerifiedList = () => {
     return matchesFilter && matchesSearch;
   });
 
-  const handleRemoveVerification = async (entity) => {
+  const handleRemoveClick = (entity) => {
+    setEntityToRemove(entity);
+    setShowRemovalModal(true);
+  };
+
+  const handleConfirmRemoval = async (reason, customReason) => {
+    const finalReason = customReason || reason;
     try {
       const response = await verificationService.removeVerifiedAccount(
-        entity.id,
+        entityToRemove.id,
+        finalReason,
       );
       if (response.success) {
-        toast.success("Success", `Removed verification for ${entity.name}`);
         setVerifiedEntities((prev) =>
-          Array.isArray(prev) ? prev.filter((e) => e.id !== entity.id) : [],
+          Array.isArray(prev)
+            ? prev.filter((e) => e.id !== entityToRemove.id)
+            : [],
         );
+        setRemovalReason(finalReason);
+        setShowRemovalModal(false);
+        setShowRemovalSuccessModal(true);
       }
     } catch (error) {
       toast.error("Error", "Failed to remove verification");
     }
+  };
+
+  const handleCloseRemovalSuccess = () => {
+    setShowRemovalSuccessModal(false);
+    setEntityToRemove(null);
+    setRemovalReason("");
   };
 
   return (
@@ -154,11 +189,26 @@ const VerifiedList = () => {
           <div key={entity.id} className="h-72">
             <VerifiedEntityCard
               entity={entity}
-              onRemoveVerification={handleRemoveVerification}
+              onRemoveVerification={handleRemoveClick}
             />
           </div>
         ))}
       </div>
+
+      {/* Removal Modals */}
+      <VerificationRejectionModal
+        isOpen={showRemovalModal}
+        onClose={() => setShowRemovalModal(false)}
+        onConfirm={handleConfirmRemoval}
+        clubName={entityToRemove?.name}
+        requestType={entityToRemove?.type}
+      />
+      <VerificationRejectedSuccessModal
+        isOpen={showRemovalSuccessModal}
+        onClose={handleCloseRemovalSuccess}
+        clubName={entityToRemove?.name}
+        reason={removalReason}
+      />
     </div>
   );
 };

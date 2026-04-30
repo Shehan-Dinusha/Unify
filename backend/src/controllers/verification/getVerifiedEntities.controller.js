@@ -7,6 +7,7 @@ import { Op } from "sequelize";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import { formatRelativeDate } from "../../utils/date.js";
 
 /**
  * Handle fetching all APPROVED verification requests (Verified Entities) for Admins.
@@ -94,7 +95,7 @@ export const getVerifiedEntities = async (req, res, next) => {
           id: request.id,
           name: request.user?.name || "Unknown User",
           type: request.requestedRole,
-          verifiedDate: request.updatedAt, // Frontend can parse the ISO date or map to "Sep 12, 2023"
+          verifiedDate: formatRelativeDate(request.updatedAt), // Frontend can parse the ISO date or map to "Sep 12, 2023"
           avatar: resolvedAvatar,
           email: request.user?.email || "No email available",
           degree: request.user?.studentProfile?.degree?.name || null,

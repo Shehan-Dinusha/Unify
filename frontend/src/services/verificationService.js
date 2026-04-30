@@ -106,8 +106,10 @@ const verificationService = {
   /**
    * Admin: Remove a verified account
    */
-  removeVerifiedAccount: async (id) => {
-    const response = await api.delete(`/verifications/${id}/remove-verified`);
+  removeVerifiedAccount: async (id, reason) => {
+    const response = await api.delete(`/verifications/${id}/remove-verified`, {
+      data: { reason },
+    });
     return response.data;
   },
 };

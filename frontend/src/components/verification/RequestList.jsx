@@ -5,7 +5,7 @@ import Button from "../common/Button";
 import StatsCard from "../common/StatsCard";
 import Avatar from "../common/Avatar";
 
-const RequestList = ({ requests, onVerify, onReject, loading }) => {
+const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,23 +37,29 @@ const RequestList = ({ requests, onVerify, onReject, loading }) => {
           iconAlt="Pending"
           iconBgClass="bg-yellow-900/30"
           title="Total Pending"
-          value={Array.isArray(requests) ? requests.length : 0}
-          subValue="+2 new"
+          value={
+            stats?.totalPending ||
+            (Array.isArray(requests) ? requests.length : 0)
+          }
+          subValue={`+${stats?.newPending || 0} new`}
           subValueClass="text-state-success"
+          loading={loading}
         />
         <StatsCard
           iconSrc="/icon_approved_today.svg"
           iconAlt="Approved"
           iconBgClass="bg-green-900/30"
           title="Approved Today"
-          value="5"
+          value={stats?.approvedToday || 0}
+          loading={loading}
         />
         <StatsCard
           iconSrc="/icon_rejected_today.svg"
           iconAlt="Rejected"
           iconBgClass="bg-red-900/30"
           title="Rejected Today"
-          value="2"
+          value={stats?.rejectedToday || 0}
+          loading={loading}
         />
       </div>
 

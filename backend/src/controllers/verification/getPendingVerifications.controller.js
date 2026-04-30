@@ -5,6 +5,7 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { resolveVerificationUrl } from "../../utils/verificationUrl.util.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import { formatRelativeDate } from "../../utils/date.js";
 
 const formatFileSize = (bytes) => {
   if (!bytes || bytes === 0) return "0 Bytes";
@@ -96,7 +97,7 @@ export const getPendingVerifications = async (req, res, next) => {
           id: request.id,
           name: request.user?.name || "Unknown User",
           type: request.requestedRole,
-          time: request.createdAt, // Send ISO date, frontend should format to "X hrs ago"
+          time: formatRelativeDate(request.createdAt),
           avatar: resolvedAvatar,
           file: request.documentMetadata?.originalName || "Document",
           fileSize: formatFileSize(request.documentMetadata?.size),

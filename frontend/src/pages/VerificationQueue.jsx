@@ -15,6 +15,7 @@ const VerificationQueue = () => {
   const toast = useToast();
   const [activeTab, setActiveTab] = useState("requests");
   const [requests, setRequests] = useState([]);
+  const [requestStats, setRequestStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Modal State
@@ -38,11 +39,13 @@ const VerificationQueue = () => {
       setLoading(true);
       const response = await verificationService.getPendingRequests();
       if (response.success) {
-        setRequests(Array.isArray(response.data) ? response.data : []);
+        setRequests(response.data?.requests || []);
+        setRequestStats(response.data?.stats || null);
       }
     } catch (error) {
       toast.error("Error", "Failed to fetch pending requests");
       setRequests([]);
+      setRequestStats(null);
     } finally {
       setLoading(false);
     }
@@ -160,6 +163,7 @@ const VerificationQueue = () => {
       {activeTab === "requests" ? (
         <RequestList
           requests={requests}
+          stats={requestStats}
           onVerify={handleVerifyClick}
           onReject={handleRejectClick}
           loading={loading}
