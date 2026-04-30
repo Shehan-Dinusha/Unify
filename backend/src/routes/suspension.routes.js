@@ -25,9 +25,9 @@ const router = express.Router();
 router.use(authenticateToken);
 
 router.get("/stats/dashboard", getDashboardStatistics);
+router.get("/", getAllSuspendedUsers);
 router.get("/:userId", getSuspendedUserById);
 router.post("/:userId/reactivate", reactivateUserSchema, validateRequest, reactivateUser);
-router.get("/", getAllSuspendedUsers);
 router.post("/", createSuspensionSchema, validateRequest, createSuspension);
 
 export default router;
