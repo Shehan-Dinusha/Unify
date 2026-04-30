@@ -46,7 +46,7 @@ const ItemCard = ({ item, onSelect }) => {
     >
     {/* Image */}
     <div
-      className="relative w-full h-40 sm:h-48 bg-white/5 overflow-hidden"
+      className="relative w-full h-40 sm:h-48 bg-dark-1/50 overflow-hidden"
       onMouseEnter={startSlide}
       onMouseLeave={stopSlide}
     >
@@ -57,7 +57,7 @@ const ItemCard = ({ item, onSelect }) => {
         : "https://placehold.co/400x300"
       }
       alt={item.title}
-      className="w-full h-full object-cover transition-all duration-300"
+      className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-all duration-500"
     />
     {/* Badge */}
       <span

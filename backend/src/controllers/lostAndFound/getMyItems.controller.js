@@ -1,6 +1,7 @@
 import { LostAndFound, User, StudentProfile, Degree } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
 import s3Service from "../../services/s3.service.js";
+import { formatRelativeDate } from "../../utils/date.js";
 
 export const getMyItems = catchAsync(async (req, res, next) => {
   //if (!req.user) return sendResponse(res, 401, false, "Unauthorized");
@@ -41,8 +42,11 @@ export const getMyItems = catchAsync(async (req, res, next) => {
       id: item.id,
       type: item.type.toLowerCase(),
       title: item.title,
+      description: item.description,
       location: item.location,
-      time: item.createdAt,
+      date: item.date,
+      timeOfDay: item.timeOfDay,
+      time: formatRelativeDate(item.createdAt),
       images: signedImageUrls,
       status: item.status, // Included so frontend knows if it is "Resolved"
       postedBy: {

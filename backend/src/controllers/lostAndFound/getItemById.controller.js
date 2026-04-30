@@ -1,6 +1,7 @@
 import { LostAndFound, User, StudentProfile, Degree } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
 import s3Service from "../../services/s3.service.js";
+import { formatRelativeDate } from "../../utils/date.js";
 
 export const getItemById = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -46,6 +47,7 @@ export const getItemById = catchAsync(async (req, res, next) => {
     location: item.location,
     date: item.date,
     timeOfDay: item.timeOfDay,
+    time: formatRelativeDate(item.createdAt),
     images: signedImageUrls,
     postedBy: {
       name: item.user?.name || "Unknown",

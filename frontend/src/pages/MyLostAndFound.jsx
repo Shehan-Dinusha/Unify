@@ -12,15 +12,38 @@ import EditItemForm from "../components/lost-found/EditItemForm";
 const FILTERS = ["All", "Lost Items", "Found Items", "Resolved"];
 
 /* ─── My Item Card ───────────────────────────────────────────── */
-const MyItemCard = ({ item, onResolve, onEdit, onDelete, isResolved }) => (
-  <div className="group rounded-2xl overflow-hidden bg-dark-2 border border-white/5 hover:border-primary-blue/30 transition-all duration-200">
-    {/* Image */}
-    <div className="relative w-full h-40 sm:h-48 bg-white/5 overflow-hidden">
-      <img
-        src={item.images && item.images.length > 0 ? item.images[0] : "https://placehold.co/400x300"}
-        alt={item.title}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-      />
+const MyItemCard = ({ item, onResolve, onEdit, onDelete, isResolved }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [intervalId, setIntervalId] = useState(null);
+
+  const startSlide = () => {
+    if (!item.images || item.images.length <= 1) return;
+    const id = setInterval(() => {
+      setCurrentIndex((prev) =>
+        prev === item.images.length - 1 ? 0 : prev + 1
+      );
+    }, 1000);
+    setIntervalId(id);
+  };
+
+  const stopSlide = () => {
+    if (intervalId) clearInterval(intervalId);
+    setCurrentIndex(0);
+  };
+
+  return (
+    <div className="group rounded-2xl overflow-hidden bg-dark-2 border border-white/5 hover:border-primary-blue/30 transition-all duration-200">
+      {/* Image */}
+      <div 
+        className="relative w-full h-40 sm:h-48 bg-dark-1/50 overflow-hidden"
+        onMouseEnter={startSlide}
+        onMouseLeave={stopSlide}
+      >
+        <img
+          src={item.images && item.images.length > 0 ? item.images[currentIndex] : "https://placehold.co/400x300"}
+          alt={item.title}
+          className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-all duration-500"
+        />
       {/* Type Badge */}
       <span
         className={`absolute top-3 left-3 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-md ${
@@ -89,7 +112,8 @@ const MyItemCard = ({ item, onResolve, onEdit, onDelete, isResolved }) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 /* ─── Page ───────────────────────────────────────────────────── */
 const MyLostAndFound = () => {
@@ -98,26 +122,42 @@ const MyLostAndFound = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(6);
 
-  // Edit local state
-  const [editingItemId, setEditingItemId] = useState(null);
-
   // Delete modal state: null | { id, step: 'confirm' | 'success' }
   const [deleteModal, setDeleteModal] = useState(null);
 
   // Sync view state with URL search params
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get("view") || "list";
+  const editingItemId = searchParams.get("edit") ? Number(searchParams.get("edit")) : null;
 
   const setView = useCallback(
     (newView) => {
-      if (newView === "list") {
-        setSearchParams({}, { replace: false });
-      } else {
-        setSearchParams({ view: newView }, { replace: false });
-      }
+      setSearchParams(
+        (prev) => {
+          const params = new URLSearchParams(prev);
+          if (newView === "list") {
+            params.delete("view");
+          } else {
+            params.set("view", newView);
+          }
+          return params;
+        },
+        { replace: false }
+      );
     },
     [setSearchParams]
   );
+
+  const clearEdit = useCallback(() => {
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        params.delete("edit");
+        return params;
+      },
+      { replace: false }
+    );
+  }, [setSearchParams]);
 
   const user = { name: "Alex Johnson", role: "student" };
 
@@ -152,14 +192,21 @@ const MyLostAndFound = () => {
   };
 
   const handleEdit = (id) => {
-    setEditingItemId(id);
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        params.set("edit", id);
+        return params;
+      },
+      { replace: false }
+    );
   };
 
   const handleSaveEdit = (updatedItem) => {
     setItems((prev) =>
       prev.map((item) => (item.id === updatedItem.id ? updatedItem : item))
     );
-    setEditingItemId(null);
+    clearEdit();
   };
 
   // Step 1: Open confirmation modal
@@ -175,7 +222,7 @@ const MyLostAndFound = () => {
       setItems((prev) => prev.filter((item) => item.id !== deleteModal.id));
       
       if (editingItemId === deleteModal.id) {
-        setEditingItemId(null);
+        clearEdit();
       }
       
       setDeleteModal({ ...deleteModal, step: "success" });
@@ -228,7 +275,7 @@ const MyLostAndFound = () => {
         <EditItemForm
           item={items.find((i) => i.id === editingItemId)}
           onSave={handleSaveEdit}
-          onCancel={() => setEditingItemId(null)}
+          onCancel={clearEdit}
           onDelete={() => handleDeleteClick(editingItemId)}
         />
       ) : view === "lostForm" || view === "foundForm" ? (

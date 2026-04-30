@@ -1,6 +1,7 @@
 import { LostAndFound, User, StudentProfile, Degree } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
 import s3Service from "../../services/s3.service.js";
+import { formatRelativeDate } from "../../utils/date.js";
 
 export const getItems = catchAsync(async (req, res, next) => {
   const { type } = req.query; // "Lost", "Found", or "All"
@@ -46,7 +47,7 @@ export const getItems = catchAsync(async (req, res, next) => {
       type: item.type.toLowerCase(),
       title: item.title,
       location: item.location,
-      time: item.createdAt, // Or format how UI desires
+      time: formatRelativeDate(item.createdAt), // Or format how UI desires
       images: signedImageUrls,
       postedBy: {
         name: item.user?.name || "Unknown",
