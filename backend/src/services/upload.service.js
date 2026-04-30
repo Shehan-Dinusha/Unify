@@ -14,11 +14,15 @@ const storage = multer.diskStorage({
     let subFolder = "general";
 
     // Verifications use 'document' or 'verificationDoc'
-    if (file.fieldname === "document" || file.fieldname === "verificationDoc" || file.fieldname === "clubDoc") {
+    if (
+      file.fieldname === "document" ||
+      file.fieldname === "verificationDoc" ||
+      file.fieldname === "clubDoc"
+    ) {
       subFolder = "verifications";
     }
-    // Reports use 'evidenceFile'
-    else if (file.fieldname === "evidenceFile") {
+    // Reports use 'evidenceFiles' (array upload)
+    else if (file.fieldname === "evidenceFiles" || file.fieldname === "evidenceFile") {
       subFolder = "reports";
     }
     // Avatars use 'avatar' or 'profileImage'
@@ -42,11 +46,18 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     // Prefix based on fieldname for easy identification
     let prefix = "file";
-    if (file.fieldname === "document" || file.fieldname === "verificationDoc" || file.fieldname === "clubDoc") {
+    if (
+      file.fieldname === "document" ||
+      file.fieldname === "verificationDoc" ||
+      file.fieldname === "clubDoc"
+    ) {
       prefix = "vdoc";
-    } else if (file.fieldname === "evidenceFile") {
+    } else if (file.fieldname === "evidenceFiles" || file.fieldname === "evidenceFile") {
       prefix = "rpt";
-    } else if (file.fieldname === "avatar" || file.fieldname === "profileImage") {
+    } else if (
+      file.fieldname === "avatar" ||
+      file.fieldname === "profileImage"
+    ) {
       prefix = "avtr";
     } else if (file.fieldname === "materialFile") {
       prefix = "mat";
@@ -98,17 +109,16 @@ const fileFilter = (req, file, cb) => {
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    const errorMsg = isMaterialFile
-      ? "Invalid file type. Only PDF, Images, Documents, and Videos are allowed for materials."
-      : "Invalid file type. Only PDF, JPG, PNG, and SVG are allowed.";
-    cb(new Error(errorMsg), false);
+    cb(new Error("File type not supported for this field"), false);
   }
 };
 
 const uploadService = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, // Allowed 50MB limit to accommodate videos
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit
+  },
 });
 
 export default uploadService;

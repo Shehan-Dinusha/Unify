@@ -1,6 +1,7 @@
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { getFileUrl } from "../../services/s3.service.js";
 
 /**
  * Handle fetching the document URL and metadata for a specific verification request.
@@ -20,8 +21,11 @@ export const getVerificationDocument = async (req, res, next) => {
       return sendResponse(res, 404, false, "No document associated with this request.");
     }
 
+    // Convert S3 key to presigned URL
+    const signedUrl = await getFileUrl(request.documentUrl);
+
     return sendResponse(res, 200, true, "Document retrieved successfully.", {
-      documentUrl: request.documentUrl,
+      documentUrl: signedUrl,
       documentMetadata: request.documentMetadata,
     });
   } catch (error) {

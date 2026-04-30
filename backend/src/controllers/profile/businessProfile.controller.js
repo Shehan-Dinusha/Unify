@@ -1,6 +1,7 @@
 import { BusinessProfile, User } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { getFileUrl } from "../../services/s3.service.js";
 
 /**
  * @desc    Create or Update business profile
@@ -73,9 +74,9 @@ export const upsertBusinessProfile = async (req, res) => {
 
     const uploadedFile = req.files?.avatar?.[0] || req.files?.profileImage?.[0];
     if (uploadedFile) {
-      const avatarUrl = `/uploads/avatars/${uploadedFile.filename}`;
-      await req.user.update({ avatar: avatarUrl });
-      logger.info(`Avatar updated for user ${userId}: ${avatarUrl}`);
+      const avatarKey = uploadedFile.location; // S3 Key
+      await req.user.update({ avatar: avatarKey });
+      logger.info(`Avatar updated for user ${userId} in S3: ${avatarKey}`);
     }
 
     if (profile) {
@@ -102,13 +103,20 @@ export const getMyBusinessProfile = async (req, res) => {
   try {
     const profile = await BusinessProfile.findOne({
       where: { userId: req.user.id },
+      include: [{ model: User, as: "user", attributes: ["name", "email", "avatar"] }],
     });
 
     if (!profile) {
       return sendResponse(res, 404, false, "Business profile not found");
     }
 
-    return sendResponse(res, 200, true, "Business profile fetched successfully", profile);
+    // Convert S3 key to presigned URL for the frontend
+    const profileJson = profile.toJSON();
+    if (profileJson.user?.avatar) {
+      profileJson.user.avatar = await getFileUrl(profileJson.user.avatar);
+    }
+
+    return sendResponse(res, 200, true, "Business profile fetched successfully", profileJson);
   } catch (error) {
     logger.error("Get My Business Profile Error:", error);
     return sendResponse(res, 500, false, "Failed to fetch business profile", error.message);

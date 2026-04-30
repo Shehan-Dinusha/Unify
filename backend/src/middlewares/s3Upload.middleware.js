@@ -39,25 +39,50 @@ const s3Upload = multer({
  */
 export const s3UploadMiddleware = (folder) => async (req, res, next) => {
   try {
+    const getFolder = (fieldName) => {
+      if (typeof folder === "object") {
+        return folder[fieldName] || "general";
+      }
+      return folder;
+    };
+
     if (req.file) {
-      const fileKey = await uploadBuffer(req.file.buffer, req.file.originalname, req.file.mimetype, folder);
+      const targetFolder = getFolder(req.file.fieldname);
+      const fileKey = await uploadBuffer(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype,
+        targetFolder
+      );
       req.file.s3Key = fileKey;
-      req.file.location = fileKey; // Store just the S3 key; presigned URL generated at read time
+      req.file.location = fileKey;
     }
 
     if (req.files && Array.isArray(req.files)) {
       const uploadPromises = req.files.map(async (file) => {
-        const fileKey = await uploadBuffer(file.buffer, file.originalname, file.mimetype, folder);
+        const targetFolder = getFolder(file.fieldname);
+        const fileKey = await uploadBuffer(
+          file.buffer,
+          file.originalname,
+          file.mimetype,
+          targetFolder
+        );
         file.s3Key = fileKey;
         file.location = fileKey;
         return file;
       });
       await Promise.all(uploadPromises);
-    } else if (req.files && typeof req.files === 'object') {
+    } else if (req.files && typeof req.files === "object") {
       const keys = Object.keys(req.files);
       for (const key of keys) {
         const uploadPromises = req.files[key].map(async (file) => {
-          const fileKey = await uploadBuffer(file.buffer, file.originalname, file.mimetype, folder);
+          const targetFolder = getFolder(file.fieldname);
+          const fileKey = await uploadBuffer(
+            file.buffer,
+            file.originalname,
+            file.mimetype,
+            targetFolder
+          );
           file.s3Key = fileKey;
           file.location = fileKey;
           return file;

@@ -1,9 +1,14 @@
 import Stripe from "stripe";
 import logger from "../../utils/logger.js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
 
 export const createCheckoutSession = async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: "Payment service not configured." });
+  }
   try {
     const { orderId, amount, productName, successUrl, cancelUrl } = req.body;
 

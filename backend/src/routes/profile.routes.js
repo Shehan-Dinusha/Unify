@@ -15,7 +15,7 @@ import {
   clubProfileValidator,
 } from "../validators/profile.validator.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
-import uploadService from "../services/upload.service.js";
+import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
 
 const router = express.Router();
 
@@ -25,7 +25,14 @@ router.use(protect);
 // ── Student Profile ───────────────────────────────────────────────────────────
 router.put(
   "/student",
-  uploadService.fields([{ name: "avatar", maxCount: 1 }, { name: "profileImage", maxCount: 1 }]),
+  uploadToS3({
+    type: "fields",
+    fieldName: [
+      { name: "avatar", maxCount: 1 },
+      { name: "profileImage", maxCount: 1 },
+    ],
+    folder: "avatars",
+  }),
   authorize(ROLES.STUDENT),
   studentProfileValidator,
   validateRequest,
@@ -36,7 +43,14 @@ router.get("/student/me", authorize(ROLES.STUDENT), getMyStudentProfile);
 // ── Business Profile ──────────────────────────────────────────────────────────
 router.put(
   "/business",
-  uploadService.fields([{ name: "avatar", maxCount: 1 }, { name: "profileImage", maxCount: 1 }]),
+  uploadToS3({
+    type: "fields",
+    fieldName: [
+      { name: "avatar", maxCount: 1 },
+      { name: "profileImage", maxCount: 1 },
+    ],
+    folder: "avatars",
+  }),
   authorize(ROLES.BUSINESS),
   businessProfileValidator,
   validateRequest,
@@ -47,7 +61,19 @@ router.get("/business/me", authorize(ROLES.BUSINESS), getMyBusinessProfile);
 // ── Club Profile ──────────────────────────────────────────────────────────────
 router.put(
   "/club",
-  uploadService.fields([{ name: "avatar", maxCount: 1 }, { name: "profileImage", maxCount: 1 }]),
+  uploadToS3({
+    type: "fields",
+    fieldName: [
+      { name: "avatar", maxCount: 1 },
+      { name: "profileImage", maxCount: 1 },
+      { name: "clubDoc", maxCount: 1 },
+    ],
+    folder: {
+      avatar: "avatars",
+      profileImage: "avatars",
+      clubDoc: "verifications",
+    },
+  }),
   authorize(ROLES.CLUB),
   clubProfileValidator,
   validateRequest,
