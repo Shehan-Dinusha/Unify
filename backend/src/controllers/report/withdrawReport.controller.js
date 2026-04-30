@@ -10,7 +10,7 @@ export const withdrawReport = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { withdrawalReason } = req.body;
-    const studentId = req.user?.id || 1;
+    const studentId = req.user?.id || 4; // Default to seeded student ID for testing
 
     if (!studentId) {
       return sendResponse(res, 401, false, 'Student authentication required');
@@ -21,9 +21,16 @@ export const withdrawReport = async (req, res, next) => {
       return sendResponse(res, 400, false, 'Withdrawal reason must be between 5 and 500 characters.');
     }
 
-    // 2. Fetch and Withdraw
+    // 2. Fetch and Withdraw — support both integer id and string reportId
+    let whereClause = { studentId };
+    if (!isNaN(parseInt(id)) && !id.startsWith('#')) {
+      whereClause.id = parseInt(id);
+    } else {
+      whereClause.reportId = id.toUpperCase();
+    }
+
     const report = await StudentReport.findOne({
-      where: { id, studentId },
+      where: whereClause,
     });
 
     if (!report) {

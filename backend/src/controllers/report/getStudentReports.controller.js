@@ -10,7 +10,7 @@ import moment from "moment";
  */
 export const getStudentReports = async (req, res, next) => {
   try {
-    const studentId = req.user?.id || 1;
+    const studentId = req.user?.id || 4; // Default to seeded student ID for testing
 
     const { status, category, reportType, search, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
@@ -45,12 +45,27 @@ export const getStudentReports = async (req, res, next) => {
       pages: Math.ceil(count / limit),
     };
 
+    const categoryIconMap = {
+      inappropriate: '⚠️',
+      spam: '📩',
+      harassment: '🚫',
+      misinformation: '📰',
+      other: '🔧',
+    };
+    const categoryDisplayMap = {
+      inappropriate: 'Inappropriate Content',
+      spam: 'Spam',
+      harassment: 'Harassment',
+      misinformation: 'Misinformation',
+      other: 'Other',
+    };
+
     const formattedReports = rows.map(r => ({
-      id: r.reportId,
-      reportId: r.reportId,
+      id: r.id, // Integer PK for URL routing
+      reportId: r.reportId, // Display string like #RPT-20260421-XXXX
       title: r.title,
-      category: r.category,
-      categoryIcon: "🔧", // generic fallback
+      category: categoryDisplayMap[r.category] || r.category,
+      categoryIcon: categoryIconMap[r.category] || '🔧',
       dateSubmitted: moment(r.createdAt).format("MMM DD, YYYY"),
       dateSubmittedFull: moment(r.createdAt).format("MMM DD, YYYY • hh:mm A"),
       status: r.status,
@@ -61,7 +76,7 @@ export const getStudentReports = async (req, res, next) => {
         faculty: "N/A",
         entityId: r.reportedEntityId,
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.reportedEntityId}`,
-        categoryBadge: r.category
+        categoryBadge: categoryDisplayMap[r.category] || r.category
       },
       description: r.additionalDetails || "No additional description provided.",
       statusLabel: r.status

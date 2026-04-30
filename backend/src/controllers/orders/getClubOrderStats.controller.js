@@ -13,44 +13,59 @@ export const getClubOrderStats = async (req, res) => {
     // 1. Basic Stats (Status Breakdown)
     const stats = await Order.findAll({
       where: { sellerId: clubOwnerId },
-      attributes: ["status", [Order.sequelize.fn("COUNT", Order.sequelize.col("id")), "count"]],
+      attributes: [
+        "status",
+        [Order.sequelize.fn("COUNT", Order.sequelize.col("id")), "count"],
+      ],
       group: ["status"],
       raw: true,
     });
 
-    const totalOrders = stats.reduce((acc, s) => acc + parseInt(s.count, 10), 0);
+    const totalOrders = stats.reduce(
+      (acc, s) => acc + parseInt(s.count, 10),
+      0,
+    );
     const pendingOrders = stats
-      .filter((s) => ["Order Placed", "Seller Confirmed", "Ready for Pickup", "PENDING", "IN PROGRESS"].includes(s.status))
+      .filter((s) =>
+        [
+          "Order Placed",
+          "Seller Confirmed",
+          "Ready for Pickup",
+          "PENDING",
+          "IN PROGRESS",
+        ].includes(s.status),
+      )
       .reduce((acc, s) => acc + parseInt(s.count, 10), 0);
     const completedOrders = stats
       .filter((s) => ["Order Completed", "COMPLETED"].includes(s.status))
       .reduce((acc, s) => acc + parseInt(s.count, 10), 0);
 
     // 2. Trend Calculation (Total Orders: This Week vs Last Week)
-    const startOfThisWeek = moment().subtract(7, 'days').startOf('day');
-    const startOfLastWeek = moment().subtract(14, 'days').startOf('day');
+    const startOfThisWeek = moment().subtract(7, "days").startOf("day");
+    const startOfLastWeek = moment().subtract(14, "days").startOf("day");
 
     const [thisWeekCount, lastWeekCount] = await Promise.all([
       Order.count({
         where: {
           sellerId: clubOwnerId,
-          createdAt: { [Op.gte]: startOfThisWeek.toDate() }
-        }
+          createdAt: { [Op.gte]: startOfThisWeek.toDate() },
+        },
       }),
       Order.count({
         where: {
           sellerId: clubOwnerId,
           createdAt: {
             [Op.lt]: startOfThisWeek.toDate(),
-            [Op.gte]: startOfLastWeek.toDate()
-          }
-        }
-      })
+            [Op.gte]: startOfLastWeek.toDate(),
+          },
+        },
+      }),
     ]);
 
     let totalOrdersTrend = 0;
     if (lastWeekCount > 0) {
-      totalOrdersTrend = ((thisWeekCount - lastWeekCount) / lastWeekCount) * 100;
+      totalOrdersTrend =
+        ((thisWeekCount - lastWeekCount) / lastWeekCount) * 100;
     } else if (thisWeekCount > 0) {
       totalOrdersTrend = 100;
     }
@@ -60,12 +75,13 @@ export const getClubOrderStats = async (req, res) => {
       where: {
         sellerId: clubOwnerId,
         status: ["Order Placed", "Seller Confirmed", "PENDING", "IN PROGRESS"],
-        createdAt: { [Op.gte]: moment().startOf('day').toDate() }
-      }
+        createdAt: { [Op.gte]: moment().startOf("day").toDate() },
+      },
     });
 
     // 4. Completion Rate
-    const completionRate = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
+    const completionRate =
+      totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
 
     res.status(200).json({
       success: true,
@@ -76,7 +92,7 @@ export const getClubOrderStats = async (req, res) => {
         totalOrdersTrend: parseFloat(totalOrdersTrend.toFixed(1)),
         pendingActionCount,
         completionRate: parseFloat(completionRate.toFixed(1)),
-        statusBreakdown: stats
+        statusBreakdown: stats,
       },
     });
   } catch (error) {
