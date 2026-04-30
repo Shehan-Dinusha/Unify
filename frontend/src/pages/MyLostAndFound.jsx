@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { MapPin, CheckCircle, Pencil, Trash2, ChevronDown, AlertTriangle, X } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
-import { mockLostAndFoundItems } from "../data/mockData";
+import { getMyItems, deleteItem, editItem } from "../services/lostAndFoundService";
 import CreatePostModal from "../components/lost-found/CreatePostModal";
 import ReportItemForm from "../components/lost-found/ReportItemForm";
 import EditItemForm from "../components/lost-found/EditItemForm";
@@ -12,15 +12,38 @@ import EditItemForm from "../components/lost-found/EditItemForm";
 const FILTERS = ["All", "Lost Items", "Found Items", "Resolved"];
 
 /* ─── My Item Card ───────────────────────────────────────────── */
-const MyItemCard = ({ item, onResolve, onEdit, onDelete, isResolved }) => (
-  <div className="group rounded-2xl overflow-hidden bg-dark-2 border border-white/5 hover:border-primary-blue/30 transition-all duration-200">
-    {/* Image */}
-    <div className="relative w-full h-40 sm:h-48 bg-white/5 overflow-hidden">
-      <img
-        src={item.image}
-        alt={item.title}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-      />
+const MyItemCard = ({ item, onResolve, onEdit, onDelete, isResolved }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [intervalId, setIntervalId] = useState(null);
+
+  const startSlide = () => {
+    if (!item.images || item.images.length <= 1) return;
+    const id = setInterval(() => {
+      setCurrentIndex((prev) =>
+        prev === item.images.length - 1 ? 0 : prev + 1
+      );
+    }, 1000);
+    setIntervalId(id);
+  };
+
+  const stopSlide = () => {
+    if (intervalId) clearInterval(intervalId);
+    setCurrentIndex(0);
+  };
+
+  return (
+    <div className="group rounded-2xl overflow-hidden bg-dark-2 border border-white/5 hover:border-primary-blue/30 transition-all duration-200">
+      {/* Image */}
+      <div 
+        className="relative w-full h-40 sm:h-48 bg-dark-1/50 overflow-hidden"
+        onMouseEnter={startSlide}
+        onMouseLeave={stopSlide}
+      >
+        <img
+          src={item.images && item.images.length > 0 ? item.images[currentIndex] : "https://placehold.co/400x300"}
+          alt={item.title}
+          className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-all duration-500"
+        />
       {/* Type Badge */}
       <span
         className={`absolute top-3 left-3 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-md ${
@@ -89,17 +112,15 @@ const MyItemCard = ({ item, onResolve, onEdit, onDelete, isResolved }) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 /* ─── Page ───────────────────────────────────────────────────── */
 const MyLostAndFound = () => {
   const [activeFilter, setActiveFilter] = useState("All");
-  const [items, setItems] = useState(mockLostAndFoundItems);
-  const [resolvedIds, setResolvedIds] = useState([]);
+  const [items, setItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(6);
-
-  // Edit local state
-  const [editingItemId, setEditingItemId] = useState(null);
 
   // Delete modal state: null | { id, step: 'confirm' | 'success' }
   const [deleteModal, setDeleteModal] = useState(null);
@@ -107,38 +128,85 @@ const MyLostAndFound = () => {
   // Sync view state with URL search params
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get("view") || "list";
+  const editingItemId = searchParams.get("edit") ? Number(searchParams.get("edit")) : null;
 
   const setView = useCallback(
     (newView) => {
-      if (newView === "list") {
-        setSearchParams({}, { replace: false });
-      } else {
-        setSearchParams({ view: newView }, { replace: false });
-      }
+      setSearchParams(
+        (prev) => {
+          const params = new URLSearchParams(prev);
+          if (newView === "list") {
+            params.delete("view");
+          } else {
+            params.set("view", newView);
+          }
+          return params;
+        },
+        { replace: false }
+      );
     },
     [setSearchParams]
   );
 
+  const clearEdit = useCallback(() => {
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        params.delete("edit");
+        return params;
+      },
+      { replace: false }
+    );
+  }, [setSearchParams]);
+
   const user = { name: "Alex Johnson", role: "student" };
 
-  const handleResolve = (id) => {
-    setResolvedIds((prev) => [...prev, id]);
+  useEffect(() => {
+    const fetchItems = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getMyItems();
+        setItems(data);
+      } catch (err) {
+        console.error("Failed to fetch my items:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchItems();
+  }, []);
+
+  const handleResolve = async (id) => {
+    try {
+      // Optimistic update
+      setItems((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, status: "Resolved" } : item))
+      );
+      
+      const formData = new FormData();
+      formData.append("status", "Resolved");
+      await editItem(id, formData);
+    } catch (err) {
+      console.error("Failed to resolve item:", err);
+    }
   };
 
   const handleEdit = (id) => {
-    setEditingItemId(id);
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        params.set("edit", id);
+        return params;
+      },
+      { replace: false }
+    );
   };
 
   const handleSaveEdit = (updatedItem) => {
     setItems((prev) =>
       prev.map((item) => (item.id === updatedItem.id ? updatedItem : item))
     );
-    if (updatedItem.status === "Resolved" && !resolvedIds.includes(updatedItem.id)) {
-      setResolvedIds((prev) => [...prev, updatedItem.id]);
-    } else if (updatedItem.status === "Active" && resolvedIds.includes(updatedItem.id)) {
-      setResolvedIds((prev) => prev.filter((rId) => rId !== updatedItem.id));
-    }
-    setEditingItemId(null);
+    clearEdit();
   };
 
   // Step 1: Open confirmation modal
@@ -147,17 +215,20 @@ const MyLostAndFound = () => {
   };
 
   // Step 2: User confirms deletion
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteModal) return;
-    setItems((prev) => prev.filter((item) => item.id !== deleteModal.id));
-    setResolvedIds((prev) => prev.filter((rId) => rId !== deleteModal.id));
-    
-    // If we were editing this item, close the edit view
-    if (editingItemId === deleteModal.id) {
-      setEditingItemId(null);
+    try {
+      await deleteItem(deleteModal.id);
+      setItems((prev) => prev.filter((item) => item.id !== deleteModal.id));
+      
+      if (editingItemId === deleteModal.id) {
+        clearEdit();
+      }
+      
+      setDeleteModal({ ...deleteModal, step: "success" });
+    } catch (error) {
+      console.error("Failed to delete item:", error);
     }
-    
-    setDeleteModal({ ...deleteModal, step: "success" });
   };
 
   // Close modal
@@ -169,11 +240,11 @@ const MyLostAndFound = () => {
   const getFilteredItems = () => {
     switch (activeFilter) {
       case "Lost Items":
-        return items.filter((i) => i.type === "lost" && !resolvedIds.includes(i.id));
+        return items.filter((i) => i.type === "lost" && i.status !== "Resolved");
       case "Found Items":
-        return items.filter((i) => i.type === "found" && !resolvedIds.includes(i.id));
+        return items.filter((i) => i.type === "found" && i.status !== "Resolved");
       case "Resolved":
-        return items.filter((i) => resolvedIds.includes(i.id));
+        return items.filter((i) => i.status === "Resolved");
       default:
         return items;
     }
@@ -204,7 +275,7 @@ const MyLostAndFound = () => {
         <EditItemForm
           item={items.find((i) => i.id === editingItemId)}
           onSave={handleSaveEdit}
-          onCancel={() => setEditingItemId(null)}
+          onCancel={clearEdit}
           onDelete={() => handleDeleteClick(editingItemId)}
         />
       ) : view === "lostForm" || view === "foundForm" ? (
@@ -235,13 +306,17 @@ const MyLostAndFound = () => {
         </div>
 
         {/* Items Grid */}
-        {displayedItems.length > 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <h3 className="text-body-large-bold text-text-primary mb-1">Loading items...</h3>
+          </div>
+        ) : displayedItems.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
             {displayedItems.map((item) => (
               <MyItemCard
                 key={item.id}
                 item={item}
-                isResolved={resolvedIds.includes(item.id)}
+                isResolved={item.status === "Resolved"}
                 onResolve={handleResolve}
                 onEdit={handleEdit}
                 onDelete={handleDeleteClick}
