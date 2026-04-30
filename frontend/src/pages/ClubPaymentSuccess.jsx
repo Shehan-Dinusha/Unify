@@ -22,6 +22,7 @@ const ClubPaymentSuccess = () => {
             
             const params = new URLSearchParams(location.search);
             const orderId = params.get("order_id");
+            const bookingId = params.get("booking_id");
             
             if (orderId) {
                 try {
@@ -32,6 +33,24 @@ const ClubPaymentSuccess = () => {
                     }
                 } catch (error) {
                     console.error("Failed to fetch order:", error);
+                    navigate("/marketplace/club");
+                } finally {
+                    setLoading(false);
+                }
+            } else if (bookingId) {
+                try {
+                    const result = await orderService.getBookingDetails(bookingId);
+                    setOrder({
+                        ...result.booking,
+                        orderId: result.booking.bookingId,
+                        size: result.booking.tierId, // map tier to size for UI
+                        pickupLocation: "Details provided in email"
+                    });
+                    if (result.booking.event) {
+                        setProduct(result.booking.event);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch booking:", error);
                     navigate("/marketplace/club");
                 } finally {
                     setLoading(false);

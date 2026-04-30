@@ -48,29 +48,36 @@ const OrderDetails = () => {
     const getTimeline = (order) => {
         if (!order) return [];
         
-        const statuses = ["PENDING", "PROCESSING", "SHIPPED", "DELIVERED"];
+        const statuses = ["PENDING", "Order Placed", "Seller Confirmed", "Ready for Pickup", "Order Completed"];
         const titles = {
-            PENDING: "Order Placed",
-            PROCESSING: "Processing",
-            SHIPPED: "Shipped",
-            DELIVERED: "Delivered"
+            "PENDING": "Pending",
+            "Order Placed": "Order Placed",
+            "Seller Confirmed": "Seller Confirmed",
+            "Ready for Pickup": "Ready for Pickup",
+            "Order Completed": "Order Completed"
         };
         const icons = {
-            PENDING: Clock,
-            PROCESSING: Package,
-            SHIPPED: Truck,
-            DELIVERED: CheckCircle
+            "PENDING": Clock,
+            "Order Placed": Package,
+            "Seller Confirmed": ShieldCheck,
+            "Ready for Pickup": Truck,
+            "Order Completed": CheckCircle
         };
 
-        const currentStatusIndex = statuses.indexOf(order.status?.toUpperCase());
+        const currentStatusIndex = statuses.findIndex(s => s.toLowerCase() === order.status?.toLowerCase());
         
         return statuses.map((status, index) => {
             let itemStatus = "upcoming";
-            if (index < currentStatusIndex) itemStatus = "completed";
-            else if (index === currentStatusIndex) itemStatus = "current";
+            if (currentStatusIndex === -1) {
+                // If status not found, assume everything is upcoming or handle gracefully
+            } else if (index < currentStatusIndex) {
+                itemStatus = "completed";
+            } else if (index === currentStatusIndex) {
+                itemStatus = "current";
+            }
             
             // Find timestamp from backend timeline if it exists
-            const historyItem = order.timeline?.find(t => t.status === status);
+            const historyItem = order.timeline?.find(t => t.status?.toLowerCase() === status.toLowerCase());
             const date = historyItem ? new Date(historyItem.timestamp).toLocaleDateString("en-US", {
                 day: "numeric",
                 month: "short",

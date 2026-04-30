@@ -150,11 +150,11 @@ const PostCard = ({
     <div className="w-full bg-[#1A2634] rounded-[24px] overflow-hidden border border-white/5 font-inter text-white">
       {/* Post Image */}
       {image && (
-        <div className="w-full h-[300px] sm:h-[400px] overflow-hidden">
+        <div className="relative w-full bg-black/20 flex justify-center items-center max-h-[500px] overflow-hidden">
           <img
             src={image}
             alt="post"
-            className="w-full h-full object-cover"
+            className="w-full h-auto object-contain max-h-[500px]"
             loading="lazy"
           />
         </div>

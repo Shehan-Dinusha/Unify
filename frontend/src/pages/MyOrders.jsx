@@ -45,29 +45,38 @@ const MyOrders = () => {
         const items = viewType === "Marketplace" ? orders : bookings;
         return items.filter(item => {
             if (activeTab === "All") return true;
-            const status = item.status?.toUpperCase();
+            const status = item.status;
             if (activeTab === "In Progress") {
-                return ["PENDING", "PROCESSING", "SHIPPED", "IN PROGRESS", "CONFIRMED"].includes(status);
+                // Product: paid but not yet collected
+                // Booking: confirmed but not yet attended
+                return ["Order Placed", "Seller Confirmed", "Ready for Pickup", "CONFIRMED", "IN PROGRESS", "PENDING"].includes(status);
             }
             if (activeTab === "Completed") {
-                return ["COMPLETED", "DELIVERED", "ATTENDED"].includes(status);
+                return ["Order Completed", "COMPLETED", "ATTENDED", "DELIVERED"].includes(status);
             }
             return true;
         });
     };
 
     const getStatusStyles = (status) => {
-        switch (status?.toUpperCase()) {
+        switch (status) {
+            // Product order statuses
+            case "PENDING":              return "bg-state-warning/10 text-state-warning border-state-warning/20";
+            case "Order Placed":         return "bg-primary-blue/10 text-primary-blue border-primary-blue/20";
+            case "Seller Confirmed":     return "bg-purple-400/10 text-purple-400 border-purple-400/20";
+            case "Ready for Pickup":     return "bg-state-success/10 text-state-success border-state-success/20";
+            case "Order Completed":      return "bg-white/10 text-text-secondary border-white/20";
+            // Event booking statuses
+            case "CONFIRMED":            return "bg-primary-blue/10 text-primary-blue border-primary-blue/20";
+            case "ATTENDED":             return "bg-state-success/10 text-state-success border-state-success/20";
+            case "CANCELLED":            return "bg-state-error/10 text-state-error border-state-error/20";
+            // Legacy/fallback
             case "COMPLETED":
-            case "DELIVERED":
-            case "ATTENDED":
-            case "CONFIRMED":   return "bg-state-success/10 text-state-success border-state-success/20";
+            case "DELIVERED":            return "bg-white/10 text-text-secondary border-white/20";
             case "IN PROGRESS":
             case "PROCESSING":
-            case "SHIPPED":     return "bg-primary-blue/10 text-primary-blue border-primary-blue/20";
-            case "PENDING":     return "bg-state-warning/10 text-state-warning border-state-warning/20";
-            case "CANCELLED":   return "bg-state-error/10 text-state-error border-state-error/20";
-            default:            return "bg-white/10 text-text-secondary border-white/20";
+            case "SHIPPED":              return "bg-primary-blue/10 text-primary-blue border-primary-blue/20";
+            default:                     return "bg-white/10 text-text-secondary border-white/20";
         }
     };
 

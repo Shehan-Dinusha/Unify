@@ -31,11 +31,22 @@ export const formatTimeAgo = (date) => {
 
 /**
  * Returns the full image URL based on whether it's an absolute path or relative to API
- * @param {string} path 
+ * @param {string|object} path 
  * @returns {string}
  */
 export const getImageUrl = (path) => {
   if (!path) return "/placeholder-post.jpg";
+  
+  // Handle JSON object paths (e.g., from ClubEventPost coverImage)
+  if (typeof path === "object") {
+    if (path.url) path = path.url;
+    else if (path.src) path = path.src;
+    else return "/placeholder-post.jpg";
+  }
+
+  // Fallback if somehow path is still not a string
+  if (typeof path !== "string") return "/placeholder-post.jpg";
+
   if (path.startsWith("http")) return path;
   
   const baseURL = import.meta.env.VITE_API_URL?.replace("/api/v1", "") || "http://localhost:5000";
