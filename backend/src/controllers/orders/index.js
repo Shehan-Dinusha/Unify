@@ -8,6 +8,10 @@ import { getClubOrderTrends } from "./getClubOrderTrends.controller.js";
 import { getClubTopProducts } from "./getClubTopProducts.controller.js";
 import { getClubBuyerDemographics } from "./getClubBuyerDemographics.controller.js";
 import { getClubRevenueBreakdown } from "./getClubRevenueBreakdown.controller.js";
+import { getClubPosts } from "./getClubPosts.controller.js";
+import { togglePostVisibility } from "./togglePostVisibility.controller.js";
+import { getOrdersByProduct } from "./getOrdersByProduct.controller.js";
+import { bulkUpdateOrderStatus } from "./bulkUpdateOrderStatus.controller.js";
 
 export {
   createOrder,
@@ -20,5 +24,9 @@ export {
   getClubTopProducts,
   getClubBuyerDemographics,
   getClubRevenueBreakdown,
+  getClubPosts,
+  togglePostVisibility,
+  getOrdersByProduct,
+  bulkUpdateOrderStatus,
 };
 

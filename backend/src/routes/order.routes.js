@@ -17,8 +17,18 @@ router.get("/analytics/top-products/:userId", OrderController.getClubTopProducts
 router.get("/analytics/demographics/:userId", OrderController.getClubBuyerDemographics);
 router.get("/analytics/revenue/:userId", OrderController.getClubRevenueBreakdown);
 
-// Route for updating order status
+// Routes for bulk status update and specific product orders
+router.patch("/bulk-status", OrderController.bulkUpdateOrderStatus);
+router.get("/product/:productId", OrderController.getOrdersByProduct);
+
+// Route for updating individual order status
 router.patch("/:id/status", OrderController.updateOrderStatus);
+
+// Club owner: get all their posts (products + events)
+router.get("/club/:userId/posts", OrderController.getClubPosts);
+
+// Club owner: toggle post visibility in feed
+router.patch("/posts/:type/:postId/visibility", OrderController.togglePostVisibility);
 
 // Route for getting a single order details
 router.get("/:id", OrderController.getOrderDetails);

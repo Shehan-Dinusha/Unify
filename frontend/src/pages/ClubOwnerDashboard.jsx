@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import ClubPostCard from "../components/club/ClubPostCard";
-import { mockClubFeed } from "../data/mockClubData";
 import { BarChart, DonutChart, ProgressBar } from "../components/chart";
 import orderService from "../services/orderService";
 import { useNavigate } from "react-router-dom";
@@ -47,17 +46,21 @@ const ClubOwnerDashboard = () => {
     const [chartFilter, setChartFilter] = useState("Month");
     
     // API Data States
-    const [stats, setStats] = useState({ totalOrders: 0, pendingOrders: 0, completedOrders: 0 });
+    const [stats, setStats] = useState({ 
+        totalOrders: 0, 
+        pendingOrders: 0, 
+        completedOrders: 0,
+        totalOrdersTrend: 0,
+        pendingActionCount: 0,
+        completionRate: 0
+    });
     const [trends, setTrends] = useState([]);
     const [topProducts, setTopProducts] = useState([]);
     const [demographics, setDemographics] = useState([]);
     const [revenueBreakdown, setRevenueBreakdown] = useState([]);
     const [recentOrders, setRecentOrders] = useState([]);
+    const [clubPosts, setClubPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    const [feedVisible, setFeedVisible] = useState(
-        () => Object.fromEntries(mockClubFeed.map((p) => [p.id, true]))
-    );
 
     const user = {
         id: 1, // Using hardcoded ID 1 as per current project pattern
@@ -76,26 +79,49 @@ const ClubOwnerDashboard = () => {
                     topProductsRes,
                     demographicsRes,
                     revenueRes,
-                    ordersRes
-                ] = await Promise.all([
+                    ordersRes,
+                    postsRes
+                ] = await Promise.allSettled([
                     orderService.getClubOrderStats(user.id),
                     orderService.getClubOrderTrends(user.id, chartFilter === "Month" ? 30 : 365),
                     orderService.getClubTopProducts(user.id),
                     orderService.getClubBuyerDemographics(user.id),
                     orderService.getClubRevenueBreakdown(user.id),
-                    orderService.getClubOrders(user.id)
+                    orderService.getClubOrders(user.id),
+                    orderService.getClubPosts(user.id)
                 ]);
 
-                if (statsRes.success) setStats(statsRes.data);
-                if (trendsRes.success) setTrends(trendsRes.data);
-                if (topProductsRes.success) setTopProducts(topProductsRes.data);
-                if (demographicsRes.success) setDemographics(demographicsRes.data);
-                if (revenueRes.success) setRevenueBreakdown(revenueRes.data);
-                if (ordersRes.success) setRecentOrders(ordersRes.orders.slice(0, 5)); // Take last 5
+                const val = (res) => res.status === "fulfilled" ? res.value : null;
+
+                if (val(statsRes)?.success) setStats(val(statsRes).data);
+                if (val(trendsRes)?.success) setTrends(val(trendsRes).data);
+                if (val(topProductsRes)?.success) setTopProducts(val(topProductsRes).data);
+                if (val(demographicsRes)?.success) setDemographics(val(demographicsRes).data);
+                if (val(revenueRes)?.success) setRevenueBreakdown(val(revenueRes).data);
+                if (val(ordersRes)?.success) setRecentOrders(val(ordersRes).orders.slice(0, 5));
+                if (val(postsRes)?.success) {
+                    const normalized = val(postsRes).posts.map(p => ({
+                        ...p,
+                        image: p.postType === "club-event"
+                            ? (typeof p.coverImage === "string" ? p.coverImage : p.coverImage?.url || "")
+                            : (Array.isArray(p.images) && p.images.length > 0
+                                ? (typeof p.images[0] === "string" ? p.images[0] : p.images[0]?.url || "")
+                                : ""),
+                        clubName: p.name,
+                        clubSeed: p.name,
+                        text: p.description,
+                        time: new Date(p.createdAt).toLocaleDateString(),
+                        price: p.price ? `Rs.${parseFloat(p.price).toFixed(2)}` : null,
+                        stats: { likes: p.likesCount || 0 },
+                        comments: [],
+                    }));
+                    setClubPosts(normalized);
+                }
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
             } finally {
                 setLoading(false);
+
             }
         };
 
@@ -136,9 +162,9 @@ const ClubOwnerDashboard = () => {
                     <StatCard
                         label="Total Orders"
                         value={stats.totalOrders.toLocaleString()}
-                        sub="+13.4%"
+                        sub={`${stats.totalOrdersTrend > 0 ? "+" : ""}${stats.totalOrdersTrend}%`}
                         subLabel="vs last week"
-                        subPositive={true}
+                        subPositive={stats.totalOrdersTrend >= 0}
                         icon={ShoppingBag}
                         iconBg="bg-primary-blue/20"
                         iconColor="text-primary-blue"
@@ -146,9 +172,9 @@ const ClubOwnerDashboard = () => {
                     <StatCard
                         label="Pending Fulfillment"
                         value={stats.pendingOrders}
-                        badge="Action Needed"
+                        badge={stats.pendingActionCount > 0 ? "Action Needed" : null}
                         badgeColor="bg-state-warning/20 text-state-warning"
-                        subLabel="items today"
+                        subLabel={`${stats.pendingActionCount} items today`}
                         icon={Clock}
                         iconBg="bg-state-warning/20"
                         iconColor="text-state-warning"
@@ -156,7 +182,7 @@ const ClubOwnerDashboard = () => {
                     <StatCard
                         label="Completed Orders"
                         value={stats.completedOrders.toLocaleString()}
-                        sub="96.7%"
+                        sub={`${stats.completionRate}%`}
                         subLabel="completion rate"
                         subPositive={true}
                         icon={CheckCircle2}
@@ -384,12 +410,15 @@ const ClubOwnerDashboard = () => {
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold text-base">Your Posts</h3>
                         <span className="text-text-secondary text-xs">
-                            {Object.values(feedVisible).filter(Boolean).length} of {mockClubFeed.length} visible in feed
+                            {clubPosts.filter(p => p.isVisible).length} of {clubPosts.length} visible in feed
                         </span>
                     </div>
+                    {clubPosts.length === 0 ? (
+                        <p className="text-text-secondary text-xs text-center py-8">No posts yet</p>
+                    ) : (
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                        {mockClubFeed.map((post) => {
-                            const isInFeed = feedVisible[post.id];
+                        {clubPosts.map((post) => {
+                            const isInFeed = post.isVisible;
                             return (
                                     <div key={post.id} className="relative group">
                                         <div className={`transition-all duration-300 ${
@@ -399,7 +428,7 @@ const ClubOwnerDashboard = () => {
                                                 post={post} 
                                                 isOwner={true} 
                                                 hideActions={true}
-                                                onCardClick={() => navigate(`/club-owner/product-orders/${post.id}`)}
+                                                onCardClick={() => navigate(`/club-owner/product-orders/${post.postType}/${post.id}`)}
                                             />
                                         </div>
 
@@ -417,9 +446,20 @@ const ClubOwnerDashboard = () => {
                                                 </div>
                                                 
                                                 <button
-                                                    onClick={(e) => {
+                                                    onClick={async (e) => {
                                                         e.stopPropagation();
-                                                        setFeedVisible((prev) => ({ ...prev, [post.id]: !prev[post.id] }));
+                                                        try {
+                                                            const res = await orderService.togglePostVisibility(post.postType, post.id);
+                                                            if (res.success) {
+                                                                setClubPosts(prev => prev.map(p =>
+                                                                    p.id === post.id && p.postType === post.postType
+                                                                        ? { ...p, isVisible: res.isVisible }
+                                                                        : p
+                                                                ));
+                                                            }
+                                                        } catch (err) {
+                                                            console.error("Toggle failed:", err);
+                                                        }
                                                     }}
                                                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 ${isInFeed ? "bg-state-success" : "bg-white/20"} focus:outline-none shrink-0`}
                                                 >
@@ -433,6 +473,7 @@ const ClubOwnerDashboard = () => {
                             );
                         })}
                     </div>
+                    )}
                 </div>
             </div>
         </MainLayout>

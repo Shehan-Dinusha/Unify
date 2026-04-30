@@ -35,6 +35,14 @@ export const createClubEventPost = async (req, res) => {
     let tiers = req.body.tiers || req.body.tickets;
     if (typeof tiers === 'string') tiers = JSON.parse(tiers);
 
+    let basePrice = 0;
+    if (Array.isArray(tiers) && tiers.length > 0) {
+      const prices = tiers.map(t => t.isFree ? 0 : parseFloat(t.price) || 0);
+      basePrice = Math.min(...prices);
+    } else if (req.body.price) {
+      basePrice = parseFloat(req.body.price) || 0;
+    }
+
     const post = await ClubEventPost.create({
       authorId: userId,
       name: req.body.name,
@@ -42,6 +50,7 @@ export const createClubEventPost = async (req, res) => {
       date: req.body.date,
       time: req.body.time,
       location: req.body.location,
+      price: basePrice,
       tiers,
       coverImage,
     });

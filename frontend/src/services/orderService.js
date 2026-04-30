@@ -89,6 +89,42 @@ const orderService = {
     },
 
     /**
+     * Fetch bookings for a specific event
+     */
+    getBookingsByEvent: async (eventId) => {
+        try {
+            const response = await api.get(`/bookings/event/${eventId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
+     * Bulk update booking status
+     */
+    bulkUpdateBookingStatus: async (bookingIds, status) => {
+        try {
+            const response = await api.patch(`/bookings/bulk-status`, { bookingIds, status });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
+     * Update booking status
+     */
+    updateBookingStatus: async (bookingId, statusData) => {
+        try {
+            const response = await api.patch(`/bookings/${bookingId}/status`, statusData);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
      * Fetch orders for a club (seller)
      */
     getClubOrders: async (userId) => {
@@ -106,6 +142,30 @@ const orderService = {
     updateOrderStatus: async (orderId, statusData) => {
         try {
             const response = await api.patch(`/orders/${orderId}/status`, statusData);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
+     * Fetch orders for a specific product
+     */
+    getOrdersByProduct: async (productId) => {
+        try {
+            const response = await api.get(`/orders/product/${productId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
+     * Bulk update order status
+     */
+    bulkUpdateOrderStatus: async (orderIds, status) => {
+        try {
+            const response = await api.patch(`/orders/bulk-status`, { orderIds, status });
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;
@@ -153,6 +213,32 @@ const orderService = {
     getClubRevenueBreakdown: async (userId) => {
         try {
             const response = await api.get(`/orders/analytics/revenue/${userId}`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
+     * Get all posts (products + events) owned by a club user
+     */
+    getClubPosts: async (userId) => {
+        try {
+            const response = await api.get(`/orders/club/${userId}/posts`);
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || error.message;
+        }
+    },
+
+    /**
+     * Toggle whether a club post is visible in the feed
+     * @param {string} type - 'club-product' or 'club-event'
+     * @param {number} postId
+     */
+    togglePostVisibility: async (type, postId) => {
+        try {
+            const response = await api.patch(`/orders/posts/${type}/${postId}/visibility`);
             return response.data;
         } catch (error) {
             throw error.response?.data || error.message;

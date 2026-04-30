@@ -33,6 +33,11 @@ export const createCheckoutSession = async (req, res) => {
       metadata: {
         orderId: orderId,
       },
+      payment_intent_data: {
+        metadata: {
+          orderId: orderId,
+        },
+      },
     });
 
     res.status(200).json({ success: true, url: session.url });

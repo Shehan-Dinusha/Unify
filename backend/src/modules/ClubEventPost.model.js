@@ -37,6 +37,11 @@ const ClubEventPost = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+    price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      defaultValue: 0.00,
+    },
     tiers: {
       type: DataTypes.JSON,
       allowNull: true, // Array of tier objects e.g. [{ id: 1, label: "VIP", enabled: true, price: "50.00", isFree: false }]
@@ -44,6 +49,10 @@ const ClubEventPost = sequelize.define(
     isPromoted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    isVisible: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
     likesCount: {
       type: DataTypes.INTEGER,

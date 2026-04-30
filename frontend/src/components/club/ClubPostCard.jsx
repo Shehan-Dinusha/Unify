@@ -151,8 +151,8 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
             onClick={onCardClick}
         >
             {/* Image */}
-            <div className="relative w-full h-[360px] bg-white/5">
-                <img src={post.image} alt={post.clubName} className="w-full h-full object-cover" />
+            <div className="relative w-full bg-white/5 flex justify-center items-center max-h-[500px] overflow-hidden">
+                <img src={post.image} alt={post.clubName} className="w-full h-auto object-contain max-h-[500px]" />
 
                 {/* Price pill */}
                 {post.price && (

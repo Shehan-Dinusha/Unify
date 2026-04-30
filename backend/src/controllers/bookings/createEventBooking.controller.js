@@ -20,8 +20,12 @@ export const createEventBooking = async (req, res) => {
     }
 
     // Find the tier details from the JSON field
-    // event.tiers is an array of objects
-    const selectedTier = event.tiers?.find(t => t.id === tierId || t.label === tierId);
+    // event.tiers is an array of objects which contains { name, price, isFree }
+    const selectedTier = event.tiers?.find(t => 
+      String(t.id) === String(tierId) || 
+      t.label === tierId || 
+      t.name === tierId
+    );
     
     if (!selectedTier) {
       return res.status(400).json({ error: "Invalid tier selected." });
@@ -36,12 +40,13 @@ export const createEventBooking = async (req, res) => {
       bookingId,
       userId,
       eventId,
-      tierId: selectedTier.id || selectedTier.label,
+      tierId: selectedTier.id || selectedTier.label || selectedTier.name,
       price,
       qty,
       total,
       status: price === 0 ? "CONFIRMED" : "PENDING",
       paymentStatus: price === 0 ? "PAID" : "UNPAID",
+      timeline: [{ status: price === 0 ? "CONFIRMED" : "PENDING", timestamp: new Date() }],
     });
 
     res.status(201).json({ success: true, booking });

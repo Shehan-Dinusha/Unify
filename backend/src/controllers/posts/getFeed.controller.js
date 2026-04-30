@@ -3,15 +3,25 @@ import { getFileUrl } from "../../services/s3.service.js";
 
 const resolveImageUrl = async (img) => {
   if (!img) return img;
-  if (img.includes("X-Amz-Signature")) return img;
-  const s3UrlMatch = img.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
+  
+  let imgPath = img;
+  // Handle case where img is stored as a JSON object (e.g. { url: "..." } from ClubEventPost)
+  if (typeof img === 'object' && img !== null) {
+    if (img.url) imgPath = img.url;
+    else return imgPath;
+  }
+
+  if (typeof imgPath !== 'string') return imgPath;
+
+  if (imgPath.includes("X-Amz-Signature")) return imgPath;
+  const s3UrlMatch = imgPath.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
   if (s3UrlMatch) {
-    try { return await getFileUrl(s3UrlMatch[1]); } catch { return img; }
+    try { return await getFileUrl(s3UrlMatch[1]); } catch { return imgPath; }
   }
-  if (!img.startsWith("http") && !img.startsWith("/")) {
-    try { return await getFileUrl(img); } catch { return img; }
+  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
+    try { return await getFileUrl(imgPath); } catch { return imgPath; }
   }
-  return img;
+  return imgPath;
 };
 
 const resolvePostImages = async (post) => {

@@ -1,87 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import { ShoppingBag, Send, ChevronDown, Check } from "lucide-react";
-import { mockClubProduct } from "../data/mockClubProduct";
-import { useNavigate } from "react-router-dom";
+import orderService from "../services/orderService";
+import { getImageUrl } from "../utils/formatters";
 
-/* ─── Mock student orders for the hoodie listing ─────────────── */
-const mockStudentOrders = [
-    {
-        id: "#7382",
-        name: "Jane Doe",
-        email: "jane.doe@uni.edu",
-        initials: "JD",
-        avatarColor: "bg-blue-500",
-        qty: 1,
-        size: "L",
-        colorHex: "#0B1220",
-        status: "Order Placed",
-    },
-    {
-        id: "#7384",
-        name: "Amy Lin",
-        email: "amy.lin@uni.edu",
-        initials: "AL",
-        avatarColor: "bg-orange-500",
-        qty: 2,
-        size: "M",
-        colorHex: "#2B8CEE",
-        status: "Seller Confirmed",
-    },
-    {
-        id: "#7386",
-        name: "Sarah Jones",
-        email: "sarah.j@uni.edu",
-        initials: "SJ",
-        avatarColor: "bg-green-500",
-        qty: 1,
-        size: "S",
-        colorHex: "#0B1220",
-        status: "Ready for Pickup",
-    },
-    {
-        id: "#7389",
-        name: "Kevin Miller",
-        email: "k.miller@uni.edu",
-        initials: "KM",
-        avatarColor: "bg-teal-500",
-        qty: 1,
-        size: "XL",
-        colorHex: "#0B1220",
-        status: "Order Completed",
-    },
-    {
-        id: "#7392",
-        name: "Tom Riddle",
-        email: "tom.r@uni.edu",
-        initials: "TR",
-        avatarColor: "bg-red-500",
-        qty: 2,
-        size: "M",
-        colorHex: "#EF4444",
-        status: "Order Placed",
-    },
-];
+const getInitials = (name) => {
+    if (!name) return "??";
+    const parts = name.split(" ");
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name[0].toUpperCase();
+};
 
-const ALL_STATUSES = [
-    "Order Placed",
-    "Seller Confirmed",
-    "Ready for Pickup",
-    "Order Completed",
-];
+const getAvatarColor = (id) => {
+    const colors = ["bg-blue-500", "bg-orange-500", "bg-green-500", "bg-teal-500", "bg-red-500", "bg-purple-500"];
+    return colors[id % colors.length];
+};
+
+// Statuses shown in the table dropdown (club-owner settable only)
+const PRODUCT_STATUSES = ["Seller Confirmed", "Ready for Pickup", "Order Completed"];
+const EVENT_STATUSES = ["ATTENDED", "CANCELLED"];
+
+// All statuses including system-set ones, for the status bar & filter
+const ALL_PRODUCT_STATUSES = ["Order Placed", "Seller Confirmed", "Ready for Pickup", "Order Completed"];
+const ALL_EVENT_STATUSES = ["PENDING", "CONFIRMED", "ATTENDED", "CANCELLED"];
 
 const statusStyle = {
-    "Order Placed":     { dot: "bg-yellow-400",    badge: "bg-yellow-400/15 text-yellow-400 border border-yellow-400/20" },
-    "Seller Confirmed": { dot: "bg-primary-blue",  badge: "bg-primary-blue/15 text-primary-blue border border-primary-blue/20" },
-    "Ready for Pickup": { dot: "bg-state-success", badge: "bg-state-success/15 text-state-success border border-state-success/20" },
-    "Order Completed":  { dot: "bg-white/30",      badge: "bg-white/8 text-text-secondary border border-white/10" },
+    // Product statuses
+    "Order Placed":      { dot: "bg-primary-blue",   badge: "bg-primary-blue/15 text-primary-blue border border-primary-blue/20" },
+    "Seller Confirmed":  { dot: "bg-purple-400",     badge: "bg-purple-400/15 text-purple-400 border border-purple-400/20" },
+    "Ready for Pickup":  { dot: "bg-state-success",  badge: "bg-state-success/15 text-state-success border border-state-success/20" },
+    "Order Completed":   { dot: "bg-white/30",       badge: "bg-white/8 text-text-secondary border border-white/10" },
+    // Event booking statuses
+    "PENDING":           { dot: "bg-yellow-400",     badge: "bg-yellow-400/15 text-yellow-400 border border-yellow-400/20" },
+    "CONFIRMED":         { dot: "bg-primary-blue",   badge: "bg-primary-blue/15 text-primary-blue border border-primary-blue/20" },
+    "ATTENDED":          { dot: "bg-state-success",  badge: "bg-state-success/15 text-state-success border border-state-success/20" },
+    "CANCELLED":         { dot: "bg-state-error",    badge: "bg-state-error/15 text-state-error border border-state-error/20" },
 };
 
 /* ─── Status dropdown per order ─────────────────────────────── */
-const StatusDropdown = ({ value, onChange }) => {
+const StatusDropdown = ({ value, onChange, type }) => {
     const [open, setOpen] = useState(false);
-    const style = statusStyle[value] || statusStyle["Order Placed"];
+    const style = statusStyle[value] || { badge: "bg-white/8 text-text-secondary border border-white/10" };
+    const options = type === "club-event" ? EVENT_STATUSES : PRODUCT_STATUSES;
     return (
         <div className="relative inline-block text-left">
             <button
@@ -93,7 +55,7 @@ const StatusDropdown = ({ value, onChange }) => {
             </button>
             {open && (
                 <div className="absolute right-0 top-full mt-1 z-50 bg-[#1A2F45] border border-white/10 rounded-xl overflow-hidden shadow-xl w-44">
-                    {ALL_STATUSES.map((s) => (
+                    {options.map((s) => (
                         <button
                             key={s}
                             onClick={() => { onChange(s); setOpen(false); }}
@@ -113,7 +75,11 @@ const StatusDropdown = ({ value, onChange }) => {
 /* ─── Main Page ─────────────────────────────────────────────── */
 const ProductOrderDashboard = () => {
     const navigate = useNavigate();
-    const [orders, setOrders] = useState(mockStudentOrders);
+    const { type, id } = useParams();
+    const [orders, setOrders] = useState([]);
+    const [itemInfo, setItemInfo] = useState(null);
+    const [loading, setLoading] = useState(true);
+    
     const [bulkFrom, setBulkFrom] = useState("Order Placed");
     const [bulkTo, setBulkTo]   = useState("Seller Confirmed");
     const [filterStatus, setFilterStatus] = useState("All Statuses");
@@ -122,12 +88,108 @@ const ProductOrderDashboard = () => {
     const [messageText, setMessageText] = useState("");
 
     const user = {
+        id: 1, // Mock current user
         name: "Alex Johnson",
         role: "club",
         displayRole: "Clubs & Societies Dashboard",
     };
 
-    /* Stat helpers */
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            if (type === "club-product") {
+                const res = await orderService.getOrdersByProduct(id);
+                if (res.success) {
+                    // Set itemInfo from the product in the response (even if no orders yet)
+                    if (res.product) setItemInfo(res.product);
+                    else if (res.orders?.length > 0) setItemInfo(res.orders[0].clubProduct);
+
+                    const formatted = res.orders.map(o => ({
+                        id: o.id,
+                        displayId: `#${o.id.toString().padStart(4, '0')}`,
+                        name: o.buyer?.name || "Unknown",
+                        email: o.buyer?.email || "N/A",
+                        initials: getInitials(o.buyer?.name),
+                        avatarColor: getAvatarColor(o.buyer?.id),
+                        qty: o.qty,
+                        size: o.size || "-",
+                        colorHex: o.colorHex || null,
+                        status: o.status
+                    }));
+                    setOrders(formatted);
+                }
+            } else if (type === "club-event") {
+                const res = await orderService.getBookingsByEvent(id);
+                if (res.success) {
+                    const formatted = res.bookings.map(b => ({
+                        id: b.id,
+                        displayId: `#${b.id.toString().padStart(4, '0')}`,
+                        name: b.user?.name || "Unknown",
+                        email: b.user?.email || "N/A",
+                        initials: getInitials(b.user?.name),
+                        avatarColor: getAvatarColor(b.user?.id),
+                        qty: b.qty,
+                        size: b.tierId || "Standard",
+                        colorHex: null,
+                        status: b.status
+                    }));
+                    setOrders(formatted);
+                    if (res.bookings.length > 0) {
+                        setItemInfo(res.bookings[0].clubEvent);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [id, type]);
+
+    const updateStatus = async (orderId, newStatus) => {
+        try {
+            if (type === "club-product") {
+                await orderService.updateOrderStatus(orderId, { status: newStatus });
+            } else {
+                await orderService.updateBookingStatus(orderId, { status: newStatus });
+            }
+            fetchData(); // Refresh list
+        } catch (error) {
+            console.error("Status update failed:", error);
+            alert("Failed to update status.");
+        }
+    };
+
+    const applyBulk = async () => {
+        const targetIds = orders
+            .filter(o => o.status === bulkFrom)
+            .map(o => o.id);
+
+        if (targetIds.length === 0) {
+            alert(`No orders found with status "${bulkFrom}"`);
+            return;
+        }
+
+        try {
+            if (type === "club-product") {
+                await orderService.bulkUpdateOrderStatus(targetIds, bulkTo);
+            } else {
+                await orderService.bulkUpdateBookingStatus(targetIds, bulkTo);
+            }
+            fetchData(); // Refresh list
+            alert(`Successfully updated ${targetIds.length} orders to ${bulkTo}`);
+        } catch (error) {
+            console.error("Bulk update failed:", error);
+            alert("Failed to apply bulk update.");
+        }
+    };
+
+    /* Derived stats */
+    const ALL_STATUSES = type === "club-event" ? ALL_EVENT_STATUSES : ALL_PRODUCT_STATUSES;
     const displayedOrders = filterStatus === "All Statuses" 
         ? orders 
         : orders.filter((o) => o.status === filterStatus);
@@ -144,19 +206,23 @@ const ProductOrderDashboard = () => {
         return acc;
     }, {});
 
-    const updateStatus = (id, status) =>
-        setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
+    const bulkStatuses = type === "club-event" ? EVENT_STATUSES : PRODUCT_STATUSES;
 
-    const applyBulk = () =>
-        setOrders((prev) =>
-            prev.map((o) => (o.status === bulkFrom ? { ...o, status: bulkTo } : o))
+    if (loading) {
+        return (
+            <MainLayout user={user} pageTitle="Order Dashboard">
+                <div className="flex items-center justify-center h-[60vh]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-blue"></div>
+                </div>
+            </MainLayout>
         );
+    }
 
     const statusBarSegments = [
-        { status: "Order Placed",     color: "bg-yellow-400", flex: counts["Order Placed"] },
-        { status: "Seller Confirmed", color: "bg-primary-blue", flex: counts["Seller Confirmed"] },
-        { status: "Ready for Pickup", color: "bg-state-success", flex: counts["Ready for Pickup"] },
-        { status: "Order Completed",  color: "bg-white/30", flex: counts["Order Completed"] },
+        { status: "Order Placed",     color: "bg-yellow-400", flex: counts["Order Placed"] || 0 },
+        { status: "Seller Confirmed", color: "bg-primary-blue", flex: counts["Seller Confirmed"] || 0 },
+        { status: "Ready for Pickup", color: "bg-state-success", flex: counts["Ready for Pickup"] || 0 },
+        { status: "Order Completed",  color: "bg-white/30", flex: counts["Order Completed"] || 0 },
     ].filter((s) => s.flex > 0);
 
     const sizeDistEntries = Object.entries(sizeDist).sort((a, b) => b[1] - a[1]);
@@ -173,14 +239,14 @@ const ProductOrderDashboard = () => {
                 {/* ── Product context strip ── */}
                 <div className="flex items-center gap-4">
                     <img
-                        src={mockClubProduct.images[0].src}
-                        alt={mockClubProduct.title}
+                        src={itemInfo ? (type === "club-product" ? getImageUrl(itemInfo.images?.[0]) : getImageUrl(itemInfo.coverImage)) : ""}
+                        alt={itemInfo?.title || "Item"}
                         className="w-14 h-14 rounded-2xl object-cover border border-white/10"
                     />
                     <div>
-                        <p className="text-text-secondary text-xs mb-0.5">Viewing orders for</p>
-                        <h2 className="text-white font-bold text-lg leading-tight">{mockClubProduct.title}</h2>
-                        <p className="text-text-secondary text-xs">{mockClubProduct.clubName} · {mockClubProduct.priceNow}</p>
+                        <p className="text-text-secondary text-xs mb-0.5">Viewing {type === 'club-product' ? 'orders' : 'bookings'} for</p>
+                        <h2 className="text-white font-bold text-lg leading-tight">{itemInfo?.title || "Loading..."}</h2>
+                        <p className="text-text-secondary text-xs">{itemInfo?.name} · {itemInfo?.price ? `Rs.${itemInfo.price}` : "Free"}</p>
                     </div>
                     <button
                         onClick={() => navigate("/club-owner/dashboard")}
@@ -258,14 +324,14 @@ const ProductOrderDashboard = () => {
 
                 {/* ── Action / Bulk Bar ── */}
                 <div className="flex flex-wrap items-center gap-3">
-                    {/* Send Message */}
-                    <button 
+                    {/* Send Message - Hidden as requested */}
+                    {/* <button 
                         onClick={() => setIsMessageModalOpen(true)}
                         className="flex items-center gap-2 bg-primary-blue hover:bg-primary-blue/90 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-[0_0_15px_rgba(43,140,238,0.3)]"
                     >
                         <Send className="w-4 h-4" />
                         Send Message
-                    </button>
+                    </button> */}
 
                     {/* Select Status Filter */}
                     <div className="relative">
@@ -319,7 +385,7 @@ const ProductOrderDashboard = () => {
                                 onChange={(e) => setBulkTo(e.target.value)}
                                 className="flex-1 sm:flex-none bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-medium appearance-none cursor-pointer focus:outline-none min-w-0"
                             >
-                                {ALL_STATUSES.map((s) => <option key={s} value={s} className="bg-[#0D1A26]">{s}</option>)}
+                                {bulkStatuses.map((s) => <option key={s} value={s} className="bg-[#0D1A26]">{s}</option>)}
                             </select>
 
                             <button
@@ -339,10 +405,10 @@ const ProductOrderDashboard = () => {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-white/5 text-text-secondary text-[11px] uppercase tracking-wider">
-                                    <th className="text-left px-6 py-4 font-medium">Order ID</th>
+                                    <th className="text-left px-6 py-4 font-medium">{type === 'club-product' ? 'Order' : 'Booking'} ID</th>
                                     <th className="text-left px-6 py-4 font-medium">Student Name</th>
                                     <th className="text-center px-4 py-4 font-medium">Qty</th>
-                                    <th className="text-center px-4 py-4 font-medium">Size</th>
+                                    <th className="text-center px-4 py-4 font-medium">{type === 'club-product' ? 'Size' : 'Tier'}</th>
                                     <th className="text-center px-4 py-4 font-medium">Color</th>
                                     <th className="text-right px-6 py-4 font-medium">Status</th>
                                 </tr>
@@ -354,7 +420,7 @@ const ProductOrderDashboard = () => {
                                         className={`border-b border-white/5 hover:bg-white/[0.03] transition-colors ${i === displayedOrders.length - 1 ? "border-b-0" : ""}`}
                                     >
                                         {/* Order ID */}
-                                        <td className="px-6 py-4 font-mono text-xs text-text-secondary">{order.id}</td>
+                                        <td className="px-6 py-4 font-mono text-xs text-text-secondary">{order.displayId}</td>
 
                                         {/* Student */}
                                         <td className="px-6 py-4">
@@ -392,6 +458,7 @@ const ProductOrderDashboard = () => {
                                             <StatusDropdown
                                                 value={order.status}
                                                 onChange={(s) => updateStatus(order.id, s)}
+                                                type={type}
                                             />
                                         </td>
                                     </tr>

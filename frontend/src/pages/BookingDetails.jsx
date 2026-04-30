@@ -76,6 +76,53 @@ const BookingDetails = () => {
         });
     };
 
+    const getTimeline = (booking) => {
+        if (!booking) return [];
+        
+        const statuses = ["PENDING", "CONFIRMED", "ATTENDED"];
+        const titles = {
+            "PENDING": "Payment Pending",
+            "CONFIRMED": "Payment Confirmed",
+            "ATTENDED": "Event Attended"
+        };
+        const icons = {
+            "PENDING": Clock,
+            "CONFIRMED": ShieldCheck,
+            "ATTENDED": CheckCircle
+        };
+
+        const currentStatusIndex = statuses.findIndex(s => s.toLowerCase() === booking.status?.toLowerCase());
+        
+        return statuses.map((status, index) => {
+            let itemStatus = "upcoming";
+            if (currentStatusIndex === -1) {
+                // Ignore
+            } else if (index < currentStatusIndex) {
+                itemStatus = "completed";
+            } else if (index === currentStatusIndex) {
+                itemStatus = "current";
+            }
+            
+            // Find timestamp from backend timeline if it exists
+            const historyItem = booking.timeline?.find(t => t.status?.toLowerCase() === status.toLowerCase());
+            const date = historyItem ? new Date(historyItem.timestamp).toLocaleDateString("en-US", {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit"
+            }) : null;
+
+            return {
+                title: titles[status],
+                status: itemStatus,
+                icon: icons[status],
+                date: date
+            };
+        });
+    };
+
+    const timeline = getTimeline(booking);
+
     return (
         <MainLayout user={user} pageTitle="My History" verificationCount={0}>
             <div className="max-w-[1100px] mx-auto pb-2xl px-md">
@@ -153,7 +200,7 @@ const BookingDetails = () => {
                             </div>
                         </Card>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+                        <div className="grid grid-cols-1 gap-xl">
                             {/* Ticket Details */}
                             <Card variant="card" padding="p-xl" className="bg-white/[0.03] border-white/5 flex flex-col h-full">
                                 <h3 className="text-body-large-bold text-text-primary mb-lg flex items-center gap-2">
@@ -188,50 +235,46 @@ const BookingDetails = () => {
                                 </div>
                             </Card>
 
-                            {/* Important Info */}
-                            <Card variant="card" padding="p-xl" className="bg-white/[0.03] border-white/5 flex flex-col h-full">
-                                <h3 className="text-body-large-bold text-text-primary mb-lg flex items-center gap-2">
-                                    <Info size={20} className="text-primary-blue" />
-                                    Important Info
-                                </h3>
-                                <div className="bg-white/5 rounded-xl p-md">
-                                    <p className="text-body-extra-small text-text-secondary leading-relaxed">
-                                        Please present the QR code at the entrance. This ticket is non-refundable and unique to your account.
-                                    </p>
-                                </div>
-                                <div className="mt-auto flex items-center justify-center p-md">
-                                    <div className="w-24 h-24 bg-white rounded-xl flex items-center justify-center p-2 shadow-lg shadow-white/5">
-                                        <QrCode size={80} className="text-dark-1" />
-                                    </div>
-                                </div>
-                            </Card>
                         </div>
                     </div>
 
                     {/* Right Column: Status Summary */}
                     <div className="space-y-xl">
+                        {/* Booking Status Timeline */}
                         <Card variant="container" padding="p-xl" className="border-white/10">
                             <h3 className="text-heading-small text-text-primary mb-xl">Booking Status</h3>
 
-                            <div className="flex flex-col items-center text-center py-lg">
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-all duration-500 ${
-                                    booking.status === "CONFIRMED" || booking.status === "ATTENDED"
-                                        ? "bg-state-success/15 text-state-success shadow-[0_0_20px_rgba(74,222,128,0.2)]"
-                                        : "bg-primary-blue/15 text-primary-blue shadow-[0_0_20px_rgba(43,140,238,0.2)]"
-                                }`}>
-                                    {booking.status === "CONFIRMED" || booking.status === "ATTENDED" ? <CheckCircle size={32} /> : <Clock size={32} />}
-                                </div>
-                                <h4 className="text-body-large-bold text-text-primary uppercase tracking-widest">{booking.status}</h4>
-                                <p className="text-body-extra-small text-text-tertiary mt-2">
-                                    {booking.status === "CONFIRMED" ? "Your spot is reserved. See you at the event!" : 
-                                     booking.status === "PENDING" ? "Waiting for payment verification." : 
-                                     "Status updated on " + formatDate(booking.updatedAt)}
-                                </p>
-                            </div>
-
-                            <div className="mt-xl pt-xl border-t border-white/5">
-                                <Button fullWidth variant="primary">Download Ticket PDF</Button>
-                                <Button fullWidth variant="ghost" className="mt-2 text-text-tertiary">Cancel Booking</Button>
+                            <div className="space-y-0">
+                                {timeline.map((item, index) => (
+                                    <div key={index} className="flex gap-lg group">
+                                        <div className="flex flex-col items-center">
+                                            <div className={`
+                                                relative z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500
+                                                ${item.status === 'completed' ? 'bg-state-success/15 text-state-success shadow-[0_0_15px_rgba(74,222,128,0.2)]' :
+                                                    item.status === 'current' ? 'bg-primary-blue text-white shadow-[0_0_20px_rgba(43,140,238,0.4)]' :
+                                                        'bg-white/5 text-text-tertiary border border-white/5'}
+                                            `}>
+                                                <item.icon size={item.status === 'upcoming' ? 16 : 20} className={item.status === 'current' ? 'animate-pulse' : ''} />
+                                            </div>
+                                            {index !== timeline.length - 1 && (
+                                                <div className={`
+                                                    w-0.5 h-16 transition-all duration-700
+                                                    ${item.status === 'completed' ? 'bg-state-success' : 'bg-white/5'}
+                                                `} />
+                                            )}
+                                        </div>
+                                        <div className="pt-2 pb-8">
+                                            <h4 className={`text-body-medium-bold ${item.status === 'upcoming' ? 'text-text-tertiary' : 'text-text-primary'}`}>
+                                                {item.title}
+                                            </h4>
+                                            {item.date && (
+                                                <p className="text-body-extra-small text-text-tertiary mt-1">
+                                                    {item.date}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </Card>
                     </div>
