@@ -17,6 +17,10 @@ const SavedItem = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    postType: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
     marketplaceItemId: {
       type: DataTypes.INTEGER,
       allowNull: true,

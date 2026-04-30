@@ -1,4 +1,4 @@
-import { NormalPost, ClubProductPost, ClubEventPost, Boarding, User } from "../../modules/index.js";
+import { NormalPost, ClubProductPost, ClubEventPost, Boarding, User, Comment, PostLike, SavedItem } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
 
 const resolveImageUrl = async (img) => {
@@ -28,6 +28,7 @@ const resolvePostImages = async (post) => {
 export const getFeed = async (req, res) => {
   try {
     const { type = "all" } = req.query;
+    const userId = req.user?.id || 1; // Default to 1 for development
     const limit = 20;
 
     // Helper to fetch posts and inject type
@@ -104,7 +105,25 @@ export const getFeed = async (req, res) => {
     // Resolve S3 image keys/private URLs to presigned URLs
     const resolvedFeed = await Promise.all(combinedFeed.map(resolvePostImages));
 
-    res.status(200).json({ success: true, feed: resolvedFeed });
+    // Inject interaction state (comments count, isLiked, isSaved)
+    const feedWithInteractions = await Promise.all(
+      resolvedFeed.map(async (post) => {
+        const [commentsCount, likeRecord, saveRecord] = await Promise.all([
+          Comment.count({ where: { postId: post.id, postType: post.postType } }),
+          PostLike.findOne({ where: { userId, postId: post.id, postType: post.postType } }),
+          SavedItem.findOne({ where: { userId, postId: post.id, postType: post.postType } }),
+        ]);
+
+        return {
+          ...post,
+          commentsCount,
+          isLiked: !!likeRecord,
+          isSaved: !!saveRecord,
+        };
+      })
+    );
+
+    res.status(200).json({ success: true, feed: feedWithInteractions });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
