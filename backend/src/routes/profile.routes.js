@@ -8,6 +8,8 @@ import {
   getMyBusinessProfile,
   upsertClubProfile,
   getMyClubProfile,
+  changePassword,
+  deleteAccount,
 } from "../controllers/profile/index.js";
 import {
   studentProfileValidator,
@@ -80,5 +82,8 @@ router.put(
   upsertClubProfile,
 );
 router.get("/club/me", authorize(ROLES.CLUB), getMyClubProfile);
+// ── Account Management ────────────────────────────────────────────────────────
+router.put("/password", changePassword);
+router.delete("/", deleteAccount);
 
 export default router;

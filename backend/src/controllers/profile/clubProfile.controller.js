@@ -92,6 +92,7 @@ export const getMyClubProfile = async (req, res) => {
   try {
     const profile = await ClubProfile.findOne({
       where: { userId: req.user.id },
+      include: [{ model: User, as: "user", attributes: ["name", "email", "avatar", "createdAt"] }],
     });
 
     if (!profile) {
@@ -102,6 +103,9 @@ export const getMyClubProfile = async (req, res) => {
     const profileJson = profile.toJSON();
     if (profileJson.logo) {
       profileJson.logo = await getFileUrl(profileJson.logo);
+    }
+    if (profileJson.user?.avatar) {
+      profileJson.user.avatar = await getFileUrl(profileJson.user.avatar);
     }
 
     return sendResponse(res, 200, true, "Club profile fetched successfully", profileJson);
