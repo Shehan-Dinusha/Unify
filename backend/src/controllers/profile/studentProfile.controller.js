@@ -1,4 +1,11 @@
-import { StudentProfile, User, University, Faculty, Degree, Batch } from "../../modules/index.js";
+import {
+  StudentProfile,
+  User,
+  University,
+  Faculty,
+  Degree,
+  Batch,
+} from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { getFileUrl } from "../../services/s3.service.js";
@@ -22,7 +29,11 @@ export const upsertStudentProfile = async (req, res) => {
       return null;
     };
 
-    const registrationNumber = getVal("registrationNumber", "regNumber", "reg_number");
+    const registrationNumber = getVal(
+      "registrationNumber",
+      "regNumber",
+      "reg_number",
+    );
     const universityId = req.body.universityId;
     const facultyId = req.body.facultyId;
     const degreeId = req.body.degreeId;
@@ -46,7 +57,9 @@ export const upsertStudentProfile = async (req, res) => {
       batchId,
       firstName,
       lastName,
-      gender: gender ? gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase() : null,
+      gender: gender
+        ? gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase()
+        : null,
       dateOfBirth,
       addresses,
       isBatchRep: isBatchRep || false,
@@ -74,10 +87,22 @@ export const upsertStudentProfile = async (req, res) => {
       logger.info(`Student profile created for user ${userId}`);
     }
 
-    return sendResponse(res, 200, true, "Student profile saved successfully", profile);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Student profile saved successfully",
+      profile,
+    );
   } catch (error) {
     logger.error("Upsert Student Profile Error:", error);
-    return sendResponse(res, 500, false, "Failed to save student profile", error.message);
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to save student profile",
+      error.message,
+    );
   }
 };
 
@@ -109,9 +134,21 @@ export const getMyStudentProfile = async (req, res) => {
       profileJson.user.avatar = await getFileUrl(profileJson.user.avatar);
     }
 
-    return sendResponse(res, 200, true, "Student profile fetched successfully", profileJson);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Student profile fetched successfully",
+      profileJson,
+    );
   } catch (error) {
     logger.error("Get My Student Profile Error:", error);
-    return sendResponse(res, 500, false, "Failed to fetch student profile", error.message);
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to fetch student profile",
+      error.message,
+    );
   }
 };
