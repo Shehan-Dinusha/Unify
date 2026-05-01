@@ -74,23 +74,38 @@ const VerifiedList = () => {
 
   const handleConfirmRemoval = async (reason, customReason) => {
     const finalReason = customReason || reason;
+    setVerifiedEntities((prev) =>
+      Array.isArray(prev)
+        ? prev.filter((e) => e.id !== entityToRemove.id)
+        : [],
+    );
+    setStats((prev) => {
+      if (!prev) return prev;
+      const isClub = entityToRemove.type === "Club";
+      return {
+        ...prev,
+        totalVerified: Math.max(0, (prev.totalVerified || 0) - 1),
+        totalClubs: isClub
+          ? Math.max(0, (prev.totalClubs || 0) - 1)
+          : prev.totalClubs,
+        totalBatchReps: !isClub
+          ? Math.max(0, (prev.totalBatchReps || 0) - 1)
+          : prev.totalBatchReps,
+      };
+    });
     try {
       const response = await verificationService.removeVerifiedAccount(
         entityToRemove.id,
         finalReason,
       );
       if (response.success) {
-        setVerifiedEntities((prev) =>
-          Array.isArray(prev)
-            ? prev.filter((e) => e.id !== entityToRemove.id)
-            : [],
-        );
         setRemovalReason(finalReason);
         setShowRemovalModal(false);
         setShowRemovalSuccessModal(true);
       }
     } catch (error) {
       toast.error("Error", "Failed to remove verification");
+      fetchVerified();
     }
   };
 

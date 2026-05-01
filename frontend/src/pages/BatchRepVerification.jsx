@@ -49,7 +49,7 @@ const BatchRepVerification = () => {
       if (response.success && response.data.hasRequest) {
         setSubmissionStatus(response.data.status);
         setDeclineReason(response.data.declineReason || "");
-        setApprovedRole(response.data.role || "");
+        setApprovedRole(response.data.requestedRole || response.data.role || "");
 
         if (response.data.document) {
           setSubmittedFile({
@@ -191,6 +191,17 @@ const BatchRepVerification = () => {
           badgeLabel: "Declined",
           badgeDot: "bg-red-400",
         };
+      case "removed":
+        return {
+          icon: <XCircle className="w-5 h-5 text-red-400" />,
+          iconBg: "bg-red-500/10",
+          iconBorder: "border-red-500/20",
+          badgeBg: "bg-red-500/20",
+          badgeBorder: "border-red-500/30",
+          badgeText: "text-red-400",
+          badgeLabel: "Verification Removed",
+          badgeDot: "bg-red-400",
+        };
       default:
         return null;
     }
@@ -308,6 +319,12 @@ const BatchRepVerification = () => {
                     has been reviewed and declined by the administration.
                   </>
                 )}
+                {submissionStatus === "removed" && (
+                  <>
+                    Your verified status as {approvedRole || "Batch Representative"}
+                    has been removed by the administration.
+                  </>
+                )}
               </p>
 
               {/* Declined Reason - Compact */}
@@ -317,6 +334,20 @@ const BatchRepVerification = () => {
                     <AlertCircle className="w-3.5 h-3.5 text-red-400" />
                     <span className="text-red-400 text-xs font-bold">
                       Reason for Decline
+                    </span>
+                  </div>
+                  <p className="text-red-400 text-xs leading-snug pl-5 opacity-90">
+                    {declineReason}
+                  </p>
+                </div>
+              )}
+
+              {submissionStatus === "removed" && (
+                <div className="bg-red-400/5 rounded-xl border border-red-400/20 p-3 mb-3 relative">
+                  <div className="flex items-center gap-2 mb-1">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-red-400 text-xs font-bold">
+                      Reason for Removal
                     </span>
                   </div>
                   <p className="text-red-400 text-xs leading-snug pl-5 opacity-90">
@@ -341,6 +372,9 @@ const BatchRepVerification = () => {
                     {submissionStatus === "declined" && (
                       <AlertCircle className="w-3 h-3 text-red-400" />
                     )}
+                    {submissionStatus === "removed" && (
+                      <AlertCircle className="w-3 h-3 text-red-400" />
+                    )}
 
                     <span
                       className={`text-xs font-bold ${
@@ -355,7 +389,9 @@ const BatchRepVerification = () => {
                         ? "Review in progress"
                         : submissionStatus === "approved"
                           ? "Verified"
-                          : "Needs Update"}
+                          : submissionStatus === "removed"
+                            ? "Removed"
+                            : "Needs Update"}
                     </span>
                   </div>
                 </div>
@@ -369,18 +405,18 @@ const BatchRepVerification = () => {
                     >
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                          submissionStatus === "declined"
+                          submissionStatus === "declined" || submissionStatus === "removed"
                             ? "bg-red-500/20 border-red-500/30"
                             : "bg-red-500/20 border-red-500/30"
                         }`}
                       >
                         <FileText
-                          className={`w-4 h-4 ${submissionStatus === "declined" ? "text-red-400" : "text-red-400"}`}
+                          className={`w-4 h-4 ${submissionStatus === "declined" || submissionStatus === "removed" ? "text-red-400" : "text-red-400"}`}
                         />
                       </div>
                       <div className="flex flex-col overflow-hidden">
                         <span
-                          className={`text-sm font-bold truncate ${submissionStatus === "declined" ? "text-red-400 line-through" : "text-neutral-100"}`}
+                          className={`text-sm font-bold truncate ${submissionStatus === "declined" || submissionStatus === "removed" ? "text-red-400 line-through" : "text-neutral-100"}`}
                         >
                           {submittedFile?.name || "Batch_rep_nomination.pdf"}
                         </span>
@@ -458,6 +494,23 @@ const BatchRepVerification = () => {
                     </button>
                     <p className="text-zinc-400 text-xs text-center">
                       You can update your document and try again immediately.
+                    </p>
+                  </>
+                )}
+
+                {submissionStatus === "removed" && (
+                  <>
+                    <button
+                      className="w-full h-10 rounded-xl bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 group transition-colors"
+                      onClick={() => setSubmissionStatus("idle")}
+                    >
+                      <span className="font-bold text-sm text-white">
+                        Resubmit Verification
+                      </span>
+                    </button>
+                    <p className="text-zinc-400 text-xs text-center">
+                      You can upload a new document to request verification
+                      again.
                     </p>
                   </>
                 )}

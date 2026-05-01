@@ -21,12 +21,16 @@ export const submitVerificationRequest = async (req, res, next) => {
       where: { userId },
     });
     if (existingRequest) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        "You already have an active verification submission. Please delete it before submitting a new one.",
-      );
+      if (existingRequest.status === "DECLINED") {
+        await existingRequest.destroy();
+      } else {
+        return sendResponse(
+          res,
+          400,
+          false,
+          "You already have an active verification submission. Please delete it before submitting a new one.",
+        );
+      }
     }
 
     const documentUrl = req.file.s3Key || req.file.key;

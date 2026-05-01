@@ -8,7 +8,6 @@ import { resolveVerificationUrl } from "../../utils/verificationUrl.util.js";
  */
 export const getVerificationStatus = async (req, res, next) => {
   try {
-    // For local testing without auth, fallback to req.query.userId or 1
     const userId = req.user?.id || req.query.userId || 1;
 
     const existingRequest = await VerificationRequest.findOne({
@@ -16,6 +15,32 @@ export const getVerificationStatus = async (req, res, next) => {
     });
 
     if (!existingRequest) {
+      const removedRequest = await VerificationRequest.findOne({
+        where: { userId, status: "DECLINED" },
+        paranoid: false,
+        order: [["deletedAt", "DESC"]],
+      });
+
+      if (removedRequest && removedRequest.deletedAt) {
+        return sendResponse(
+          res,
+          200,
+          true,
+          "Verification status retrieved successfully.",
+          {
+            hasRequest: true,
+            status: "removed",
+            requestedRole: removedRequest.requestedRole,
+            declineReason: removedRequest.adminMessage,
+            document: {
+              name: removedRequest.documentMetadata?.originalName || "Document",
+              size: removedRequest.documentMetadata?.size || 0,
+              url: null,
+            },
+          },
+        );
+      }
+
       return sendResponse(res, 200, true, "No active verification request.", {
         hasRequest: false,
         status: "idle",
@@ -34,6 +59,7 @@ export const getVerificationStatus = async (req, res, next) => {
       {
         hasRequest: true,
         status: existingRequest.status.toLowerCase(),
+        requestedRole: existingRequest.requestedRole,
         declineReason: existingRequest.adminMessage,
         document: {
           name: existingRequest.documentMetadata?.originalName || "Document",

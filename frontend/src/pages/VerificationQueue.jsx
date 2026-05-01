@@ -56,22 +56,30 @@ const VerificationQueue = () => {
   };
 
   const handleConfirmVerify = async () => {
+    setRequests((prev) =>
+      Array.isArray(prev) ? prev.filter((r) => r.id !== selectedRequest.id) : [],
+    );
+    setRequestStats((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        totalPending: Math.max(0, (prev.totalPending || 0) - 1),
+        newPending: Math.max(0, (prev.newPending || 0) - 1),
+        approvedToday: (prev.approvedToday || 0) + 1,
+      };
+    });
     try {
       const response = await verificationService.approveRequest(
         selectedRequest.id,
       );
       if (response.success) {
-        setRequests((prev) =>
-          Array.isArray(prev)
-            ? prev.filter((r) => r.id !== selectedRequest.id)
-            : [],
-        );
         setVerifiedRequest(selectedRequest);
         setSelectedRequest(null);
         setShowSuccessModal(true);
       }
     } catch (error) {
       toast.error("Error", "Failed to approve verification");
+      fetchRequests();
     }
   };
 
@@ -88,23 +96,31 @@ const VerificationQueue = () => {
 
   const handleConfirmReject = async (reason, customReason) => {
     const finalReason = customReason || reason;
+    setRequests((prev) =>
+      Array.isArray(prev) ? prev.filter((r) => r.id !== rejectedRequest.id) : [],
+    );
+    setRequestStats((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        totalPending: Math.max(0, (prev.totalPending || 0) - 1),
+        newPending: Math.max(0, (prev.newPending || 0) - 1),
+        rejectedToday: (prev.rejectedToday || 0) + 1,
+      };
+    });
     try {
       const response = await verificationService.rejectRequest(
         rejectedRequest.id,
         finalReason,
       );
       if (response.success) {
-        setRequests((prev) =>
-          Array.isArray(prev)
-            ? prev.filter((r) => r.id !== rejectedRequest.id)
-            : [],
-        );
         setRejectionReason(finalReason);
         setShowRejectionModal(false);
         setShowRejectionSuccessModal(true);
       }
     } catch (error) {
       toast.error("Error", "Failed to reject verification");
+      fetchRequests();
     }
   };
 
