@@ -8,6 +8,7 @@ import {
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { formatRelativeDate } from "../../utils/date.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getReceivedReviews = async (req, res, next) => {
   try {
@@ -96,85 +97,95 @@ export const getReceivedReviews = async (req, res, next) => {
     };
 
     // 2. Format Reviews list for frontend expectations
-    const formattedReviews = rawReviews.map((modelReview) => {
-      const review = modelReview.toJSON();
+    const formattedReviews = await Promise.all(
+      rawReviews.map(async (modelReview) => {
+        const review = modelReview.toJSON();
 
-      let author = {
-        name: "Deleted User",
-        role: "Unknown",
-        avatar: null,
-      };
+        let author = {
+          name: "Deleted User",
+          role: "Unknown",
+          avatar: null,
+        };
 
-      if (review.reviewer) {
-        if (review.isAnonymous) {
-          author = {
-            name: "Anonymous User",
-            role: "User",
-            avatar: null,
-            initials: "A",
-            bgColor: "bg-gray-600",
-          };
-        } else {
-          let actualRole = review.reviewer.role;
-          let isVerified = false;
+        if (review.reviewer) {
+          if (review.isAnonymous) {
+            author = {
+              name: "Anonymous User",
+              role: "User",
+              avatar: null,
+              initials: "A",
+              bgColor: "bg-gray-600",
+            };
+          } else {
+            let actualRole = review.reviewer.role;
+            let isVerified = false;
 
-          if (
-            review.reviewer.role === "Student" &&
-            review.reviewer.studentProfile?.isBatchRep
-          ) {
-            actualRole = "Batch Rep";
-            isVerified = true;
-          } else if (
-            review.reviewer.role === "Club" &&
-            review.reviewer.clubProfile?.isVerified
-          ) {
-            isVerified = true;
+            const avatarUrl = await resolveAvatarUrl(
+              review.reviewer.avatar,
+              review.reviewer.name,
+            );
+
+            if (
+              review.reviewer.role === "Student" &&
+              review.reviewer.studentProfile?.isBatchRep
+            ) {
+              actualRole = "Batch Rep";
+              isVerified = true;
+            } else if (
+              review.reviewer.role === "Club" &&
+              review.reviewer.clubProfile?.isVerified
+            ) {
+              isVerified = true;
+            }
+
+            author = {
+              name: review.reviewer.name,
+              role: actualRole,
+              isVerified: isVerified,
+              avatar: avatarUrl,
+              initials: review.reviewer.name
+                ? review.reviewer.name.substring(0, 2).toUpperCase()
+                : "U",
+              bgColor: "bg-blue-600",
+            };
           }
+        }
 
-          author = {
-            name: review.reviewer.name,
-            role: actualRole,
-            isVerified: isVerified,
-            avatar: review.reviewer.avatar,
-            initials: review.reviewer.name
-              ? review.reviewer.name.substring(0, 2).toUpperCase()
-              : "U",
-            bgColor: "bg-blue-600",
+        const dateStr = formatRelativeDate(review.createdAt);
+
+        let parsedOwnerReply = null;
+        let hasOwnerReplied = false;
+        if (review.ownerReply) {
+          hasOwnerReplied = true;
+          parsedOwnerReply = {
+            content: review.ownerReply,
+            createdAt: formatRelativeDate(review.updatedAt),
           };
         }
-      }
 
-      const dateStr = formatRelativeDate(review.createdAt);
+        const targetUser = review.target || {};
+        const bizProfile = targetUser.businessProfile || {};
+        const businessName =
+          bizProfile.businessName ||
+          bizProfile.displayName ||
+          targetUser.name ||
+          "Business";
 
-      let parsedOwnerReply = null;
-      let hasOwnerReplied = false;
-      if (review.ownerReply) {
-        hasOwnerReplied = true;
-        parsedOwnerReply = {
-          content: review.ownerReply,
-          createdAt: formatRelativeDate(review.updatedAt),
+        return {
+          id: review.id,
+          rating: review.rating,
+          content: review.content,
+          helpfulCount: review.helpfulCount || 0,
+          notHelpfulCount: review.notHelpfulCount || 0,
+          isLikedByOwner: review.isLikedByOwner || false,
+          createdAt: dateStr,
+          author,
+          hasOwnerReplied,
+          ownerReply: parsedOwnerReply,
+          businessName,
         };
-      }
-
-      const targetUser = review.target || {};
-      const bizProfile = targetUser.businessProfile || {};
-      const businessName =
-        bizProfile.businessName || bizProfile.displayName || targetUser.name || "Business";
-
-      return {
-        id: review.id,
-        rating: review.rating,
-        content: review.content,
-        helpfulCount: review.helpfulCount || 0,
-        notHelpfulCount: review.notHelpfulCount || 0,
-        isLikedByOwner: review.isLikedByOwner || false,
-        createdAt: dateStr,
-        author,
-        hasOwnerReplied,
-        ownerReply: parsedOwnerReply,
-        businessName,
-      };
-    });
+      }),
+    );
 
     return sendResponse(
       res,

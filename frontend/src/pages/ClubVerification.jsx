@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Info,
   ArrowRight,
@@ -16,56 +16,119 @@ import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import FileUpload from "../components/common/FileUpload";
 import DocumentPreviewModal from "../components/common/DocumentPreviewModal";
-import { mockFullDocument } from "../data/mockData";
+import verificationService from "../services/verificationService";
+import {
+  ActionErrorModal,
+  WithdrawalSuccessModal,
+} from "../components/common/VerificationModals";
 
 const ClubVerification = () => {
   const navigate = useNavigate();
-  const [submissionStatus, setSubmissionStatus] = useState(() => {
-    const status = localStorage.getItem("unify_club_verification_status");
-    if (status === "PENDING") return "pending";
-    if (status === "APPROVED") return "approved";
-    if (status === "REJECTED") return "declined";
-    return "idle";
-  }); // 'idle' | 'pending' | 'approved' | 'declined'
+  const [submissionStatus, setSubmissionStatus] = useState("idle");
   const [submittedFile, setSubmittedFile] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [declineReason, setDeclineReason] = useState("");
+  const [approvedRole, setApprovedRole] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
-  // Mock Data
-  const declineReason =
-    "The submitted constitution document is missing the required Faculty Advisor signature on page 3. Please acquire the signature and resubmit.";
+  // Modal State
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showWithdrawSuccessModal, setShowWithdrawSuccessModal] = useState(false);
+
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  const fetchStatus = async () => {
+    try {
+      setLoading(true);
+      const response = await verificationService.getStatus();
+      if (response.success && response.data.hasRequest) {
+        setSubmissionStatus(response.data.status);
+        setDeclineReason(response.data.declineReason || "");
+        setApprovedRole(response.data.requestedRole || response.data.role || "");
+
+        // If they have a document already, simulate a "file" for the UI link
+        if (response.data.document) {
+          setSubmittedFile({
+            name: response.data.document.name,
+            size: response.data.document.size,
+            url: response.data.document.url,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching status:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFileSelect = (file) => {
     setSubmittedFile(file);
   };
 
-  const handleSubmit = () => {
-    if (submittedFile) {
-      console.log("Submitting file:", submittedFile.name);
-      // Sync with global status
-      localStorage.setItem("unify_club_verification_status", "PENDING");
-      // Mark as submitted so the profile banner switches to 'See Verification Status'
-      localStorage.setItem("unify_club_verification_submitted", "true");
-      setSubmissionStatus("pending");
-      // Navigate back to profile after a brief moment
-      setTimeout(() => navigate("/profile?role=club_society"), 800);
+  const handleSubmit = async () => {
+    if (!submittedFile) return;
+
+    setSubmitError("");
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("document", submittedFile);
+      formData.append("requestedRole", "Club");
+
+      const response = await verificationService.submitRequest(formData);
+      if (response.success) {
+        setSubmissionStatus("pending");
+        setTimeout(() => navigate("/profile?role=club_society"), 1500);
+      }
+    } catch (error) {
+      setSubmitError(
+        error.response?.data?.message || "Failed to submit verification",
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleWithdrawConfirm = () => {
-    console.log("Withdrawing application");
-    localStorage.removeItem("unify_club_verification_submitted");
-    setSubmissionStatus("idle");
-    setSubmittedFile(null);
-    setShowWithdrawModal(false);
+  const handleWithdrawConfirm = async () => {
+    try {
+      setLoading(true);
+      const response = await verificationService.withdrawRequest();
+      if (response.success) {
+        setSubmissionStatus("idle");
+        setSubmittedFile(null);
+        setConfirmPassword("");
+        setShowWithdrawModal(false);
+        setShowWithdrawSuccessModal(true);
+      }
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message || "Failed to withdraw submission",
+      );
+      setShowErrorModal(true);
+      setShowWithdrawModal(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return "0 Bytes";
+    if (!bytes || bytes === 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const handlePreview = (doc) => {
+    setSubmittedFile(doc);
+    setShowPreviewModal(true);
   };
 
   // Helper to render logic for icon, title, badge based on status
@@ -102,6 +165,17 @@ const ClubVerification = () => {
           badgeBorder: "border-red-500/30",
           badgeText: "text-red-400",
           badgeLabel: "Declined",
+          badgeDot: "bg-red-400",
+        };
+      case "removed":
+        return {
+          icon: <XCircle className="w-6 h-6 text-red-400" />,
+          iconBg: "bg-red-500/10",
+          iconBorder: "border-red-500/20",
+          badgeBg: "bg-red-500/20",
+          badgeBorder: "border-red-500/30",
+          badgeText: "text-red-400",
+          badgeLabel: "Verification Removed",
           badgeDot: "bg-red-400",
         };
       default:
@@ -170,6 +244,15 @@ const ClubVerification = () => {
                 </p>
               </div>
 
+              {submitError && (
+                <div className="bg-red-400/5 rounded-xl border border-red-400/20 p-2.5 mb-4 flex gap-3 items-start">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-red-400 text-sm leading-snug">
+                    {submitError}
+                  </p>
+                </div>
+              )}
+
               {/* Instructions */}
               <p className="text-text-secondary text-sm text-center mb-6 leading-relaxed">
                 To finalize the verification of your club account, we require
@@ -186,7 +269,7 @@ const ClubVerification = () => {
               <Button
                 variant="primary"
                 className="w-full h-10 rounded-xl shadow-lg shadow-primary-blue/25 flex items-center justify-center gap-2 group"
-                disabled={!submittedFile}
+                disabled={!submittedFile || loading}
                 onClick={handleSubmit}
               >
                 <span>Submit Document</span>
@@ -206,15 +289,23 @@ const ClubVerification = () => {
                 )}
                 {submissionStatus === "approved" && (
                   <>
-                    The verification for Robotics Club is complete.
+                    The verification for {approvedRole || "your account"} is
+                    complete.
                     <br />
-                    You have been granted the full club privileges.
+                    You have been granted full privileges.
                   </>
                 )}
                 {submissionStatus === "declined" && (
                   <>
-                    Your club registration request for "Robotics & AI Society"
+                    Your registration request for{" "}
+                    {approvedRole || "your account"}
                     has been reviewed and declined by the administration.
+                  </>
+                )}
+                {submissionStatus === "removed" && (
+                  <>
+                    Your verified status as {approvedRole || "Club"} has been
+                    removed by the administration.
                   </>
                 )}
               </p>
@@ -226,6 +317,20 @@ const ClubVerification = () => {
                     <AlertCircle className="w-3.5 h-3.5 text-red-400" />
                     <span className="text-red-400 text-xs font-bold">
                       Reason for Decline
+                    </span>
+                  </div>
+                  <p className="text-red-400 text-xs leading-snug pl-5 opacity-90">
+                    {declineReason}
+                  </p>
+                </div>
+              )}
+
+              {submissionStatus === "removed" && (
+                <div className="bg-red-400/5 rounded-xl border border-red-400/20 p-3 mb-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+                    <span className="text-red-400 text-xs font-bold">
+                      Reason for Removal
                     </span>
                   </div>
                   <p className="text-red-400 text-xs leading-snug pl-5 opacity-90">
@@ -250,6 +355,9 @@ const ClubVerification = () => {
                     {submissionStatus === "declined" && (
                       <AlertCircle className="w-3 h-3 text-red-400" />
                     )}
+                    {submissionStatus === "removed" && (
+                      <AlertCircle className="w-3 h-3 text-red-400" />
+                    )}
 
                     <span
                       className={`text-xs font-bold ${
@@ -264,7 +372,9 @@ const ClubVerification = () => {
                         ? "Review in progress"
                         : submissionStatus === "approved"
                           ? "Verified"
-                          : "Needs Update"}
+                          : submissionStatus === "removed"
+                            ? "Removed"
+                            : "Needs Update"}
                     </span>
                   </div>
                 </div>
@@ -272,29 +382,31 @@ const ClubVerification = () => {
                 {/* File Card */}
                 <div className="bg-dark-4 rounded-xl border border-white/5 overflow-hidden group hover:border-white/10 transition-colors">
                   <div className="p-2 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 overflow-hidden">
+                    <div
+                      className="flex items-center gap-3 overflow-hidden cursor-pointer"
+                      onClick={() => handlePreview(submittedFile)}
+                    >
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                          submissionStatus === "declined"
+                          submissionStatus === "declined" || submissionStatus === "removed"
                             ? "bg-red-500/20 border-red-500/30"
                             : "bg-red-500/20 border-red-500/30"
                         }`}
                       >
                         <FileText
-                          className={`w-4 h-4 ${submissionStatus === "declined" ? "text-red-400" : "text-red-400"}`}
+                          className={`w-4 h-4 ${submissionStatus === "declined" || submissionStatus === "removed" ? "text-red-400" : "text-red-400"}`}
                         />
                       </div>
                       <div className="flex flex-col overflow-hidden">
                         <span
-                          className={`text-sm font-bold truncate ${submissionStatus === "declined" ? "text-red-400 line-through" : "text-text-primary"}`}
+                          className={`text-sm font-bold truncate ${submissionStatus === "declined" || submissionStatus === "removed" ? "text-red-400 line-through" : "text-text-primary"}`}
                         >
-                          {submittedFile?.name || "Club_Constitution.pdf"}
+                          {submittedFile?.name || "verfication_document.pdf"}
                         </span>
                         <span className="text-text-secondary text-xs">
                           {submittedFile
                             ? formatFileSize(submittedFile.size)
-                            : "3.2 MB"}{" "}
-                          • Uploaded Today
+                            : "File details available upon preview"}
                         </span>
                       </div>
                     </div>
@@ -302,7 +414,7 @@ const ClubVerification = () => {
                     {/* View/Download Actions */}
                     <div className="flex gap-1">
                       <button
-                        onClick={() => setShowPreviewModal(true)}
+                        onClick={() => handlePreview(submittedFile)}
                         className="p-1.5 hover:bg-white/10 rounded-lg text-text-secondary hover:text-white transition-colors"
                         title="View Document"
                       >
@@ -349,6 +461,24 @@ const ClubVerification = () => {
                       </Button>
                       <p className="text-text-tertiary text-xs text-center">
                         You can update your document and try again immediately.
+                      </p>
+                    </>
+                  )}
+
+                  {submissionStatus === "removed" && (
+                    <>
+                      <Button
+                        variant="primary"
+                        className="w-full h-10 rounded-xl shadow-lg shadow-primary-blue/25 flex items-center justify-center gap-2 group"
+                        onClick={() => setSubmissionStatus("idle")}
+                      >
+                        <span className="font-semibold text-sm">
+                          Resubmit Verification
+                        </span>
+                      </Button>
+                      <p className="text-text-tertiary text-xs text-center">
+                        You can upload a new document to request verification
+                        again.
                       </p>
                     </>
                   )}
@@ -405,6 +535,7 @@ const ClubVerification = () => {
                 onClick={handleWithdrawConfirm}
                 variant="danger"
                 className="flex-1 h-11 shadow-lg shadow-state-error/20 font-semibold"
+                disabled={loading}
               >
                 Withdraw Application
               </Button>
@@ -414,67 +545,30 @@ const ClubVerification = () => {
       )}
 
       {/* Document Preview Modal */}
-      <DocumentPreviewModal
-        isOpen={showPreviewModal}
-        onClose={() => setShowPreviewModal(false)}
-        document={{
-          ...mockFullDocument,
-          // Override with actual file if present
-          file: submittedFile,
-          name: submittedFile?.name || mockFullDocument.name,
-          size: submittedFile
-            ? formatFileSize(submittedFile.size)
-            : mockFullDocument.size,
-        }}
+      {submittedFile && (
+        <DocumentPreviewModal
+          isOpen={showPreviewModal}
+          onClose={() => setShowPreviewModal(false)}
+          document={submittedFile}
+        />
+      )}
+
+      {/* Withdrawal Success Modal */}
+      <WithdrawalSuccessModal
+        isOpen={showWithdrawSuccessModal}
+        onClose={() => setShowWithdrawSuccessModal(false)}
       />
 
-      {/* DEBUG: Temporary controls to visualize states */}
-      <div className="absolute bottom-4 right-4 flex flex-wrap justify-end max-w-[calc(100vw-32px)] sm:max-w-none gap-2 z-50 bg-black/50 p-2 rounded-lg backdrop-blur-sm border border-white/10">
-        <button
-          onClick={() => {
-            localStorage.setItem(
-              "unify_club_verification_status",
-              "NOT_SUBMITTED",
-            );
-            localStorage.removeItem("unify_club_verification_submitted");
-            setSubmissionStatus("idle");
-          }}
-          className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors"
-        >
-          Idle
-        </button>
-        <button
-          onClick={() => {
-            localStorage.setItem("unify_club_verification_status", "PENDING");
-            localStorage.setItem("unify_club_verification_submitted", "true");
-            setSubmissionStatus("pending");
-          }}
-          className="px-3 py-1 bg-amber-900/50 hover:bg-amber-900/70 text-amber-400 text-xs rounded border border-amber-500/30 transition-colors"
-        >
-          Pending
-        </button>
-        <button
-          onClick={() => {
-            localStorage.setItem("unify_club_verification_status", "APPROVED");
-            localStorage.setItem("unify_club_verification_submitted", "true");
-            setSubmissionStatus("approved");
-          }}
-          className="px-3 py-1 bg-green-900/50 hover:bg-green-900/70 text-green-400 text-xs rounded border border-green-500/30 transition-colors"
-        >
-          Approved
-        </button>
-        <button
-          onClick={() => {
-            localStorage.setItem("unify_club_verification_status", "REJECTED");
-            localStorage.setItem("unify_club_verification_submitted", "true");
-            localStorage.setItem("unify_club_verification_reason", declineReason);
-            setSubmissionStatus("declined");
-          }}
-          className="px-3 py-1 bg-red-900/50 hover:bg-red-900/70 text-red-400 text-xs rounded border border-red-500/30 transition-colors"
-        >
-          Declined
-        </button>
-      </div>
+      {/* Error Modal */}
+      <ActionErrorModal
+        isOpen={showErrorModal}
+        onClose={() => {
+          setShowErrorModal(false);
+          setErrorMessage("");
+        }}
+        title="Action Failed"
+        message={errorMessage}
+      />
     </div>
   );
 };

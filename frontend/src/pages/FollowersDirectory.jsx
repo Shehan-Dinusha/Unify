@@ -3,14 +3,14 @@ import { MessageSquare, Loader2 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import LoadMoreButton from "../components/common/LoadMoreButton";
 import { getClubFollowers as getFollowers } from "../services/followerService";
-
+import Avatar from "../components/common/Avatar";
 const ITEMS_PER_PAGE = 14;
 
 const FollowerCard = ({ follower }) => {
   return (
     <div className="w-full h-20 px-4 py-4 relative bg-white/5 rounded-2xl flex justify-between items-center border border-white/20 hover:bg-white/10 transition-colors">
       <div className="flex justify-start items-center gap-4">
-        <img
+        <Avatar
           className="w-10 h-10 relative rounded-full shadow-[0px_0px_0px_2px_rgba(28,35,51,1.00),_0px_0px_0px_4px_rgba(43,108,238,0.20)] object-cover"
           src={follower.avatar}
           alt={follower.name}

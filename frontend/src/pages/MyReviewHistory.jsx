@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Trash2,
-  ChevronDown,
-  ThumbsUp,
-  ThumbsDown,
-  Heart,
-} from "lucide-react";
+import { Trash2, ChevronDown, ThumbsUp, ThumbsDown, Heart } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
@@ -77,17 +71,11 @@ const ReviewHistoryCard = ({ review, onDelete }) => {
       {/* Owner Reply Block */}
       {review.ownerReply && (
         <div className="mb-6 pt-4 flex gap-3">
-          {review.ownerReply.author?.avatar ? (
-            <img
-              src={review.ownerReply.author.avatar}
-              alt={review.ownerReply.author.name}
-              className="w-9 h-9 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold font-inter shrink-0">
-              {review.ownerReply.author?.name?.charAt(0) || "O"}
-            </div>
-          )}
+          <Avatar
+            src={review.ownerReply.author?.avatar}
+            alt={review.ownerReply.author?.name}
+            className="w-9 h-9 rounded-full object-cover shrink-0"
+          />
           <div className="flex-1 bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg p-3 outline outline-1 outline-gray-800 flex flex-col gap-1">
             <div className="flex justify-between items-center h-6">
               <div className="flex items-center gap-2">
@@ -146,11 +134,13 @@ const MyReviewHistory = () => {
       setError(null);
       const data = await getMyReviews();
       setReviews(data.reviews || []);
-      setSummary(data.summary || {
-        totalReviews: 0,
-        averageRating: 0,
-        topCategory: "—",
-      });
+      setSummary(
+        data.summary || {
+          totalReviews: 0,
+          averageRating: 0,
+          topCategory: "—",
+        },
+      );
     } catch (err) {
       setError("Failed to load reviews.");
     } finally {
@@ -203,7 +193,8 @@ const MyReviewHistory = () => {
     if (activeTab === "All Reviews") return true;
     if (activeTab === "Boarding" && review.category === "BOARDING") return true;
     if (activeTab === "Food/Cafe" && review.category === "FOOD") return true;
-    if (activeTab === "Services" && review.category === "SELF_EMPLOYED") return true;
+    if (activeTab === "Services" && review.category === "SELF_EMPLOYED")
+      return true;
     return false;
   });
 
@@ -217,7 +208,7 @@ const MyReviewHistory = () => {
     } else if (sortBy === "Oldest First") {
       sortedList = sortedList.reverse(); // assuming original order is Newest First
     }
-    
+
     return sortedList;
   };
 
@@ -442,13 +433,15 @@ const MyReviewHistory = () => {
         {/* Review Cards List */}
         <div className="flex flex-col gap-4">
           {sortedReviews.length > 0 ? (
-            sortedReviews.slice(0, visibleCount).map((review) => (
-              <ReviewHistoryCard
-                key={review.id}
-                review={review}
-                onDelete={handleDeleteClick}
-              />
-            ))
+            sortedReviews
+              .slice(0, visibleCount)
+              .map((review) => (
+                <ReviewHistoryCard
+                  key={review.id}
+                  review={review}
+                  onDelete={handleDeleteClick}
+                />
+              ))
           ) : (
             <div className="text-gray-400 text-sm font-inter text-center py-8">
               No reviews found.

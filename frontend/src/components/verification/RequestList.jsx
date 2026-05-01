@@ -1,28 +1,30 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import StatsCard from "../common/StatsCard";
+import Avatar from "../common/Avatar";
+import DocumentPreviewModal from "../common/DocumentPreviewModal";
 
-const RequestList = ({ requests, onVerify, onReject }) => {
-  const navigate = useNavigate();
+const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [previewDoc, setPreviewDoc] = useState(null);
 
-  const filteredRequests = requests.filter((req) => {
-    const matchesFilter = filter === "All" || req.type === filter;
-    const matchesSearch = req.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
+  const filteredRequests = (Array.isArray(requests) ? requests : []).filter(
+    (req) => {
+      const matchesFilter = filter === "All" || req.type === filter;
+      const matchesSearch = req.name
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      return matchesFilter && matchesSearch;
+    },
+  );
 
-  const handleView = (req) => {
-    if (req.type === "Club") {
-      navigate("/club-verification");
-    } else if (req.type === "Batch Rep") {
-      navigate("/batch-rep-verification");
-    }
+  const handleViewDocument = (req) => {
+    setPreviewDoc({
+      name: req.file || "Document",
+      url: req.url,
+    });
   };
 
   return (
@@ -34,23 +36,29 @@ const RequestList = ({ requests, onVerify, onReject }) => {
           iconAlt="Pending"
           iconBgClass="bg-yellow-900/30"
           title="Total Pending"
-          value={requests.length}
-          subValue="+2 new"
+          value={
+            stats?.totalPending ||
+            (Array.isArray(requests) ? requests.length : 0)
+          }
+          subValue={stats?.newPending > 0 ? `+${stats.newPending} new` : undefined}
           subValueClass="text-state-success"
+          loading={loading}
         />
         <StatsCard
           iconSrc="/icon_approved_today.svg"
           iconAlt="Approved"
           iconBgClass="bg-green-900/30"
           title="Approved Today"
-          value="5"
+          value={stats?.approvedToday || 0}
+          loading={loading}
         />
         <StatsCard
           iconSrc="/icon_rejected_today.svg"
           iconAlt="Rejected"
           iconBgClass="bg-red-900/30"
           title="Rejected Today"
-          value="2"
+          value={stats?.rejectedToday || 0}
+          loading={loading}
         />
       </div>
 
@@ -110,16 +118,16 @@ const RequestList = ({ requests, onVerify, onReject }) => {
             key={req.id}
             variant="container"
             className="h-full hover:bg-white/5 transition-colors cursor-pointer group"
-            onClick={() => handleView(req)}
+            onClick={() => handleViewDocument(req)}
           >
             <div className="flex flex-col gap-lg h-full">
               {/* Header Section */}
               <div className="flex justify-between items-start">
                 <div className="flex gap-sm">
-                  <img
+                  <Avatar
                     src={req.avatar}
-                    alt={req.name}
-                    className="w-12 h-12 rounded-full border border-white/10 object-cover"
+                    name={req.name}
+                    className="w-12 h-12 rounded-full border border-white/10"
                   />
                   <div>
                     <h3 className="text-body-medium-bold text-text-primary px-1">
@@ -185,7 +193,7 @@ const RequestList = ({ requests, onVerify, onReject }) => {
                   className="flex-shrink-0 text-text-secondary hover:text-primary-blue transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleView(req);
+                    handleViewDocument(req);
                   }}
                 >
                   <img
@@ -223,6 +231,12 @@ const RequestList = ({ requests, onVerify, onReject }) => {
           </Card>
         ))}
       </div>
+
+      <DocumentPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        document={previewDoc}
+      />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { User, ClubProfile, sequelize } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getStudentFollowings = catchAsync(async (req, res) => {
   // Use `req.user?.id` normally, but allow `req.query.studentId` for testing since auth is pending
@@ -34,8 +35,6 @@ export const getStudentFollowings = catchAsync(async (req, res) => {
       "Only students can view their followings.",
     );
   }
-
-
 
   // Determine sorting strategy
   let orderClause = [];
@@ -78,14 +77,18 @@ export const getStudentFollowings = catchAsync(async (req, res) => {
   const hasMore = offset + followings.length < totalFollowings;
 
   // Map followings for frontend consumption as seen in FollowingsDirectory.jsx
-  const mappedFollowings = followings.map((user) => ({
-    id: user.id,
-    name: user.name,
-    avatar:
-      user.avatar ||
-      "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.name),
-    description: user.clubProfile?.about || "No description provided.",
-  }));
+  const mappedFollowings = await Promise.all(
+    followings.map(async (user) => {
+      const avatarUrl = await resolveAvatarUrl(user.avatar, user.name);
+
+      return {
+        id: user.id,
+        name: user.name,
+        avatar: avatarUrl,
+        description: user.clubProfile?.about || "No description provided.",
+      };
+    }),
+  );
 
   // Return the shape { followings, total, hasMore }
   return sendResponse(res, 200, true, "Followings retrieved successfully.", {
