@@ -45,9 +45,23 @@ const LoginForm = () => {
     setErrors({});
 
     try {
-      await login(identifier, password);
-      console.log("Login Successful");
-      // navigate('/dashboard');
+      const data = await login(identifier, password);
+      
+      // Navigate based on user role (Navigation occurs AFTER tokens are stored in authService)
+      const role = data.user.role.toLowerCase();
+      
+      if (role === "admin") {
+        navigate("/admin");
+      } else if (role === "student") {
+        navigate("/newsfeed");
+      } else if (role === "business") {
+        navigate("/business/dashboard");
+      } else if (role === "club") {
+        navigate("/club/dashboard");
+      } else {
+        // Fallback or generic dashboard
+        navigate("/newsfeed");
+      }
     } catch (err) {
       setErrors({ form: err.message });
     } finally {
