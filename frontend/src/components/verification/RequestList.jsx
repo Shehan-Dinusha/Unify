@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import StatsCard from "../common/StatsCard";
 import Avatar from "../common/Avatar";
+import DocumentPreviewModal from "../common/DocumentPreviewModal";
 
 const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
-  const navigate = useNavigate();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const filteredRequests = (Array.isArray(requests) ? requests : []).filter(
     (req) => {
@@ -20,12 +20,11 @@ const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
     },
   );
 
-  const handleView = (req) => {
-    if (req.type === "Club") {
-      navigate("/club-verification");
-    } else if (req.type === "Batch Rep") {
-      navigate("/batch-rep-verification");
-    }
+  const handleViewDocument = (req) => {
+    setPreviewDoc({
+      name: req.file || "Document",
+      url: req.url,
+    });
   };
 
   return (
@@ -119,7 +118,7 @@ const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
             key={req.id}
             variant="container"
             className="h-full hover:bg-white/5 transition-colors cursor-pointer group"
-            onClick={() => handleView(req)}
+            onClick={() => handleViewDocument(req)}
           >
             <div className="flex flex-col gap-lg h-full">
               {/* Header Section */}
@@ -194,7 +193,7 @@ const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
                   className="flex-shrink-0 text-text-secondary hover:text-primary-blue transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleView(req);
+                    handleViewDocument(req);
                   }}
                 >
                   <img
@@ -232,6 +231,12 @@ const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
           </Card>
         ))}
       </div>
+
+      <DocumentPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        document={previewDoc}
+      />
     </div>
   );
 };

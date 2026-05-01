@@ -9,6 +9,7 @@ import {
   VerificationRejectedSuccessModal,
   ActionErrorModal,
 } from "../common/VerificationModals";
+import DocumentPreviewModal from "../common/DocumentPreviewModal";
 
 const VerifiedList = () => {
   const [filter, setFilter] = useState("All");
@@ -32,6 +33,9 @@ const VerifiedList = () => {
   // Error State
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Document Preview State
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   useEffect(() => {
     fetchVerified();
@@ -74,6 +78,13 @@ const VerifiedList = () => {
   const handleRemoveClick = (entity) => {
     setEntityToRemove(entity);
     setShowRemovalModal(true);
+  };
+
+  const handleViewDocument = (entity) => {
+    setPreviewDoc({
+      name: entity.documentName || "Document",
+      url: entity.documentUrl,
+    });
   };
 
   const handleConfirmRemoval = async (reason, customReason) => {
@@ -218,6 +229,7 @@ const VerifiedList = () => {
             <VerifiedEntityCard
               entity={entity}
               onRemoveVerification={handleRemoveClick}
+              onViewDocument={handleViewDocument}
             />
           </div>
         ))}
@@ -244,6 +256,12 @@ const VerifiedList = () => {
         onClose={handleCloseError}
         title="Action Failed"
         message={errorMessage}
+      />
+
+      <DocumentPreviewModal
+        isOpen={!!previewDoc}
+        onClose={() => setPreviewDoc(null)}
+        document={previewDoc}
       />
     </div>
   );

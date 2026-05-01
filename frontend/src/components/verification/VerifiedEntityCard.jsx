@@ -3,7 +3,7 @@ import Card from "../common/Card";
 import Button from "../common/Button";
 import Avatar from "../common/Avatar";
 
-const VerifiedEntityCard = ({ entity, onRemoveVerification }) => {
+const VerifiedEntityCard = ({ entity, onRemoveVerification, onViewDocument }) => {
   return (
     <Card
       variant="container"
@@ -75,6 +75,7 @@ const VerifiedEntityCard = ({ entity, onRemoveVerification }) => {
           <Button
             variant="secondary"
             className="h-[42px] bg-dark-2 hover:bg-dark-3 border border-white/10 text-text-secondary"
+            onClick={() => onViewDocument && onViewDocument(entity)}
           >
             View Doc
           </Button>

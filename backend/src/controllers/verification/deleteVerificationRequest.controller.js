@@ -26,9 +26,8 @@ export const deleteVerificationRequest = async (req, res, next) => {
       await deleteVerificationFile(existingRequest.documentUrl);
     }
 
-    // Scrub the file references from the database so we only keep the pure structural row for stats
+    // Keep documentUrl nullified (file deleted) but preserve metadata for UI display
     existingRequest.documentUrl = null;
-    existingRequest.documentMetadata = null;
     await existingRequest.save();
 
     // Soft delete the row

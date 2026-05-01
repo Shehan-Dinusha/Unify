@@ -1,7 +1,7 @@
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
-import { resolveVerificationUrl } from "../../utils/verificationUrl.util.js";
+import { resolveVerificationUrl, deleteVerificationFile } from "../../utils/verificationUrl.util.js";
 
 export const submitVerificationRequest = async (req, res, next) => {
   try {
@@ -22,6 +22,9 @@ export const submitVerificationRequest = async (req, res, next) => {
     });
     if (existingRequest) {
       if (existingRequest.status === "DECLINED") {
+        if (existingRequest.documentUrl) {
+          await deleteVerificationFile(existingRequest.documentUrl);
+        }
         await existingRequest.destroy();
       } else {
         return sendResponse(

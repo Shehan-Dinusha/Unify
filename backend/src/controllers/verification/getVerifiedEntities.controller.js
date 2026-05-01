@@ -7,6 +7,7 @@ import { Op } from "sequelize";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import { resolveVerificationUrl } from "../../utils/verificationUrl.util.js";
 import { formatRelativeDate } from "../../utils/date.js";
 
 /**
@@ -86,20 +87,22 @@ export const getVerifiedEntities = async (req, res, next) => {
     const formattedVerified = await Promise.all(
       verifiedRequests.map(async (request) => {
         // Return shape identically matching mockVerified
-        const resolvedAvatar = await resolveAvatarUrl(
-          request.user?.avatar,
-          request.user?.name,
-        );
+        const [resolvedAvatar, resolvedDocUrl] = await Promise.all([
+          resolveAvatarUrl(request.user?.avatar, request.user?.name),
+          resolveVerificationUrl(request.documentUrl),
+        ]);
 
         return {
           id: request.id,
           name: request.user?.name || "Unknown User",
           type: request.requestedRole,
-          verifiedDate: formatRelativeDate(request.updatedAt), // Frontend can parse the ISO date or map to "Sep 12, 2023"
+          verifiedDate: formatRelativeDate(request.updatedAt),
           avatar: resolvedAvatar,
           email: request.user?.email || "No email available",
           degree: request.user?.studentProfile?.degree?.name || null,
           batch: request.user?.studentProfile?.batch?.name || null,
+          documentName: request.documentMetadata?.originalName || "Document",
+          documentUrl: resolvedDocUrl,
         };
       }),
     );
