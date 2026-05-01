@@ -2,6 +2,7 @@ import StudentReport from "../../modules/StudentReport.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { updateStudentReputation } from "../../services/reputation.service.js";
+import UserSuspensionService from "../../services/userSuspension.service.js";
 
 /**
  * Handle admin updates to a report's status, priority, and notes.
@@ -75,10 +76,17 @@ export const updateReport = async (req, res, next) => {
           break;
 
         case 'suspend_user':
-          // ✅ Suspend user — does NOT finalize the report
-          if (report.reportType === 'user') {
-            const User = (await import("../../modules/User.model.js")).default;
-            await User.update({ status: 'Suspended' }, { where: { id: report.reportedEntityId } }).catch(err => logger.warn('Failed to suspend user: ' + err));
+          // ✅ Use UserSuspensionService to ensure records are created in the suspension table
+          if (report.reportedEntityId) {
+            const adminId = req.user?.id || 1;
+            await UserSuspensionService.createSuspension({
+              userId: report.reportedEntityId,
+              reason: reason || 'Violation of platform guidelines',
+              reasonTag: 'Violation of Terms',
+              severity: 'High',
+              effectiveDate: new Date(),
+              adminNotes: `Suspended via Student Report Management for report ID ${id}. ${notes || ''}`
+            }, adminId);
           }
           // Keep status as In Progress — admin can still resolve/dismiss
           if (report.status === 'Pending Review') report.status = 'In Progress';

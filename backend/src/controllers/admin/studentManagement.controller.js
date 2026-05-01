@@ -12,6 +12,7 @@ import {
 import { sendResponse } from '../../utils/response.js';
 import logger from '../../utils/logger.js';
 import moment from 'moment';
+import UserSuspensionService from '../../services/userSuspension.service.js';
 
 /**
  * GET /api/v1/admin/students
@@ -248,10 +249,35 @@ export const updateStudentStatus = async (req, res, next) => {
       return sendResponse(res, 400, false, `Student is already ${status}`);
     }
 
-    user.status = status;
-    await user.save();
+    // Use UserSuspensionService to handle the logic and database records
+    if (status === 'Suspended') {
+      await UserSuspensionService.createSuspension({
+        userId: parseInt(id),
+        reason: reason || `Suspended for ${suspensionCategory || 'policy violation'}`,
+        reasonTag: suspensionCategory || 'Violation of Terms',
+        effectiveDate: new Date(),
+        adminNotes: reason
+      }, adminId);
+    } else if (status === 'Active') {
+      // If student was suspended, reactivate via service
+      if (user.status === 'Suspended') {
+        await UserSuspensionService.reactivateUser(parseInt(id), {
+          identityVerificationComplete: true,
+          securityAuditPassed: true,
+          reactivationNotes: 'Reactivated from Student Management panel'
+        }, adminId);
+      } else {
+        // Direct status update for other transitions
+        user.status = status;
+        await user.save();
+      }
+    } else {
+      // Direct status update for any other statuses
+      user.status = status;
+      await user.save();
+    }
 
-    // Log the action with the reason provided in the modal
+    // Still create an AdminLog for consistency
     await AdminLog.create({
       adminId,
       type: status === 'Suspended' ? 'user_suspended' : 'status_update',
@@ -267,7 +293,7 @@ export const updateStudentStatus = async (req, res, next) => {
       logger.info(`📧 NOTIFICATION: Suspension email sent to student ${user.email}. Reason: ${reason || suspensionCategory}`);
     }
 
-    return sendResponse(res, 200, true, `Student status updated to ${status}`, { status: user.status });
+    return sendResponse(res, 200, true, `Student status updated to ${status}`, { status: status });
   } catch (error) {
     logger.error(`Error in updateStudentStatus: ${error.message}`);
     next(error);

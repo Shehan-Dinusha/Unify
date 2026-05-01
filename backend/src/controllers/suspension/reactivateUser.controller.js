@@ -5,15 +5,15 @@ export const reactivateUser = async (req, res, next) => {
     const { userId } = req.params;
     const adminId = req.admin?.id || 1;
 
-    if (!userId || isNaN(parseInt(userId))) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
-        message: "Invalid user ID",
+        message: "Identifier is required",
         timestamp: new Date().toISOString()
       });
     }
 
-    const data = await UserSuspensionService.reactivateUser(parseInt(userId), req.body, adminId);
+    const data = await UserSuspensionService.reactivateUser(userId, req.body, adminId);
 
     res.status(200).json({
       success: true,
