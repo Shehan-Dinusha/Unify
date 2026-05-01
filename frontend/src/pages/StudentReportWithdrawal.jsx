@@ -1,20 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
-import { mockStudentReports } from "../data/mockReportData";
+import { useToast } from "../components/common/Toast";
+import { getMyReportById, withdrawMyReport } from "../services/reportService";
 import { X, Info, AlertTriangle } from "lucide-react";
 
 const StudentReportWithdrawal = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const report = mockStudentReports.find((r) => r.id === id);
+  const toast = useToast();
   const [reason, setReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const user = { name: "Alex Johnson", role: "student" };
 
-  const handleConfirm = () => {
-    navigate(`/student/reports/${id}/withdraw/success`);
+  // ── Load report to get display ID and internal ID ──────────────────
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const result = await getMyReportById(id);
+        setReport(result.data);
+      } catch (err) {
+        console.error('[Withdrawal] Failed to load report:', err);
+        toast.error('Error', 'Could not load report data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [id]);
+
+  const handleConfirm = async () => {
+    setSubmitting(true);
+    try {
+      const internalId = report?.internalId || id;
+      await withdrawMyReport(internalId, reason);
+      toast.success('Report Withdrawn', 'Your report has been withdrawn successfully.');
+      navigate(`/student/reports/${id}/withdraw/success`);
+    } catch (err) {
+      console.error('[Withdrawal] Failed:', err);
+      const msg = err.response?.data?.message || 'Failed to withdraw report.';
+      toast.error('Withdrawal Failed', msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -22,6 +54,16 @@ const StudentReportWithdrawal = () => {
   };
 
   const displayId = report ? report.reportId : `#RPT-${id}`;
+
+  if (loading) {
+    return (
+      <MainLayout user={user} pageTitle="Report Withdrawal" verificationCount={0}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl">
+          <p className="text-text-secondary">Loading...</p>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout user={user} pageTitle="Report Withdrawal" verificationCount={0}>
@@ -102,9 +144,10 @@ const StudentReportWithdrawal = () => {
             <div className="flex flex-col gap-3">
               <button
                 onClick={handleConfirm}
-                className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+                disabled={submitting}
+                className={`w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <AlertTriangle size={18} /> Confirm Withdrawal
+                <AlertTriangle size={18} /> {submitting ? 'Withdrawing...' : 'Confirm Withdrawal'}
               </button>
               <button
                 onClick={handleCancel}

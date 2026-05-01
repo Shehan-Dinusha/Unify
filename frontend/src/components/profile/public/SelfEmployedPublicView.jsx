@@ -18,7 +18,7 @@ const SelfEmployedPublicView = ({ profile }) => {
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md items-start text-start">
       {/* Left — Profile Card (aligned with first 2 sections on right) */}
       <div className="md:row-span-1">
-        <ProfileHeader profile={profile} />
+        <ProfileHeader profile={profile} isPublic={true} />
       </div>
 
       {/* Right — Top Sections (Rating + Services) */}

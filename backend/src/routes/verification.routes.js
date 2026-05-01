@@ -23,12 +23,13 @@ import {
   removeVerifiedAccountValidator,
   revokeBatchRepStatusValidator,
 } from "../validators/verification.validator.js";
-
+import { protect } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 // POST /api/v1/verifications/submit
 router.post(
   "/submit",
+  protect,
   uploadToS3({ type: "single", fieldName: "document", folder: "verifications" }),
   submitVerificationRequestValidator,
   validateRequest,

@@ -1,48 +1,120 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
-import { mockStudentReports } from "../data/mockReportData";
+import { useToast } from "../components/common/Toast";
+import { getMyReportById } from "../services/reportService";
 import {
   Calendar,
-  Search,
   ArrowRight,
   Shield,
   ShieldAlert,
   Image as ImageIcon,
   FileText,
-  CheckCircle2
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 
 const StudentReportDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const report = mockStudentReports.find((r) => r.id === id);
-  const user = { name: "Alex Johnson", role: "student" };
+  const toast = useToast();
+  const user = { name: "Alex Johnson", role: "student", id: 4 };
 
-  if (!report) {
+  // ── Data State ─────────────────────────────────────────────────────
+  const [report, setReport] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // ── Fetch report from API on mount ─────────────────────────────────
+  useEffect(() => {
+    const loadReport = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await getMyReportById(id);
+        setReport(result.data);
+      } catch (err) {
+        console.error('[StudentReportDetail] Failed to load:', err);
+        setError('Failed to load report details. Please check the backend.');
+        toast.error('Connection Error', 'Failed to load report details.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadReport();
+  }, [id]);
+
+  // ── Loading State ──────────────────────────────────────────────────
+  if (loading) {
     return (
       <MainLayout user={user} pageTitle="Submitted Report" verificationCount={0}>
-        <div className="flex flex-col items-center justify-center h-64 text-center">
-          <p className="text-text-secondary text-body-medium font-inter">
-            Report not found.
-          </p>
-          <button
-            onClick={() => navigate("/student/reports")}
-            className="text-primary-blue hover:underline text-body-small font-inter mt-2"
-          >
-            Go back to reports
-          </button>
+        <div className="flex items-center justify-center h-64 text-text-secondary text-body-small">
+          Loading report details...
         </div>
       </MainLayout>
     );
   }
 
+  // ── Error State ────────────────────────────────────────────────────
+  if (error || !report) {
+    return (
+      <MainLayout user={user} pageTitle="Submitted Report" verificationCount={0}>
+        <Card variant="container" className="border-state-error/30 bg-state-error/5">
+          <div className="flex items-center gap-md">
+            <AlertTriangle size={24} className="text-state-error shrink-0" />
+            <div>
+              <p className="text-body-medium-bold text-state-error">Failed to Load Report</p>
+              <p className="text-body-small text-text-secondary">{error || 'Report not found.'}</p>
+            </div>
+          </div>
+        </Card>
+        <button
+          onClick={() => navigate("/student/reports")}
+          className="text-primary-blue hover:underline text-body-small font-inter mt-4 inline-block"
+        >
+          Go back to reports
+        </button>
+      </MainLayout>
+    );
+  }
+
   const r = report;
+  const isWithdrawable = !['Withdrawn', 'Resolved', 'Dismissed'].includes(r.status);
 
   return (
     <MainLayout user={user} pageTitle="Submitted Report" verificationCount={0}>
       <div className="flex flex-col gap-6 w-full max-w-[1200px] mx-auto">
+        {/* Status Banner */}
+        {['Resolved', 'Dismissed', 'Withdrawn'].includes(r.status) && (
+          <div className={`w-full p-5 rounded-[24px] border flex items-center gap-5 mb-2 animate-in fade-in slide-in-from-top-4 duration-500 ${
+            r.status === 'Resolved' 
+              ? 'bg-state-success/10 border-state-success/30 text-state-success shadow-lg shadow-state-success/5' 
+              : r.status === 'Dismissed'
+              ? 'bg-state-error/10 border-state-error/30 text-state-error shadow-lg shadow-state-error/5'
+              : 'bg-white/5 border-white/20 text-text-secondary'
+          }`}>
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 ${
+              r.status === 'Resolved' ? 'bg-state-success/20' : r.status === 'Dismissed' ? 'bg-state-error/20' : 'bg-white/10'
+            }`}>
+              {r.status === 'Resolved' ? <CheckCircle2 size={28} /> : <AlertTriangle size={28} />}
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold font-inter">This report is {r.status.toLowerCase()}.</h3>
+              <p className="text-sm opacity-80 font-inter mt-1">
+                {r.status === 'Resolved' 
+                  ? 'The administration has reviewed and resolved your report. Thank you for helping keep our community safe.' 
+                  : r.status === 'Dismissed'
+                  ? 'This report was reviewed and dismissed by the administration. No further action was deemed necessary.'
+                  : 'You have withdrawn this report. It is no longer being processed.'}
+              </p>
+            </div>
+            <div className="hidden md:block">
+              <span className="text-xs font-bold opacity-50 uppercase tracking-widest font-inter">Report Closed</span>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-2">
           <div>
@@ -53,12 +125,19 @@ const StudentReportDetail = () => {
               <Calendar size={14} /> Submitted on {r.dateSubmittedFull}
             </p>
           </div>
-          <button
-            onClick={() => navigate(`/student/reports/${r.id}/withdraw`)}
-            className="px-5 py-2.5 rounded-[100px] bg-primary-blue hover:brightness-110 text-white font-inter text-sm font-semibold transition-all shadow-lg shadow-primary-blue/20"
-          >
-            Withdraw Report
-          </button>
+          {isWithdrawable && (
+            <button
+              onClick={() => navigate(`/student/reports/${r.internalId || r.id}/withdraw`)}
+              className="px-5 py-2.5 rounded-[100px] bg-primary-blue hover:brightness-110 text-white font-inter text-sm font-semibold transition-all shadow-lg shadow-primary-blue/20"
+            >
+              Withdraw Report
+            </button>
+          )}
+          {r.status === 'Withdrawn' && (
+            <span className="px-5 py-2.5 rounded-[100px] bg-white/10 border border-white/20 text-text-secondary font-inter text-sm font-semibold">
+              Report Withdrawn
+            </span>
+          )}
         </div>
 
         {/* 2-Column Grid */}
@@ -87,7 +166,7 @@ const StudentReportDetail = () => {
                 </div>
                 <div className="flex flex-col items-end gap-3">
                   <span className="px-3 py-1.5 rounded-full bg-state-error/10 border border-state-error/20 text-state-error text-[11px] font-bold tracking-wide font-inter">
-                    {r.reportType || "Academic Misconduct"}
+                    {r.reason || "Report"}
                   </span>
                   <img
                     src={r.reportedEntity.avatar}
@@ -109,49 +188,56 @@ const StudentReportDetail = () => {
             </Card>
 
             {/* Evidence & Attachments */}
-            <Card variant="card" padding="p-6">
-              <h3 className="text-lg font-bold text-white font-inter mb-4">
-                Evidence & Attachments
-              </h3>
-              <div className="flex flex-wrap gap-4">
-                {r.evidence.map((ev, i) => (
-                  <div
-                    key={i}
-                    className="relative w-[110px] h-[110px] rounded-xl overflow-hidden group cursor-pointer border border-white/10 hover:border-white/20 transition-all flex-shrink-0"
-                  >
-                    {ev.type === "image" ? (
-                      <>
-                        <img
-                          src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=200"
-                          alt="evidence"
-                          className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-all"
-                        />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-2 bg-gradient-to-t from-black/60 to-transparent">
-                          <div className="bg-white/20 p-1.5 rounded mb-2 backdrop-blur-sm">
-                            <ImageIcon size={16} className="text-white" />
+            {r.evidence && r.evidence.length > 0 && (
+              <Card variant="card" padding="p-6">
+                <h3 className="text-lg font-bold text-white font-inter mb-4">
+                  Evidence & Attachments
+                </h3>
+                <div className="flex flex-wrap gap-4">
+                  {r.evidence.map((ev, i) => (
+                    <a
+                      key={i}
+                      href={ev.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative w-[110px] h-[110px] rounded-xl overflow-hidden group cursor-pointer border border-white/10 hover:border-white/30 transition-all flex-shrink-0"
+                      title={`View ${ev.name}`}
+                    >
+                      {ev.type === "image" || ev.type === "image" ? (
+                        <>
+                          <img
+                            src={ev.url}
+                            alt="evidence"
+                            className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all"
+                            onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=200"; }}
+                          />
+                          <div className="absolute inset-0 flex flex-col items-center justify-center p-2 bg-gradient-to-t from-black/60 to-transparent">
+                            <div className="bg-white/20 p-1.5 rounded mb-2 backdrop-blur-sm">
+                              <ImageIcon size={16} className="text-white" />
+                            </div>
+                            <span className="text-[10px] text-white font-inter truncate w-full text-center drop-shadow-md">
+                              {ev.name}
+                            </span>
                           </div>
-                          <span className="text-[10px] text-white font-inter truncate w-full text-center drop-shadow-md">
-                            whatsapp_screen...
+                        </>
+                      ) : (
+                        <div className="w-full h-full bg-white/5 flex flex-col items-center justify-center p-2 hover:bg-white/10 transition-colors">
+                          <FileText
+                            size={24}
+                            className="text-state-error/80 mb-2"
+                          />
+                          <span className="text-[10px] text-white font-inter truncate w-full text-center">
+                            {ev.name}
                           </span>
                         </div>
-                      </>
-                    ) : (
-                      <div className="w-full h-full bg-white/5 flex flex-col items-center justify-center p-2 hover:bg-white/10 transition-colors">
-                        <FileText
-                          size={24}
-                          className="text-state-error/80 mb-2"
-                        />
-                        <span className="text-[10px] text-white font-inter truncate w-full text-center">
-                          email_thread.pdf
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </Card>
+                      )}
+                    </a>
+                  ))}
+                </div>
+              </Card>
+            )}
 
-            {/* Administrative Update */}
+            {/* Administrative Update — from admin resolve note */}
             {r.adminNote && (
               <div className="bg-primary-blue/5 border-l-4 border-l-primary-blue rounded-r-[20px] rounded-bl-sm border-y border-r border-y-white/10 border-r-white/10 p-6 flex items-start gap-4">
                 <div className="w-10 h-10 rounded-full bg-primary-blue/20 flex items-center justify-center flex-shrink-0">
@@ -175,9 +261,19 @@ const StudentReportDetail = () => {
           {/* ── Right Column (span 1) ────────────────────────── */}
           <div className="lg:col-span-1 flex flex-col gap-5">
             {/* Status Button */}
-            <button className="w-full py-4 rounded-[100px] border border-primary-blue/30 bg-primary-blue/10 text-primary-blue flex items-center justify-center gap-2 font-inter text-sm font-bold shadow-lg shadow-primary-blue/5">
-              <Search size={16} className="text-primary-blue" /> Status:{" "}
-              {r.statusLabel}
+            <button className={`w-full py-4 rounded-[100px] border flex items-center justify-center gap-2 font-inter text-sm font-bold shadow-lg ${
+              r.status === 'Resolved'
+                ? 'border-state-success/30 bg-state-success/10 text-state-success shadow-state-success/5'
+                : r.status === 'Dismissed'
+                ? 'border-state-error/30 bg-state-error/10 text-state-error shadow-state-error/5'
+                : r.status === 'Withdrawn'
+                ? 'border-white/20 bg-white/10 text-text-secondary shadow-white/5'
+                : r.status === 'In Progress' || r.status === 'In Review'
+                ? 'border-state-warning/30 bg-state-warning/10 text-state-warning shadow-state-warning/5'
+                : 'border-primary-blue/30 bg-primary-blue/10 text-primary-blue shadow-primary-blue/5'
+            }`}>
+              {r.status === 'Resolved' ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
+              Status: {r.status === 'In Progress' ? 'In Review' : (r.statusLabel || r.status)}
             </button>
 
             {/* Timeline */}
@@ -186,43 +282,30 @@ const StudentReportDetail = () => {
                 Report Timeline
               </h3>
               <div className="flex flex-col">
-                {r.timeline.map((step, idx) => (
+                {r.timeline && r.timeline.map((step, idx) => (
                   <div
                     key={idx}
                     className="flex items-start gap-4 pb-6 last:pb-0 relative"
                   >
                     {idx < r.timeline.length - 1 && (
-                      <div className="absolute left-[9px] top-6 bottom-0 w-px bg-white/10" />
+                      <div className="absolute left-[7px] top-6 bottom-0 w-px bg-white/10" />
                     )}
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 z-10 ${
-                        step.status === "completed" || step.status === "active"
-                          ? "bg-primary-blue"
-                          : "bg-white/10 border border-white/20"
-                      }`}
-                    >
-                      {(step.status === "completed" ||
-                        step.status === "active") && (
-                        <CheckCircle2 size={12} className="text-white bg-primary-blue rounded-full" />
-                      )}
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-1 z-10 ${
+                      step.status === 'completed' ? 'bg-state-success' : 
+                      step.status === 'active' ? 'bg-primary-blue shadow-[0_0_10px_rgba(37,99,235,0.5)]' : 'bg-white/10'
+                    }`}>
+                      {step.status === 'completed' && <CheckCircle2 size={10} className="text-white" />}
+                      {step.status === 'active' && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p
-                        className={`text-sm font-bold font-inter ${
-                          step.status === "active" || step.status === "completed"
-                            ? "text-white"
-                            : "text-text-tertiary"
-                        }`}
-                      >
+                      <p className={`text-sm font-bold font-inter ${step.status === 'active' ? 'text-primary-blue' : 'text-white'}`}>
                         {step.label}
                       </p>
-                      {step.date && (
-                        <p className="text-[11px] text-text-secondary font-inter mt-1.5 tracking-wide">
-                          {step.date}
-                        </p>
-                      )}
+                      <p className="text-[10px] text-text-tertiary font-inter uppercase tracking-wider mb-1">
+                        {step.date}
+                      </p>
                       {step.description && (
-                        <p className="text-xs text-text-tertiary font-inter mt-2 leading-relaxed">
+                        <p className="text-xs text-text-secondary leading-relaxed">
                           {step.description}
                         </p>
                       )}
@@ -231,6 +314,28 @@ const StudentReportDetail = () => {
                 ))}
               </div>
             </Card>
+
+            {/* Detailed Activity Log */}
+            {r.activityLog && r.activityLog.length > 0 && (
+              <Card variant="card" padding="p-6">
+                <h3 className="text-lg font-bold text-white font-inter mb-6">
+                  Detailed Activity Log
+                </h3>
+                <div className="flex flex-col gap-5">
+                  {r.activityLog.slice().reverse().map((log, i) => (
+                    <div key={i} className="flex flex-col gap-1 border-l-2 border-white/5 pl-4 ml-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white font-inter">{log.title}</span>
+                        <span className="text-[10px] text-text-tertiary font-inter">{log.time}</span>
+                      </div>
+                      <p className="text-xs text-text-secondary leading-relaxed font-inter">
+                        {log.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
 
             {/* Privacy Shield */}
             <Card variant="card" padding="p-6">
@@ -250,13 +355,6 @@ const StudentReportDetail = () => {
                 </div>
               </div>
             </Card>
-
-            {/* Help Link */}
-            <div className="text-center mt-2">
-              <button className="text-primary-blue hover:text-blue-400 hover:underline transition-colors text-sm font-inter">
-                Need help with this report?
-              </button>
-            </div>
           </div>
         </div>
       </div>

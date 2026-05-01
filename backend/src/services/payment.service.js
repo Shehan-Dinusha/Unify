@@ -10,6 +10,11 @@ export const processOrderPayment = async (orderId, paymentIntent) => {
 
   // 1. Update Order Status
   order.status = "Order Placed";
+  
+  // Update timeline
+  const currentTimeline = Array.isArray(order.timeline) ? order.timeline : [];
+  order.timeline = [...currentTimeline, { status: "Order Placed", timestamp: new Date() }];
+  
   await order.save();
 
   // 2. Find Seller's Wallet
@@ -46,6 +51,11 @@ export const processBookingPayment = async (bookingId, paymentIntent) => {
   // 1. Update Booking Status
   booking.status = "CONFIRMED";
   booking.paymentStatus = "PAID";
+  
+  // Update timeline
+  const currentTimeline = Array.isArray(booking.timeline) ? booking.timeline : [];
+  booking.timeline = [...currentTimeline, { status: "CONFIRMED", timestamp: new Date() }];
+  
   await booking.save();
 
   // 2. Find Club Owner's Wallet

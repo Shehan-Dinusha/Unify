@@ -5,7 +5,7 @@ import { resolveVerificationUrl, deleteVerificationFile } from "../../utils/veri
 
 export const submitVerificationRequest = async (req, res, next) => {
   try {
-    const userId = req.body.userId || 1;
+    const userId = req.user.id;
     const requestedRole = req.body.requestedRole || "Batch Rep";
 
     if (!req.file) {

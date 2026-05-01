@@ -50,6 +50,10 @@ const EventBooking = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+    timeline: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
   },
   {
     tableName: "event_bookings",

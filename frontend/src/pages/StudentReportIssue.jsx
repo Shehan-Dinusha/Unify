@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
+import { useToast } from "../components/common/Toast";
+import { submitReport } from "../services/reportService";
 import {
   FileText,
   MessageSquare,
@@ -61,6 +63,7 @@ const reportReasons = [
 const StudentReportIssue = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
   const postData = location.state?.postData || null;
 
   const [selectedType, setSelectedType] = useState(null);
@@ -70,11 +73,23 @@ const StudentReportIssue = () => {
   const [externalLink, setExternalLink] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
 
+  // Auto-select type if data is passed from a specific context
+  React.useEffect(() => {
+    if (postData?.type) {
+      setSelectedType(postData.type);
+    } else if (postData?.id) {
+      // If it has an ID but no explicit type, it's likely a post from the news feed
+      setSelectedType("post");
+    }
+  }, [postData]);
+
   const user = { name: "Alex Johnson", role: "student" };
 
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
+    // Store the actual File objects for submission, and metadata for UI
     const newFiles = files.map((f) => ({
+      file: f, // Keep reference to the actual blob
       name: f.name,
       size: (f.size / (1024 * 1024)).toFixed(1) + " MB",
       type: f.name.endsWith(".pdf") ? "pdf" : "image",
@@ -86,15 +101,48 @@ const StudentReportIssue = () => {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const confirmSubmit = () => {
-    navigate("/student/report-success", {
-      state: {
-        reportType: selectedType,
-        reason: selectedReason,
-        details: additionalDetails,
-        postData,
-      },
-    });
+  const [submitting, setSubmitting] = useState(false);
+
+  const confirmSubmit = async () => {
+    setSubmitting(true);
+    try {
+      // Map frontend reason IDs to backend category values
+      const categoryMap = { inappropriate: 'inappropriate', spam: 'spam', harassment: 'harassment', misinformation: 'misinformation' };
+      
+      // Use FormData to support file uploads
+      const formData = new FormData();
+      formData.append('reportType', selectedType);
+      formData.append('category', categoryMap[selectedReason] || selectedReason);
+      
+      // Map entity ID based on type
+      const entityId = postData?.id || postData?.authorId || postData?.userId;
+      formData.append('reportedEntityId', entityId || `manual-${Date.now()}`);
+      
+      if (additionalDetails) formData.append('additionalDetails', additionalDetails);
+      if (externalLink) formData.append('evidenceUrl', externalLink);
+      
+      // Append each file buffer
+      uploadedFiles.forEach(item => {
+        formData.append('evidenceFiles', item.file);
+      });
+
+      const result = await submitReport(formData);
+      
+      toast.success('Report Submitted', 'Your report has been sent to the administration.');
+      navigate("/student/report-success", {
+        state: {
+          reportId: result.data?.reportId || '',
+          reportType: selectedType,
+          reason: selectedReason,
+        },
+      });
+    } catch (err) {
+      console.error('[StudentReportIssue] Submit failed:', err);
+      const msg = err.response?.data?.message || 'Failed to submit report. Please try again.';
+      toast.error('Submission Failed', msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -102,6 +150,24 @@ const StudentReportIssue = () => {
       navigate(location.state.from);
     } else {
       navigate("/news-feed");
+    }
+  };
+
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const newErrors = {};
+    if (!selectedType) newErrors.type = "Please select a report type.";
+    if (!selectedReason) newErrors.reason = "Please select a reason for reporting.";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleShowConfirm = () => {
+    if (validate()) {
+      setShowConfirm(true);
+    } else {
+      toast.error("Required Fields Missing", "Please select a report type and reason before submitting.");
     }
   };
 
@@ -146,9 +212,10 @@ const StudentReportIssue = () => {
                     <span className="text-white text-[12px] font-bold">1</span>
                   </div>
                   <h3 className="text-base sm:text-lg font-bold text-white font-inter">
-                    What are you reporting?
+                    What are you reporting? <span className="text-state-error text-xs font-normal ml-1">*Required</span>
                   </h3>
                 </div>
+                {errors.type && <p className="text-state-error text-[10px] mb-2 px-1">{errors.type}</p>}
                 <div className="flex flex-col gap-2.5">
                   {reportTypes.map((type) => {
                     const IconComp = type.icon;
@@ -212,9 +279,10 @@ const StudentReportIssue = () => {
                     <span className="text-white text-[12px] font-bold">2</span>
                   </div>
                   <h3 className="text-base sm:text-lg font-bold text-white font-inter">
-                    Why are you reporting this?
+                    Why are you reporting this? <span className="text-state-error text-xs font-normal ml-1">*Required</span>
                   </h3>
                 </div>
+                {errors.reason && <p className="text-state-error text-[10px] mb-2 px-1">{errors.reason}</p>}
                 <div className="flex flex-col gap-2.5">
                   {reportReasons.map((reason) => {
                     const isSelected = selectedReason === reason.id;
@@ -392,12 +460,11 @@ const StudentReportIssue = () => {
                 Cancel
               </button>
               <button
-                onClick={() => setShowConfirm(true)}
-                disabled={!canSubmit}
+                onClick={handleShowConfirm}
                 className={`w-full sm:w-auto h-11 px-6 rounded-full font-inter font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition-all duration-200 order-1 sm:order-2 ${
                   canSubmit
                     ? "bg-primary-blue text-white hover:brightness-110 active:scale-[0.98]"
-                    : "bg-white/5 border border-white/10 text-text-tertiary cursor-not-allowed"
+                    : "bg-white/5 border border-white/10 text-text-tertiary"
                 }`}
               >
                 Submit Report <Send size={16} />
@@ -439,6 +506,7 @@ const StudentReportIssue = () => {
               <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-1 sm:pt-2 flex flex-col gap-3">
                 <button
                   onClick={confirmSubmit}
+                  disabled={submitting}
                   className="w-full h-11 sm:h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
                 >
                   <CheckCircle2 size={18} /> Yes, Submit Report

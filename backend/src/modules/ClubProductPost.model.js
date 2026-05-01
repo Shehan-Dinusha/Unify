@@ -58,6 +58,10 @@ const ClubProductPost = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    isVisible: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
     likesCount: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
