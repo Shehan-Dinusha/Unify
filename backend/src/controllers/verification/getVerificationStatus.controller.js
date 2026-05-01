@@ -22,6 +22,10 @@ export const getVerificationStatus = async (req, res, next) => {
       });
 
       if (removedRequest && removedRequest.deletedAt) {
+        const resolvedDocUrl = await resolveVerificationUrl(
+          removedRequest.documentUrl,
+        );
+
         return sendResponse(
           res,
           200,
@@ -35,7 +39,7 @@ export const getVerificationStatus = async (req, res, next) => {
             document: {
               name: removedRequest.documentMetadata?.originalName || "Document",
               size: removedRequest.documentMetadata?.size || 0,
-              url: null,
+              url: resolvedDocUrl,
             },
           },
         );
