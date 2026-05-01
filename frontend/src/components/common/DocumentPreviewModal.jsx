@@ -66,9 +66,6 @@ const DocumentPreviewModal = ({ isOpen, onClose, document }) => {
               <h3 className="text-white font-bold text-base">
                 {document.name}
               </h3>
-              <p className="text-text-secondary text-sm">
-                {document.size} • {document.date}
-              </p>
             </div>
           </div>
 
@@ -80,7 +77,7 @@ const DocumentPreviewModal = ({ isOpen, onClose, document }) => {
                   onClick={() =>
                     setZoomLevel((prev) => Math.max(50, prev - 10))
                   }
-                  className="p-1.5 hover:bg-white/10 rounded-md text-text-secondary hover:text-white hover:bg-white/5"
+                  className="p-1.5 rounded-md text-text-secondary hover:text-white hover:bg-white/5"
                 >
                   <ZoomOut className="w-4 h-4" />
                 </button>
@@ -91,7 +88,7 @@ const DocumentPreviewModal = ({ isOpen, onClose, document }) => {
                   onClick={() =>
                     setZoomLevel((prev) => Math.min(200, prev + 10))
                   }
-                  className="p-1.5 hover:bg-white/10 rounded-md text-text-secondary hover:text-white hover:bg-white/5"
+                  className="p-1.5 rounded-md text-text-secondary hover:text-white hover:bg-white/5"
                 >
                   <ZoomIn className="w-4 h-4" />
                 </button>
