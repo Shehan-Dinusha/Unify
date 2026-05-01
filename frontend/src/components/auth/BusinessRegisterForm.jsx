@@ -4,8 +4,9 @@ import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import { validatePassword } from "../../utils/validation";
+import { register } from "../../services/authService";
 
-const BusinessRegisterForm = ({ onNext, onBack }) => {
+const BusinessRegisterForm = ({ onNext, onBack, businessType }) => {
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -50,11 +51,26 @@ const BusinessRegisterForm = ({ onNext, onBack }) => {
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      onNext(contact);
+      let formattedContact = contact.trim();
+      const isEmail = formattedContact.includes("@");
+
+      // Auto-format local Sri Lankan numbers to international format for Twilio
+      if (!isEmail && formattedContact.startsWith("0") && formattedContact.length === 10) {
+        formattedContact = "+94" + formattedContact.substring(1);
+      } else if (!isEmail && /^\d{9}$/.test(formattedContact)) {
+        // If they enter 9 digits without the 0, e.g. 771234567
+        formattedContact = "+94" + formattedContact;
+      }
+
+      await register({
+        [isEmail ? "email" : "phone"]: formattedContact,
+        password,
+        role: businessType === "club" ? "Club" : "Business",
+        name: formattedContact.split("@")[0] || "Business User",
+      });
+      onNext(formattedContact);
     } catch (err) {
-      setErrors({ form: "Registration failed. Please try again." });
+      setErrors({ form: err.message });
     } finally {
       setLoading(false);
     }
@@ -81,7 +97,7 @@ const BusinessRegisterForm = ({ onNext, onBack }) => {
           <div className="space-y-6">
             <Input
               label="Business Email or Phone Number"
-              placeholder="email@example.com or 0771234567"
+              placeholder="email@example.com or +94771234567"
               value={contact}
               onChange={(e) => {
                 setContact(e.target.value);
@@ -125,6 +141,12 @@ const BusinessRegisterForm = ({ onNext, onBack }) => {
               icon={Lock}
             />
           </div>
+
+          {errors.form && (
+            <div className="mt-4 p-2 bg-status-error/10 border border-status-error/20 rounded-lg text-status-error text-body-extra-small text-center">
+              {errors.form}
+            </div>
+          )}
 
           <div className="mt-6">
             <Button

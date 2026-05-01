@@ -9,6 +9,7 @@ import SuccessMessage from "../components/auth/SuccessMessage";
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState("email");
   const [userIdentifier, setUserIdentifier] = useState("");
+  const [otp, setOtp] = useState("");
 
   const renderStep = () => {
     switch (step) {
@@ -25,12 +26,22 @@ const ForgotPasswordPage = () => {
         return (
           <OtpForm
             email={userIdentifier}
-            onVerify={() => setStep("reset")}
+            mode="reset"
+            onVerify={(code) => {
+              setOtp(code);
+              setStep("reset");
+            }}
             onBack={() => setStep("email")}
           />
         );
       case "reset":
-        return <ResetPasswordForm onReset={() => setStep("success")} />;
+        return (
+          <ResetPasswordForm
+            identifier={userIdentifier}
+            otp={otp}
+            onReset={() => setStep("success")}
+          />
+        );
       case "success":
         return <SuccessMessage />;
       default:

@@ -19,7 +19,7 @@ const RegisterOtpPage = () => {
       <div className="flex-1 flex flex-col items-center justify-center py-4 px-4">
         <OtpForm
           email={email}
-          onVerify={() => {
+          onVerify={(code) => {
             navigate("/register/profile", {
               state: { mainType, businessType, email },
             });

@@ -16,6 +16,7 @@ import {
 } from "../validators/profile.validator.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
+import { parseFormDataFields } from "../middlewares/parseFormData.middleware.js";
 
 const router = express.Router();
 
@@ -33,6 +34,7 @@ router.put(
     ],
     folder: "profiles",
   }),
+  parseFormDataFields(["addresses"]),
   authorize(ROLES.STUDENT),
   studentProfileValidator,
   validateRequest,
@@ -51,6 +53,7 @@ router.put(
     ],
     folder: "profiles",
   }),
+  parseFormDataFields(["addresses"]),
   authorize(ROLES.BUSINESS),
   businessProfileValidator,
   validateRequest,
@@ -70,6 +73,7 @@ router.put(
     ],
     folder: "profiles",
   }),
+  parseFormDataFields(["addresses"]),
   authorize(ROLES.CLUB),
   clubProfileValidator,
   validateRequest,
