@@ -41,7 +41,7 @@ const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
             stats?.totalPending ||
             (Array.isArray(requests) ? requests.length : 0)
           }
-          subValue={`+${stats?.newPending || 0} new`}
+          subValue={stats?.newPending > 0 ? `+${stats.newPending} new` : undefined}
           subValueClass="text-state-success"
           loading={loading}
         />

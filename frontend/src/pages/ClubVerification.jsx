@@ -17,12 +17,14 @@ import Card from "../components/common/Card";
 import FileUpload from "../components/common/FileUpload";
 import DocumentPreviewModal from "../components/common/DocumentPreviewModal";
 import verificationService from "../services/verificationService";
-import { useToast } from "../components/common/Toast";
+import {
+  ActionErrorModal,
+  WithdrawalSuccessModal,
+} from "../components/common/VerificationModals";
 
 const ClubVerification = () => {
   const navigate = useNavigate();
-  const toast = useToast();
-  const [submissionStatus, setSubmissionStatus] = useState("idle"); // 'idle' | 'pending' | 'approved' | 'declined'
+  const [submissionStatus, setSubmissionStatus] = useState("idle");
   const [submittedFile, setSubmittedFile] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -30,6 +32,12 @@ const ClubVerification = () => {
   const [declineReason, setDeclineReason] = useState("");
   const [approvedRole, setApprovedRole] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
+  // Modal State
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showWithdrawSuccessModal, setShowWithdrawSuccessModal] = useState(false);
 
   useEffect(() => {
     fetchStatus();
@@ -67,6 +75,7 @@ const ClubVerification = () => {
   const handleSubmit = async () => {
     if (!submittedFile) return;
 
+    setSubmitError("");
     try {
       setLoading(true);
       const formData = new FormData();
@@ -75,12 +84,11 @@ const ClubVerification = () => {
 
       const response = await verificationService.submitRequest(formData);
       if (response.success) {
-        toast.success("Verification submitted successfully!");
         setSubmissionStatus("pending");
         setTimeout(() => navigate("/profile?role=club_society"), 1500);
       }
     } catch (error) {
-      toast.error(
+      setSubmitError(
         error.response?.data?.message || "Failed to submit verification",
       );
     } finally {
@@ -93,17 +101,18 @@ const ClubVerification = () => {
       setLoading(true);
       const response = await verificationService.withdrawRequest();
       if (response.success) {
-        toast.success("Success", "Submission withdrawn successfully");
         setSubmissionStatus("idle");
         setSubmittedFile(null);
         setConfirmPassword("");
         setShowWithdrawModal(false);
+        setShowWithdrawSuccessModal(true);
       }
     } catch (error) {
-      toast.error(
-        "Error",
+      setErrorMessage(
         error.response?.data?.message || "Failed to withdraw submission",
       );
+      setShowErrorModal(true);
+      setShowWithdrawModal(false);
     } finally {
       setLoading(false);
     }
@@ -235,6 +244,15 @@ const ClubVerification = () => {
                 </p>
               </div>
 
+              {submitError && (
+                <div className="bg-red-400/5 rounded-xl border border-red-400/20 p-2.5 mb-4 flex gap-3 items-start">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-red-400 text-sm leading-snug">
+                    {submitError}
+                  </p>
+                </div>
+              )}
+
               {/* Instructions */}
               <p className="text-text-secondary text-sm text-center mb-6 leading-relaxed">
                 To finalize the verification of your club account, we require
@@ -251,7 +269,7 @@ const ClubVerification = () => {
               <Button
                 variant="primary"
                 className="w-full h-10 rounded-xl shadow-lg shadow-primary-blue/25 flex items-center justify-center gap-2 group"
-                disabled={!submittedFile}
+                disabled={!submittedFile || loading}
                 onClick={handleSubmit}
               >
                 <span>Submit Document</span>
@@ -517,6 +535,7 @@ const ClubVerification = () => {
                 onClick={handleWithdrawConfirm}
                 variant="danger"
                 className="flex-1 h-11 shadow-lg shadow-state-error/20 font-semibold"
+                disabled={loading}
               >
                 Withdraw Application
               </Button>
@@ -533,6 +552,23 @@ const ClubVerification = () => {
           document={submittedFile}
         />
       )}
+
+      {/* Withdrawal Success Modal */}
+      <WithdrawalSuccessModal
+        isOpen={showWithdrawSuccessModal}
+        onClose={() => setShowWithdrawSuccessModal(false)}
+      />
+
+      {/* Error Modal */}
+      <ActionErrorModal
+        isOpen={showErrorModal}
+        onClose={() => {
+          setShowErrorModal(false);
+          setErrorMessage("");
+        }}
+        title="Action Failed"
+        message={errorMessage}
+      />
     </div>
   );
 };

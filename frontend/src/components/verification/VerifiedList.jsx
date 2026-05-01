@@ -4,14 +4,13 @@ import Button from "../common/Button";
 import StatsCard from "../common/StatsCard";
 import VerifiedEntityCard from "./VerifiedEntityCard";
 import verificationService from "../../services/verificationService";
-import { useToast } from "../common/Toast";
 import {
   VerificationRejectionModal,
   VerificationRejectedSuccessModal,
+  ActionErrorModal,
 } from "../common/VerificationModals";
 
 const VerifiedList = () => {
-  const toast = useToast();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [verifiedEntities, setVerifiedEntities] = useState([]);
@@ -29,6 +28,10 @@ const VerifiedList = () => {
   const [showRemovalSuccessModal, setShowRemovalSuccessModal] = useState(false);
   const [entityToRemove, setEntityToRemove] = useState(null);
   const [removalReason, setRemovalReason] = useState("");
+
+  // Error State
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     fetchVerified();
@@ -51,7 +54,8 @@ const VerifiedList = () => {
         );
       }
     } catch (error) {
-      toast.error("Error", "Failed to fetch verified entities");
+      setErrorMessage("Failed to fetch verified entities.");
+      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }
@@ -104,9 +108,18 @@ const VerifiedList = () => {
         setShowRemovalSuccessModal(true);
       }
     } catch (error) {
-      toast.error("Error", "Failed to remove verification");
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Failed to remove verification. Please try again.",
+      );
+      setShowErrorModal(true);
       fetchVerified();
     }
+  };
+
+  const handleCloseError = () => {
+    setShowErrorModal(false);
+    setErrorMessage("");
   };
 
   const handleCloseRemovalSuccess = () => {
@@ -125,7 +138,7 @@ const VerifiedList = () => {
           iconBgClass="bg-blue-900/30"
           title="Verified Clubs"
           value={stats?.totalClubs || 0}
-          subValue={`+${stats?.newVerifiedClubs || 0} new`}
+          subValue={stats?.newVerifiedClubs > 0 ? `+${stats.newVerifiedClubs} new` : undefined}
           subValueClass="text-state-success"
           loading={loading}
         />
@@ -135,7 +148,7 @@ const VerifiedList = () => {
           iconBgClass="bg-purple-900/30"
           title="Batch Reps"
           value={stats?.totalBatchReps || 0}
-          subValue={`+${stats?.newVerifiedReps || 0} new`}
+          subValue={stats?.newVerifiedReps > 0 ? `+${stats.newVerifiedReps} new` : undefined}
           subValueClass="text-state-success"
           loading={loading}
         />
@@ -217,12 +230,20 @@ const VerifiedList = () => {
         onConfirm={handleConfirmRemoval}
         clubName={entityToRemove?.name}
         requestType={entityToRemove?.type}
+        loading={loading}
       />
       <VerificationRejectedSuccessModal
         isOpen={showRemovalSuccessModal}
         onClose={handleCloseRemovalSuccess}
         clubName={entityToRemove?.name}
         reason={removalReason}
+      />
+
+      <ActionErrorModal
+        isOpen={showErrorModal}
+        onClose={handleCloseError}
+        title="Action Failed"
+        message={errorMessage}
       />
     </div>
   );

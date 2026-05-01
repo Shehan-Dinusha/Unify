@@ -3,16 +3,15 @@ import MainLayout from "../components/layout/MainLayout";
 import VerifiedList from "../components/verification/VerifiedList";
 import RequestList from "../components/verification/RequestList";
 import verificationService from "../services/verificationService";
-import { useToast } from "../components/common/Toast";
 import {
   VerificationConfirmationModal,
   VerificationSuccessModal,
   VerificationRejectionModal,
   VerificationRejectedSuccessModal,
+  ActionErrorModal,
 } from "../components/common/VerificationModals";
 
 const VerificationQueue = () => {
-  const toast = useToast();
   const [activeTab, setActiveTab] = useState("requests");
   const [requests, setRequests] = useState([]);
   const [requestStats, setRequestStats] = useState(null);
@@ -30,6 +29,10 @@ const VerificationQueue = () => {
   const [rejectedRequest, setRejectedRequest] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
+  // Error State
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   useEffect(() => {
     fetchRequests();
   }, []);
@@ -43,7 +46,8 @@ const VerificationQueue = () => {
         setRequestStats(response.data?.stats || null);
       }
     } catch (error) {
-      toast.error("Error", "Failed to fetch pending requests");
+      setErrorMessage("Failed to fetch pending requests.");
+      setShowErrorModal(true);
       setRequests([]);
       setRequestStats(null);
     } finally {
@@ -78,7 +82,11 @@ const VerificationQueue = () => {
         setShowSuccessModal(true);
       }
     } catch (error) {
-      toast.error("Error", "Failed to approve verification");
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Failed to approve verification. Please try again.",
+      );
+      setShowErrorModal(true);
       fetchRequests();
     }
   };
@@ -119,9 +127,18 @@ const VerificationQueue = () => {
         setShowRejectionSuccessModal(true);
       }
     } catch (error) {
-      toast.error("Error", "Failed to reject verification");
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Failed to reject verification. Please try again.",
+      );
+      setShowErrorModal(true);
       fetchRequests();
     }
+  };
+
+  const handleCloseError = () => {
+    setShowErrorModal(false);
+    setErrorMessage("");
   };
 
   const handleCloseRejectionSuccess = () => {
@@ -193,6 +210,7 @@ const VerificationQueue = () => {
         isOpen={!!selectedRequest}
         onClose={() => setSelectedRequest(null)}
         onConfirm={handleConfirmVerify}
+        loading={loading}
       />
       <VerificationSuccessModal
         isOpen={showSuccessModal}
@@ -207,12 +225,20 @@ const VerificationQueue = () => {
         onConfirm={handleConfirmReject}
         clubName={rejectedRequest?.name}
         requestType={rejectedRequest?.type}
+        loading={loading}
       />
       <VerificationRejectedSuccessModal
         isOpen={showRejectionSuccessModal}
         onClose={handleCloseRejectionSuccess}
         clubName={rejectedRequest?.name}
         reason={rejectionReason}
+      />
+
+      <ActionErrorModal
+        isOpen={showErrorModal}
+        onClose={handleCloseError}
+        title="Action Failed"
+        message={errorMessage}
       />
     </MainLayout>
   );

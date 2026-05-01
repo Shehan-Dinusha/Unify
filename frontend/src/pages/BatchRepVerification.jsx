@@ -20,14 +20,16 @@ import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import FileUpload from "../components/common/FileUpload";
 import DocumentPreviewModal from "../components/common/DocumentPreviewModal";
-import RevokePrivilegesModal from "../components/common/RevokePrivilegesModal";
 import verificationService from "../services/verificationService";
-import { useToast } from "../components/common/Toast";
+import {
+  ActionErrorModal,
+  WithdrawalSuccessModal,
+  RevocationSuccessModal,
+} from "../components/common/VerificationModals";
 
 const BatchRepVerification = () => {
   const navigate = useNavigate();
-  const toast = useToast();
-  const [submissionStatus, setSubmissionStatus] = useState("idle"); // 'idle' | 'pending' | 'approved' | 'declined'
+  const [submissionStatus, setSubmissionStatus] = useState("idle");
   const [submittedFile, setSubmittedFile] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -37,6 +39,14 @@ const BatchRepVerification = () => {
   const [declineReason, setDeclineReason] = useState("");
   const [approvedRole, setApprovedRole] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
+  // Modal State
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showWithdrawSuccessModal, setShowWithdrawSuccessModal] = useState(false);
+  const [showRevokeSuccessModal, setShowRevokeSuccessModal] = useState(false);
 
   useEffect(() => {
     fetchStatus();
@@ -73,6 +83,7 @@ const BatchRepVerification = () => {
   const handleSubmit = async () => {
     if (!submittedFile) return;
 
+    setSubmitError("");
     try {
       setLoading(true);
       const formData = new FormData();
@@ -81,12 +92,11 @@ const BatchRepVerification = () => {
 
       const response = await verificationService.submitRequest(formData);
       if (response.success) {
-        toast.success("Verification submitted successfully!");
         setSubmissionStatus("pending");
         setTimeout(() => navigate("/profile?role=student"), 1500);
       }
     } catch (error) {
-      toast.error(
+      setSubmitError(
         error.response?.data?.message || "Failed to submit verification",
       );
     } finally {
@@ -99,17 +109,18 @@ const BatchRepVerification = () => {
       setLoading(true);
       const response = await verificationService.withdrawRequest();
       if (response.success) {
-        toast.success("Success", "Submission withdrawn successfully");
         setSubmissionStatus("idle");
         setSubmittedFile(null);
         setConfirmPassword("");
         setShowWithdrawModal(false);
+        setShowWithdrawSuccessModal(true);
       }
     } catch (error) {
-      toast.error(
-        "Error",
+      setErrorMessage(
         error.response?.data?.message || "Failed to withdraw submission",
       );
+      setShowErrorModal(true);
+      setShowWithdrawModal(false);
     } finally {
       setLoading(false);
     }
@@ -117,7 +128,7 @@ const BatchRepVerification = () => {
 
   const handleRevokeConfirm = async () => {
     if (!confirmPassword) {
-      toast.error("Error", "Please enter your password to confirm.");
+      setPasswordError("Password is required to revoke status.");
       return;
     }
 
@@ -126,17 +137,15 @@ const BatchRepVerification = () => {
       const response =
         await verificationService.revokeBatchRepStatus(confirmPassword);
       if (response.success) {
-        toast.success("Success", "Batch Rep status revoked successfully");
         setSubmissionStatus("idle");
         setSubmittedFile(null);
         setConfirmPassword("");
+        setPasswordError("");
         setShowRevokeModal(false);
+        setShowRevokeSuccessModal(true);
       }
     } catch (error) {
-      toast.error(
-        "Error",
-        error.response?.data?.message || "Failed to revoke status",
-      );
+      setPasswordError(error.response?.data?.message || "Failed to revoke status");
     } finally {
       setLoading(false);
     }
@@ -267,6 +276,15 @@ const BatchRepVerification = () => {
                 </p>
               </div>
 
+              {submitError && (
+                <div className="bg-red-400/5 rounded-xl border border-red-400/20 p-2.5 mb-3 flex gap-3 items-start">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-red-400 text-sm leading-snug">
+                    {submitError}
+                  </p>
+                </div>
+              )}
+
               {/* Instructions - Reduced margin */}
               <p className="text-text-secondary text-sm text-center mb-4 leading-relaxed">
                 To complete your verification, please upload an acceptable
@@ -284,7 +302,7 @@ const BatchRepVerification = () => {
               <Button
                 variant="primary"
                 className="w-full h-10 rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 group bg-blue-500 hover:bg-blue-600 border-none"
-                disabled={!submittedFile}
+                disabled={!submittedFile || loading}
                 onClick={handleSubmit}
               >
                 <span className="font-bold text-sm">Submit Document</span>
@@ -566,6 +584,7 @@ const BatchRepVerification = () => {
                 onClick={handleWithdrawConfirm}
                 variant="danger"
                 className="flex-1 h-11 shadow-lg shadow-state-error/20 font-semibold"
+                disabled={loading}
               >
                 Withdraw Application
               </Button>
@@ -616,9 +635,22 @@ const BatchRepVerification = () => {
                   type="password"
                   placeholder="Enter your account password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full h-11 px-4 bg-dark-4 border border-white/10 rounded-xl text-text-primary placeholder:text-text-tertiary focus:outline-none focus:border-primary-blue/50 transition-colors"
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setPasswordError("");
+                  }}
+                  className={`w-full h-11 px-4 bg-dark-4 rounded-xl text-text-primary placeholder:text-text-tertiary focus:outline-none transition-colors ${
+                    passwordError
+                      ? "border border-state-error focus:border-state-error"
+                      : "border border-white/10 focus:border-primary-blue/50"
+                  }`}
                 />
+                {passwordError && (
+                  <div className="flex items-center gap-1.5 mt-1 ml-1">
+                    <AlertCircle className="w-3.5 h-3.5 text-state-error shrink-0" />
+                    <span className="text-state-error text-xs">{passwordError}</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4 w-full">
@@ -626,6 +658,7 @@ const BatchRepVerification = () => {
                   onClick={() => {
                     setShowRevokeModal(false);
                     setConfirmPassword("");
+                    setPasswordError("");
                   }}
                   className="flex-1 bg-white/5 hover:bg-white/10 text-text-secondary h-11 border-none font-medium"
                 >
@@ -635,6 +668,7 @@ const BatchRepVerification = () => {
                   onClick={handleRevokeConfirm}
                   variant="danger"
                   className="flex-1 h-11 shadow-lg shadow-state-error/20 font-semibold"
+                  disabled={loading}
                 >
                   Revoke Status
                 </Button>
@@ -643,6 +677,29 @@ const BatchRepVerification = () => {
           </Card>
         </div>
       )}
+
+      {/* Withdrawal Success Modal */}
+      <WithdrawalSuccessModal
+        isOpen={showWithdrawSuccessModal}
+        onClose={() => setShowWithdrawSuccessModal(false)}
+      />
+
+      {/* Revocation Success Modal */}
+      <RevocationSuccessModal
+        isOpen={showRevokeSuccessModal}
+        onClose={() => setShowRevokeSuccessModal(false)}
+      />
+
+      {/* Error Modal */}
+      <ActionErrorModal
+        isOpen={showErrorModal}
+        onClose={() => {
+          setShowErrorModal(false);
+          setErrorMessage("");
+        }}
+        title="Action Failed"
+        message={errorMessage}
+      />
     </div>
   );
 };
