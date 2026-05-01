@@ -1,4 +1,4 @@
-import { StudentProfile, User } from "../../modules/index.js";
+import { StudentProfile, User, University, Faculty, Degree, Batch } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { getFileUrl } from "../../services/s3.service.js";
@@ -90,7 +90,13 @@ export const getMyStudentProfile = async (req, res) => {
   try {
     const profile = await StudentProfile.findOne({
       where: { userId: req.user.id },
-      include: [{ model: User, as: "user", attributes: ["name", "email", "avatar"] }],
+      include: [
+        { model: User, as: "user", attributes: ["name", "email", "avatar"] },
+        { model: University, as: "university", attributes: ["name"] },
+        { model: Faculty, as: "faculty", attributes: ["name"] },
+        { model: Degree, as: "degree", attributes: ["name"] },
+        { model: Batch, as: "batch", attributes: ["name"] },
+      ],
     });
 
     if (!profile) {
