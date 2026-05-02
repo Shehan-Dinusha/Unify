@@ -17,14 +17,6 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // Disable caching for all GET requests to prevent stale data when switching accounts
-    if (config.method?.toUpperCase() === 'GET') {
-      config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-      config.headers['Pragma'] = 'no-cache';
-      config.headers['Expires'] = '0';
-    }
-    
     return config;
   },
   (error) => Promise.reject(error)
