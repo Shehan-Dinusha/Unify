@@ -275,7 +275,7 @@ const UnifiedSidebar = ({
           >
             <img
               className="w-10 h-10 rounded-full object-cover border border-white/20 group-hover:border-primary-blue transition-colors"
-              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=2666F1&color=fff`}
               alt="Avatar"
             />
             <div className="overflow-hidden">

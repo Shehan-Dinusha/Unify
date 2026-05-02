@@ -3,6 +3,7 @@ import { User } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { generateTokens } from "./auth.utils.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 /**
  * @desc    Login user
@@ -33,10 +34,11 @@ export const login = async (req, res) => {
     if (!isMatch) return sendResponse(res, 401, false, "Invalid credentials");
 
     const { accessToken, refreshToken } = await generateTokens(user);
+    const avatar = await resolveAvatarUrl(user.avatar, user.name);
     return sendResponse(res, 200, true, "Login successful", {
       accessToken,
       refreshToken,
-      user: { id: user.id, email: user.email, phone: user.phone, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, phone: user.phone, name: user.name, role: user.role, avatar },
     });
   } catch (error) {
     logger.error("Login Error:", error);
