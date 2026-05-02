@@ -75,3 +75,10 @@ export const postParamsValidator = [
     .notEmpty().withMessage("Post ID is required")
     .isInt().withMessage("Post ID must be an integer"),
 ];
+
+export const commentValidator = [
+  body("content")
+    .trim()
+    .notEmpty().withMessage("Comment content is required")
+    .isString().withMessage("Comment content must be a string"),
+];

@@ -13,6 +13,10 @@ const Comment = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    postType: {
+      type: DataTypes.ENUM("normal", "club-product", "club-event", "boarding", "food-cafe", "service"),
+      allowNull: true,
+    },
     itemId: {
       type: DataTypes.INTEGER,
       allowNull: true,

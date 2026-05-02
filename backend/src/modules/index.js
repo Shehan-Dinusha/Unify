@@ -18,6 +18,7 @@ import ClubProductPost from "./ClubProductPost.model.js";
 import ClubEventPost from "./ClubEventPost.model.js";
 import NormalPost from "./NormalPost.model.js";
 import Comment from "./Comment.model.js";
+import PostLike from "./PostLike.model.js";
 import Boarding from "./Boarding.model.js";
 import LostAndFound from "./LostAndFound.model.js";
 import MarketplaceItem from "./MarketplaceItem.model.js";
@@ -191,12 +192,13 @@ User.hasMany(NormalPost, {
 });
 NormalPost.belongsTo(User, { foreignKey: "authorId", as: "author" });
 
-Post.hasMany(Comment, {
-  foreignKey: "postId",
-  as: "comments",
-  onDelete: "CASCADE",
-});
-Comment.belongsTo(Post, { foreignKey: "postId", as: "post" });
+// Post.hasMany(Comment, {
+//   foreignKey: "postId",
+//   as: "comments",
+//   onDelete: "CASCADE",
+//   constraints: false,
+// });
+// Comment.belongsTo(Post, { foreignKey: "postId", as: "post", constraints: false });
 
 User.hasMany(Comment, {
   foreignKey: "userId",
@@ -204,6 +206,14 @@ User.hasMany(Comment, {
   onDelete: "CASCADE",
 });
 Comment.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// --- Post Likes ---
+User.hasMany(PostLike, {
+  foreignKey: "userId",
+  as: "postLikes",
+  onDelete: "CASCADE",
+});
+PostLike.belongsTo(User, { foreignKey: "userId", as: "user" });
 
 // --- Boardings ---
 User.hasMany(Boarding, {
@@ -468,12 +478,13 @@ User.hasMany(SavedItem, {
 });
 SavedItem.belongsTo(User, { foreignKey: "userId", as: "user" });
 
-Post.hasMany(SavedItem, {
-  foreignKey: "postId",
-  as: "savedByUsers",
-  onDelete: "CASCADE",
-});
-SavedItem.belongsTo(Post, { foreignKey: "postId", as: "post" });
+// Post.hasMany(SavedItem, {
+//   foreignKey: "postId",
+//   as: "savedByUsers",
+//   onDelete: "CASCADE",
+//   constraints: false,
+// });
+// SavedItem.belongsTo(Post, { foreignKey: "postId", as: "post", constraints: false });
 
 MarketplaceItem.hasMany(SavedItem, {
   foreignKey: "marketplaceItemId",
@@ -576,6 +587,7 @@ export {
   ClubEventPost,
   NormalPost,
   Comment,
+  PostLike,
   Boarding,
   LostAndFound,
   MarketplaceItem,
