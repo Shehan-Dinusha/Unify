@@ -1,24 +1,36 @@
 import React, { useState } from "react";
-import { Camera, UserCircle, LayoutGrid, Info } from "lucide-react";
+import { Camera, Store, Contact, Info } from "lucide-react";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
 
 import ImageUpload from "../common/ImageUpload";
 
-const SelfEmployedDetailsForm = ({ onNext }) => {
+const SelfEmployedDetailsForm = ({ onNext, initialData, loading }) => {
   const [formData, setFormData] = useState({
-    fullName: "",
-    service: "",
-    about: "",
+    businessName: initialData?.businessName || "",
+    displayName: initialData?.displayName || "",
+    about: initialData?.about || "",
     profileImage: null,
   });
+
+  // Sync initialData when it becomes available
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData({
+        businessName: initialData.businessName || "",
+        displayName: initialData.displayName || "",
+        about: initialData.about || "",
+        profileImage: null,
+      });
+    }
+  }, [initialData]);
 
   const [errors, setErrors] = useState({});
 
   // Form is complete when required fields are filled
   const isFormComplete =
-    formData.fullName.trim() !== "" && formData.service.trim() !== "" && formData.about.trim() !== "";
+    formData.businessName.trim() !== "" && formData.displayName.trim() !== "" && formData.about.trim() !== "";
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,24 +71,24 @@ const SelfEmployedDetailsForm = ({ onNext }) => {
         >
           <div className="md:col-span-2">
             <Input
-              label="Full name"
-              name="fullName"
-              placeholder="e.g. Jhon Doe"
-              icon={UserCircle}
-              value={formData.fullName}
+              label="Business Name"
+              name="businessName"
+              placeholder="Your business name"
+              icon={Store}
+              value={formData.businessName}
               onChange={handleChange}
-              error={errors.fullName}
+              error={errors.businessName}
             />
           </div>
           <div className="md:col-span-2">
             <Input
-              label="Service you provide"
-              name="service"
-              placeholder="Type of service you provide"
-              icon={LayoutGrid}
-              value={formData.service}
+              label="Display Name"
+              name="displayName"
+              placeholder="How you want to appear"
+              icon={Contact}
+              value={formData.displayName}
               onChange={handleChange}
-              error={errors.service}
+              error={errors.displayName}
             />
           </div>
           <div className="md:col-span-2">
@@ -98,9 +110,9 @@ const SelfEmployedDetailsForm = ({ onNext }) => {
               size="large"
               type="submit"
               className="shadow-custom-shadow"
-              disabled={!isFormComplete}
+              disabled={!isFormComplete || loading}
             >
-              Save & Continue
+              {loading ? "Saving..." : "Save & Continue"}
             </Button>
           </div>
         </form>

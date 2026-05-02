@@ -6,13 +6,25 @@ import Button from "../common/Button";
 
 import ImageUpload from "../common/ImageUpload";
 
-const CafeDetailsForm = ({ onNext }) => {
+const CafeDetailsForm = ({ onNext, initialData, loading }) => {
   const [formData, setFormData] = useState({
-    cafeName: "",
-    displayName: "",
-    about: "",
+    cafeName: initialData?.businessName || "",
+    displayName: initialData?.displayName || "",
+    about: initialData?.about || "",
     profileImage: null,
   });
+
+  // Sync initialData when it becomes available
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData({
+        cafeName: initialData.businessName || "",
+        displayName: initialData.displayName || "",
+        about: initialData.about || "",
+        profileImage: null,
+      });
+    }
+  }, [initialData]);
 
   const [errors, setErrors] = useState({});
 
@@ -98,9 +110,9 @@ const CafeDetailsForm = ({ onNext }) => {
               size="large"
               type="submit"
               className="shadow-custom-shadow"
-              disabled={!isFormComplete}
+              disabled={!isFormComplete || loading}
             >
-              Save & Continue
+              {loading ? "Saving..." : "Save & Continue"}
             </Button>
           </div>
         </form>

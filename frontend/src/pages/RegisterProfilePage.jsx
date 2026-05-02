@@ -9,7 +9,7 @@ import SelfEmployedDetailsForm from "../components/auth/SelfEmployedDetailsForm"
 import { 
   updateStudentProfile, 
   updateBusinessProfile, 
-  updateClubProfile 
+  updateClubProfile
 } from "../services/profileService";
 
 const RegisterProfilePage = () => {
@@ -33,18 +33,17 @@ const RegisterProfilePage = () => {
         await updateStudentProfile(formData);
       } else if (mainType === "business") {
         if (businessType === "club") {
-          // Rename document to clubDoc for backend compatibility
           const { document, ...rest } = formData;
           await updateClubProfile({ ...rest, clubDoc: document });
         } else {
-          // Map frontend businessType to backend category
           let category = businessType.toUpperCase();
           if (category === "CAFE") category = "FOOD";
           if (category === "SELF-EMPLOYED") category = "SELF_EMPLOYED";
-
           await updateBusinessProfile({ ...formData, category });
         }
       }
+
+
       navigate("/register/success");
     } catch (err) {
       setError(err.message);

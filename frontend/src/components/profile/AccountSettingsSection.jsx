@@ -1,5 +1,5 @@
 import React from "react";
-import { UserCog, ShieldCheck, ArrowLeftRight, Trash2 } from "lucide-react";
+import { UserCog, ShieldCheck, Trash2 } from "lucide-react";
 
 /**
  * AccountSettingsSection — renders the account settings list for owner profile.
@@ -12,7 +12,6 @@ import { UserCog, ShieldCheck, ArrowLeftRight, Trash2 } from "lucide-react";
 const AccountSettingsSection = ({
   onEditProfile,
   onSecurity,
-  onSwitchAccount,
   onDeleteAccount,
   disabled = false,
 }) => {
@@ -31,13 +30,7 @@ const AccountSettingsSection = ({
       action: onSecurity,
       danger: false,
     },
-    {
-      icon: ArrowLeftRight,
-      label: "Switch Account",
-      desc: "Add or switch to another profile",
-      action: onSwitchAccount,
-      danger: false,
-    },
+
     {
       icon: Trash2,
       label: "Delete Account",

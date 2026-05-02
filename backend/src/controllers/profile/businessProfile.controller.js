@@ -2,6 +2,7 @@ import { BusinessProfile, User } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 /**
  * @desc    Create or Update business profile
@@ -110,11 +111,9 @@ export const getMyBusinessProfile = async (req, res) => {
       return sendResponse(res, 404, false, "Business profile not found");
     }
 
-    // Convert S3 key to presigned URL for the frontend
+    // Convert S3 key to presigned URL or UI-Avatar fallback
     const profileJson = profile.toJSON();
-    if (profileJson.user?.avatar) {
-      profileJson.user.avatar = await getFileUrl(profileJson.user.avatar);
-    }
+    profileJson.user.avatar = await resolveAvatarUrl(profileJson.user?.avatar, profileJson.user?.name || "User");
 
     return sendResponse(res, 200, true, "Business profile fetched successfully", profileJson);
   } catch (error) {

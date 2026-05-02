@@ -1,47 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Lock } from "lucide-react";
+import { Lock, Loader2 } from "lucide-react";
 import MainLayout from "../../components/layout/MainLayout";
 import Card from "../../components/common/Card";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import { validatePassword } from "../../utils/validation";
+import { changePassword } from "../../services/profileService";
+import { getCurrentUser } from "../../services/authService";
+import { useToast } from "../../components/common/Toast";
 
-/* ─── role → sidebar mapping (same as OwnProfilePage) ──────────── */
-const roleToSidebarRole = {
-  student: "student",
-  boarding_owner: "business",
-  club_society: "club",
-  food_cafe: "business",
-  self_employed: "business",
-};
-
-const roleDisplayNames = {
-  student: "Student",
-  boarding_owner: "Business & Organization",
-  club_society: "Clubs & Societies",
-  food_cafe: "Business & Organization",
-  self_employed: "Business & Organization",
-};
-
-const roleUserNames = {
-  student: "Alex Johnson",
-  boarding_owner: "John Doe",
-  club_society: "Alex Johnson",
-  food_cafe: "John Doe",
-  self_employed: "John Doe",
-};
+// Data will be fetched from getCurrentUser
 
 /* ─── Page ──────────────────────────────────────────────────────── */
 const SecurityPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const toast = useToast();
   const activeRole = searchParams.get("role") || "student";
 
+  const [currentUser, setCurrentUserLocal] = useState(null);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    setCurrentUserLocal(user);
+  }, []);
+
   const user = {
-    name: roleUserNames[activeRole] || "Alex Johnson",
-    role: roleToSidebarRole[activeRole] || "student",
-    displayRole: roleDisplayNames[activeRole] || "Student",
+    name: currentUser?.name || "User",
+    role: currentUser?.role?.toLowerCase() === "business" ? "business" : 
+          currentUser?.role?.toLowerCase() === "club" ? "club" : "student",
+    displayRole: currentUser?.role || "Student",
   };
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -49,7 +42,6 @@ const SecurityPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [success, setSuccess] = useState(false);
 
   const validate = () => {
     const errs = {};
@@ -69,18 +61,24 @@ const SecurityPage = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    // TODO: call PUT /api/profile/password when backend is ready
-    setTimeout(() => {
-      setLoading(false);
-      setSuccess(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      toast.success("Success", "Password updated successfully");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    }, 1200);
+      navigate(`/profile?role=${activeRole}`);
+    } catch (error) {
+      console.error("Error changing password:", error);
+      setErrors({ currentPassword: error.message || "Failed to update password" });
+      toast.error("Error", error.message || "Failed to update password");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -107,12 +105,7 @@ const SecurityPage = () => {
               </div>
             </div>
 
-            {/* Success message */}
-            {success && (
-              <div className="bg-state-success/10 border border-state-success/30 rounded-xl px-4 py-3 text-state-success text-body-small text-center">
-                Password updated successfully!
-              </div>
-            )}
+
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
@@ -124,7 +117,6 @@ const SecurityPage = () => {
                 value={currentPassword}
                 onChange={(e) => {
                   setCurrentPassword(e.target.value);
-                  setSuccess(false);
                   if (errors.currentPassword)
                     setErrors((prev) => ({ ...prev, currentPassword: undefined }));
                 }}
@@ -140,7 +132,6 @@ const SecurityPage = () => {
                 value={newPassword}
                 onChange={(e) => {
                   setNewPassword(e.target.value);
-                  setSuccess(false);
                   if (errors.newPassword)
                     setErrors((prev) => ({ ...prev, newPassword: undefined }));
                 }}
@@ -156,7 +147,6 @@ const SecurityPage = () => {
                 value={confirmPassword}
                 onChange={(e) => {
                   setConfirmPassword(e.target.value);
-                  setSuccess(false);
                   if (errors.confirmPassword)
                     setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                 }}

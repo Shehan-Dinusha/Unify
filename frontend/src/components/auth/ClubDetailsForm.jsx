@@ -6,7 +6,7 @@ import Button from "../common/Button";
 
 import ImageUpload from "../common/ImageUpload";
 
-const ClubDetailsForm = ({ onNext }) => {
+const ClubDetailsForm = ({ onNext, initialData, loading }) => {
   const categoryOptions = [
     { value: "sports", label: "Sports" },
     { value: "academic", label: "Academic" },
@@ -14,11 +14,23 @@ const ClubDetailsForm = ({ onNext }) => {
   ];
 
   const [formData, setFormData] = useState({
-    clubName: "",
-    about: "",
+    clubName: initialData?.clubName || "",
+    about: initialData?.about || "",
     document: null,
     profileImage: null,
   });
+
+  // Sync initialData when it becomes available
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData({
+        clubName: initialData.clubName || "",
+        about: initialData.about || "",
+        document: null,
+        profileImage: null,
+      });
+    }
+  }, [initialData]);
 
   const [errors, setErrors] = useState({});
 
@@ -120,9 +132,9 @@ const ClubDetailsForm = ({ onNext }) => {
               size="large"
               type="submit"
               className="shadow-custom-shadow"
-              disabled={!isFormComplete}
+              disabled={!isFormComplete || loading}
             >
-              Save & Continue
+              {loading ? "Saving..." : "Save & Continue"}
             </Button>
           </div>
         </form>
