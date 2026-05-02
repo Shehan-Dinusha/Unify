@@ -192,13 +192,13 @@ User.hasMany(NormalPost, {
 });
 NormalPost.belongsTo(User, { foreignKey: "authorId", as: "author" });
 
-Post.hasMany(Comment, {
-  foreignKey: "postId",
-  as: "comments",
-  onDelete: "CASCADE",
-  constraints: false,
-});
-Comment.belongsTo(Post, { foreignKey: "postId", as: "post", constraints: false });
+// Post.hasMany(Comment, {
+//   foreignKey: "postId",
+//   as: "comments",
+//   onDelete: "CASCADE",
+//   constraints: false,
+// });
+// Comment.belongsTo(Post, { foreignKey: "postId", as: "post", constraints: false });
 
 User.hasMany(Comment, {
   foreignKey: "userId",
@@ -478,13 +478,13 @@ User.hasMany(SavedItem, {
 });
 SavedItem.belongsTo(User, { foreignKey: "userId", as: "user" });
 
-Post.hasMany(SavedItem, {
-  foreignKey: "postId",
-  as: "savedByUsers",
-  onDelete: "CASCADE",
-  constraints: false,
-});
-SavedItem.belongsTo(Post, { foreignKey: "postId", as: "post", constraints: false });
+// Post.hasMany(SavedItem, {
+//   foreignKey: "postId",
+//   as: "savedByUsers",
+//   onDelete: "CASCADE",
+//   constraints: false,
+// });
+// SavedItem.belongsTo(Post, { foreignKey: "postId", as: "post", constraints: false });
 
 MarketplaceItem.hasMany(SavedItem, {
   foreignKey: "marketplaceItemId",
