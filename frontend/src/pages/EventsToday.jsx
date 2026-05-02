@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import EventItemCard from '../components/events/EventItemCard';
 import { Calendar, Loader2 } from 'lucide-react';
-import postService from '../services/postService';
+import newsfeedService from '../services/newsfeedService';
 import { getImageUrl } from '../utils/formatters';
 
 const EventsToday = () => {
@@ -20,8 +20,8 @@ const EventsToday = () => {
         const fetchEvents = async () => {
             try {
                 setLoading(true);
-                const data = await postService.getFeed("event");
-                setEvents(data.feed);
+                const data = await newsfeedService.getEventsToday();
+                setEvents(data.events || []);
             } catch (err) {
                 console.error("Failed to fetch events:", err);
             } finally {

@@ -1,35 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import MarketplaceItemCard from '../components/marketplace/MarketplaceItemCard';
-import { Calendar } from 'lucide-react';
-
-// Example structured mock data specifically for this page design based on image
-const marketplaceItems = [
-    {
-        id: 1,
-        postId: 6, // Matches "Hackathon 2026 Hoodie" in mockData.js
-        title: "Hackathon 2026 Hoodie",
-        description: "High quality cotton blend with embroidered logo.\nPre-order now to guarantee your size",
-        price: "Price: Rs. 2500.00",
-        image: "/img_post6.jpg"
-    },
-    {
-        id: 2,
-        postId: 7, // Matches "Calculus Early Transcendentals" in mockData.js
-        title: "Calculus Early Transcendentals",
-        description: "High quality pages with beautifully embossed cover.\nPre-order now to reserve your copy and dive into the code.",
-        price: "Price: Rs. 1050.00",
-        image: "/img_post7.jpg"
-    }
-];
+import { Calendar, Loader2 } from 'lucide-react';
+import newsfeedService from '../services/newsfeedService';
+import { getImageUrl } from '../utils/formatters';
 
 const MarketplaceItems = () => {
     const navigate = useNavigate();
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const user = {
         name: "Alex Johnson",
         role: "student"
     };
+
+    useEffect(() => {
+        const fetchItems = async () => {
+            try {
+                setLoading(true);
+                const data = await newsfeedService.getMarketplaceItemsToday();
+                setItems(data.items || []);
+            } catch (err) {
+                console.error("Failed to fetch marketplace items:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchItems();
+    }, []);
 
     const handleItemClick = (postId) => {
         navigate('/news-feed', { state: { targetPostId: postId } });
@@ -50,18 +51,27 @@ const MarketplaceItems = () => {
             verificationCount={0}
         >
             <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto mt-4 px-4 md:px-0">
-
-                {marketplaceItems.map((item) => (
-                    <MarketplaceItemCard
-                        key={item.id}
-                        title={item.title}
-                        description={item.description.split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}
-                        price={item.price}
-                        image={item.image}
-                        onClick={() => handleItemClick(item.postId)}
-                    />
-                ))}
-
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                        <Loader2 className="w-10 h-10 text-primary-blue animate-spin" />
+                        <p className="text-text-secondary">Finding new items...</p>
+                    </div>
+                ) : items.length > 0 ? (
+                    items.map((item) => (
+                        <MarketplaceItemCard
+                            key={item.id}
+                            title={item.name}
+                            description={item.description ? item.description.split('\n').map((line, i) => <span key={i}>{line}<br /></span>) : null}
+                            price={`Rs. ${item.price}`}
+                            image={getImageUrl(item.images?.[0] || item.image)}
+                            onClick={() => handleItemClick(item.id)}
+                        />
+                    ))
+                ) : (
+                    <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                        <p className="text-text-secondary">No new marketplace items added today.</p>
+                    </div>
+                )}
             </div>
         </MainLayout>
     );

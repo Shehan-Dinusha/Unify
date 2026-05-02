@@ -1,35 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import AnnouncementCard from '../components/announcements/AnnouncementCard';
-import { Calendar } from 'lucide-react';
-
-// Using mockData posts with id: 1 and 2
-const announcementsData = [
-    {
-        id: 1,
-        postId: 1,
-        title: "Millenium",
-        location: "0.2 km from Central Library",
-        description: "Perfect for grad students. Quiet, private entrance, kitchenette included.",
-        image: "/img_post1.jpg"
-    },
-    {
-        id: 2,
-        postId: 2,
-        title: "Hackathon 2026 Registration Open!",
-        location: "Main Auditorium",
-        description: "Teams of 4. Prizes worth Rs.50000. Don't miss this opportunity to build something amazing!",
-        image: "/img_post2.jpg"
-    }
-];
+import { Calendar, Loader2 } from 'lucide-react';
+import newsfeedService from '../services/newsfeedService';
+import { getImageUrl } from '../utils/formatters';
 
 const NewAnnouncements = () => {
     const navigate = useNavigate();
+    const [announcements, setAnnouncements] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const user = {
         name: "Alex Johnson",
         role: "student"
     };
+
+    useEffect(() => {
+        const fetchAnnouncements = async () => {
+            try {
+                setLoading(true);
+                const data = await newsfeedService.getNewAnnouncements();
+                setAnnouncements(data.announcements || []);
+            } catch (err) {
+                console.error("Failed to fetch announcements:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAnnouncements();
+    }, []);
 
     const handleAnnouncementClick = (postId) => {
         navigate('/news-feed', { state: { targetPostId: postId } });
@@ -50,18 +51,27 @@ const NewAnnouncements = () => {
             verificationCount={0}
         >
             <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto mt-4 px-4 md:px-0">
-
-                {announcementsData.map((item) => (
-                    <AnnouncementCard
-                        key={item.id}
-                        title={item.title}
-                        location={item.location}
-                        description={item.description}
-                        image={item.image}
-                        onClick={() => handleAnnouncementClick(item.postId)}
-                    />
-                ))}
-
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                        <Loader2 className="w-10 h-10 text-primary-blue animate-spin" />
+                        <p className="text-text-secondary">Finding new announcements...</p>
+                    </div>
+                ) : announcements.length > 0 ? (
+                    announcements.map((item) => (
+                        <AnnouncementCard
+                            key={item.id}
+                            title={item.title || item.name || "Announcement"}
+                            location={item.location}
+                            description={item.description}
+                            image={getImageUrl(item.images?.[0] || item.coverImage)}
+                            onClick={() => handleAnnouncementClick(item.id)}
+                        />
+                    ))
+                ) : (
+                    <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                        <p className="text-text-secondary">No new announcements today.</p>
+                    </div>
+                )}
             </div>
         </MainLayout>
     );

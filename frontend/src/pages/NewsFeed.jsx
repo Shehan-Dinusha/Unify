@@ -5,6 +5,7 @@ import MainLayout from "../components/layout/MainLayout";
 import StatsCard from "../components/common/StatsCard";
 import PostCard from "../components/feed/PostCard";
 import postService from "../services/postService";
+import newsfeedService from "../services/newsfeedService";
 import { formatTimeAgo, getImageUrl } from "../utils/formatters";
 
 const NewsFeed = ({ userRole = 'student' }) => {
@@ -16,6 +17,13 @@ const NewsFeed = ({ userRole = 'student' }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Highlight counts
+  const [highlightCounts, setHighlightCounts] = useState({
+    announcements: 0,
+    marketplace: 0,
+    events: 0
+  });
 
   const user = {
     name: "Alex Johnson",
@@ -24,11 +32,22 @@ const NewsFeed = ({ userRole = 'student' }) => {
   };
 
   useEffect(() => {
-    const fetchFeed = async () => {
+    const fetchFeedAndHighlights = async () => {
       try {
         setLoading(true);
-        const data = await postService.getFeed("all");
-        setPosts(data.feed);
+        const [feedData, events, marketplace, announcements] = await Promise.all([
+          postService.getFeed("all"),
+          newsfeedService.getEventsToday().catch(() => ({ events: [] })),
+          newsfeedService.getMarketplaceItemsToday().catch(() => ({ items: [] })),
+          newsfeedService.getNewAnnouncements().catch(() => ({ announcements: [] }))
+        ]);
+        
+        setPosts(feedData.feed);
+        setHighlightCounts({
+          events: events.events?.length || 0,
+          marketplace: marketplace.items?.length || 0,
+          announcements: announcements.announcements?.length || 0
+        });
       } catch (err) {
         setError(err.error || "Failed to load feed");
       } finally {
@@ -36,7 +55,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
       }
     };
 
-    fetchFeed();
+    fetchFeedAndHighlights();
   }, []);
 
   useEffect(() => {
@@ -130,7 +149,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
               iconAlt="Announcements"
               iconBgClass="bg-yellow-500/20"
               title="New Announcements"
-              value="10"
+              value={highlightCounts.announcements}
             />
           </Link>
 
@@ -140,7 +159,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
               iconAlt="Marketplace"
               iconBgClass="bg-green-500/20"
               title="New Marketplace Items"
-              value="10"
+              value={highlightCounts.marketplace}
             />
           </Link>
 
@@ -151,7 +170,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
               iconBgClass="bg-purple-500/20"
               title="Events Today"
               iconSize="w-7 h-7"
-              value="10"
+              value={highlightCounts.events}
             />
           </Link>
         </div>
