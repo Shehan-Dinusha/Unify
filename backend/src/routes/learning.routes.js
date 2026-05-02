@@ -15,7 +15,7 @@ import {
   getBatchReps,
 } from "../controllers/learning/index.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
-import uploadService from "../services/upload.service.js";
+import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
 import {
   createModuleValidator,
   getModuleDetailsValidator,
@@ -81,7 +81,11 @@ router.delete(
 
 router.post(
   "/modules/:moduleId/materials",
-  uploadService.single("materialFile"),
+  uploadToS3({
+    type: "single",
+    fieldName: "materialFile",
+    folder: "learning_materials",
+  }),
   uploadMaterialValidator,
   validateRequest,
   uploadMaterial,
@@ -108,11 +112,6 @@ router.get(
   getMaterialsByCategory,
 );
 
-router.get(
-  "/batch-reps",
-  getBatchRepsValidator,
-  validateRequest,
-  getBatchReps,
-);
+router.get("/batch-reps", getBatchRepsValidator, validateRequest, getBatchReps);
 
 export default router;

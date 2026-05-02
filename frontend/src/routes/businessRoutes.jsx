@@ -91,7 +91,7 @@ export const clubRoutes = [
   { path: "/club-owner/create-post", element: <CreateNormalPostPage /> },
   { path: "/club-owner/dashboard", element: <ClubOwnerDashboard /> },
   {
-    path: "/club-owner/product-orders/:id",
+    path: "/club-owner/product-orders/:type/:id",
     element: <ProductOrderDashboard />,
   },
   { path: "/club-owner/wallet", element: <ClubWalletPage /> },

@@ -21,7 +21,10 @@ const fileFilter = (req, file, cb) => {
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Invalid file type. Only Images and PDFs are allowed."), false);
+    cb(
+      new Error("Invalid file type. Only Images and PDFs are allowed."),
+      false,
+    );
   }
 };
 
@@ -34,38 +37,29 @@ const s3Upload = multer({
 /**
  * Middleware to handle S3 uploads after multer processes the request.
  * It replaces req.file or req.files with S3 URLs/Keys.
- * 
+ *
  * @param {string} folder - S3 folder to upload to
  */
 export const s3UploadMiddleware = (folder) => async (req, res, next) => {
   try {
-    const getFolder = (fieldName) => {
-      if (typeof folder === "object") {
-        return folder[fieldName] || "general";
-      }
-      return folder;
-    };
-
     if (req.file) {
-      const targetFolder = getFolder(req.file.fieldname);
       const fileKey = await uploadBuffer(
         req.file.buffer,
         req.file.originalname,
         req.file.mimetype,
-        targetFolder
+        folder,
       );
       req.file.s3Key = fileKey;
-      req.file.location = fileKey;
+      req.file.location = fileKey; // Store just the S3 key; presigned URL generated at read time
     }
 
     if (req.files && Array.isArray(req.files)) {
       const uploadPromises = req.files.map(async (file) => {
-        const targetFolder = getFolder(file.fieldname);
         const fileKey = await uploadBuffer(
           file.buffer,
           file.originalname,
           file.mimetype,
-          targetFolder
+          folder,
         );
         file.s3Key = fileKey;
         file.location = fileKey;
@@ -76,12 +70,11 @@ export const s3UploadMiddleware = (folder) => async (req, res, next) => {
       const keys = Object.keys(req.files);
       for (const key of keys) {
         const uploadPromises = req.files[key].map(async (file) => {
-          const targetFolder = getFolder(file.fieldname);
           const fileKey = await uploadBuffer(
             file.buffer,
             file.originalname,
             file.mimetype,
-            targetFolder
+            folder,
           );
           file.s3Key = fileKey;
           file.location = fileKey;
@@ -100,7 +93,7 @@ export const s3UploadMiddleware = (folder) => async (req, res, next) => {
 /**
  * Unified S3 Upload Middleware
  * Combines multer parsing and S3 uploading into a single middleware call.
- * 
+ *
  * @param {Object} options
  * @param {string} options.type - 'single', 'array', or 'fields'
  * @param {string} options.fieldName - Name of the form field

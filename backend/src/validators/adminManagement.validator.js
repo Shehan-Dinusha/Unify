@@ -28,7 +28,8 @@ export const updateStatusValidator = [
   body('suspensionCategory').optional({ checkFalsy: true }).isIn([
     'Violation of Terms',
     'Spam Activity',
-    'Harassment'
+    'Harassment',
+    'Non-payment'
   ]).withMessage('Invalid suspension category'),
   body('sendEmail').optional().isBoolean().withMessage('sendEmail must be a boolean'),
 ];

@@ -1,4 +1,10 @@
-import { NormalPost, ClubProductPost, ClubEventPost, Boarding, User } from "../../modules/index.js";
+import {
+  NormalPost,
+  ClubProductPost,
+  ClubEventPost,
+  Boarding,
+  User,
+} from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
 
 /**
@@ -8,23 +14,40 @@ import { getFileUrl } from "../../services/s3.service.js";
 const resolveImageUrl = async (img) => {
   if (!img) return img;
 
+  let imgPath = img;
+  // Handle case where img is stored as a JSON object (e.g. { url: "..." } from ClubEventPost)
+  if (typeof img === "object" && img !== null) {
+    if (img.url) imgPath = img.url;
+    else return imgPath;
+  }
+
+  if (typeof imgPath !== "string") return imgPath;
+
   // Already a presigned URL (contains X-Amz-Signature) — pass through
-  if (img.includes("X-Amz-Signature")) return img;
+  if (imgPath.includes("X-Amz-Signature")) return imgPath;
 
   // Full private S3 URL like https://bucket.s3.region.amazonaws.com/key
   const s3UrlPattern = /https?:\/\/[^/]+\.amazonaws\.com\/(.+)/;
-  const s3UrlMatch = img.match(s3UrlPattern);
+  const s3UrlMatch = imgPath.match(s3UrlPattern);
   if (s3UrlMatch) {
-    try { return await getFileUrl(s3UrlMatch[1]); } catch { return img; }
+    try {
+      return await getFileUrl(s3UrlMatch[1]);
+    } catch {
+      return imgPath;
+    }
   }
 
   // Raw S3 object key (no protocol prefix, e.g. "posts/products/abc123.webp")
-  if (!img.startsWith("http") && !img.startsWith("/")) {
-    try { return await getFileUrl(img); } catch { return img; }
+  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
+    try {
+      return await getFileUrl(imgPath);
+    } catch {
+      return imgPath;
+    }
   }
 
   // Local path or anything else — return as-is
-  return img;
+  return imgPath;
 };
 
 const resolveImages = async (images) => {
@@ -52,7 +75,7 @@ const getModelConfig = (type) => {
 export const getPost = async (req, res) => {
   try {
     const { type, id } = req.params;
-    
+
     const config = getModelConfig(type);
     if (!config) {
       return res.status(400).json({ error: "Invalid post type." });
@@ -77,7 +100,7 @@ export const getPost = async (req, res) => {
     // Convert to plain object to inject properties
     const postData = post.get({ plain: true });
     postData.postType = type;
-    
+
     // Normalize author property for consistency
     if (authorKey !== "author") {
       postData.author = postData[authorKey];

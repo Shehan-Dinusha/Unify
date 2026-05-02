@@ -1,5 +1,6 @@
 import { User } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getClubFollowers = catchAsync(async (req, res) => {
   // Use `req.user?.id` normally, but allow `req.query.clubId` for testing since auth is pending
@@ -49,14 +50,18 @@ export const getClubFollowers = catchAsync(async (req, res) => {
   const hasMore = offset + followers.length < totalFollowers;
 
   // Map followers for frontend consumption
-  const mappedFollowers = followers.map((user) => ({
-    id: user.id,
-    name: user.name,
-    avatar:
-      user.avatar ||
-      "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.name),
-    role: user.role,
-  }));
+  const mappedFollowers = await Promise.all(
+    followers.map(async (user) => {
+      const avatarUrl = await resolveAvatarUrl(user.avatar, user.name);
+
+      return {
+        id: user.id,
+        name: user.name,
+        avatar: avatarUrl,
+        role: user.role,
+      };
+    }),
+  );
 
   // Match the shape expected by the frontend: { followers, total, hasMore }
   return sendResponse(res, 200, true, "Followers retrieved successfully.", {

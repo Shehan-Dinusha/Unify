@@ -4,8 +4,9 @@ import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import { validatePassword } from "../../utils/validation";
+import { resetPassword } from "../../services/authService";
 
-const ResetPasswordForm = ({ onReset }) => {
+const ResetPasswordForm = ({ identifier, otp, onReset }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,16 +32,25 @@ const ResetPasswordForm = ({ onReset }) => {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     setLoading(true);
-    // Simulate reset
-    setTimeout(() => {
-      setLoading(false);
+    setErrors({});
+    try {
+      const isEmail = identifier.includes("@");
+      await resetPassword({
+        [isEmail ? "email" : "phone"]: identifier,
+        otp,
+        password,
+      });
       onReset();
-    }, 1500);
+    } catch (err) {
+      setErrors({ form: err.message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -91,6 +101,12 @@ const ResetPasswordForm = ({ onReset }) => {
             error={errors.confirmPassword}
             icon={Lock}
           />
+
+          {errors.form && (
+            <div className="text-status-error text-body-small text-center px-4">
+              {errors.form}
+            </div>
+          )}
 
           <div className="pt-6 border-t border-blue-500/20">
             <Button

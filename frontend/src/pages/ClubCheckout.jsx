@@ -24,27 +24,50 @@ const ClubCheckout = () => {
     const handleProceedToPayment = async () => {
         try {
             setLoading(true);
-            const orderData = {
-                userId: 5, // Mock student user
-                postId: product.id,
-                qty: quantity || 1,
-                color: selectedColor?.name,
-                colorHex: selectedColor?.hex,
-                size: selectedSize,
-                paymentMethod: "STRIPE"
-            };
-
-            const result = await orderService.createOrder(orderData);
-            
-            // Create Stripe Checkout Session
+            let sessionResponse;
             const subtotal = parseFloat(product.price) * (quantity || 1);
-            const sessionResponse = await orderService.createCheckoutSession({
-                orderId: result.order.orderId,
-                amount: subtotal,
-                productName: product.name,
-                successUrl: `${window.location.origin}/marketplace/club/payment-success?order_id=${result.order.id}`,
-                cancelUrl: window.location.href, // Cancel goes back to checkout
-            });
+
+            if (product.postType === "club-event") {
+                // Extract tierId (default to first tier if available)
+                const tierId = product.tiers && product.tiers.length > 0 ? product.tiers[0].name : "Standard";
+                
+                const bookingData = {
+                    userId: 5, // Mock student user
+                    eventId: product.id,
+                    tierId,
+                    qty: quantity || 1,
+                };
+                
+                const result = await orderService.createBooking(bookingData);
+                
+                sessionResponse = await orderService.createCheckoutSession({
+                    orderId: result.booking.bookingId,
+                    amount: subtotal,
+                    productName: product.name,
+                    successUrl: `${window.location.origin}/marketplace/club/payment-success?booking_id=${result.booking.id}`,
+                    cancelUrl: window.location.href,
+                });
+            } else {
+                const orderData = {
+                    userId: 5, // Mock student user
+                    postId: product.id,
+                    qty: quantity || 1,
+                    color: selectedColor?.name,
+                    colorHex: selectedColor?.hex,
+                    size: selectedSize,
+                    paymentMethod: "STRIPE"
+                };
+
+                const result = await orderService.createOrder(orderData);
+                
+                sessionResponse = await orderService.createCheckoutSession({
+                    orderId: result.order.orderId,
+                    amount: subtotal,
+                    productName: product.name,
+                    successUrl: `${window.location.origin}/marketplace/club/payment-success?order_id=${result.order.id}`,
+                    cancelUrl: window.location.href,
+                });
+            }
             
             if (sessionResponse.success && sessionResponse.url) {
                 // Redirect to Stripe Checkout page
@@ -53,8 +76,8 @@ const ClubCheckout = () => {
                 throw new Error("Failed to create checkout session");
             }
         } catch (error) {
-            console.error("Order creation failed:", error);
-            alert("Failed to place order. Please try again.");
+            console.error("Checkout failed:", error);
+            alert("Failed to proceed to payment. Please try again.");
         } finally {
             setLoading(false);
         }
