@@ -33,7 +33,7 @@ const EventsToday = () => {
     }, []);
 
     const handleEventClick = (postId) => {
-        navigate('/news-feed', { state: { targetPostId: postId } });
+        navigate('/news-feed', { state: { targetPostId: postId, targetPostType: 'club-event' } });
     };
 
     return (
@@ -44,7 +44,7 @@ const EventsToday = () => {
                     <span>Events Today</span>
                     <div className="flex items-center gap-1.5 text-text-secondary text-body-small font-normal">
                         <Calendar size={16} />
-                        <span>Today</span>
+                        <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
                     </div>
                 </div>
             }

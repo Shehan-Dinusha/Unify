@@ -62,7 +62,9 @@ const NewsFeed = ({ userRole = 'student' }) => {
     // Check if we arrived with a targetPostId in state
     if (location.state?.targetPostId && posts.length > 0) {
       const targetId = location.state.targetPostId;
-      const targetRef = postRefs.current[targetId];
+      const targetType = location.state.targetPostType;
+      const refKey = targetType ? `${targetType}-${targetId}` : targetId;
+      const targetRef = postRefs.current[refKey];
 
       if (targetRef) {
         setTimeout(() => {
@@ -203,7 +205,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
             <div className="flex flex-col gap-6 w-full">
               {filteredPosts.length > 0 ? (
                 filteredPosts.map((post) => (
-                  <div key={`${post.postType}-${post.id}`} ref={(el) => (postRefs.current[post.id] = el)}>
+                  <div key={`${post.postType}-${post.id}`} ref={(el) => (postRefs.current[`${post.postType}-${post.id}`] = el)}>
                     <PostCard
                       post={post}
                       author={post.author?.name || "Unknown User"}
@@ -214,7 +216,9 @@ const NewsFeed = ({ userRole = 'student' }) => {
                       description={post.description}
                       image={getImageUrl(post.coverImage || post.image || post.images?.[0])}
                       likes={post.likesCount || 0}
-                      comments={0}
+                      comments={post.commentsCount || 0}
+                      initialIsLiked={post.isLiked}
+                      initialIsSaved={post.isSaved}
                       isPromoted={post.isPromoted}
                       showBoost={user.role === 'business'}
                     />

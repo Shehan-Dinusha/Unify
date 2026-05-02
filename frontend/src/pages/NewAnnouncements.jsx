@@ -32,8 +32,8 @@ const NewAnnouncements = () => {
         fetchAnnouncements();
     }, []);
 
-    const handleAnnouncementClick = (postId) => {
-        navigate('/news-feed', { state: { targetPostId: postId } });
+    const handleAnnouncementClick = (postId, postType) => {
+        navigate('/news-feed', { state: { targetPostId: postId, targetPostType: postType } });
     };
 
     return (
@@ -44,7 +44,7 @@ const NewAnnouncements = () => {
                     <span>New Announcements</span>
                     <div className="flex items-center gap-1.5 text-text-secondary text-body-small font-normal">
                         <Calendar size={16} />
-                        <span>Today</span>
+                        <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
                     </div>
                 </div>
             }
@@ -64,7 +64,7 @@ const NewAnnouncements = () => {
                             location={item.location}
                             description={item.description}
                             image={getImageUrl(item.images?.[0] || item.coverImage)}
-                            onClick={() => handleAnnouncementClick(item.id)}
+                            onClick={() => handleAnnouncementClick(item.id, item.postType || 'normal')}
                         />
                     ))
                 ) : (
