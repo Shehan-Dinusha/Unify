@@ -142,3 +142,39 @@ export const getBatchRepsValidator = [
     .isInt()
     .withMessage("Degree ID must be an integer"),
 ];
+
+export const getSemesterVisibilityValidator = [
+  query("degreeId")
+    .notEmpty()
+    .withMessage("Degree ID is required")
+    .isInt()
+    .withMessage("Degree ID must be an integer"),
+  query("semesterId")
+    .notEmpty()
+    .withMessage("Semester ID is required")
+    .isInt()
+    .withMessage("Semester ID must be an integer"),
+];
+
+export const updateSemesterVisibilityValidator = [
+  param("degreeId")
+    .notEmpty()
+    .withMessage("Degree ID is required")
+    .isInt()
+    .withMessage("Degree ID must be an integer"),
+  param("semesterId")
+    .notEmpty()
+    .withMessage("Semester ID is required")
+    .isInt()
+    .withMessage("Semester ID must be an integer"),
+  body("visibleBatchIds")
+    .isArray()
+    .withMessage("visibleBatchIds must be an array"),
+  body("visibleBatchIds.*")
+    .isInt()
+    .withMessage("Each item in visibleBatchIds must be an integer"),
+  body("notifyReps")
+    .optional()
+    .isBoolean()
+    .withMessage("notifyReps must be a boolean"),
+];

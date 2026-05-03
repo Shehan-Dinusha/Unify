@@ -13,6 +13,8 @@ import {
   deleteMaterial,
   getMaterialsByCategory,
   getBatchReps,
+  getSemesterVisibility,
+  updateSemesterVisibility,
 } from "../controllers/learning/index.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
@@ -30,6 +32,8 @@ import {
   deleteMaterialValidator,
   getMaterialsByCategoryValidator,
   getBatchRepsValidator,
+  getSemesterVisibilityValidator,
+  updateSemesterVisibilityValidator,
 } from "../validators/learning.validator.js";
 
 const router = express.Router();
@@ -113,5 +117,19 @@ router.get(
 );
 
 router.get("/batch-reps", getBatchRepsValidator, validateRequest, getBatchReps);
+
+router.get(
+  "/semester-visibility",
+  getSemesterVisibilityValidator,
+  validateRequest,
+  getSemesterVisibility,
+);
+
+router.put(
+  "/semester-visibility/:degreeId/:semesterId",
+  updateSemesterVisibilityValidator,
+  validateRequest,
+  updateSemesterVisibility,
+);
 
 export default router;
