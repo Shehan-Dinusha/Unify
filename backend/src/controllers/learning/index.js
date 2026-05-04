@@ -16,3 +16,4 @@ export { getBatchReps } from "./getBatchReps.controller.js";
 export { getSemesterVisibility } from "./getSemesterVisibility.controller.js";
 export { updateSemesterVisibility } from "./updateSemesterVisibility.controller.js";
 export { getStudentCourseStructure } from "./getStudentCourseStructure.controller.js";
+export { getBatchRepCourseStructure } from "./getBatchRepCourseStructure.controller.js";

@@ -186,3 +186,11 @@ export const getStudentCourseStructureValidator = [
     .isInt()
     .withMessage("User ID must be an integer"),
 ];
+
+export const getBatchRepCourseStructureValidator = [
+  query("degreeId")
+    .notEmpty()
+    .withMessage("Degree ID is required")
+    .isInt()
+    .withMessage("Degree ID must be an integer"),
+];
