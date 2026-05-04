@@ -206,9 +206,6 @@ const OwnProfilePage = () => {
     "Verification rejected. Please resubmit documents.";
 
 
-
-
-
   // URL-based Modal state
   const activeModal = searchParams.get("modal");
   const deleteOpen = activeModal === "delete";
