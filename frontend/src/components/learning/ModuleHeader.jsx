@@ -18,6 +18,9 @@ const ModuleHeader = ({
   onDelete,
   moduleId,
   onMaterialUploaded,
+  availableDegrees = [],
+  primaryDegree = "Bsc.(Hons) IT",
+  semesters = [],
 }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -133,6 +136,9 @@ const ModuleHeader = ({
           semesterName,
           degrees,
         }}
+        availableDegrees={availableDegrees}
+        primaryDegree={primaryDegree}
+        semesters={semesters}
       />
     </div>
   );

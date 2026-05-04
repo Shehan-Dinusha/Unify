@@ -5,8 +5,8 @@ export const createModule = async (data) => {
   return response.data;
 };
 
-export const getModuleDetails = async (id) => {
-  const response = await api.get(`/learning/modules/${id}`);
+export const getModuleDetails = async (id, degreeId) => {
+  const response = await api.get(`/learning/modules/${id}`, { params: { degreeId } });
   return response.data;
 };
 

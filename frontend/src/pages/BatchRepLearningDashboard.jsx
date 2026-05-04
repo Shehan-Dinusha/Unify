@@ -31,6 +31,8 @@ const BatchRepLearningDashboard = () => {
   const [moduleCategories, setModuleCategories] = useState([]);
   const [categoryFiles, setCategoryFiles] = useState([]);
   const [activeModuleDetails, setActiveModuleDetails] = useState(null);
+  const [availableDegrees, setAvailableDegrees] = useState([]);
+  const [availableDegreesObjs, setAvailableDegreesObjs] = useState([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   // Fetch module details and categories when activeModuleId changes
@@ -71,11 +73,15 @@ const BatchRepLearningDashboard = () => {
         // If it fails, we fall back to finding it in mockSemesters.
         let details = null;
         try {
-          details = await learningService.getModuleDetails(activeModuleId);
+          details = await learningService.getModuleDetails(activeModuleId, currentDegreeId);
+          setActiveModuleDetails(details?.data?.module || null);
+          if (details?.data?.availableDegrees) {
+            setAvailableDegreesObjs(details.data.availableDegrees);
+            setAvailableDegrees(details.data.availableDegrees.map(d => d.name));
+          }
         } catch (err) {
           console.warn("Failed to fetch module details from API, using local state", err);
         }
-        setActiveModuleDetails(details?.data || null);
 
         try {
           const catsRes = await learningService.getModuleCategories(activeModuleId);
@@ -177,12 +183,18 @@ const BatchRepLearningDashboard = () => {
 
   const handleAddModule = async (newModule) => {
     try {
-      // Assuming we need to pass degrees differently or as is
+      const visibilityIds = newModule.visibility.map(degreeName => {
+         const degObj = availableDegreesObjs.find(d => d.name === degreeName);
+         return degObj ? degObj.id : null;
+      }).filter(id => id !== null);
+
+      if (visibilityIds.length === 0) visibilityIds.push(currentDegreeId);
+
       const res = await learningService.createModule({
-        name: newModule.title,
+        title: newModule.title,
         code: newModule.code,
-        semesterId: newModule.semester, // Assuming backend accepts semesterId
-        // visibility handling might be different, adapt as needed
+        semester: newModule.semester, // In AddModuleModal it is sem.id
+        visibility: visibilityIds,
       });
       const createdModule = res.data;
 
@@ -215,9 +227,21 @@ const BatchRepLearningDashboard = () => {
 
   const handleEditModule = async (editedData) => {
     try {
+      const selectedSemester = semesters.find(s => s.name === editedData.semester || s.id === editedData.semester);
+      const semesterId = selectedSemester ? selectedSemester.id : null;
+
+      const visibilityIds = editedData.visibility.map(degreeName => {
+         const degObj = availableDegreesObjs.find(d => d.name === degreeName);
+         return degObj ? degObj.id : null;
+      }).filter(id => id !== null);
+
+      if (visibilityIds.length === 0) visibilityIds.push(currentDegreeId);
+
       await learningService.editModuleDetails(activeModuleId, {
-        name: editedData.title,
+        title: editedData.title,
         code: editedData.code,
+        semester: semesterId,
+        visibility: visibilityIds,
       });
 
       // Update local state
@@ -333,6 +357,8 @@ const BatchRepLearningDashboard = () => {
               onSelectModule={setActiveModuleId}
               onAddModule={handleAddModule}
               degreeId={currentDegreeId}
+              availableDegrees={availableDegrees}
+              primaryDegree={degreeName}
             />
           </div>
 
@@ -345,6 +371,9 @@ const BatchRepLearningDashboard = () => {
                   moduleCode={activeModuleData?.code || "N/A"}
                   semesterName={activeSemesterInfo?.name}
                   degrees={activeModuleData?.degrees?.map(d => typeof d === 'string' ? d : d.name) || [degreeName]}
+                  availableDegrees={availableDegrees}
+                  primaryDegree={degreeName}
+                  semesters={semesters}
                   onEditSave={handleEditModule}
                   onDelete={handleDeleteModule}
                   moduleId={activeModuleId}

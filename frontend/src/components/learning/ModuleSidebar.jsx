@@ -17,6 +17,8 @@ const ModuleSidebar = ({
   title,
   className = "",
   degreeId = 18,
+  availableDegrees = [],
+  primaryDegree = "Bsc.(Hons) IT",
 }) => {
   const [expandedSemesters, setExpandedSemesters] = useState([
     activeSemesterId,
@@ -176,6 +178,9 @@ const ModuleSidebar = ({
           // Set only the new semester to be open
           setExpandedSemesters([data.semester]);
         }}
+        availableDegrees={availableDegrees}
+        primaryDegree={primaryDegree}
+        semesters={semesters}
       />
 
       <SemesterVisibilityModal

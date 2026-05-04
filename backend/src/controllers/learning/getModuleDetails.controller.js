@@ -5,25 +5,43 @@ import logger from "../../utils/logger.js";
 export const getModuleDetails = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { degreeId } = req.query;
 
-    const moduleDetails = await AcademicModule.findByPk(id, {
-      attributes: ["id", "name", "code"],
-      include: [
-        {
-          model: Degree,
-          as: "degrees",
-          attributes: ["id", "name", "facultyId"],
-          through: {
-            attributes: [],
+    let facultyId = null;
+    if (degreeId) {
+      const currentDegree = await Degree.findByPk(degreeId, { attributes: ["facultyId"] });
+      if (currentDegree) {
+        facultyId = currentDegree.facultyId;
+      }
+    }
+
+    const degreeWhereClause = facultyId ? { facultyId } : {};
+
+    const [moduleDetails, allDegrees] = await Promise.all([
+      AcademicModule.findByPk(id, {
+        attributes: ["id", "name", "code"],
+        include: [
+          {
+            model: Degree,
+            as: "degrees",
+            attributes: ["id", "name", "facultyId"],
+            through: {
+              attributes: [],
+            },
           },
-        },
-        {
-          model: Semester,
-          as: "semester",
-          attributes: ["id", "name"],
-        },
-      ],
-    });
+          {
+            model: Semester,
+            as: "semester",
+            attributes: ["id", "name"],
+          },
+        ],
+      }),
+      Degree.findAll({
+        attributes: ["id", "name"],
+        where: degreeWhereClause,
+        order: [["name", "ASC"]],
+      })
+    ]);
 
     if (!moduleDetails) {
       return sendResponse(res, 404, false, "Module not found.");
@@ -35,7 +53,10 @@ export const getModuleDetails = async (req, res, next) => {
       200,
       true,
       "Module details fetched successfully.",
-      moduleDetails,
+      {
+        module: moduleDetails,
+        availableDegrees: allDegrees
+      }
     );
   } catch (error) {
     logger.error(`Get Module Details Error: ${error.message}`);
