@@ -6,7 +6,7 @@ import Card from "../../components/common/Card";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import { validatePassword } from "../../utils/validation";
-import { changePassword } from "../../services/profileService";
+import { changePassword, getMyProfile } from "../../services/profileService";
 import { getCurrentUser } from "../../services/authService";
 import { useToast } from "../../components/common/Toast";
 
@@ -19,22 +19,38 @@ const SecurityPage = () => {
   const toast = useToast();
   const activeRole = searchParams.get("role") || "student";
 
-  const [currentUser, setCurrentUserLocal] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    setCurrentUserLocal(user);
+    const fetchProfileData = async () => {
+      try {
+        const user = getCurrentUser();
+        if (!user) {
+          navigate("/login");
+          return;
+        }
+        const backendRole = user.role?.toLowerCase();
+        const data = await getMyProfile(backendRole);
+        setProfile(data);
+      } catch (error) {
+        console.error("Error fetching profile for security page:", error);
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+    fetchProfileData();
   }, []);
 
+  const currentUser = getCurrentUser();
   const user = {
-    name: currentUser?.name || "User",
-    role: currentUser?.role?.toLowerCase() === "business" ? "business" : 
-          currentUser?.role?.toLowerCase() === "club" ? "club" : "student",
-    displayRole: currentUser?.role || "Student",
+    name: profile?.clubName || profile?.displayName || profile?.businessName || currentUser?.name || "User",
+    role: (profile?.user?.role || currentUser?.role)?.toLowerCase() === "business" ? "business" : 
+          (profile?.user?.role || currentUser?.role)?.toLowerCase() === "club" ? "club" : "student",
+    displayRole: (profile?.user?.role || currentUser?.role) === "Club" ? "CLUBS & SOCIETIES" : 
+                 (profile?.user?.role || currentUser?.role) === "Business" ? "BUSINESS & ORGANIZATION" : 
+                 (profile?.user?.role || currentUser?.role)?.toUpperCase() || "STUDENT",
+    avatar: profile?.user?.avatar || profile?.logo || currentUser?.avatar,
   };
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -81,8 +97,20 @@ const SecurityPage = () => {
     }
   };
 
+  const isUnverifiedClub = activeRole === "club_society" && (!profile || !profile.isVerified);
+
+  if (loadingProfile) {
+    return (
+      <MainLayout user={user} pageTitle="Security & Password" verificationCount={0}>
+        <div className="flex justify-center items-center h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary-blue" />
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
-    <MainLayout user={user} pageTitle="Security & Password" verificationCount={0}>
+    <MainLayout user={user} pageTitle="Security & Password" verificationCount={0} sidebarDisabled={isUnverifiedClub}>
       <div className="w-full flex flex-col items-center justify-start pt-4 md:pt-10 px-4 min-h-full">
         <Card variant="card" className="w-full max-w-md md:max-w-[480px] p-4 md:p-lg">
           <div className="flex flex-col gap-4 md:gap-6">

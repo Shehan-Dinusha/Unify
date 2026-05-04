@@ -267,11 +267,8 @@ const UnifiedSidebar = ({
           />
 
           <div
-            className={`w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md transition-colors group ${
-              shouldDisableNav
-                ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
-                : "hover:bg-white/10 cursor-pointer"
-            }`}
+            onClick={() => navigate("/profile?role=" + user.role)}
+            className="w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md transition-colors group hover:bg-white/10 cursor-pointer"
           >
             <img
               className="w-10 h-10 rounded-full object-cover border border-white/20 group-hover:border-primary-blue transition-colors"

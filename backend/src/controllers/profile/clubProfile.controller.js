@@ -93,7 +93,20 @@ export const getMyClubProfile = async (req, res) => {
   try {
     const profile = await ClubProfile.findOne({
       where: { userId: req.user.id },
-      include: [{ model: User, as: "user", attributes: ["name", "email", "avatar", "createdAt"] }],
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["name", "email", "avatar", "role", "createdAt"],
+          include: [
+            {
+              model: VerificationRequest,
+              as: "verificationRequest",
+              attributes: ["status", "adminMessage"],
+            },
+          ],
+        },
+      ],
     });
 
     if (!profile) {
@@ -104,6 +117,17 @@ export const getMyClubProfile = async (req, res) => {
     const profileJson = profile.toJSON();
     profileJson.logo = await resolveAvatarUrl(profileJson.logo, profileJson.clubName || "Club");
     profileJson.user.avatar = await resolveAvatarUrl(profileJson.user?.avatar, profileJson.user?.name || "User");
+
+    // Surface verification status at top level for easy frontend consumption
+    const vReq = profileJson.user?.verificationRequest;
+    if (profileJson.isVerified) {
+      profileJson.verificationStatus = "APPROVED";
+    } else if (vReq) {
+      profileJson.verificationStatus = vReq.status === "DECLINED" ? "REJECTED" : vReq.status;
+    } else {
+      profileJson.verificationStatus = "NOT_SUBMITTED";
+    }
+    profileJson.verificationReason = vReq?.adminMessage || null;
 
     return sendResponse(res, 200, true, "Club profile fetched successfully", profileJson);
   } catch (error) {

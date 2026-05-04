@@ -104,7 +104,7 @@ export const getMyBusinessProfile = async (req, res) => {
   try {
     const profile = await BusinessProfile.findOne({
       where: { userId: req.user.id },
-      include: [{ model: User, as: "user", attributes: ["name", "email", "avatar", "createdAt"] }],
+      include: [{ model: User, as: "user", attributes: ["name", "email", "avatar", "role", "createdAt"] }],
     });
 
     if (!profile) {
