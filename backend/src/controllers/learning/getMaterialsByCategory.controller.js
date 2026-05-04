@@ -24,18 +24,21 @@ export const getMaterialsByCategory = async (req, res) => {
       return sendResponse(res, 404, false, "Category not found", null);
     }
 
+    const include = [];
+    if (req.user?.role !== "Student") {
+      include.push({
+        model: User,
+        as: "uploader",
+        attributes: ["name", "avatar"],
+      });
+    }
+
     const materials = await Material.findAll({
       where: {
         moduleId,
         categoryId,
       },
-      include: [
-        {
-          model: User,
-          as: "uploader",
-          attributes: ["name", "avatar"],
-        },
-      ],
+      include,
     });
 
     // Format response data

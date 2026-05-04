@@ -15,6 +15,7 @@ import {
   getBatchReps,
   getSemesterVisibility,
   updateSemesterVisibility,
+  getStudentCourseStructure,
 } from "../controllers/learning/index.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
@@ -34,6 +35,7 @@ import {
   getBatchRepsValidator,
   getSemesterVisibilityValidator,
   updateSemesterVisibilityValidator,
+  getStudentCourseStructureValidator,
 } from "../validators/learning.validator.js";
 
 const router = express.Router();
@@ -117,6 +119,13 @@ router.get(
 );
 
 router.get("/batch-reps", getBatchRepsValidator, validateRequest, getBatchReps);
+
+router.get(
+  "/student/course-structure",
+  getStudentCourseStructureValidator,
+  validateRequest,
+  getStudentCourseStructure,
+);
 
 router.get(
   "/semester-visibility",

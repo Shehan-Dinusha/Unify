@@ -178,3 +178,11 @@ export const updateSemesterVisibilityValidator = [
     .isBoolean()
     .withMessage("notifyReps must be a boolean"),
 ];
+
+export const getStudentCourseStructureValidator = [
+  query("userId")
+    .notEmpty()
+    .withMessage("User ID is required")
+    .isInt()
+    .withMessage("User ID must be an integer"),
+];
