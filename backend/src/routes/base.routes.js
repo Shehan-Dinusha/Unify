@@ -7,6 +7,7 @@ import {
   seedReviews,
   seedReports,
   seedSuspensions,
+  seedLearningData,
 } from "../controllers/base/index.js";
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.post("/seed-followers", seedFollowers);
 router.post("/seed-reviews", seedReviews);
 router.post("/seed-reports", seedReports);
 router.post("/seed-suspensions", seedSuspensions);
+router.post("/seed-learning-data", seedLearningData);
 
 export default router;
 // touch
