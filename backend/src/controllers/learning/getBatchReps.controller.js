@@ -1,5 +1,6 @@
 import { sendResponse } from "../../utils/response.js";
 import { User, StudentProfile, Degree, Batch } from "../../modules/index.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getBatchReps = async (req, res, next) => {
   try {
@@ -34,26 +35,30 @@ export const getBatchReps = async (req, res, next) => {
       ],
     });
 
-    const formattedReps = batchReps.map((rep) => {
-      let initials = "BR";
-      if (rep.user?.name) {
-        initials = rep.user.name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .substring(0, 2)
-          .toUpperCase();
-      }
+    const formattedReps = await Promise.all(
+      batchReps.map(async (rep) => {
+        let initials = "BR";
+        if (rep.user?.name) {
+          initials = rep.user.name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .substring(0, 2)
+            .toUpperCase();
+        }
 
-      return {
-        userId: rep.user?.id,
-        name: rep.user?.name || "Unknown User",
-        avatarSrc: rep.user?.avatar || null,
-        initials,
-        degreeText: `${rep.degree?.name || ""} ${rep.batch?.name || ""}`.trim(),
-        roleText: "Rep",
-      };
-    });
+        const avatarSrc = await resolveAvatarUrl(rep.user?.avatar, rep.user?.name);
+
+        return {
+          userId: rep.user?.id,
+          name: rep.user?.name || "Unknown User",
+          avatarSrc,
+          initials,
+          degreeText: `${rep.degree?.name || ""} ${rep.batch?.name || ""}`.trim(),
+          roleText: "Rep",
+        };
+      }),
+    );
 
     return sendResponse(
       res,
