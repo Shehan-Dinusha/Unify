@@ -50,11 +50,15 @@ const EditProfilePage = () => {
     fetchProfile();
   }, []);
 
+  const currentUser = getCurrentUser();
   const user = {
-    name: profile?.user?.name || "User",
-    role: profile?.user?.role?.toLowerCase() === "business" ? "business" : 
-          profile?.user?.role?.toLowerCase() === "club" ? "club" : "student",
-    displayRole: profile?.user?.role || "Student",
+    name: profile?.clubName || profile?.displayName || profile?.businessName || currentUser?.name || "User",
+    role: (profile?.user?.role || currentUser?.role)?.toLowerCase() === "business" ? "business" : 
+          (profile?.user?.role || currentUser?.role)?.toLowerCase() === "club" ? "club" : "student",
+    displayRole: (profile?.user?.role || currentUser?.role) === "Club" ? "CLUBS & SOCIETIES" : 
+                 (profile?.user?.role || currentUser?.role) === "Business" ? "BUSINESS & ORGANIZATION" : 
+                 (profile?.user?.role || currentUser?.role)?.toUpperCase() || "STUDENT",
+    avatar: profile?.user?.avatar || profile?.logo || currentUser?.avatar,
   };
 
   // Called when the form's save button is submitted
@@ -115,8 +119,10 @@ const EditProfilePage = () => {
     }
   };
 
+  const isUnverifiedClub = activeRole === "club_society" && (!profile || !profile.isVerified);
+
   return (
-    <MainLayout user={user} pageTitle="Edit info" verificationCount={0}>
+    <MainLayout user={user} pageTitle="Edit info" verificationCount={0} sidebarDisabled={isUnverifiedClub}>
       <div className="w-full flex flex-col items-center justify-start pt-4 md:pt-10 px-4 min-h-full">
         {renderForm()}
 

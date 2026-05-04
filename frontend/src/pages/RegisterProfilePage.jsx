@@ -33,8 +33,7 @@ const RegisterProfilePage = () => {
         await updateStudentProfile(formData);
       } else if (mainType === "business") {
         if (businessType === "club") {
-          const { document, ...rest } = formData;
-          await updateClubProfile({ ...rest, clubDoc: document });
+          await updateClubProfile(formData);
         } else {
           let category = businessType.toUpperCase();
           if (category === "CAFE") category = "FOOD";

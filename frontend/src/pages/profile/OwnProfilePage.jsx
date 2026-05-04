@@ -160,7 +160,12 @@ const OwnProfilePage = () => {
           profileImage: data.logo || null,
           ...data
         };
-        setVerificationStatus(data.isVerified ? "APPROVED" : "PENDING");
+        setProfile(mappedProfile);
+        setActiveRole("club_society");
+        
+        // Use top-level verificationStatus from backend (robust, no nested parsing)
+        setVerificationStatus(data.verificationStatus || "NOT_SUBMITTED");
+        if (data.verificationReason) setVerificationReason(data.verificationReason);
       } else if (backendRole === "business") {
         const fRole = getFrontendRole(currentUser, data);
         mappedProfile = {
@@ -192,17 +197,15 @@ const OwnProfilePage = () => {
 
   // Show a toast when returning from account linking flow (Deprecated but kept empty to avoid error)
 
-  const verificationReason =
-    localStorage.getItem("unify_club_verification_reason") ||
-    "Verification rejected. Please resubmit documents.";
+  const [verificationReason, setVerificationReason] = useState(
+    "Verification rejected. Please resubmit documents."
+  );
 
   const repReason =
     localStorage.getItem("unify_student_rep_reason") ||
     "Verification rejected. Please resubmit documents.";
 
-  const isClub = activeRole === "club_society";
-  const isApproved = verificationStatus === "APPROVED";
-  const shouldDisable = isClub && !isApproved;
+
 
 
 
@@ -262,12 +265,14 @@ const OwnProfilePage = () => {
     avatar: profile.profileImage,
   };
 
+  const isUnverifiedClub = activeRole === "club_society" && verificationStatus !== "APPROVED";
+
   return (
     <MainLayout
       user={user}
       pageTitle={getPageTitle()}
       verificationCount={0}
-      sidebarDisabled={shouldDisable}
+      sidebarDisabled={isUnverifiedClub}
     >
       <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md text-start px-1 md:px-0">
         {/* Row 1, Col 1 — Profile Card */}
@@ -288,7 +293,7 @@ const OwnProfilePage = () => {
             onEditProfile={handleEditProfile}
             onSecurity={handleSecurity}
             onDeleteAccount={handleDeleteAccount}
-            disabled={shouldDisable}
+            disabled={false}
           />
         </div>
       </div>

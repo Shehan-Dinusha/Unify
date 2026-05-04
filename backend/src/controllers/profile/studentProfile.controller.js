@@ -117,7 +117,7 @@ export const getMyStudentProfile = async (req, res) => {
     const profile = await StudentProfile.findOne({
       where: { userId: req.user.id },
       include: [
-        { model: User, as: "user", attributes: ["name", "email", "avatar"] },
+        { model: User, as: "user", attributes: ["name", "email", "avatar", "role"] },
         { model: University, as: "university", attributes: ["name"] },
         { model: Faculty, as: "faculty", attributes: ["name"] },
         { model: Degree, as: "degree", attributes: ["name"] },

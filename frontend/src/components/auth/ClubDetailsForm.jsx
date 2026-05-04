@@ -16,7 +16,7 @@ const ClubDetailsForm = ({ onNext, initialData, loading }) => {
   const [formData, setFormData] = useState({
     clubName: initialData?.clubName || "",
     about: initialData?.about || "",
-    document: null,
+    clubDoc: null,
     profileImage: null,
   });
 
@@ -26,7 +26,7 @@ const ClubDetailsForm = ({ onNext, initialData, loading }) => {
       setFormData({
         clubName: initialData.clubName || "",
         about: initialData.about || "",
-        document: null,
+        clubDoc: null,
         profileImage: null,
       });
     }
@@ -58,10 +58,10 @@ const ClubDetailsForm = ({ onNext, initialData, loading }) => {
       <div className="flex flex-col gap-10">
         <div className="flex flex-col items-center gap-3 text-center px-4">
           <h1 className="text-white text-heading-medium font-bold font-inter leading-tight">
-            Personal Details
+            Club Details
           </h1>
           <p className="text-text-secondary text-body-small leading-relaxed max-w-[400px]">
-            Tell us a bit about yourself to complete your profile.
+            Tell us a bit about your club to complete your profile.
           </p>
         </div>
 
@@ -111,14 +111,14 @@ const ClubDetailsForm = ({ onNext, initialData, loading }) => {
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        document: e.target.files[0],
+                        clubDoc: e.target.files[0],
                       }))
                     }
                   />
                 </label>
                 <span className="text-text-secondary text-body-small truncate min-w-0 flex-1">
-                  {formData.document
-                    ? formData.document.name
+                  {formData.clubDoc
+                    ? formData.clubDoc.name
                     : "No file chosen"}
                 </span>
               </div>
