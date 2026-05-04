@@ -16,6 +16,8 @@ const ModuleHeader = ({
   isPublic = true,
   onEditSave,
   onDelete,
+  moduleId,
+  onMaterialUploaded,
 }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -106,6 +108,8 @@ const ModuleHeader = ({
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         moduleName={moduleName}
+        moduleId={moduleId}
+        onSuccess={onMaterialUploaded}
       />
 
       <EditModuleModal

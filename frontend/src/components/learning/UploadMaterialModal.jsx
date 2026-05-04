@@ -5,6 +5,7 @@ import Button from "../common/Button";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import FileUpload from "../common/FileUpload";
+import * as learningService from "../../services/learningService";
 
 /**
  * Modal component for uploading learning material to a module.
@@ -13,6 +14,8 @@ const UploadMaterialModal = ({
   isOpen,
   onClose,
   moduleName = "Programming Fundamentals",
+  moduleId,
+  onSuccess,
 }) => {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Lecture Notes");
@@ -46,23 +49,41 @@ const UploadMaterialModal = ({
     "Additional",
   ];
 
-  const handleUpload = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleUpload = async () => {
     // Validate inputs
     if (!title) return;
     if (attachmentType === "Upload File" && !selectedFile) return;
     if (attachmentType === "Attach Link" && !linkUrl) return;
 
-    // Handle the upload logic here
-    console.log("Uploading module material: ", {
-      title,
-      category,
-      attachmentType,
-      file: selectedFile,
-      linkUrl,
-    });
+    if (!moduleId) {
+      alert("Module ID is missing!");
+      return;
+    }
 
-    // Close modal after successful action
-    // onClose();
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("category", category);
+      formData.append("attachmentType", attachmentType);
+      
+      if (attachmentType === "Upload File") {
+        formData.append("materialFile", selectedFile);
+      } else {
+        formData.append("linkUrl", linkUrl);
+      }
+
+      await learningService.uploadMaterial(moduleId, formData);
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (err) {
+      console.error("Failed to upload material", err);
+      alert("Failed to upload material");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isFormValid = () => {
@@ -233,11 +254,11 @@ const UploadMaterialModal = ({
             variant="primary"
             size="small"
             onClick={handleUpload}
-            disabled={!isFormValid()}
+            disabled={!isFormValid() || isSubmitting}
             icon={FileUp}
             className="w-auto px-6"
           >
-            Upload Material
+            {isSubmitting ? "Uploading..." : "Upload Material"}
           </Button>
         </div>
       </Card>

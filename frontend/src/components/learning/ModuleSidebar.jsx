@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Folder, FolderOpen, ChevronRight, Plus, Eye } from "lucide-react";
 import Button from "../common/Button";
 import AddModuleModal from "./AddModuleModal";
 import SemesterVisibilityModal from "./SemesterVisibilityModal";
+import * as learningService from "../../services/learningService";
 
 /**
  * Renders the left sidebar for Semesters and Modules
@@ -15,15 +16,44 @@ const ModuleSidebar = ({
   readOnly = false,
   title,
   className = "",
+  degreeId = 18,
 }) => {
   const [expandedSemesters, setExpandedSemesters] = useState([
     activeSemesterId,
   ]);
   const [isAddModuleOpen, setIsAddModuleOpen] = useState(false);
   const [visibilitySemester, setVisibilitySemester] = useState(null);
+  const [currentVisibility, setCurrentVisibility] = useState([]);
+
+  useEffect(() => {
+    if (activeSemesterId && !expandedSemesters.includes(activeSemesterId)) {
+      setExpandedSemesters([activeSemesterId]);
+    }
+  }, [activeSemesterId]);
 
   const toggleSemester = (id) => {
     setExpandedSemesters((prev) => (prev.includes(id) ? [] : [id]));
+  };
+
+  const handleOpenVisibility = async (e, semester) => {
+    e.stopPropagation();
+    setVisibilitySemester(semester);
+    try {
+      // It expects semester visibility for a given degree and semester
+      // It returns an array of visible batch IDs or similar
+      const res = await learningService.getSemesterVisibility(degreeId, semester.id);
+      // Fallback depending on backend structure
+      const batches = res?.data || [];
+      // Assuming it returns array of batch objects or batch ids. 
+      // Based on validator: visibleBatchIds
+      // Actually validator updateSemesterVisibilityValidator expects visibleBatchIds.
+      // So let's assume it returns { visibleBatchIds: [...] } or array of objects with id.
+      // We will parse it depending on what we get.
+      setCurrentVisibility(res?.data?.visibleBatchIds || (Array.isArray(res?.data) ? res.data.map(b => b.id || b) : []));
+    } catch (err) {
+      console.error("Failed to fetch semester visibility", err);
+      setCurrentVisibility([]);
+    }
   };
 
   return (
@@ -69,10 +99,7 @@ const ModuleSidebar = ({
                   </div>
                   {!readOnly && (
                     <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setVisibilitySemester(semester);
-                      }}
+                      onClick={(e) => handleOpenVisibility(e, semester)}
                       className={`p-1 hover:bg-white/10 rounded-md shrink-0 transition-opacity ${
                         isExpanded
                           ? "opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
@@ -186,13 +213,18 @@ const ModuleSidebar = ({
           },
         ]}
         // Default visibility is none by default per requirements.
-        currentVisibility={[]}
-        onSaveVisibility={(data) => {
-          console.log(
-            `Saving visibility for ${visibilitySemester?.name}:`,
-            data,
-          );
-          setVisibilitySemester(null);
+        currentVisibility={currentVisibility}
+        onSaveVisibility={async (data) => {
+          try {
+            await learningService.updateSemesterVisibility(degreeId, visibilitySemester.id, {
+              visibleBatchIds: data.visibleBatchIds,
+              notifyReps: data.notifyReps,
+            });
+            setVisibilitySemester(null);
+          } catch (err) {
+            console.error("Failed to update semester visibility", err);
+            alert("Failed to update semester visibility");
+          }
         }}
       />
     </div>

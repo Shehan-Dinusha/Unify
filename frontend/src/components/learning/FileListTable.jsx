@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Play, Edit2, Trash2 } from "lucide-react";
 import Button from "../common/Button";
 import { EditMaterialModal, DeleteMaterialModal } from "./MaterialActionModals";
+import * as learningService from "../../services/learningService";
 
 /**
  * Represents the table view showing files inside a specific category (e.g., Video Files)
@@ -10,6 +11,7 @@ const FileListTable = ({
   categoryName = "Programming Fundamentals",
   categories = [],
   files: initialFiles = [],
+  onRefresh,
 }) => {
   const [files, setFiles] = useState(initialFiles);
   const [editingFile, setEditingFile] = useState(null);
@@ -19,12 +21,27 @@ const FileListTable = ({
     setFiles(initialFiles);
   }, [initialFiles]);
 
-  const handleEditSave = (updatedFile) => {
-    setFiles(files.map(f => f.id === updatedFile.id ? updatedFile : f));
+  const handleEditSave = async (updatedFile) => {
+    try {
+      await learningService.editMaterial(updatedFile.id, {
+        title: updatedFile.name,
+        categoryId: updatedFile.categoryId,
+      });
+      onRefresh?.();
+    } catch (err) {
+      console.error("Failed to edit material", err);
+      alert("Failed to edit material");
+    }
   };
 
-  const handleDeleteConfirm = (fileToDelete) => {
-    setFiles(files.filter(f => f.id !== fileToDelete.id));
+  const handleDeleteConfirm = async (fileToDelete) => {
+    try {
+      await learningService.deleteMaterial(fileToDelete.id);
+      onRefresh?.();
+    } catch (err) {
+      console.error("Failed to delete material", err);
+      alert("Failed to delete material");
+    }
   };
   return (
     <div className="w-full bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col overflow-x-auto">
