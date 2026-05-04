@@ -79,7 +79,8 @@ const BatchRepLearningDashboard = () => {
 
         try {
           const catsRes = await learningService.getModuleCategories(activeModuleId);
-          const catsData = catsRes.data?.length > 0 ? catsRes.data : (mockModuleCategories[activeModuleId] || []);
+          const apiCategories = catsRes.data?.categories;
+          const catsData = apiCategories?.length > 0 ? apiCategories : (mockModuleCategories[activeModuleId] || []);
           setModuleCategories(catsData);
           if (catsData.length > 0) {
             setSelectedCategory(catsData[0]);
@@ -128,7 +129,8 @@ const BatchRepLearningDashboard = () => {
     if (!activeModuleId) return;
     try {
       const catsRes = await learningService.getModuleCategories(activeModuleId);
-      const catsData = catsRes.data?.length > 0 ? catsRes.data : (mockModuleCategories[activeModuleId] || []);
+      const apiCategories = catsRes.data?.categories;
+      const catsData = apiCategories?.length > 0 ? apiCategories : (mockModuleCategories[activeModuleId] || []);
       setModuleCategories(catsData);
       if (!selectedCategory && catsData.length > 0) {
         setSelectedCategory(catsData[0]);
