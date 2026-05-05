@@ -1,17 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import VerifiedList from "../components/verification/VerifiedList";
 import RequestList from "../components/verification/RequestList";
-import { mockRequests } from "../data/mockData";
+import verificationService from "../services/verificationService";
 import {
   VerificationConfirmationModal,
   VerificationSuccessModal,
   VerificationRejectionModal,
   VerificationRejectedSuccessModal,
+  ActionErrorModal,
 } from "../components/common/VerificationModals";
 
 const VerificationQueue = () => {
   const [activeTab, setActiveTab] = useState("requests");
+  const [requests, setRequests] = useState([]);
+  const [requestStats, setRequestStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Modal State
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -25,15 +29,66 @@ const VerificationQueue = () => {
   const [rejectedRequest, setRejectedRequest] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
+  // Error State
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      const response = await verificationService.getPendingRequests();
+      if (response.success) {
+        setRequests(response.data?.requests || []);
+        setRequestStats(response.data?.stats || null);
+      }
+    } catch (error) {
+      setErrorMessage("Failed to fetch pending requests.");
+      setShowErrorModal(true);
+      setRequests([]);
+      setRequestStats(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleVerifyClick = (request) => {
     setSelectedRequest(request);
   };
 
-  const handleConfirmVerify = () => {
-    // In a real app, you would make an API call here
-    setVerifiedRequest(selectedRequest);
-    setSelectedRequest(null);
-    setShowSuccessModal(true);
+  const handleConfirmVerify = async () => {
+    setRequests((prev) =>
+      Array.isArray(prev) ? prev.filter((r) => r.id !== selectedRequest.id) : [],
+    );
+    setRequestStats((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        totalPending: Math.max(0, (prev.totalPending || 0) - 1),
+        newPending: Math.max(0, (prev.newPending || 0) - 1),
+        approvedToday: (prev.approvedToday || 0) + 1,
+      };
+    });
+    try {
+      const response = await verificationService.approveRequest(
+        selectedRequest.id,
+      );
+      if (response.success) {
+        setVerifiedRequest(selectedRequest);
+        setSelectedRequest(null);
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Failed to approve verification. Please try again.",
+      );
+      setShowErrorModal(true);
+      fetchRequests();
+    }
   };
 
   const handleCloseSuccess = () => {
@@ -47,11 +102,43 @@ const VerificationQueue = () => {
     setShowRejectionModal(true);
   };
 
-  const handleConfirmReject = (reason, customReason) => {
-    // In a real app, API call here
-    setRejectionReason(customReason ? customReason : reason);
-    setShowRejectionModal(false);
-    setShowRejectionSuccessModal(true);
+  const handleConfirmReject = async (reason, customReason) => {
+    const finalReason = customReason || reason;
+    setRequests((prev) =>
+      Array.isArray(prev) ? prev.filter((r) => r.id !== rejectedRequest.id) : [],
+    );
+    setRequestStats((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        totalPending: Math.max(0, (prev.totalPending || 0) - 1),
+        newPending: Math.max(0, (prev.newPending || 0) - 1),
+        rejectedToday: (prev.rejectedToday || 0) + 1,
+      };
+    });
+    try {
+      const response = await verificationService.rejectRequest(
+        rejectedRequest.id,
+        finalReason,
+      );
+      if (response.success) {
+        setRejectionReason(finalReason);
+        setShowRejectionModal(false);
+        setShowRejectionSuccessModal(true);
+      }
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Failed to reject verification. Please try again.",
+      );
+      setShowErrorModal(true);
+      fetchRequests();
+    }
+  };
+
+  const handleCloseError = () => {
+    setShowErrorModal(false);
+    setErrorMessage("");
   };
 
   const handleCloseRejectionSuccess = () => {
@@ -104,13 +191,15 @@ const VerificationQueue = () => {
       user={{ name: "Alex Johnson", role: "admin" }}
       pageTitle="Verification Queue"
       headerRight={headerActions}
-      verificationCount={mockRequests.length}
+      verificationCount={requests.length}
     >
       {activeTab === "requests" ? (
         <RequestList
-          requests={mockRequests}
+          requests={requests}
+          stats={requestStats}
           onVerify={handleVerifyClick}
           onReject={handleRejectClick}
+          loading={loading}
         />
       ) : (
         <VerifiedList />
@@ -121,6 +210,7 @@ const VerificationQueue = () => {
         isOpen={!!selectedRequest}
         onClose={() => setSelectedRequest(null)}
         onConfirm={handleConfirmVerify}
+        loading={loading}
       />
       <VerificationSuccessModal
         isOpen={showSuccessModal}
@@ -135,12 +225,20 @@ const VerificationQueue = () => {
         onConfirm={handleConfirmReject}
         clubName={rejectedRequest?.name}
         requestType={rejectedRequest?.type}
+        loading={loading}
       />
       <VerificationRejectedSuccessModal
         isOpen={showRejectionSuccessModal}
         onClose={handleCloseRejectionSuccess}
         clubName={rejectedRequest?.name}
         reason={rejectionReason}
+      />
+
+      <ActionErrorModal
+        isOpen={showErrorModal}
+        onClose={handleCloseError}
+        title="Action Failed"
+        message={errorMessage}
       />
     </MainLayout>
   );

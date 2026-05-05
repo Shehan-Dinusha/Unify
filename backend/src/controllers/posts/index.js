@@ -6,3 +6,6 @@ export * from "./getFilteredBoardingFeed.controller.js";
 export * from "./getFeed.controller.js";
 export * from "./getPost.controller.js";
 export * from "./deletePost.controller.js";
+export * from "./likePost.controller.js";
+export * from "./commentPost.controller.js";
+export * from "./savePost.controller.js";

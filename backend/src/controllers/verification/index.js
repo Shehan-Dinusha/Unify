@@ -7,3 +7,4 @@ export * from "./rejectVerificationRequest.controller.js";
 export * from "./getVerifiedEntities.controller.js";
 export * from "./getVerificationDocument.controller.js";
 export * from "./removeVerifiedAccount.controller.js";
+export * from "./revokeBatchRepStatus.controller.js";

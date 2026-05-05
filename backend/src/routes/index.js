@@ -14,12 +14,12 @@ import boostRoutes from "./boost.routes.js";
 import baseRoutes from "./base.routes.js";
 import suspensionRoutes from "./suspension.routes.js";
 import learningRoutes from "./learning.routes.js";
-import uploadRoutes from "./upload.routes.js";
 import educationRoutes from "./education.routes.js";
 import studentManagementRoutes from "./studentManagement.routes.js";
 import businessManagementRoutes from "./businessManagement.routes.js";
 import adminToolsRoutes from "./adminTools.routes.js";
 import lostAndFoundRoutes from "./lostAndFound.routes.js";
+import newsfeedRoutes from "./newsfeed.routes.js";
 
 const router = express.Router();
 
@@ -39,11 +39,11 @@ router.use("/boosts", boostRoutes);
 router.use("/base", baseRoutes);
 router.use("/admin/suspended-users", suspensionRoutes);
 router.use("/learning", learningRoutes);
-router.use("/upload", uploadRoutes);
 router.use("/education", educationRoutes);
 router.use("/admin/students", studentManagementRoutes);
 router.use("/admin/businesses", businessManagementRoutes);
 router.use("/admin/tools", adminToolsRoutes);
 router.use("/lost-and-found", lostAndFoundRoutes);
+router.use("/newsfeed", newsfeedRoutes);
 
 export default router;

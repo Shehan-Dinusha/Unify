@@ -12,6 +12,7 @@ import {
   sequelize
 } from '../../modules/index.js';
 import { sendResponse } from '../../utils/response.js';
+import UserSuspensionService from '../../services/userSuspension.service.js';
 import logger from '../../utils/logger.js';
 import moment from 'moment';
 
@@ -354,33 +355,44 @@ export const updateBusinessStatus = async (req, res, next) => {
     const adminId = req.user?.id || 1;
 
     const user = await User.findByPk(id);
-    if (!user || user.role !== 'Business') {
-      return sendResponse(res, 404, false, 'Business not found');
+    if (!user || !['Business', 'Club'].includes(user.role)) {
+      return sendResponse(res, 404, false, 'Business or Club not found');
     }
 
     if (user.status === status) {
       return sendResponse(res, 400, false, `Business is already ${status}`);
     }
 
-    user.status = status;
-    await user.save();
-
-    // Log the action with the reason provided in the modal
-    await AdminLog.create({
-      adminId,
-      type: status === 'Suspended' ? 'user_suspended' : 'status_update',
-      title: status === 'Suspended' ? `Suspended: ${suspensionCategory || 'Violation'}` : 'Status Updated',
-      description: status === 'Suspended' 
-        ? `Reason: ${reason || 'No reason provided'}. Email sent: ${sendEmail}` 
-        : `Status changed to ${status}`,
-      targetUserId: id,
-      severity: status === 'Suspended' ? 'High' : 'Low'
-    });
+    // Use UserSuspensionService to handle the logic and database records
+    if (status === 'Suspended') {
+      await UserSuspensionService.createSuspension({
+        userId: parseInt(id),
+        reason: reason || `Suspended for ${suspensionCategory || 'policy violation'}`,
+        reasonTag: suspensionCategory || 'Violation of Terms',
+        effectiveDate: new Date(),
+        adminNotes: reason
+      }, adminId);
+    } else if (status === 'Active') {
+      // If business was suspended, reactivate via service
+      if (user.status === 'Suspended') {
+        await UserSuspensionService.reactivateUser(parseInt(id), {
+          identityVerificationComplete: true,
+          securityAuditPassed: true,
+          reactivationNotes: 'Reactivated from Business Management panel'
+        }, adminId);
+      } else {
+        user.status = status;
+        await user.save();
+      }
+    } else {
+      user.status = status;
+      await user.save();
+    }
 
     return sendResponse(res, 200, true, `Business status updated to ${status}`, { status: user.status });
   } catch (error) {
-    logger.error(`Error in updateBusinessStatus: ${error.message}`);
-    next(error);
+    logger.error(`Error in updateBusinessStatus [User: ${req.params.id}]: ${error.message}`);
+    return sendResponse(res, error.statusCode || 500, false, error.message || 'Internal server error');
   }
 };
 

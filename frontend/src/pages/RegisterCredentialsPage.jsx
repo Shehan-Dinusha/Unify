@@ -33,6 +33,7 @@ const RegisterCredentialsPage = () => {
           <BusinessRegisterForm
             onNext={handleNext}
             onBack={() => navigate(-1)}
+            businessType={businessType}
           />
         )}
       </div>

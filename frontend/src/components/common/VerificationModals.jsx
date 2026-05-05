@@ -8,10 +8,167 @@ const ModalBackdrop = ({ children }) => (
   </div>
 );
 
+export const ActionErrorModal = ({
+  isOpen,
+  onClose,
+  title = "Action Failed",
+  message,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <ModalBackdrop>
+      <Card
+        variant="card"
+        padding="p-0"
+        className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+      >
+        <div className="p-8 pb-6 flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
+            <div className="w-8 h-8 flex items-center justify-center text-state-error">
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-bold text-white mb-3">{title}</h2>
+          <div className="text-text-secondary text-sm leading-relaxed mb-6">
+            {message || "Something went wrong. Please try again."}
+          </div>
+        </div>
+
+        <div className="p-6 pt-2 w-full">
+          <Button
+            onClick={onClose}
+            variant="primary"
+            fullWidth
+            className="h-11 shadow-lg shadow-primary-blue/20 font-semibold"
+          >
+            Try Again
+          </Button>
+        </div>
+      </Card>
+    </ModalBackdrop>
+  );
+};
+
+export const WithdrawalSuccessModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <ModalBackdrop>
+      <Card
+        variant="card"
+        className="w-full max-w-[440px] !p-0 overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+      >
+        <div className="p-8 pb-6 flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
+            <div className="w-8 h-8 flex items-center justify-center text-state-success">
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-bold text-white mb-3">
+            Application Withdrawn
+          </h2>
+          <p className="text-text-secondary text-sm leading-relaxed mb-6">
+            Your verification application has been withdrawn and all submitted
+            documents have been removed.
+          </p>
+        </div>
+
+        <div className="p-6 pt-2 w-full">
+          <Button
+            onClick={onClose}
+            variant="primary"
+            fullWidth
+            className="h-11 shadow-lg shadow-primary-blue/20 font-semibold"
+          >
+            Back to Profile
+          </Button>
+        </div>
+      </Card>
+    </ModalBackdrop>
+  );
+};
+
+export const RevocationSuccessModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <ModalBackdrop>
+      <Card
+        variant="card"
+        className="w-full max-w-[440px] !p-0 overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+      >
+        <div className="p-8 pb-6 flex flex-col items-center text-center">
+          <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
+            <div className="w-8 h-8 flex items-center justify-center text-state-success">
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-xl font-bold text-white mb-3">
+            Status Revoked
+          </h2>
+          <p className="text-text-secondary text-sm leading-relaxed mb-6">
+            Your Batch Rep status has been revoked successfully. Administrative
+            privileges have been removed.
+          </p>
+        </div>
+
+        <div className="p-6 pt-2 w-full">
+          <Button
+            onClick={onClose}
+            variant="primary"
+            fullWidth
+            className="h-11 shadow-lg shadow-primary-blue/20 font-semibold"
+          >
+            Back to Profile
+          </Button>
+        </div>
+      </Card>
+    </ModalBackdrop>
+  );
+};
+
 export const VerificationConfirmationModal = ({
   isOpen,
   onClose,
   onConfirm,
+  loading,
 }) => {
   if (!isOpen) return null;
 
@@ -63,6 +220,7 @@ export const VerificationConfirmationModal = ({
             onClick={onConfirm}
             variant="primary"
             className="flex-1 h-11 shadow-lg shadow-primary-blue/20 font-semibold"
+            disabled={loading}
           >
             Confirm Verification
           </Button>
@@ -136,6 +294,7 @@ export const VerificationRejectionModal = ({
   onConfirm,
   clubName = "Robotics Club",
   requestType = "Club",
+  loading,
 }) => {
   const [selectedReason, setSelectedReason] = useState("Incomplete Documents");
   const [customReason, setCustomReason] = useState("");
@@ -275,8 +434,9 @@ export const VerificationRejectionModal = ({
               variant="danger"
               className="flex-1 h-11 shadow-lg shadow-state-error/20 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={
-                selectedReason === "Other (Specify below)" &&
-                !customReason.trim()
+                loading ||
+                (selectedReason === "Other (Specify below)" &&
+                  !customReason.trim())
               }
             >
               Confirm Rejection
@@ -352,3 +512,4 @@ export const VerificationRejectedSuccessModal = ({
     </ModalBackdrop>
   );
 };
+

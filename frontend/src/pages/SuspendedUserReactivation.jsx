@@ -1,27 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
-import { X, ShieldCheck, AlertTriangle, CheckSquare, Square } from 'lucide-react';
+import { useToast } from '../components/common/Toast';
+import { X, ShieldCheck, AlertTriangle, CheckSquare, Square, Loader2 } from 'lucide-react';
 import { mockRequests } from '../data/mockData';
-import { suspendedUsers } from '../data/mockSuspendedUsers';
+import { getSuspendedUserById, reactivateUser } from '../services/suspensionService';
+
+// ─── Date Formatting ────────────────────────────────────────────────────────
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
 
 const SuspendedUserReactivation = () => {
     const navigate = useNavigate();
+    const toast = useToast();
     const { id } = useParams();
-    const user = suspendedUsers.find((u) => u.id === id) || suspendedUsers[0];
 
-    const [identityVerified, setIdentityVerified] = useState(true);
+    // User data from API
+    const [userData, setUserData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Form state
+    const [identityVerified, setIdentityVerified] = useState(false);
     const [securityAudit, setSecurityAudit] = useState(false);
     const [internalNote, setInternalNote] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
-    const handleReactivate = () => {
-        navigate(`/suspended-users/${user.id}/success`);
+    // ─── Fetch User Data ────────────────────────────────
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await getSuspendedUserById(id);
+                if (response.success) {
+                    setUserData(response.data);
+                    // Pre-fill validations from existing data
+                    if (response.data.validations) {
+                        setIdentityVerified(!!response.data.validations.identityVerificationComplete);
+                        setSecurityAudit(!!response.data.validations.securityAuditPassed);
+                    }
+                } else {
+                    throw new Error(response.message || 'Failed to load user');
+                }
+            } catch (err) {
+                setError(err.message);
+                toast.error('Error', err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ─── Reactivation Handler ───────────────────────────
+    const handleReactivate = async () => {
+        // Client-side validation warning
+        if (!identityVerified || !securityAudit) {
+            toast.warning('Validation Required', 'Both identity verification and security audit must be completed before reactivation.');
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            const response = await reactivateUser(id, {
+                identityVerificationComplete: identityVerified,
+                securityAuditPassed: securityAudit,
+                reactivationNotes: internalNote || undefined,
+            });
+
+            if (response.success) {
+                toast.success('Account Reactivated', `${userData?.user?.name || 'User'}'s account has been restored.`);
+                // Pass reactivation data via state to the success page
+                navigate(`/suspended-users/${id}/success`, {
+                    state: {
+                        reactivationData: response.data,
+                        userName: userData?.user?.name,
+                        studentId: userData?.user?.studentId,
+                        caseReference: response.data?.caseReference || userData?.suspension?.caseRef,
+                    }
+                });
+            } else {
+                throw new Error(response.message || 'Reactivation failed');
+            }
+        } catch (err) {
+            toast.error('Reactivation Failed', err.message);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const handleCancel = () => {
-        navigate(`/suspended-users/${user.id}`);
+        navigate(`/suspended-users/${id}`);
     };
+
+    const user = userData?.user || {};
+    const suspension = userData?.suspension || {};
 
     return (
         <MainLayout
@@ -32,121 +111,166 @@ const SuspendedUserReactivation = () => {
             {/* ── Blur Overlay Modal ──────────────────────────── */}
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">
                 <Card variant="card" padding="p-0" className="w-full max-w-[520px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl my-auto">
-                    {/* Header */}
-                    <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-4 flex items-center justify-between">
-                        <div className="flex items-center gap-sm">
-                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                                <ShieldCheck size={18} className="text-text-secondary" />
-                            </div>
-                            <h2 className="text-body-large-bold text-text-primary font-inter">Confirm Account Reactivation</h2>
-                        </div>
-                        <button
-                            onClick={handleCancel}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 transition-all"
-                        >
-                            <X size={18} />
-                        </button>
-                    </div>
 
-                    {/* User Info */}
-                    <div className="px-6 sm:px-8 mb-4">
-                        <div className="flex items-center justify-between rounded-xl bg-white/5 border border-white/10 p-md">
-                            <div className="flex items-center gap-md">
-                                <img
-                                    src={user.avatar}
-                                    alt={user.name}
-                                    className="w-10 h-10 rounded-full object-cover border border-white/20"
-                                />
-                                <div>
-                                    <p className="text-body-medium-bold text-text-primary font-inter">{user.name}</p>
-                                    <p className="text-body-extra-small text-text-secondary font-inter">Student</p>
+                    {/* ── Loading State ───────────────────────── */}
+                    {loading && (
+                        <div className="p-12 flex flex-col items-center justify-center">
+                            <Loader2 size={32} className="text-primary-blue animate-spin mb-md" />
+                            <p className="text-body-small text-text-secondary font-inter">Loading user data...</p>
+                        </div>
+                    )}
+
+                    {/* ── Error State ─────────────────────────── */}
+                    {!loading && error && (
+                        <div className="p-8 flex flex-col items-center justify-center text-center">
+                            <div className="w-14 h-14 bg-state-error/10 rounded-full flex items-center justify-center mb-md">
+                                <AlertTriangle size={24} className="text-state-error" />
+                            </div>
+                            <h3 className="text-body-large-bold text-text-primary font-inter mb-sm">Error</h3>
+                            <p className="text-body-small text-text-secondary font-inter mb-lg">{error}</p>
+                            <button
+                                onClick={handleCancel}
+                                className="h-11 px-8 rounded-2xl bg-primary-blue text-white font-inter font-bold text-sm hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+                            >
+                                Go Back
+                            </button>
+                        </div>
+                    )}
+
+                    {/* ── Loaded Content ──────────────────────── */}
+                    {!loading && !error && userData && (
+                        <>
+                            {/* Header */}
+                            <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-4 flex items-center justify-between">
+                                <div className="flex items-center gap-sm">
+                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                        <ShieldCheck size={18} className="text-text-secondary" />
+                                    </div>
+                                    <h2 className="text-body-large-bold text-text-primary font-inter">Confirm Account Reactivation</h2>
+                                </div>
+                                <button
+                                    onClick={handleCancel}
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 transition-all"
+                                >
+                                    <X size={18} />
+                                </button>
+                            </div>
+
+                            {/* User Info */}
+                            <div className="px-6 sm:px-8 mb-4">
+                                <div className="flex items-center justify-between rounded-xl bg-white/5 border border-white/10 p-md">
+                                    <div className="flex items-center gap-md">
+                                        <img
+                                            src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name || 'user'}`}
+                                            alt={user.name}
+                                            className="w-10 h-10 rounded-full object-cover border border-white/20"
+                                        />
+                                        <div>
+                                            <p className="text-body-medium-bold text-text-primary font-inter">{user.name || 'Unknown'}</p>
+                                            <p className="text-body-extra-small text-text-secondary font-inter">Student</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-body-extra-small-bold text-state-error bg-state-error/15 border border-state-error/30 px-sm py-xs rounded-lg">
+                                        Suspended
+                                    </span>
                                 </div>
                             </div>
-                            <span className="text-body-extra-small-bold text-state-error bg-state-error/15 border border-state-error/30 px-sm py-xs rounded-lg">
-                                Suspended
-                            </span>
-                        </div>
-                    </div>
 
-                    {/* Original Suspension Reason */}
-                    <div className="px-6 sm:px-8 mb-4">
-                        <div className="rounded-xl bg-state-warning/10 border border-state-warning/20 p-md">
-                            <div className="flex items-start gap-sm mb-sm">
-                                <AlertTriangle size={16} className="text-state-warning shrink-0 mt-0.5" />
-                                <p className="text-body-small-bold text-state-warning font-inter">Original Suspension Reason</p>
+                            {/* Original Suspension Reason */}
+                            <div className="px-6 sm:px-8 mb-4">
+                                <div className="rounded-xl bg-state-warning/10 border border-state-warning/20 p-md">
+                                    <div className="flex items-start gap-sm mb-sm">
+                                        <AlertTriangle size={16} className="text-state-warning shrink-0 mt-0.5" />
+                                        <p className="text-body-small-bold text-state-warning font-inter">Original Suspension Reason</p>
+                                    </div>
+                                    <p className="text-body-small text-text-secondary font-inter leading-relaxed pl-6">
+                                        {(suspension.adminNotes || suspension.reason || '—').replace(/"/g, '')}
+                                    </p>
+                                    <p className="text-body-extra-small text-primary-blue font-inter mt-sm pl-6">
+                                        {suspension.adminAction || `Action taken on ${formatDate(suspension.effectiveDate)}`}
+                                    </p>
+                                </div>
                             </div>
-                            <p className="text-body-small text-text-secondary font-inter leading-relaxed pl-6">
-                                {user.adminNotes.replace(/"/g, '')}
-                            </p>
-                            <p className="text-body-extra-small text-primary-blue font-inter mt-sm pl-6">
-                                Action taken on {user.effectiveDate} by {user.adminAction}
-                            </p>
-                        </div>
-                    </div>
 
-                    {/* Required Validations */}
-                    <div className="px-6 sm:px-8 mb-4">
-                        <p className="text-body-small text-text-secondary font-inter mb-md">Required Validations</p>
+                            {/* Required Validations */}
+                            <div className="px-6 sm:px-8 mb-4">
+                                <p className="text-body-small text-text-secondary font-inter mb-md">Required Validations</p>
 
-                        {/* Identity Verification */}
-                        <button
-                            onClick={() => setIdentityVerified(!identityVerified)}
-                            className="flex items-start gap-md mb-md w-full text-left"
-                        >
-                            {identityVerified ? (
-                                <CheckSquare size={18} className="text-primary-blue shrink-0 mt-0.5" />
-                            ) : (
-                                <Square size={18} className="text-text-secondary shrink-0 mt-0.5" />
-                            )}
-                            <div>
-                                <p className="text-body-small-bold text-text-primary font-inter">Identity Verification Complete</p>
-                                <p className="text-body-extra-small text-text-secondary font-inter">Confirmed via university email channel.</p>
+                                {/* Identity Verification */}
+                                <button
+                                    onClick={() => setIdentityVerified(!identityVerified)}
+                                    disabled={submitting}
+                                    className="flex items-start gap-md mb-md w-full text-left disabled:opacity-50"
+                                >
+                                    {identityVerified ? (
+                                        <CheckSquare size={18} className="text-primary-blue shrink-0 mt-0.5" />
+                                    ) : (
+                                        <Square size={18} className="text-text-secondary shrink-0 mt-0.5" />
+                                    )}
+                                    <div>
+                                        <p className="text-body-small-bold text-text-primary font-inter">Identity Verification Complete</p>
+                                        <p className="text-body-extra-small text-text-secondary font-inter">Confirmed via university email channel.</p>
+                                    </div>
+                                </button>
+
+                                {/* Security Audit */}
+                                <button
+                                    onClick={() => setSecurityAudit(!securityAudit)}
+                                    disabled={submitting}
+                                    className="flex items-start gap-md w-full text-left disabled:opacity-50"
+                                >
+                                    {securityAudit ? (
+                                        <CheckSquare size={18} className="text-primary-blue shrink-0 mt-0.5" />
+                                    ) : (
+                                        <Square size={18} className="text-text-secondary shrink-0 mt-0.5" />
+                                    )}
+                                    <div>
+                                        <p className="text-body-small-bold text-text-primary font-inter">Security Audit Passed</p>
+                                        <p className="text-body-extra-small text-text-secondary font-inter">Logs reviewed for secondary breaches.</p>
+                                    </div>
+                                </button>
                             </div>
-                        </button>
 
-                        {/* Security Audit */}
-                        <button
-                            onClick={() => setSecurityAudit(!securityAudit)}
-                            className="flex items-start gap-md w-full text-left"
-                        >
-                            {securityAudit ? (
-                                <CheckSquare size={18} className="text-primary-blue shrink-0 mt-0.5" />
-                            ) : (
-                                <Square size={18} className="text-text-secondary shrink-0 mt-0.5" />
-                            )}
-                            <div>
-                                <p className="text-body-small-bold text-text-primary font-inter">Security Audit Passed</p>
-                                <p className="text-body-extra-small text-text-secondary font-inter">Logs reviewed for secondary breaches.</p>
+                            {/* Internal Note */}
+                            <div className="px-6 sm:px-8 mb-4">
+                                <p className="text-body-small-bold text-text-primary font-inter mb-sm">Internal reactivation Note (Optional)</p>
+                                <textarea
+                                    className="w-full h-20 rounded-2xl bg-white/5 border border-white/10 outline-none transition-all font-inter text-sm text-text-primary placeholder:text-text-tertiary px-4 py-3 resize-none focus:border-primary-blue/50 focus:bg-white/10 shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)] disabled:opacity-50"
+                                    placeholder="Add remarks about the restoration...."
+                                    value={internalNote}
+                                    onChange={(e) => setInternalNote(e.target.value)}
+                                    disabled={submitting}
+                                />
                             </div>
-                        </button>
-                    </div>
 
-                    {/* Internal Note */}
-                    <div className="px-6 sm:px-8 mb-4">
-                        <p className="text-body-small-bold text-text-primary font-inter mb-sm">Internal reactivation Note (Optional)</p>
-                        <textarea
-                            className="w-full h-20 rounded-2xl bg-white/5 border border-white/10 outline-none transition-all font-inter text-sm text-text-primary placeholder:text-text-tertiary px-4 py-3 resize-none focus:border-primary-blue/50 focus:bg-white/10 shadow-[inset_0px_2px_4px_1px_rgba(0,0,0,0.05)]"
-                            placeholder="Add remarks about the restoration...."
-                            value={internalNote}
-                            onChange={(e) => setInternalNote(e.target.value)}
-                        />
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-2 flex flex-col sm:flex-row gap-3 sm:justify-end">
-                        <button
-                            onClick={handleCancel}
-                            className="h-11 sm:h-12 px-8 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleReactivate}
-                            className="h-11 sm:h-12 px-8 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
-                        >
-                            <ShieldCheck size={18} /> Reactivate Account
-                        </button>
-                    </div>
+                            {/* Action Buttons */}
+                            <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-2 flex flex-col sm:flex-row gap-3 sm:justify-end">
+                                <button
+                                    onClick={handleCancel}
+                                    disabled={submitting}
+                                    className="h-11 sm:h-12 px-8 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleReactivate}
+                                    disabled={submitting}
+                                    className="h-11 sm:h-12 px-8 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <Loader2 size={18} className="animate-spin" />
+                                            Reactivating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ShieldCheck size={18} /> Reactivate Account
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </Card>
             </div>
         </MainLayout>

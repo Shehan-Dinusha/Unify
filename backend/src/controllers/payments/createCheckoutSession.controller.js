@@ -45,6 +45,11 @@ export const createCheckoutSession = async (req, res) => {
           bookingId: bookingId || null,
         },
       },
+      payment_intent_data: {
+        metadata: {
+          orderId: orderId,
+        },
+      },
     });
 
     res.status(200).json({ success: true, url: session.url });

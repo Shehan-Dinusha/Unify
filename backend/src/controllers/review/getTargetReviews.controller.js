@@ -9,6 +9,7 @@ import {
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { formatRelativeDate } from "../../utils/date.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getTargetReviews = async (req, res, next) => {
   try {
@@ -16,8 +17,6 @@ export const getTargetReviews = async (req, res, next) => {
 
     // Fallback to 1 for testing if req.user is not yet defined
     const currentUserId = req.user?.id || 1;
-
-
 
     const targetExists = await User.findByPk(targetId);
     if (!targetExists) {
@@ -105,101 +104,113 @@ export const getTargetReviews = async (req, res, next) => {
     };
 
     // 2. Format Reviews list for frontend expectations
-    const formattedReviews = rawReviews.map((modelReview) => {
-      const review = modelReview.toJSON();
-      const isOwn = review.reviewerId === currentUserId;
+    const formattedReviews = await Promise.all(
+      rawReviews.map(async (modelReview) => {
+        const review = modelReview.toJSON();
+        const isOwn = review.reviewerId === currentUserId;
 
-      let author = {
-        name: "Deleted User",
-        role: "Unknown",
-        avatar: null,
-      };
+        let author = {
+          name: "Deleted User",
+          role: "Unknown",
+          avatar: null,
+        };
 
-      if (review.reviewer) {
-        if (review.isAnonymous) {
-          author = {
-            name: "Anonymous User",
-            role: "User",
-            avatar: null,
-            initials: "A",
-            bgColor: "bg-gray-600",
-          };
-        } else {
-          let actualRole = review.reviewer.role;
-          let isVerified = false;
+        if (review.reviewer) {
+          if (review.isAnonymous) {
+            author = {
+              name: "Anonymous User",
+              role: "User",
+              avatar: null,
+              initials: "A",
+              bgColor: "bg-gray-600",
+            };
+          } else {
+            let actualRole = review.reviewer.role;
+            let isVerified = false;
 
-          // Determine specific identity
-          if (
-            review.reviewer.role === "Student" &&
-            review.reviewer.studentProfile?.isBatchRep
-          ) {
-            actualRole = "Batch Rep";
-            isVerified = true;
-          } else if (
-            review.reviewer.role === "Club" &&
-            review.reviewer.clubProfile?.isVerified
-          ) {
-            isVerified = true;
+            const avatarUrl = await resolveAvatarUrl(
+              review.reviewer.avatar,
+              review.reviewer.name,
+            );
+
+            // Determine specific identity
+            if (
+              review.reviewer.role === "Student" &&
+              review.reviewer.studentProfile?.isBatchRep
+            ) {
+              actualRole = "Batch Rep";
+              isVerified = true;
+            } else if (
+              review.reviewer.role === "Club" &&
+              review.reviewer.clubProfile?.isVerified
+            ) {
+              isVerified = true;
+            }
+
+            author = {
+              name: review.reviewer.name,
+              role: actualRole,
+              isVerified: isVerified,
+              avatar: avatarUrl,
+              initials: review.reviewer.name
+                ? review.reviewer.name.substring(0, 2).toUpperCase()
+                : "U",
+              bgColor: "bg-blue-600",
+            };
           }
+        }
 
-          author = {
-            name: review.reviewer.name,
-            role: actualRole,
-            isVerified: isVerified,
-            avatar: review.reviewer.avatar,
-            initials: review.reviewer.name
-              ? review.reviewer.name.substring(0, 2).toUpperCase()
-              : "U",
-            bgColor: "bg-blue-600",
+        // Basic formatting of date. The frontend says "Just now" or "2 days ago",
+        // formatting relative date using util function.
+        const dateStr = formatRelativeDate(review.createdAt);
+
+        let parsedOwnerReply = null;
+        if (review.ownerReply) {
+          const targetUser = review.target || {};
+          const bizProfile = targetUser.businessProfile || {};
+          const ownerName =
+            bizProfile.businessName ||
+            bizProfile.displayName ||
+            targetUser.name ||
+            "Owner";
+
+          const ownerAvatarUrl = await resolveAvatarUrl(
+            targetUser.avatar,
+            ownerName,
+          );
+
+          parsedOwnerReply = {
+            content: review.ownerReply,
+            author: {
+              name: ownerName,
+              avatar: ownerAvatarUrl,
+            },
+            createdAt: formatRelativeDate(review.updatedAt),
           };
         }
-      }
 
-      // Basic formatting of date. The frontend says "Just now" or "2 days ago",
-      // formatting relative date using util function.
-      const dateStr = formatRelativeDate(review.createdAt);
+        let currentUserFeedback = null;
+        if (review.feedbacks && review.feedbacks.length > 0) {
+          currentUserFeedback = review.feedbacks[0].isHelpful
+            ? "helpful"
+            : "not_helpful";
+        }
 
-      let parsedOwnerReply = null;
-      if (review.ownerReply) {
-        const targetUser = review.target || {};
-        const bizProfile = targetUser.businessProfile || {};
-        const ownerName =
-          bizProfile.businessName ||
-          bizProfile.displayName ||
-          targetUser.name ||
-          "Owner";
-
-        parsedOwnerReply = {
-          content: review.ownerReply,
-          author: {
-            name: ownerName,
-            avatar: null,
-          },
-          createdAt: formatRelativeDate(review.updatedAt),
+        return {
+          id: review.id,
+          rating: review.rating,
+          content: review.content,
+          helpfulCount: review.helpfulCount || 0,
+          notHelpfulCount: review.notHelpfulCount || 0,
+          currentUserFeedback: currentUserFeedback,
+          isOwn,
+          isLikedByOwner: review.isLikedByOwner,
+          createdAt: dateStr,
+          author,
+          ownerReply: parsedOwnerReply,
         };
-      }
-
-      let currentUserFeedback = null;
-      if (review.feedbacks && review.feedbacks.length > 0) {
-        currentUserFeedback = review.feedbacks[0].isHelpful
-          ? "helpful"
-          : "not_helpful";
-      }
-
-      return {
-        id: review.id,
-        rating: review.rating,
-        content: review.content,
-        helpfulCount: review.helpfulCount || 0,
-        notHelpfulCount: review.notHelpfulCount || 0,
-        currentUserFeedback: currentUserFeedback,
-        isOwn,
-        isLikedByOwner: review.isLikedByOwner,
-        createdAt: dateStr,
-        author,
-        ownerReply: parsedOwnerReply,
-      };
-    });
+      }),
+    );
 
     return sendResponse(res, 200, true, "Reviews fetched successfully", {
       reviews: formattedReviews,

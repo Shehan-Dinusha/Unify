@@ -6,7 +6,7 @@ import Button from "../common/Button";
 
 import ImageUpload from "../common/ImageUpload";
 
-const ClubDetailsForm = ({ onNext }) => {
+const ClubDetailsForm = ({ onNext, initialData, loading }) => {
   const categoryOptions = [
     { value: "sports", label: "Sports" },
     { value: "academic", label: "Academic" },
@@ -14,11 +14,23 @@ const ClubDetailsForm = ({ onNext }) => {
   ];
 
   const [formData, setFormData] = useState({
-    clubName: "",
-    about: "",
-    document: null,
+    clubName: initialData?.clubName || "",
+    about: initialData?.about || "",
+    clubDoc: null,
     profileImage: null,
   });
+
+  // Sync initialData when it becomes available
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData({
+        clubName: initialData.clubName || "",
+        about: initialData.about || "",
+        clubDoc: null,
+        profileImage: null,
+      });
+    }
+  }, [initialData]);
 
   const [errors, setErrors] = useState({});
 
@@ -46,10 +58,10 @@ const ClubDetailsForm = ({ onNext }) => {
       <div className="flex flex-col gap-10">
         <div className="flex flex-col items-center gap-3 text-center px-4">
           <h1 className="text-white text-heading-medium font-bold font-inter leading-tight">
-            Personal Details
+            Club Details
           </h1>
           <p className="text-text-secondary text-body-small leading-relaxed max-w-[400px]">
-            Tell us a bit about yourself to complete your profile.
+            Tell us a bit about your club to complete your profile.
           </p>
         </div>
 
@@ -99,14 +111,14 @@ const ClubDetailsForm = ({ onNext }) => {
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        document: e.target.files[0],
+                        clubDoc: e.target.files[0],
                       }))
                     }
                   />
                 </label>
                 <span className="text-text-secondary text-body-small truncate min-w-0 flex-1">
-                  {formData.document
-                    ? formData.document.name
+                  {formData.clubDoc
+                    ? formData.clubDoc.name
                     : "No file chosen"}
                 </span>
               </div>
@@ -120,9 +132,9 @@ const ClubDetailsForm = ({ onNext }) => {
               size="large"
               type="submit"
               className="shadow-custom-shadow"
-              disabled={!isFormComplete}
+              disabled={!isFormComplete || loading}
             >
-              Save & Continue
+              {loading ? "Saving..." : "Save & Continue"}
             </Button>
           </div>
         </form>

@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  ThumbsUp,
-  ThumbsDown,
-  ChevronDown,
-  Trash2,
-  Heart,
-} from "lucide-react";
+import { ThumbsUp, ThumbsDown, ChevronDown, Trash2, Heart } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
@@ -21,6 +15,7 @@ import {
   ReviewDeletedModal,
 } from "../components/common/ReviewModals";
 import StarRating from "../components/common/StarRating";
+import Avatar from "../components/common/Avatar";
 
 const ShieldCheckIcon = () => (
   <svg
@@ -278,7 +273,9 @@ const WriteReview = ({ onSubmit }) => {
 const ReviewCard = ({ review, onDelete, onFeedback }) => {
   const [feedback, setFeedback] = useState(review.currentUserFeedback);
   const [helpfulCount, setHelpfulCount] = useState(review.helpfulCount);
-  const [notHelpfulCount, setNotHelpfulCount] = useState(review.notHelpfulCount);
+  const [notHelpfulCount, setNotHelpfulCount] = useState(
+    review.notHelpfulCount,
+  );
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleHelpful = async () => {
@@ -304,7 +301,9 @@ const ReviewCard = ({ review, onDelete, onFeedback }) => {
     try {
       const result = await onFeedback(review.id, "not_helpful");
       if (result) {
-        setFeedback(result.feedbackModified === "removed" ? null : "not_helpful");
+        setFeedback(
+          result.feedbackModified === "removed" ? null : "not_helpful",
+        );
         setHelpfulCount(result.helpfulCount);
         setNotHelpfulCount(result.notHelpfulCount);
       }
@@ -323,19 +322,11 @@ const ReviewCard = ({ review, onDelete, onFeedback }) => {
     >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
         <div className="flex items-center gap-3">
-          {review.author.avatar ? (
-            <img
-              src={review.author.avatar}
-              alt={review.author.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
-          ) : (
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold font-inter ${review.author.bgColor || "bg-gray-600"}`}
-            >
-              {review.author.initials}
-            </div>
-          )}
+          <Avatar
+            src={review.author.avatar}
+            alt={review.author.name}
+            className="w-10 h-10 rounded-full object-cover shrink-0"
+          />
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <span className="text-white text-sm font-bold font-inter leading-5">
@@ -449,17 +440,11 @@ const ReviewCard = ({ review, onDelete, onFeedback }) => {
 
       {review.ownerReply && (
         <div className="mt-6 pt-4 border-t border-gray-800 flex gap-3">
-          {review.ownerReply.author?.avatar ? (
-            <img
-              src={review.ownerReply.author.avatar}
-              alt={review.ownerReply.author.name}
-              className="w-9 h-9 rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold font-inter shrink-0">
-              {review.ownerReply.author?.name?.charAt(0) || "O"}
-            </div>
-          )}
+          <Avatar
+            src={review.ownerReply.author?.avatar}
+            alt={review.ownerReply.author?.name}
+            className="w-9 h-9 rounded-full object-cover shrink-0"
+          />
           <div className="flex-1 bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg p-3 outline outline-1 outline-gray-800 flex flex-col gap-1">
             <div className="flex justify-between items-center h-6">
               <div className="flex items-center gap-2">
@@ -556,11 +541,13 @@ const MarketplaceReviews = () => {
       setError(null);
       const data = await getTargetReviews(TARGET_ID);
       setReviews(data.reviews || []);
-      setSummary(data.summary || {
-        averageRating: 0,
-        totalReviews: 0,
-        distribution: [],
-      });
+      setSummary(
+        data.summary || {
+          averageRating: 0,
+          totalReviews: 0,
+          distribution: [],
+        },
+      );
     } catch (err) {
       setError("Failed to load reviews.");
     } finally {
@@ -604,7 +591,9 @@ const MarketplaceReviews = () => {
       // Refetch to get the latest calculated stats and new review from the server
       await fetchReviewsData();
     } catch (error) {
-      alert("Failed to submit review. You might already have an active review.");
+      alert(
+        "Failed to submit review. You might already have an active review.",
+      );
     }
   };
 
@@ -628,7 +617,7 @@ const MarketplaceReviews = () => {
   const handleFeedbackToggle = async (reviewId, action) => {
     try {
       const result = await toggleReviewFeedback(reviewId, action);
-      // We don't necessarily need to refetch the whole page, 
+      // We don't necessarily need to refetch the whole page,
       // the ReviewCard maintains its own local state for the thumbs up/down
       return result;
     } catch (error) {
@@ -702,7 +691,10 @@ const MarketplaceReviews = () => {
           {summary.totalReviews > 0 ? (
             <RatingSummary summary={summary} />
           ) : (
-            <Card variant="card" className="w-full lg:w-96 h-[470px] flex flex-col justify-center items-center">
+            <Card
+              variant="card"
+              className="w-full lg:w-96 h-[470px] flex flex-col justify-center items-center"
+            >
               <span className="text-gray-400">No reviews yet</span>
             </Card>
           )}

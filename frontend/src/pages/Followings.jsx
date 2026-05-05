@@ -15,6 +15,8 @@ import {
   unfollowOrganization,
 } from "../services/followerService";
 
+import Avatar from "../components/common/Avatar";
+
 const ITEMS_PER_PAGE = 10; // Keeping 10 for demonstration
 
 const FollowingCard = ({ following, onUnfollow }) => {
@@ -33,7 +35,7 @@ const FollowingCard = ({ following, onUnfollow }) => {
       <div className="flex items-center gap-3 md:gap-4 flex-1 overflow-hidden min-w-0">
         {/* Avatar */}
         <div className="w-12 h-12 md:w-16 md:h-16 min-w-[48px] md:min-w-[64px] bg-gray-800 rounded-full border border-gray-800 flex items-center justify-center overflow-hidden shrink-0">
-          <img
+          <Avatar
             className="w-full h-full object-cover"
             src={following.avatar}
             alt={following.name}

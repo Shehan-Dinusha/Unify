@@ -8,6 +8,8 @@ import {
   getMyBusinessProfile,
   upsertClubProfile,
   getMyClubProfile,
+  changePassword,
+  deleteAccount,
 } from "../controllers/profile/index.js";
 import {
   studentProfileValidator,
@@ -16,6 +18,7 @@ import {
 } from "../validators/profile.validator.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
+import { parseFormDataFields } from "../middlewares/parseFormData.middleware.js";
 
 const router = express.Router();
 
@@ -31,8 +34,9 @@ router.put(
       { name: "avatar", maxCount: 1 },
       { name: "profileImage", maxCount: 1 },
     ],
-    folder: "avatars",
+    folder: "profiles",
   }),
+  parseFormDataFields(["addresses"]),
   authorize(ROLES.STUDENT),
   studentProfileValidator,
   validateRequest,
@@ -49,8 +53,9 @@ router.put(
       { name: "avatar", maxCount: 1 },
       { name: "profileImage", maxCount: 1 },
     ],
-    folder: "avatars",
+    folder: "profiles",
   }),
+  parseFormDataFields(["addresses"]),
   authorize(ROLES.BUSINESS),
   businessProfileValidator,
   validateRequest,
@@ -68,17 +73,17 @@ router.put(
       { name: "profileImage", maxCount: 1 },
       { name: "clubDoc", maxCount: 1 },
     ],
-    folder: {
-      avatar: "avatars",
-      profileImage: "avatars",
-      clubDoc: "verifications",
-    },
+    folder: "profiles",
   }),
+  parseFormDataFields(["addresses"]),
   authorize(ROLES.CLUB),
   clubProfileValidator,
   validateRequest,
   upsertClubProfile,
 );
 router.get("/club/me", authorize(ROLES.CLUB), getMyClubProfile);
+// ── Account Management ────────────────────────────────────────────────────────
+router.put("/password", changePassword);
+router.delete("/", deleteAccount);
 
 export default router;

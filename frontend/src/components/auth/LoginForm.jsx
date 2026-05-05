@@ -18,13 +18,13 @@ const LoginForm = () => {
     let tempErrors = {};
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^0\d{9}$/;
+    const phoneRegex = /^[0-9+]{10,15}$/;
 
     if (!identifier) {
       tempErrors.identifier = "Email or Phone Number is required";
-    } else if (!emailRegex.test(identifier) && !phoneRegex.test(identifier)) {
+    } else if (!emailRegex.test(identifier) && !phoneRegex.test(identifier.replace(/\s/g, ""))) {
       tempErrors.identifier =
-        "Please enter a valid email or 10-digit phone number";
+        "Please enter a valid email or phone number";
     }
 
     if (!password) {
@@ -45,9 +45,33 @@ const LoginForm = () => {
     setErrors({});
 
     try {
-      await login(identifier, password);
-      console.log("Login Successful");
-      // navigate('/dashboard');
+      let formattedIdentifier = identifier.trim();
+      const isEmail = formattedIdentifier.includes("@");
+
+      // Auto-format local Sri Lankan numbers to international format (+94)
+      if (!isEmail && formattedIdentifier.startsWith("0") && formattedIdentifier.length === 10) {
+        formattedIdentifier = "+94" + formattedIdentifier.substring(1);
+      } else if (!isEmail && /^\d{9}$/.test(formattedIdentifier)) {
+        formattedIdentifier = "+94" + formattedIdentifier;
+      }
+
+      const data = await login(formattedIdentifier, password);
+      
+      // Navigate based on user role (Navigation occurs AFTER tokens are stored in authService)
+      const role = data.user.role.toLowerCase();
+      
+      if (role === "admin") {
+        navigate("/admin");
+      } else if (role === "student") {
+        navigate("/newsfeed");
+      } else if (role === "business") {
+        navigate("/business/dashboard");
+      } else if (role === "club") {
+        navigate("/club/dashboard");
+      } else {
+        // Fallback or generic dashboard
+        navigate("/newsfeed");
+      }
     } catch (err) {
       setErrors({ form: err.message });
     } finally {

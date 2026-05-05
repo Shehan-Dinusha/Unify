@@ -1,6 +1,7 @@
 import { Report, Post, User, AdminLog, StudentReport, Comment, MarketplaceItem, Boarding } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import UserSuspensionService from "../../services/userSuspension.service.js";
 
 /**
  * PUT /api/v1/reports/social/:id
@@ -143,12 +144,14 @@ export const processSocialReport = async (req, res, next) => {
           return sendResponse(res, 404, false, 'Target user not found.');
         }
 
-        if (userToSuspend.status === 'Suspended') {
-          return sendResponse(res, 400, false, 'User is already suspended.');
-        }
-
-        userToSuspend.status = 'Suspended';
-        await userToSuspend.save();
+        await UserSuspensionService.createSuspension({
+          userId: targetUserId,
+          reason: reason || 'Violation of platform guidelines',
+          reasonTag: 'Violation of Terms',
+          severity: 'High',
+          effectiveDate: new Date(),
+          adminNotes: `Suspended via Report Moderation for report ID ${id}. ${notes || ''}`
+        }, adminId);
 
         appendNote(`Action Taken: Suspended User (${userToSuspend.name}). Reason: ${reason || 'Violation of guidelines'}.${notes ? ' Notes: ' + notes : ''}`);
         await report.save();

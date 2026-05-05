@@ -5,6 +5,7 @@ import MainLayout from "../components/layout/MainLayout";
 import StatsCard from "../components/common/StatsCard";
 import PostCard from "../components/feed/PostCard";
 import postService from "../services/postService";
+import newsfeedService from "../services/newsfeedService";
 import { formatTimeAgo, getImageUrl } from "../utils/formatters";
 
 const NewsFeed = ({ userRole = 'student' }) => {
@@ -16,6 +17,13 @@ const NewsFeed = ({ userRole = 'student' }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Highlight counts
+  const [highlightCounts, setHighlightCounts] = useState({
+    announcements: 0,
+    marketplace: 0,
+    events: 0
+  });
 
   const user = {
     name: "Alex Johnson",
@@ -24,11 +32,22 @@ const NewsFeed = ({ userRole = 'student' }) => {
   };
 
   useEffect(() => {
-    const fetchFeed = async () => {
+    const fetchFeedAndHighlights = async () => {
       try {
         setLoading(true);
-        const data = await postService.getFeed("all");
-        setPosts(data.feed);
+        const [feedData, events, marketplace, announcements] = await Promise.all([
+          postService.getFeed("all"),
+          newsfeedService.getEventsToday().catch(() => ({ events: [] })),
+          newsfeedService.getMarketplaceItemsToday().catch(() => ({ items: [] })),
+          newsfeedService.getNewAnnouncements().catch(() => ({ announcements: [] }))
+        ]);
+        
+        setPosts(feedData.feed);
+        setHighlightCounts({
+          events: events.events?.length || 0,
+          marketplace: marketplace.items?.length || 0,
+          announcements: announcements.announcements?.length || 0
+        });
       } catch (err) {
         setError(err.error || "Failed to load feed");
       } finally {
@@ -36,14 +55,16 @@ const NewsFeed = ({ userRole = 'student' }) => {
       }
     };
 
-    fetchFeed();
+    fetchFeedAndHighlights();
   }, []);
 
   useEffect(() => {
     // Check if we arrived with a targetPostId in state
     if (location.state?.targetPostId && posts.length > 0) {
       const targetId = location.state.targetPostId;
-      const targetRef = postRefs.current[targetId];
+      const targetType = location.state.targetPostType;
+      const refKey = targetType ? `${targetType}-${targetId}` : targetId;
+      const targetRef = postRefs.current[refKey];
 
       if (targetRef) {
         setTimeout(() => {
@@ -130,7 +151,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
               iconAlt="Announcements"
               iconBgClass="bg-yellow-500/20"
               title="New Announcements"
-              value="10"
+              value={highlightCounts.announcements}
             />
           </Link>
 
@@ -140,7 +161,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
               iconAlt="Marketplace"
               iconBgClass="bg-green-500/20"
               title="New Marketplace Items"
-              value="10"
+              value={highlightCounts.marketplace}
             />
           </Link>
 
@@ -151,7 +172,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
               iconBgClass="bg-purple-500/20"
               title="Events Today"
               iconSize="w-7 h-7"
-              value="10"
+              value={highlightCounts.events}
             />
           </Link>
         </div>
@@ -184,7 +205,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
             <div className="flex flex-col gap-6 w-full">
               {filteredPosts.length > 0 ? (
                 filteredPosts.map((post) => (
-                  <div key={`${post.postType}-${post.id}`} ref={(el) => (postRefs.current[post.id] = el)}>
+                  <div key={`${post.postType}-${post.id}`} ref={(el) => (postRefs.current[`${post.postType}-${post.id}`] = el)}>
                     <PostCard
                       post={post}
                       author={post.author?.name || "Unknown User"}
@@ -195,7 +216,9 @@ const NewsFeed = ({ userRole = 'student' }) => {
                       description={post.description}
                       image={getImageUrl(post.coverImage || post.image || post.images?.[0])}
                       likes={post.likesCount || 0}
-                      comments={0}
+                      comments={post.commentsCount || 0}
+                      initialIsLiked={post.isLiked}
+                      initialIsSaved={post.isSaved}
                       isPromoted={post.isPromoted}
                       showBoost={user.role === 'business'}
                     />

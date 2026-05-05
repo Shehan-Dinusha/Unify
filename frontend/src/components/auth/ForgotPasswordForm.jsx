@@ -3,6 +3,7 @@ import { Mail } from "lucide-react";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
+import { forgotPassword } from "../../services/authService";
 
 const ForgotPasswordForm = ({ onNext }) => {
   const [identifier, setIdentifier] = useState("");
@@ -33,12 +34,13 @@ const ForgotPasswordForm = ({ onNext }) => {
     setErrors({});
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("OTP Sent to:", identifier);
+      const isEmail = identifier.includes("@");
+      await forgotPassword({
+        [isEmail ? "email" : "phone"]: identifier,
+      });
       onNext(identifier);
     } catch (err) {
-      setErrors({ form: "Failed to send OTP. Please try again." });
+      setErrors({ form: err.message });
     } finally {
       setLoading(false);
     }

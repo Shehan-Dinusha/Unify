@@ -11,6 +11,7 @@ import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import LoadMoreButton from "../components/common/LoadMoreButton";
 import StarRating from "../components/common/StarRating";
+import Avatar from "../components/common/Avatar";
 import {
   getReceivedReviews,
   toggleOwnerLike,
@@ -60,19 +61,11 @@ const ReceivedReviewCard = ({ review, onReply, onLike }) => {
     <Card variant="container" className="w-full relative">
       <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2 sm:gap-0">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          {review.author.avatar ? (
-            <img
-              className="w-10 h-10 rounded-full object-cover shadow-[0px_0px_0px_1px_rgba(40,46,57,1.00)] shrink-0"
-              src={review.author.avatar}
-              alt={review.author.name}
-            />
-          ) : (
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold font-inter ${review.author.bgColor || "bg-gray-600"} shrink-0 shadow-[0px_0px_0px_1px_rgba(40,46,57,1.00)]`}
-            >
-              {review.author.initials}
-            </div>
-          )}
+          <Avatar
+            className="w-10 h-10 rounded-full object-cover shadow-[0px_0px_0px_1px_rgba(40,46,57,1.00)] shrink-0"
+            src={review.author.avatar}
+            alt={review.author.name}
+          />
           <div className="flex flex-col flex-1 sm:flex-none overflow-hidden">
             <span className="text-white text-base font-bold font-inter leading-5 truncate">
               {review.author.name}

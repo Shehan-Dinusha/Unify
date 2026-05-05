@@ -8,10 +8,15 @@ import {
   MessageCircle,
   Zap,
   Bookmark,
+  Calendar,
+  ShoppingBag,
+  Home,
+  MessageSquare,
 } from "lucide-react";
+import newsfeedService from "../../services/newsfeedService";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
-const CommentSection = ({ postComments, onAddComment }) => {
+const CommentSection = ({ postComments, onAddComment, loading }) => {
   const [text, setText] = useState("");
   const inputRef = useRef(null);
 
@@ -25,31 +30,42 @@ const CommentSection = ({ postComments, onAddComment }) => {
     if (!trimmed) return;
     onAddComment(trimmed);
     setText("");
+    // Reset height if ref exists
+    if (inputRef.current) {
+      inputRef.current.style.height = 'inherit';
+    }
   };
 
   return (
     <div className="mt-4 border-t border-white/10 pt-4 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+      {/* Loading state */}
+      {loading && (
+        <div className="text-center text-text-secondary text-sm py-2">
+          Loading comments...
+        </div>
+      )}
+
       {/* Existing comments */}
-      {postComments.length > 0 && (
+      {!loading && postComments.length > 0 && (
         <div className="flex flex-col gap-3 max-h-56 overflow-y-auto pr-1 scrollbar-hide">
           {postComments.map((c) => (
             <div key={c.id} className="flex gap-3 items-start">
               <img
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.seed || c.user)}`}
-                alt={c.user}
+                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.user?.name || c.user || "User")}`}
+                alt={c.user?.name || c.user || "User"}
                 className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5"
               />
               <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-[13px] font-semibold text-text-primary">
-                    {c.user}
+                    {c.user?.name || c.user || "User"}
                   </span>
                   <span className="text-[11px] text-text-tertiary">
-                    {c.time}
+                    {c.time || "just now"}
                   </span>
                 </div>
-                <p className="text-[13px] text-text-secondary leading-relaxed">
-                  {c.text}
+                <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-wrap break-words">
+                  {c.content || c.text}
                 </p>
               </div>
             </div>
@@ -58,27 +74,41 @@ const CommentSection = ({ postComments, onAddComment }) => {
       )}
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="flex items-center gap-2">
+      <form 
+        onSubmit={handleSubmit} 
+        className="flex items-end gap-2"
+      >
         <img
           src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me"
           alt="You"
-          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0"
+          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1"
         />
-        <div className="flex-1 flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 gap-2 focus-within:border-primary-blue/50 transition-colors">
-          <input
+        <div className="flex-1 flex items-end bg-white/5 border border-white/10 rounded-2xl px-4 py-2 gap-2 focus-within:border-primary-blue/50 transition-colors">
+          <textarea
             ref={inputRef}
-            type="text"
+            rows={1}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              // Auto-resize
+              e.target.style.height = 'inherit';
+              e.target.style.height = `${e.target.scrollHeight}px`;
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
             placeholder="Write a comment…"
-            className="flex-1 bg-transparent text-[13px] text-text-primary placeholder:text-text-tertiary outline-none"
+            className="flex-1 bg-transparent text-[13px] text-text-primary placeholder:text-text-tertiary outline-none resize-none py-1 max-h-32 scrollbar-hide"
           />
           <button
             type="submit"
             disabled={!text.trim()}
-            className="text-primary-blue disabled:text-text-tertiary transition-colors"
+            className="text-primary-blue disabled:text-text-tertiary transition-colors p-1"
           >
-            <Send size={16} strokeWidth={2} />
+            <Send size={18} strokeWidth={2} />
           </button>
         </div>
       </form>
@@ -98,52 +128,120 @@ const PostCard = ({
   image,
   likes,
   comments,
+  initialIsLiked = false,
+  initialIsSaved = false,
   isPromoted,
   showBoost = false,
 }) => {
   const { toggleSavePost, isPostSaved } = useSavedPosts();
-  const isSaved = post ? isPostSaved(post.id) : false;
-  const [isLiked, setIsLiked] = useState(false);
+  // const isSavedLocal = post ? isPostSaved(post.id) : false; // Use initialIsSaved from props instead
+  const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [likeCount, setLikeCount] = useState(likes);
   const [showComments, setShowComments] = useState(false);
   const reportNavigate = useNavigate();
-  const [postComments, setPostComments] = useState([
-    {
-      id: 1,
-      user: "Sarah Miller",
-      seed: "SarahMiller",
-      time: "2h ago",
-      text: "That looks delicious! Is it available on the regular menu or is it a special?",
-    },
-    {
-      id: 2,
-      user: "Mark Thompson",
-      seed: "MarkThompson",
-      time: "4h ago",
-      text: "The location is actually super convenient, just a 2-minute walk from the main entrance.",
-    },
-  ]);
+  const [postComments, setPostComments] = useState([]);
   const [commentCount, setCommentCount] = useState(comments);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [imgFailed, setImgFailed] = useState(false);
 
-  const toggleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+  const postType = post?.postType || "normal";
+  const postId = post?.id;
+
+  // Detect invalid/placeholder image values — show styled placeholder instead of broken icon
+  const isValidImage = image && !image.includes("placeholder-post") && !imgFailed;
+  const showImage = isValidImage;
+
+  const handleToggleLike = async () => {
+    // Optimistic update
+    const wasLiked = isLiked;
+    setIsLiked(!wasLiked);
+    setLikeCount(wasLiked ? likeCount - 1 : likeCount + 1);
+
+    try {
+      await newsfeedService.toggleLike(postType, postId);
+    } catch (err) {
+      // Revert on failure
+      console.error("Failed to toggle like:", err);
+      setIsLiked(wasLiked);
+      setLikeCount(wasLiked ? likeCount : likeCount - 1);
+    }
   };
 
-  const toggleComments = () => {
-    setShowComments(!showComments);
+  const handleToggleSave = async () => {
+    const wasSaved = isSaved;
+    setIsSaved(!wasSaved);
+    // Also toggle in context for SavedPosts page
+    if (post) toggleSavePost(post);
+
+    try {
+      await newsfeedService.toggleSave(postType, postId);
+    } catch (err) {
+      console.error("Failed to toggle save:", err);
+      setIsSaved(wasSaved);
+      if (post) toggleSavePost(post); // revert context too
+    }
   };
 
-  const handleAddComment = (text) => {
-    const newComment = {
+  const handleToggleComments = async () => {
+    const shouldShow = !showComments;
+    setShowComments(shouldShow);
+
+    // Fetch comments from backend when opening for the first time
+    if (shouldShow && postComments.length === 0) {
+      try {
+        setLoadingComments(true);
+        const data = await newsfeedService.getComments(postType, postId);
+        const fetchedComments = (data.comments || []).map((c) => ({
+          id: c.id,
+          user: c.user?.name || "User",
+          seed: c.user?.name || "User",
+          time: c.createdAt ? new Date(c.createdAt).toLocaleString() : "just now",
+          text: c.content,
+        }));
+        setPostComments(fetchedComments);
+        setCommentCount(fetchedComments.length);
+      } catch (err) {
+        console.error("Failed to fetch comments:", err);
+      } finally {
+        setLoadingComments(false);
+      }
+    }
+  };
+
+  const handleAddComment = async (text) => {
+    // Optimistic add
+    const tempComment = {
       id: `new-${Date.now()}`,
       user: "You",
       seed: "Me",
       time: "just now",
       text,
     };
-    setPostComments((prev) => [...prev, newComment]);
-    setCommentCount(commentCount + 1);
+    setPostComments((prev) => [...prev, tempComment]);
+    setCommentCount((c) => c + 1);
+
+    try {
+      const data = await newsfeedService.addComment(postType, postId, text);
+      // Replace temp with real comment from backend
+      if (data.comment) {
+        const realComment = {
+          id: data.comment.id,
+          user: data.comment.user?.name || "You",
+          seed: data.comment.user?.name || "Me",
+          time: "just now",
+          text: data.comment.content,
+        };
+        setPostComments((prev) =>
+          prev.map((c) => (c.id === tempComment.id ? realComment : c))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to add comment:", err);
+      // Remove temp comment on failure
+      setPostComments((prev) => prev.filter((c) => c.id !== tempComment.id));
+      setCommentCount((c) => c - 1);
+    }
   };
 
   return (
@@ -162,6 +260,74 @@ const PostCard = ({
             }}
           />
         </div>
+      ) : (
+        /* No-image banner */
+        (() => {
+          const config = {
+            'club-event':   { icon: Calendar,      color: '#818cf8', glow: 'rgba(99,102,241,0.15)',  label: 'Club Event'      },
+            'club-product': { icon: ShoppingBag,   color: '#4ade80', glow: 'rgba(34,197,94,0.12)',   label: 'Marketplace'     },
+            'boarding':     { icon: Home,           color: '#c084fc', glow: 'rgba(168,85,247,0.15)',  label: 'Boarding'        },
+            'normal':       { icon: MessageSquare, color: '#fbbf24', glow: 'rgba(251,191,36,0.12)',  label: 'Community Post'  },
+          };
+          const cfg = config[postType] || config['normal'];
+          const Icon = cfg.icon;
+
+          return (
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              height: '180px',
+              background: `linear-gradient(135deg, #0f172a 0%, #1e293b 100%)`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px',
+              overflow: 'hidden',
+            }}>
+              {/* Radial colour glow */}
+              <div style={{
+                position: 'absolute', inset: 0, pointerEvents: 'none',
+                background: `radial-gradient(ellipse at 50% 50%, ${cfg.glow} 0%, transparent 70%)`,
+              }} />
+
+              {/* Icon bubble */}
+              <div style={{
+                position: 'relative', zIndex: 1,
+                padding: '16px',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Icon size={36} color={cfg.color} strokeWidth={1.5} />
+              </div>
+
+              {/* Label */}
+              <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+                <p style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.28)',
+                  marginBottom: '6px',
+                }}>
+                  {cfg.label}
+                </p>
+                <div style={{ height: '1px', width: '32px', background: 'rgba(255,255,255,0.10)', margin: '0 auto', borderRadius: '1px' }} />
+              </div>
+
+              {/* Corner accents */}
+              <div style={{ position: 'absolute', top: 10, left: 10, width: 32, height: 32,
+                borderTop: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '8px 0 0 0', pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: 10, right: 10, width: 32, height: 32,
+                borderBottom: '1px solid rgba(255,255,255,0.08)', borderRight: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '0 0 8px 0', pointerEvents: 'none' }} />
+            </div>
+          );
+        })()
       )}
 
       {/* Content Container */}
@@ -216,7 +382,7 @@ const PostCard = ({
         <div className="grid grid-cols-4 text-[#94A3B8] text-xs sm:text-body-small">
           {/* Like */}
           <button
-            onClick={toggleLike}
+            onClick={handleToggleLike}
             className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isLiked ? "text-primary-blue" : ""}`}
           >
             <div className="flex items-center gap-1.5">
@@ -232,7 +398,7 @@ const PostCard = ({
 
           {/* Comment */}
           <button
-            onClick={toggleComments}
+            onClick={handleToggleComments}
             className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${showComments ? "text-primary-blue" : ""}`}
           >
             <div className="flex items-center gap-1.5">
@@ -244,7 +410,7 @@ const PostCard = ({
 
           {/* Save */}
           <button
-            onClick={() => post && toggleSavePost(post)}
+            onClick={handleToggleSave}
             className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? "text-primary-blue" : ""}`}
           >
             <div className="flex items-center gap-1.5">
@@ -253,15 +419,6 @@ const PostCard = ({
                 className={isSaved ? "fill-current" : ""}
                 strokeWidth={isSaved ? 0 : 1.8}
               />
-              {/* onClick={() => setIsSaved(!isSaved)}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? "text-state-info" : ""}`}
-          >
-            <div className="flex items-center gap-1.5">
-              <img
-                src="/icon_save_marketplace.svg"
-                alt="Save"
-                className={`w-5 h-5 ${isSaved ? "brightness-150" : "opacity-70"}`}
-              /> */}
             </div>
             <span className="text-[11px]">{isSaved ? "Saved" : "Save"}</span>
           </button>
@@ -292,6 +449,7 @@ const PostCard = ({
           <CommentSection
             postComments={postComments}
             onAddComment={handleAddComment}
+            loading={loadingComments}
           />
         )}
       </div>

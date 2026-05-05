@@ -8,6 +8,11 @@ import {
   getFilteredBoardingFeed,
   getPost,
   deletePost,
+  toggleLike,
+  addComment,
+  getComments,
+  toggleSave,
+  getSavedPosts,
 } from "../controllers/posts/index.js";
 import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -17,6 +22,7 @@ import {
   createClubEventPostValidator,
   createBoardingPostValidator,
   postParamsValidator,
+  commentValidator,
 } from "../validators/post.validator.js";
 
 
@@ -84,11 +90,23 @@ router.get("/feed", getFeed);
 
 // Get filtered boarding feed
 router.get("/boarding/filter", getFilteredBoardingFeed);
+// Get saved posts
+router.get("/saved", getSavedPosts);
 
 // Get specific post dynamically
 router.get("/:type/:id", postParamsValidator, validate, getPost);
 
 // Delete specific post dynamically
 router.delete("/:type/:id", postParamsValidator, validate, deletePost);
+
+// Toggle Like
+router.post("/:type/:id/like", postParamsValidator, validate, toggleLike);
+
+// Comments
+router.get("/:type/:id/comments", postParamsValidator, validate, getComments);
+router.post("/:type/:id/comments", postParamsValidator, commentValidator, validate, addComment);
+
+// Toggle Save
+router.post("/:type/:id/save", postParamsValidator, validate, toggleSave);
 
 export default router;
