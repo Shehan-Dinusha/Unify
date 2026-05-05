@@ -5,6 +5,7 @@ import {
   createClubEventPost,
   createBoardingPost,
   getFeed,
+  getFilteredBoardingFeed,
   getPost,
   deletePost,
   toggleLike,
@@ -87,6 +88,8 @@ router.post(
 // Get unified feed
 router.get("/feed", getFeed);
 
+// Get filtered boarding feed
+router.get("/boarding/filter", getFilteredBoardingFeed);
 // Get saved posts
 router.get("/saved", getSavedPosts);
 

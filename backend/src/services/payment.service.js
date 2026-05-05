@@ -5,7 +5,7 @@ import logger from "../utils/logger.js";
  * Handles the database updates after a successful Order payment
  */
 export const processOrderPayment = async (orderId, paymentIntent) => {
-  const order = await Order.findByPk(orderId);
+  const order = await Order.findOne({ where: { orderId } });
   if (!order) return;
 
   // 1. Update Order Status
@@ -43,7 +43,8 @@ export const processOrderPayment = async (orderId, paymentIntent) => {
  * Handles the database updates after a successful Event Booking payment
  */
 export const processBookingPayment = async (bookingId, paymentIntent) => {
-  const booking = await EventBooking.findByPk(bookingId, {
+  const booking = await EventBooking.findOne({
+    where: { bookingId },
     include: [{ model: ClubEventPost, as: "event" }]
   });
   if (!booking) return;

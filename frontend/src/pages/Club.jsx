@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import ClubPostCard from "../components/club/ClubPostCard";
 import TrendingNow from "../components/club/TrendingNow";
-import { mockTrendingNow } from "../data/mockClubData";
 import postService from "../services/postService";
 import { getImageUrl, formatTimeAgo } from "../utils/formatters";
 import { Loader2 } from "lucide-react";
@@ -10,7 +9,9 @@ import { Loader2 } from "lucide-react";
 const Club = () => {
     const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
     const [posts, setPosts] = useState([]);
+    const [trendingItems, setTrendingItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [trendingLoading, setTrendingLoading] = useState(true);
 
     useEffect(() => {
         const fetchClubFeed = async () => {
@@ -39,7 +40,27 @@ const Club = () => {
             }
         };
 
+        const fetchTrending = async () => {
+            try {
+                setTrendingLoading(true);
+                const data = await postService.getFeed("popular");
+                const mappedTrending = data.feed.map(it => ({
+                    id: it.id,
+                    title: it.name || it.title,
+                    subtitle: it.postType === "club-event" ? `${it.likesCount || 0} interested` : `Selling fast • Rs. ${it.price}`,
+                    image: getImageUrl(it.coverImage || it.image || it.images?.[0]),
+                    postType: it.postType
+                }));
+                setTrendingItems(mappedTrending);
+            } catch (err) {
+                console.error("Failed to fetch trending items:", err);
+            } finally {
+                setTrendingLoading(false);
+            }
+        };
+
         fetchClubFeed();
+        fetchTrending();
     }, []);
 
     return (
@@ -65,7 +86,7 @@ const Club = () => {
 
                 {/* Trending */}
                 <div className="hidden xl:block sticky top-0 h-fit">
-                    <TrendingNow items={mockTrendingNow} />
+                    <TrendingNow items={trendingItems} loading={trendingLoading} />
                 </div>
             </div>
         </MainLayout>

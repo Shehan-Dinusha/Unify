@@ -15,6 +15,24 @@ const postService = {
   },
 
   /**
+   * Fetch filtered boarding feed
+   * @param {Object} filters - { minPrice, maxPrice, gender }
+   */
+  getFilteredBoardingFeed: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams();
+      if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice);
+      if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice);
+      if (filters.gender) params.append('gender', filters.gender);
+      
+      const response = await api.get(`/posts/boarding/filter?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
    * Fetch a single post by type and ID
    * @param {string} type - 'normal', 'club-product', 'club-event', 'boarding'
    * @param {number|string} id - Post ID

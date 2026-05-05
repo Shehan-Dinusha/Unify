@@ -4,6 +4,7 @@ import {
     LayoutGrid, Edit3, Info
 } from "lucide-react";
 import Card from "../common/Card";
+import ClubPostCard from "../club/ClubPostCard";
 
 /* ─── Toggle ─────────────────────────────────────────────────── */
 const Toggle = ({ value, onChange }) => (
@@ -305,69 +306,26 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                 {/* ── Right Column: Preview ─────────────────────── */}
                 <div className="flex flex-col gap-6 xl:sticky xl:top-4 h-fit pb-24 xl:pb-0">
                     <div className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1 px-4">
-                        Event Preview
+                        Feed Preview
                     </div>
-
-                    <Card variant="card" className="bg-[#0B1724]/60 border-white/10 !p-0 overflow-hidden shadow-2xl">
-                        {/* Cover image preview */}
-                        {coverImage ? (
-                            <img src={coverImage.url} alt="Cover Preview" className="h-44 w-full object-cover" />
-                        ) : (
-                            <div className="h-44 bg-white/5 flex items-center justify-center">
-                                <ImagePlus className="w-8 h-8 text-white/10" />
-                            </div>
-                        )}
-
-                        <div className="p-6 space-y-4">
-                            <h3 className="text-xl font-bold leading-tight">
-                                {formData.name || <span className="text-text-secondary font-normal text-base">Event name will appear here</span>}
-                            </h3>
-
-                            <div className="flex flex-col gap-2 text-sm text-text-secondary">
-                                {formData.date && (
-                                    <div className="flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-primary-blue shrink-0" />
-                                        <span>{formData.date}{formData.time && ` · ${formData.time}`}</span>
-                                    </div>
-                                )}
-                                {formData.location && (
-                                    <div className="flex items-center gap-2">
-                                        <MapPin className="w-4 h-4 text-primary-blue shrink-0" />
-                                        <span>{formData.location}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {formData.description && (
-                                <p className="text-xs text-text-secondary leading-relaxed line-clamp-3">
-                                    {formData.description}
-                                </p>
-                            )}
-
-                            {/* Ticket tiers preview */}
-                            {tiers.some((t) => t.enabled) && (
-                                <div>
-                                    <div className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-2">
-                                        Tickets
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        {tiers.filter((t) => t.enabled).map((t, i) => (
-                                            <div key={t.id} className="flex justify-between items-center text-sm">
-                                                <span>{t.label}</span>
-                                                <span className="font-bold text-primary-blue">
-                                                    {t.isFree ? "Free" : t.price ? `Rs.${t.price}` : "—"}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <button className="w-full py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_4px_15px_rgba(43,140,238,0.35)]">
-                                Register Now
-                            </button>
-                        </div>
-                    </Card>
+                    <div className="pointer-events-none">
+                        <ClubPostCard 
+                            post={{
+                                id: "preview",
+                                clubName: "Your Club Name",
+                                clubSeed: "Your Club Name",
+                                time: "Just now",
+                                category: "Event",
+                                image: coverImage?.url || "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22300%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Provided%3C%2Ftext%3E%3C%2Fsvg%3E",
+                                price: tiers.find(t => t.enabled)?.isFree ? "Free" : tiers.find(t => t.enabled)?.price ? `Rs.${tiers.find(t => t.enabled).price}` : "Free",
+                                text: `${formData.name ? `Event: ${formData.name}\n` : ""}${formData.date ? `Date: ${formData.date}${formData.time ? ` @ ${formData.time}` : ''}\n` : ""}${formData.location ? `Location: ${formData.location}\n` : ""}\n${formData.description || "Your event description will appear here..."}`,
+                                postType: "club-event",
+                                stats: { likes: 0 },
+                                comments: []
+                            }} 
+                            isOwner={false} 
+                        />
+                    </div>
 
                     {/* Action Buttons */}
                     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[#0B1724]/95 backdrop-blur-md border-t border-white/10 xl:static xl:z-auto xl:p-0 xl:bg-transparent xl:backdrop-blur-none xl:border-t-0 flex gap-4 mt-4 xl:mt-0">
@@ -387,7 +345,6 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                         >
                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                             {loading ? "Publishing..." : "Publish Event"}
-                            {!loading && <ChevronRight className="w-4 h-4" />}
                         </button>
                     </div>
                 </div>
