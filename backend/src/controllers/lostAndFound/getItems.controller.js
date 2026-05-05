@@ -1,5 +1,7 @@
 import { LostAndFound, User, StudentProfile, Degree } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
+import s3Service from "../../services/s3.service.js";
+import { formatRelativeDate } from "../../utils/date.js";
 
 export const getItems = catchAsync(async (req, res, next) => {
   const { type } = req.query; // "Lost", "Found", or "All"
@@ -30,19 +32,32 @@ export const getItems = catchAsync(async (req, res, next) => {
   });
 
   // Map to precisely match the frontend UI expectation
-  const formattedItems = items.map(item => ({
-    id: item.id,
-    type: item.type.toLowerCase(),
-    title: item.title,
-    location: item.location,
-    time: item.createdAt, // Or format how UI desires
-    image: item.image,
-    postedBy: {
-      name: item.user?.name || "Unknown",
-      avatar: item.user?.avatar || "https://placehold.co/40x40",
-      degree: item.user?.studentProfile?.degree?.name || "Unknown Degree"
+  const formattedItemsPromises = items.map(async (item) => {
+    let signedImageUrls = [];
+    if (item.images && item.images.length > 0) {
+      signedImageUrls = await Promise.all(
+        item.images.map(async (s3Key) => {
+           return await s3Service.getFileUrl(s3Key);
+        })
+      );
     }
-  }));
+
+    return {
+      id: item.id,
+      type: item.type.toLowerCase(),
+      title: item.title,
+      location: item.location,
+      time: formatRelativeDate(item.createdAt), // Or format how UI desires
+      images: signedImageUrls,
+      postedBy: {
+        name: item.user?.name || "Unknown",
+        avatar: item.user?.avatar || "https://placehold.co/40x40",
+        degree: item.user?.studentProfile?.degree?.name || "Unknown Degree"
+      }
+    };
+  });
+
+  const formattedItems = await Promise.all(formattedItemsPromises);
 
   return sendResponse(res, 200, true, "Items fetched successfully.", formattedItems);
 });

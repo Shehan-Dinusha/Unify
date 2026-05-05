@@ -1,25 +1,39 @@
-import { NormalPost, ClubProductPost, ClubEventPost, Boarding, User } from "../../modules/index.js";
+import {
+  NormalPost,
+  ClubProductPost,
+  ClubEventPost,
+  Boarding,
+  User,
+} from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
 
 const resolveImageUrl = async (img) => {
   if (!img) return img;
-  
+
   let imgPath = img;
   // Handle case where img is stored as a JSON object (e.g. { url: "..." } from ClubEventPost)
-  if (typeof img === 'object' && img !== null) {
+  if (typeof img === "object" && img !== null) {
     if (img.url) imgPath = img.url;
     else return imgPath;
   }
 
-  if (typeof imgPath !== 'string') return imgPath;
+  if (typeof imgPath !== "string") return imgPath;
 
   if (imgPath.includes("X-Amz-Signature")) return imgPath;
   const s3UrlMatch = imgPath.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
   if (s3UrlMatch) {
-    try { return await getFileUrl(s3UrlMatch[1]); } catch { return imgPath; }
+    try {
+      return await getFileUrl(s3UrlMatch[1]);
+    } catch {
+      return imgPath;
+    }
   }
   if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
-    try { return await getFileUrl(imgPath); } catch { return imgPath; }
+    try {
+      return await getFileUrl(imgPath);
+    } catch {
+      return imgPath;
+    }
   }
   return imgPath;
 };
@@ -41,7 +55,13 @@ export const getFeed = async (req, res) => {
     const limit = 20;
 
     // Helper to fetch posts and inject type
-    const fetchPosts = async (Model, postType, authorKey = "author", where = {}, order = [["createdAt", "DESC"]]) => {
+    const fetchPosts = async (
+      Model,
+      postType,
+      authorKey = "author",
+      where = {},
+      order = [["createdAt", "DESC"]],
+    ) => {
       const posts = await Model.findAll({
         where,
         limit: type === "popular" ? 10 : 20,
@@ -68,7 +88,7 @@ export const getFeed = async (req, res) => {
     const tasks = [];
 
     // ── Feed Logic Mapping ───────────────────────────────────────────────────
-    
+
     if (type === "all") {
       tasks.push(fetchPosts(NormalPost, "normal"));
       tasks.push(fetchPosts(ClubProductPost, "club-product", "author", { isVisible: true }));
@@ -81,9 +101,15 @@ export const getFeed = async (req, res) => {
     } else if (type === "boarding") {
       tasks.push(fetchPosts(Boarding, "boarding", "host"));
     } else if (type === "food-cafe") {
-      tasks.push(fetchPosts(NormalPost, "food-cafe", "author", { category: "FOOD" }));
+      tasks.push(
+        fetchPosts(NormalPost, "food-cafe", "author", { category: "FOOD" }),
+      );
     } else if (type === "services") {
-      tasks.push(fetchPosts(NormalPost, "services", "author", { category: "SELF_EMPLOYED" }));
+      tasks.push(
+        fetchPosts(NormalPost, "services", "author", {
+          category: "SELF_EMPLOYED",
+        }),
+      );
     } else if (type === "marketplace") {
       tasks.push(fetchPosts(ClubProductPost, "club-product", "author", { isVisible: true }));
     } else if (type === "event") {
@@ -95,7 +121,7 @@ export const getFeed = async (req, res) => {
 
     // Fetch concurrently
     const results = await Promise.all(tasks);
-    
+
     // Combine results from different models
     let combinedFeed = results.flat();
 
@@ -108,7 +134,9 @@ export const getFeed = async (req, res) => {
       });
       combinedFeed = combinedFeed.slice(0, 7);
     } else {
-      combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      combinedFeed.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      );
     }
 
     // Resolve S3 image keys/private URLs to presigned URLs

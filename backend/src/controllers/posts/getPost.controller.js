@@ -1,4 +1,10 @@
-import { NormalPost, ClubProductPost, ClubEventPost, Boarding, User } from "../../modules/index.js";
+import {
+  NormalPost,
+  ClubProductPost,
+  ClubEventPost,
+  Boarding,
+  User,
+} from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
 
 /**
@@ -10,12 +16,12 @@ const resolveImageUrl = async (img) => {
 
   let imgPath = img;
   // Handle case where img is stored as a JSON object (e.g. { url: "..." } from ClubEventPost)
-  if (typeof img === 'object' && img !== null) {
+  if (typeof img === "object" && img !== null) {
     if (img.url) imgPath = img.url;
     else return imgPath;
   }
 
-  if (typeof imgPath !== 'string') return imgPath;
+  if (typeof imgPath !== "string") return imgPath;
 
   // Already a presigned URL (contains X-Amz-Signature) — pass through
   if (imgPath.includes("X-Amz-Signature")) return imgPath;
@@ -24,12 +30,20 @@ const resolveImageUrl = async (img) => {
   const s3UrlPattern = /https?:\/\/[^/]+\.amazonaws\.com\/(.+)/;
   const s3UrlMatch = imgPath.match(s3UrlPattern);
   if (s3UrlMatch) {
-    try { return await getFileUrl(s3UrlMatch[1]); } catch { return imgPath; }
+    try {
+      return await getFileUrl(s3UrlMatch[1]);
+    } catch {
+      return imgPath;
+    }
   }
 
   // Raw S3 object key (no protocol prefix, e.g. "posts/products/abc123.webp")
   if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
-    try { return await getFileUrl(imgPath); } catch { return imgPath; }
+    try {
+      return await getFileUrl(imgPath);
+    } catch {
+      return imgPath;
+    }
   }
 
   // Local path or anything else — return as-is
@@ -61,7 +75,7 @@ const getModelConfig = (type) => {
 export const getPost = async (req, res) => {
   try {
     const { type, id } = req.params;
-    
+
     const config = getModelConfig(type);
     if (!config) {
       return res.status(400).json({ error: "Invalid post type." });
@@ -86,7 +100,7 @@ export const getPost = async (req, res) => {
     // Convert to plain object to inject properties
     const postData = post.get({ plain: true });
     postData.postType = type;
-    
+
     // Normalize author property for consistency
     if (authorKey !== "author") {
       postData.author = postData[authorKey];

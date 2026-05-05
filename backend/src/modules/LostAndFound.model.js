@@ -37,9 +37,9 @@ const LostAndFound = sequelize.define(
       type: DataTypes.STRING(255), // e.g. 11:45 AM
       allowNull: true,
     },
-    image: {
-      type: DataTypes.TEXT,
-      allowNull: true, // S3 object key e.g. 'lost-found/item-id/photo.jpg'
+    images: {
+      type: DataTypes.JSON,
+      allowNull: true,
     },
     status: {
       type: DataTypes.ENUM("Active", "Resolved"),

@@ -14,18 +14,7 @@ export const toggleReviewFeedback = async (req, res, next) => {
     // Fallback to 1 for testing if req.user is not yet defined
     const currentUserId = req.user?.id || 1;
 
-    if (!reviewId) {
-      return sendResponse(res, 400, false, "Review ID is required.");
-    }
 
-    if (!["helpful", "not_helpful"].includes(action)) {
-      return sendResponse(
-        res,
-        400,
-        false,
-        "Invalid action. Must be 'helpful' or 'not_helpful'.",
-      );
-    }
 
     const review = await Review.findByPk(reviewId);
     if (!review) {

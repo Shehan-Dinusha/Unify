@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Star,
   Trash2,
   ChevronDown,
   ThumbsUp,
@@ -11,7 +10,7 @@ import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import LoadMoreButton from "../components/common/LoadMoreButton";
-import { mockUserReviews, mockUserReviewSummary } from "../data/mockReviewData";
+import { getMyReviews, deleteReview } from "../services/reviewService";
 import {
   DeleteReviewModal,
   ReviewDeletedModal,
@@ -78,11 +77,17 @@ const ReviewHistoryCard = ({ review, onDelete }) => {
       {/* Owner Reply Block */}
       {review.ownerReply && (
         <div className="mb-6 pt-4 flex gap-3">
-          <img
-            src={review.ownerReply.author.avatar}
-            alt={review.ownerReply.author.name}
-            className="w-9 h-9 rounded-full object-cover"
-          />
+          {review.ownerReply.author?.avatar ? (
+            <img
+              src={review.ownerReply.author.avatar}
+              alt={review.ownerReply.author.name}
+              className="w-9 h-9 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold font-inter shrink-0">
+              {review.ownerReply.author?.name?.charAt(0) || "O"}
+            </div>
+          )}
           <div className="flex-1 bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg p-3 outline outline-1 outline-gray-800 flex flex-col gap-1">
             <div className="flex justify-between items-center h-6">
               <div className="flex items-center gap-2">
@@ -93,6 +98,9 @@ const ReviewHistoryCard = ({ review, onDelete }) => {
                   Owner
                 </span>
               </div>
+              <span className="text-gray-400 text-xs font-normal font-inter leading-5">
+                {review.ownerReply.createdAt}
+              </span>
             </div>
             <p className="text-slate-300 text-sm font-normal font-inter leading-5">
               {review.ownerReply.content}
@@ -118,12 +126,41 @@ const ReviewHistoryCard = ({ review, onDelete }) => {
 };
 
 const MyReviewHistory = () => {
-  const [reviews, setReviews] = useState(mockUserReviews);
+  const [reviews, setReviews] = useState([]);
+  const [summary, setSummary] = useState({
+    totalReviews: 0,
+    averageRating: 0,
+    topCategory: "—",
+  });
   const [reviewToDelete, setReviewToDelete] = useState(null);
   const [showDeletedModal, setShowDeletedModal] = useState(false);
   const [activeTab, setActiveTab] = useState("All Reviews");
   const [sortBy, setSortBy] = useState("Newest First");
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchReviewsData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await getMyReviews();
+      setReviews(data.reviews || []);
+      setSummary(data.summary || {
+        totalReviews: 0,
+        averageRating: 0,
+        topCategory: "—",
+      });
+    } catch (err) {
+      setError("Failed to load reviews.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviewsData();
+  }, []);
 
   const tabs = ["All Reviews", "Boarding", "Food/Cafe", "Services"];
   const sortOptions = [
@@ -143,10 +180,16 @@ const MyReviewHistory = () => {
     setReviewToDelete(id);
   };
 
-  const handleConfirmDelete = () => {
-    setReviews(reviews.filter((r) => r.id !== reviewToDelete));
-    setReviewToDelete(null);
-    setShowDeletedModal(true);
+  const handleConfirmDelete = async () => {
+    if (!reviewToDelete) return;
+    try {
+      await deleteReview(reviewToDelete);
+      setReviewToDelete(null);
+      setShowDeletedModal(true);
+      await fetchReviewsData();
+    } catch (error) {
+      alert("Failed to delete review.");
+    }
   };
 
   const [visibleCount, setVisibleCount] = useState(5);
@@ -155,21 +198,50 @@ const MyReviewHistory = () => {
     setVisibleCount(5);
   }, [activeTab, sortBy]);
 
-  // Simple filtering (mock behavior)
+  // Simple filtering
   const filteredReviews = reviews.filter((review) => {
     if (activeTab === "All Reviews") return true;
-    if (activeTab === "Boarding" && review.category === "Boarding") return true;
-    if (activeTab === "Food/Cafe" && review.category === "Food & Cafe")
-      return true;
-    if (
-      activeTab === "Services" &&
-      (review.category === "Freelance Services" ||
-        review.category === "Tech Services")
-    ) {
-      return true;
-    }
+    if (activeTab === "Boarding" && review.category === "BOARDING") return true;
+    if (activeTab === "Food/Cafe" && review.category === "FOOD") return true;
+    if (activeTab === "Services" && review.category === "SELF_EMPLOYED") return true;
     return false;
   });
+
+  const getSortedReviews = () => {
+    let sortedList = [...filteredReviews];
+
+    if (sortBy === "Highest Rating") {
+      sortedList = sortedList.sort((a, b) => b.rating - a.rating);
+    } else if (sortBy === "Lowest Rating") {
+      sortedList = sortedList.sort((a, b) => a.rating - b.rating);
+    } else if (sortBy === "Oldest First") {
+      sortedList = sortedList.reverse(); // assuming original order is Newest First
+    }
+    
+    return sortedList;
+  };
+
+  const sortedReviews = getSortedReviews();
+
+  if (isLoading) {
+    return (
+      <MainLayout user={user} pageTitle="Profile" verificationCount={0}>
+        <div className="w-full flex justify-center items-center h-64">
+          <div className="text-white text-lg">Loading review history...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout user={user} pageTitle="Profile" verificationCount={0}>
+        <div className="w-full flex justify-center items-center h-64">
+          <div className="text-red-400 text-lg">{error}</div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout user={user} pageTitle="Profile" verificationCount={0}>
@@ -208,7 +280,7 @@ const MyReviewHistory = () => {
                   Total Reviews
                 </span>
                 <span className="text-white text-3xl font-bold font-inter leading-9">
-                  {mockUserReviewSummary.totalReviews}
+                  {summary.totalReviews}
                 </span>
               </div>
             </Card>
@@ -224,7 +296,7 @@ const MyReviewHistory = () => {
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="text-white text-3xl font-bold font-inter leading-9">
-                    {mockUserReviewSummary.averageRating}
+                    {Number(summary.averageRating).toFixed(1)}
                   </span>
                   <div className="w-6 h-7 relative flex justify-center items-center">
                     <div
@@ -249,7 +321,7 @@ const MyReviewHistory = () => {
                   Top Category
                 </span>
                 <span className="text-blue-500 text-3xl font-bold font-lexend leading-9 truncate w-full">
-                  {mockUserReviewSummary.topCategory}
+                  {summary.topCategory}
                 </span>
               </div>
             </Card>
@@ -369,22 +441,30 @@ const MyReviewHistory = () => {
 
         {/* Review Cards List */}
         <div className="flex flex-col gap-4">
-          {filteredReviews.slice(0, visibleCount).map((review) => (
-            <ReviewHistoryCard
-              key={review.id}
-              review={review}
-              onDelete={handleDeleteClick}
-            />
-          ))}
+          {sortedReviews.length > 0 ? (
+            sortedReviews.slice(0, visibleCount).map((review) => (
+              <ReviewHistoryCard
+                key={review.id}
+                review={review}
+                onDelete={handleDeleteClick}
+              />
+            ))
+          ) : (
+            <div className="text-gray-400 text-sm font-inter text-center py-8">
+              No reviews found.
+            </div>
+          )}
         </div>
 
         {/* Load More Button */}
-        <LoadMoreButton
-          visibleCount={visibleCount}
-          totalCount={filteredReviews.length}
-          onClick={() => setVisibleCount((prev) => prev + 5)}
-          itemName="Reviews"
-        />
+        {sortedReviews.length > 0 && (
+          <LoadMoreButton
+            visibleCount={visibleCount}
+            totalCount={sortedReviews.length}
+            onClick={() => setVisibleCount((prev) => prev + 5)}
+            itemName="Reviews"
+          />
+        )}
       </div>
     </MainLayout>
   );
