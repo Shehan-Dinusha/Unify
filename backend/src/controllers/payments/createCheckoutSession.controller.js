@@ -5,9 +5,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const createCheckoutSession = async (req, res) => {
   try {
-    const { orderId, amount, productName, successUrl, cancelUrl } = req.body;
+    const { orderId, bookingId, amount, productName, successUrl, cancelUrl } = req.body;
 
-    if (!orderId || !amount || !productName) {
+    if ((!orderId && !bookingId) || !amount || !productName) {
       return res.status(400).json({ error: "Missing required parameters." });
     }
 
@@ -28,14 +28,16 @@ export const createCheckoutSession = async (req, res) => {
         },
       ],
       mode: "payment",
-      success_url: successUrl || `${frontendUrl}/marketplace/club/payment-success?order_id=${orderId}`,
+      success_url: successUrl || `${frontendUrl}/marketplace/club/payment-success?${orderId ? `order_id=${orderId}` : `booking_id=${bookingId}`}`,
       cancel_url: cancelUrl || `${frontendUrl}/marketplace/club/checkout`,
       metadata: {
-        orderId: orderId,
+        orderId: orderId || null,
+        bookingId: bookingId || null,
       },
       payment_intent_data: {
         metadata: {
-          orderId: orderId,
+          orderId: orderId || null,
+          bookingId: bookingId || null,
         },
       },
     });

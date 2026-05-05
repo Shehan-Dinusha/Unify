@@ -16,8 +16,11 @@ const CreateBoardingPostPage = () => {
         displayRole: "Business & Organization"
     };
 
+    const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [location, setLocation] = useState("");
+    const [roomType, setRoomType] = useState("");
+    const [gender, setGender] = useState("Any");
     const [amenityInput, setAmenityInput] = useState("");
     const [amenities, setAmenities] = useState([]);
     const [price, setPrice] = useState("");
@@ -61,7 +64,7 @@ const CreateBoardingPostPage = () => {
     const handleCancel = () => navigate("/boarding-owner/marketplace");
     
     const handlePublish = async () => {
-        if (!description || !location || !price || !capacity || !phone || !slots) {
+        if (!title || !description || !location || !price || !capacity || !phone || !slots || !roomType) {
             alert("Please fill in all required fields.");
             return;
         }
@@ -69,8 +72,11 @@ const CreateBoardingPostPage = () => {
         try {
             setLoading(true);
             const data = new FormData();
+            data.append("title", title);
             data.append("description", description);
             data.append("location", location);
+            data.append("roomType", roomType);
+            data.append("gender", gender);
             data.append("price", price);
             data.append("capacity", capacity);
             data.append("slots", slots);
@@ -104,7 +110,7 @@ const CreateBoardingPostPage = () => {
         >
             <div className="max-w-[1400px] mx-auto py-8">
                 <div className="flex flex-col w-full h-full text-white font-inter">
-                    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-8">
+                    <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-8">
                         {/* ── Left Column: Form Sections ── */}
                         <div className="flex flex-col gap-6 pb-8 min-w-0">
                             {/* Basic Information */}
@@ -113,7 +119,10 @@ const CreateBoardingPostPage = () => {
                                     <div className="p-2 bg-blue-500/20 text-blue-500 rounded-lg">
                                         <Edit3 className="w-5 h-5" />
                                     </div>
-                                    <h3 className="text-lg font-bold">Basic Information</h3>
+                                    <div>
+                                        <h3 className="text-lg font-bold">Basic Information</h3>
+                                        <p className="text-text-secondary text-xs mt-0.5">Enter the core details of your boarding place</p>
+                                    </div>
                                 </div>
 
                                 <div className="flex flex-col gap-6">
@@ -161,6 +170,20 @@ const CreateBoardingPostPage = () => {
                                         </div>
                                     </div>
 
+                                    {/* Title */}
+                                    <div>
+                                        <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
+                                            Title / Boarding Name <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            placeholder="e.g. Modern Student Boarding near Campus"
+                                            className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors placeholder:text-text-secondary"
+                                        />
+                                    </div>
+
                                     {/* Description */}
                                     <div>
                                         <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
@@ -191,6 +214,41 @@ const CreateBoardingPostPage = () => {
                                                 placeholder="Full address or nearby landmark"
                                                 className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors placeholder:text-text-secondary"
                                             />
+                                        </div>
+                                    </div>
+
+                                    {/* Room Type & Gender */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
+                                                Room Type <span className="text-red-500">*</span>
+                                            </label>
+                                            <select
+                                                value={roomType}
+                                                onChange={(e) => setRoomType(e.target.value)}
+                                                className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors appearance-none"
+                                            >
+                                                <option value="" disabled>Select Room Type</option>
+                                                <option value="Single Private">Single Private</option>
+                                                <option value="Shared Double">Shared Double</option>
+                                                <option value="Shared Triple">Shared Triple</option>
+                                                <option value="Dormitory">Dormitory</option>
+                                                <option value="Entire Apartment">Entire Apartment</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
+                                                Gender Preference
+                                            </label>
+                                            <select
+                                                value={gender}
+                                                onChange={(e) => setGender(e.target.value)}
+                                                className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors appearance-none"
+                                            >
+                                                <option value="Any">Any</option>
+                                                <option value="Male Only">Male Only</option>
+                                                <option value="Female Only">Female Only</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>
@@ -379,6 +437,10 @@ const CreateBoardingPostPage = () => {
                                         </div>
                                     </div>
 
+                                    <h2 className="text-heading-small md:text-[18px] font-bold text-white mb-2 leading-tight">
+                                        {title || "Boarding Title Will Appear Here"}
+                                    </h2>
+
                                     <div className="flex items-center gap-1 mb-3">
                                         <MapPin size={13} className="text-text-tertiary flex-shrink-0" />
                                         <span className="text-[13px] text-text-tertiary line-clamp-1">
@@ -421,11 +483,10 @@ const CreateBoardingPostPage = () => {
                                     type="button"
                                     onClick={handlePublish}
                                     disabled={loading}
-                                    className="flex-1 py-3 bg-primary-blue hover:brightness-110 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2 group disabled:opacity-50"
+                                    className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                     {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    {loading ? "Publishing..." : "Submit Post"}
-                                    {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                                    {loading ? "Publishing..." : "Publish Boarding"}
                                 </button>
                             </div>
                         </div>

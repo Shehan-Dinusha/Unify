@@ -10,7 +10,7 @@ import apiRoutes from "./routes/index.js";
 const app = express();
 
 // ── Security ──────────────────────────────────────────────────────────────────
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:5173",

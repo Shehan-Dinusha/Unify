@@ -5,6 +5,7 @@ import {
   createClubEventPost,
   createBoardingPost,
   getFeed,
+  getFilteredBoardingFeed,
   getPost,
   deletePost,
 } from "../controllers/posts/index.js";
@@ -80,6 +81,9 @@ router.post(
 
 // Get unified feed
 router.get("/feed", getFeed);
+
+// Get filtered boarding feed
+router.get("/boarding/filter", getFilteredBoardingFeed);
 
 // Get specific post dynamically
 router.get("/:type/:id", postParamsValidator, validate, getPost);

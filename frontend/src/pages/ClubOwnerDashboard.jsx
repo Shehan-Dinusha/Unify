@@ -5,6 +5,7 @@ import ClubPostCard from "../components/club/ClubPostCard";
 import { BarChart, DonutChart, ProgressBar } from "../components/chart";
 import orderService from "../services/orderService";
 import { useNavigate } from "react-router-dom";
+import { getImageUrl } from "../utils/formatters";
 import {
     ShoppingBag, Clock, CheckCircle2,
     Wallet, ArrowUp, Users, Eye, EyeOff
@@ -237,16 +238,20 @@ const ClubOwnerDashboard = () => {
                         })()}
                     </Card>
 
-                    {/* Top Products */}
+                    {/* Top Selling */}
                     <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
-                        <h3 className="font-bold text-base mb-5">Top Products</h3>
+                        <h3 className="font-bold text-base mb-5">Top Selling</h3>
                         <div className="flex flex-col gap-4">
                             {topProducts.length > 0 ? topProducts.map((p, i) => (
-                                <div key={p.itemId} className="flex items-center gap-3">
+                                <div 
+                                    key={`${p.postType}-${p.id}`} 
+                                    className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-2 -m-2 rounded-xl transition-colors"
+                                    onClick={() => navigate(`/club-owner/product-orders/${p.postType}/${p.id}`)}
+                                >
                                     <div className="relative">
                                         <img 
-                                            src={p.clubProduct?.images?.[0]?.src || "https://via.placeholder.com/40"} 
-                                            alt={p.clubProduct?.title} 
+                                            src={getImageUrl(p.image)} 
+                                            alt={p.title} 
                                             className="w-10 h-10 rounded-xl object-cover" 
                                         />
                                         <span className="absolute -top-1 -left-1 w-4 h-4 bg-primary-blue text-white text-[8px] font-bold rounded-full flex items-center justify-center">
@@ -254,8 +259,8 @@ const ClubOwnerDashboard = () => {
                                         </span>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold truncate">{p.clubProduct?.title || "Unknown Product"}</p>
-                                        <p className="text-text-secondary text-[11px]">{p.salesCount} sold</p>
+                                        <p className="text-sm font-semibold truncate">{p.title}</p>
+                                        <p className="text-text-secondary text-[11px]">{p.salesCount} {p.postType === "club-event" ? "bookings" : "sold"}</p>
                                     </div>
                                     <span className="text-primary-blue text-sm font-bold shrink-0">Rs.{parseFloat(p.totalRevenue).toLocaleString()}</span>
                                 </div>
@@ -378,7 +383,7 @@ const ClubOwnerDashboard = () => {
                                                 <td className="px-5 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <img 
-                                                            src={order.clubProduct?.images?.[0]?.src || "https://via.placeholder.com/32"} 
+                                                            src={getImageUrl(order.clubProduct?.images?.[0])} 
                                                             alt={order.clubProduct?.name} 
                                                             className="w-8 h-8 rounded-lg object-cover shrink-0" 
                                                         />

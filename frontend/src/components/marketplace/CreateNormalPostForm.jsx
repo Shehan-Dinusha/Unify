@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ImagePlus, Edit3, Loader2 } from "lucide-react";
 import Card from "../common/Card";
+import PostCard from "../feed/PostCard";
 
 const CreateNormalPostForm = ({ onCancel, onPublish }) => {
     const [description, setDescription] = useState("");
@@ -126,52 +127,22 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
                 {/* ── Right Column: Preview Sidebar ── */}
                 <div className="flex flex-col gap-6 xl:sticky xl:top-4 h-fit pb-24 xl:pb-0">
                     <div className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1 px-4">
-                        Post Preview
+                        Feed Preview
                     </div>
-
-                    <Card variant="card" className="bg-[#0B1724]/60 border-white/10 !p-0 overflow-hidden shadow-2xl">
-                        {/* Image preview */}
-                        {images.length > 0 ? (
-                            <div className="h-48 relative">
-                                <img src={images[0].url} alt="Preview" className="w-full h-full object-cover" />
-                                {images.length > 1 && (
-                                    <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-white border border-white/10">
-                                        +{images.length - 1} more
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="h-48 bg-white/5 flex items-center justify-center">
-                                <ImagePlus className="w-8 h-8 text-white/10" />
-                            </div>
-                        )}
-
-                        {/* Club header stub */}
-                        <div className="p-6 space-y-4">
-                            <div className="flex items-center gap-3">
-                                <img
-                                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex Johnson"
-                                    alt="User"
-                                    className="w-10 h-10 rounded-full border border-white/20"
-                                />
-                                <div>
-                                    <div className="text-sm font-semibold">Alex Johnson</div>
-                                    <div className="text-xs text-text-secondary">Just now · General</div>
-                                </div>
-                            </div>
-
-                            <p className="text-sm text-text-secondary leading-relaxed line-clamp-4">
-                                {description || (
-                                    <span className="italic opacity-50">Your post description will appear here...</span>
-                                )}
-                            </p>
-
-                            <div className="flex items-center justify-between pt-3 border-t border-white/10 text-text-secondary text-xs">
-                                <span>0 Likes</span>
-                                <span>0 Comments</span>
-                            </div>
-                        </div>
-                    </Card>
+                    
+                    <div className="pointer-events-none">
+                        <PostCard 
+                            author="Your Club Name"
+                            authorInitial="Y"
+                            time="Just now"
+                            title=""
+                            description={description || "Your post description will appear here..."}
+                            image={images[0]?.url || null}
+                            likes={0}
+                            comments={0}
+                            isPromoted={false}
+                        />
+                    </div>
 
                     {/* Action Buttons */}
                     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[#0B1724]/95 backdrop-blur-md border-t border-white/10 xl:static xl:z-auto xl:p-0 xl:bg-transparent xl:backdrop-blur-none xl:border-t-0 flex gap-4 mt-4 xl:mt-0">
@@ -187,10 +158,10 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
                             type="button"
                             onClick={handlePublishClick}
                             disabled={loading}
-                            className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2"
+                            className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                            {loading ? "Publishing..." : "Submit"}
+                            {loading ? "Publishing..." : "Publish Post"}
                         </button>
                     </div>
                 </div>

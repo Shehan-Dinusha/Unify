@@ -66,17 +66,12 @@ const BoardingOverlay = ({ post, onClose }) => {
 
                 {/* Right Side: Details */}
                 <div className="w-full md:w-1/2 p-6 md:p-10 overflow-y-auto scrollbar-hide flex flex-col gap-6">
-                    {/* Header Info 
+                    {/* Header Info */}
                     <div>
                         <div className="flex items-center justify-between mb-3">
-                            <span className="bg-primary-blue/20 text-primary-blue text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                                AVAILABLE NOW
+                            <span className={`text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${post.slots > 0 ? 'bg-primary-blue/20 text-primary-blue' : 'bg-red-500/20 text-red-500'}`}>
+                                {post.slots > 0 ? 'AVAILABLE NOW' : 'FULL'}
                             </span>
-                            <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full">
-                                <Star size={14} className="fill-yellow-400 text-yellow-400" />
-                                <span className="text-body-small-bold text-text-primary">{post.rating || '4.8'}</span>
-                                <span className="text-body-extra-small text-text-tertiary">({post.reviews || '24'} reviews)</span>
-                            </div>
                         </div>
                         <h2 className="text-heading-small md:text-heading-medium text-text-primary mb-2">
                             {post.title}
@@ -87,7 +82,7 @@ const BoardingOverlay = ({ post, onClose }) => {
                                 {post.location}
                             </p>
                         </div>
-                    </div>*/}
+                    </div>
 
                     {/* Price Card */}
                     <div className="bg-white/5 border border-white/5 rounded-3xl p-6 flex flex-col">
@@ -102,23 +97,23 @@ const BoardingOverlay = ({ post, onClose }) => {
                     <div className="grid grid-cols-2 gap-3">
                         <InfoItem
                             icon={<Calendar size={18} className="text-text-tertiary" />}
-                            label="AVAILABILITY"
-                            value={post.availability || "Immediate Move-in"}
+                            label="AVAILABLE SLOTS"
+                            value={post.slots > 0 ? `${post.slots} Slots Available` : "No Slots Left"}
                         />
                         <InfoItem
                             icon={<Phone size={18} className="text-text-tertiary" />}
                             label="CONTACT"
-                            value={post.contact || "+1 (555) 012-3456"}
+                            value={post.phone || "Not provided"}
                         />
-                        {/*<InfoItem
+                        <InfoItem
                             icon={<Home size={18} className="text-text-tertiary" />}
                             label="ROOM TYPE"
-                            value={post.roomType || "Single Private"}
-                        />*/}
+                            value={post.roomType || "Not specified"}
+                        />
                         <InfoItem
                             icon={<Wifi size={18} className="text-text-tertiary" />}
                             label="AMENITIES"
-                            value={post.amenities || "WiFi, Desk, AC"}
+                            value={(post.amenities && post.amenities.length) ? post.amenities.join(', ') : "None"}
                         />
                     </div>
 

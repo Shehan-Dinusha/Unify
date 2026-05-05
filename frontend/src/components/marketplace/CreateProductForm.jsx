@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Tag, Calendar, Edit3, X, Upload, Check, ChevronDown, Plus, Trash2, Search, Loader2 } from "lucide-react";
+import { Tag, Calendar, Edit3, X, Upload, Check, ChevronDown, Plus, Trash2, Search, Loader2, ImagePlus } from "lucide-react";
 import Card from "../common/Card";
+import ClubPostCard from "../club/ClubPostCard";
 import postService from "../../services/postService";
 
 const CreateProductForm = ({ onCancel, onPublish }) => {
@@ -116,7 +117,7 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
 
     return (
         <div className="flex flex-col w-full h-full text-white font-inter">
-            <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-8">
+            <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-8">
                 {/* Left Column: Form Sections */}
                 <div className="flex flex-col gap-6 pb-8">
                     {/* Basic Information */}
@@ -125,7 +126,10 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                             <div className="p-2 bg-blue-500/20 text-blue-500 rounded-lg">
                                 <Edit3 className="w-5 h-5" />
                             </div>
-                            <h3 className="text-lg font-bold">Basic Information</h3>
+                            <div>
+                                <h3 className="text-lg font-bold">Basic Information</h3>
+                                <p className="text-text-secondary text-xs mt-0.5">Enter the core details of your product</p>
+                            </div>
                         </div>
 
                         <div className="flex flex-col gap-6">
@@ -178,14 +182,14 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                                         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                                         onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
                                         onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFiles(e.dataTransfer.files); }}
-                                        className={`aspect-square bg-white/5 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors group ${isDragging ? 'border-primary-blue bg-primary-blue/10' : 'border-white/10 hover:bg-white/10'}`}
+                                        className={`aspect-square border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-4 transition-colors cursor-pointer group ${isDragging ? 'border-primary-blue bg-primary-blue/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
                                     >
-                                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-text-secondary group-hover:text-white transition-colors">
-                                            <Upload className="w-5 h-5" />
+                                        <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                                            <ImagePlus className="text-blue-500 w-5 h-5" />
                                         </div>
-                                        <div className="text-[10px] text-text-secondary uppercase font-bold tracking-widest text-center px-4">
-                                            Click to upload
-                                        </div>
+                                        <p className="text-white text-[11px] font-medium mb-1 text-center">
+                                            Drag & drop or click
+                                        </p>
                                     </div>
                                     {formData.images.map((img) => (
                                         <div key={img.id} className="relative aspect-square rounded-2xl overflow-hidden group">
@@ -363,81 +367,26 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                 {/* Right Column: Preview Sidebar */}
                 <div className="flex flex-col gap-6 xl:sticky xl:top-4 h-fit pb-24 xl:pb-0">
                     <div className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1 px-4">
-                        Product Preview
+                        Feed Preview
                     </div>
-                    <Card variant="card" className="bg-[#0B1724]/60 border-white/10 !p-0 overflow-hidden shadow-2xl">
-                        {/* Preview Image */}
-                        <div className="aspect-[4/3] bg-white/5 relative group">
-                            {formData.images[0] ? (
-                                <img
-                                    src={formData.images[0].url}
-                                    alt="Preview"
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-text-secondary">
-                                    No Image Provided
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Preview Content */}
-                        <div className="p-6">
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="text-xl font-bold leading-tight">{formData.name || "Product Name"}</h3>
-                                <div className="text-primary-blue font-bold text-lg">Rs.{formData.price || "0.00"}</div>
-                            </div>
-
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="text-xs font-medium text-text-secondary">{formData.category}</span>
-                                <span className="w-1 h-1 bg-white/20 rounded-full" />
-                                <span className="text-xs font-medium text-text-secondary">By Your Club</span>
-                            </div>
-
-                            <p className="text-xs text-text-secondary leading-relaxed mb-6 line-clamp-3">
-                                {formData.description || "No description provided."}
-                            </p>
-
-                            {/* Color Selection */}
-                            <div className="mb-6">
-                                <div className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-3">Color</div>
-                                <div className="flex gap-2">
-                                    {formData.colors.map((color, idx) => (
-                                        <div
-                                            key={color.id}
-                                            className={`w-5 h-5 rounded-full border border-white/20 cursor-pointer ${idx === 0 ? 'ring-2 ring-primary-blue ring-offset-2 ring-offset-[#0B1724]' : ''}`}
-                                            style={{ backgroundColor: color.hex }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Size Selection */}
-                            {formData.enableSizes && (
-                                <div className="mb-8">
-                                    <div className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-3">Size</div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {formData.sizes.map((size, idx) => (
-                                            <div
-                                                key={size}
-                                                className={`px-3 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-bold ${idx === 1 ? 'bg-primary-blue border-primary-blue text-white' : 'text-text-secondary'}`}
-                                            >
-                                                {size}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <button className="w-full py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_4px_15px_rgba(59,130,246,0.3)] mb-4">
-                                Buy Now
-                            </button>
-
-                            <div className="text-[10px] text-text-secondary text-center italic">
-                                {formData.pickupNote}
-                            </div>
-                        </div>
-                    </Card>
+                    <div className="pointer-events-none">
+                        <ClubPostCard 
+                            post={{
+                                id: "preview",
+                                clubName: "Your Club Name",
+                                clubSeed: "Your Club Name",
+                                time: "Just now",
+                                category: formData.category || "Apparel",
+                                image: formData.images[0]?.url || "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22300%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Provided%3C%2Ftext%3E%3C%2Fsvg%3E",
+                                price: formData.price ? `Rs.${formData.price}` : "Rs.0.00",
+                                text: formData.description || "No description provided.",
+                                postType: "club-product",
+                                stats: { likes: 0 },
+                                comments: []
+                            }} 
+                            isOwner={false} 
+                        />
+                    </div>
 
                     {/* Action Buttons */}
                     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-[#0B1724]/95 backdrop-blur-md border-t border-white/10 xl:static xl:z-auto xl:p-0 xl:bg-transparent xl:backdrop-blur-none xl:border-t-0 flex gap-4 mt-4 xl:mt-0">
@@ -451,10 +400,10 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                         <button
                             onClick={handlePublish}
                             disabled={loading}
-                            className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(59,130,246,0.4)] disabled:opacity-50 flex items-center justify-center gap-2"
+                            className="flex-1 py-3 bg-primary-blue hover:bg-primary-blue/90 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(43,140,238,0.4)] flex items-center justify-center gap-2 disabled:opacity-50"
                         >
                             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                            {loading ? "Publishing..." : "Publish Now"}
+                            {loading ? "Publishing..." : "Publish Product"}
                         </button>
                     </div>
                 </div>

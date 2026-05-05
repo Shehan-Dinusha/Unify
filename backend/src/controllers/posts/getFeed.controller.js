@@ -71,13 +71,13 @@ export const getFeed = async (req, res) => {
     
     if (type === "all") {
       tasks.push(fetchPosts(NormalPost, "normal"));
-      tasks.push(fetchPosts(ClubProductPost, "club-product"));
-      tasks.push(fetchPosts(ClubEventPost, "club-event"));
+      tasks.push(fetchPosts(ClubProductPost, "club-product", "author", { isVisible: true }));
+      tasks.push(fetchPosts(ClubEventPost, "club-event", "author", { isVisible: true }));
       tasks.push(fetchPosts(Boarding, "boarding", "host"));
     } else if (type === "club") {
       tasks.push(fetchPosts(NormalPost, "normal", "author", { category: "CLUB" }));
-      tasks.push(fetchPosts(ClubProductPost, "club-product"));
-      tasks.push(fetchPosts(ClubEventPost, "club-event"));
+      tasks.push(fetchPosts(ClubProductPost, "club-product", "author", { isVisible: true }));
+      tasks.push(fetchPosts(ClubEventPost, "club-event", "author", { isVisible: true }));
     } else if (type === "boarding") {
       tasks.push(fetchPosts(Boarding, "boarding", "host"));
     } else if (type === "food-cafe") {
@@ -85,12 +85,12 @@ export const getFeed = async (req, res) => {
     } else if (type === "services") {
       tasks.push(fetchPosts(NormalPost, "services", "author", { category: "SELF_EMPLOYED" }));
     } else if (type === "marketplace") {
-      tasks.push(fetchPosts(ClubProductPost, "club-product"));
+      tasks.push(fetchPosts(ClubProductPost, "club-product", "author", { isVisible: true }));
     } else if (type === "event") {
-      tasks.push(fetchPosts(ClubEventPost, "club-event"));
+      tasks.push(fetchPosts(ClubEventPost, "club-event", "author", { isVisible: true }));
     } else if (type === "popular") {
-      tasks.push(fetchPosts(ClubProductPost, "club-product", "author", {}, [["likesCount", "DESC"], ["createdAt", "DESC"]]));
-      tasks.push(fetchPosts(ClubEventPost, "club-event", "author", {}, [["likesCount", "DESC"], ["createdAt", "DESC"]]));
+      tasks.push(fetchPosts(ClubProductPost, "club-product", "author", { isVisible: true }, [["likesCount", "DESC"], ["createdAt", "DESC"]]));
+      tasks.push(fetchPosts(ClubEventPost, "club-event", "author", { isVisible: true }, [["likesCount", "DESC"], ["createdAt", "DESC"]]));
     }
 
     // Fetch concurrently
@@ -106,7 +106,7 @@ export const getFeed = async (req, res) => {
         if (likesDiff !== 0) return likesDiff;
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
-      combinedFeed = combinedFeed.slice(0, 10);
+      combinedFeed = combinedFeed.slice(0, 7);
     } else {
       combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }

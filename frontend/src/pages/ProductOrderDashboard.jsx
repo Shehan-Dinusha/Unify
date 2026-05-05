@@ -245,8 +245,8 @@ const ProductOrderDashboard = () => {
                     />
                     <div>
                         <p className="text-text-secondary text-xs mb-0.5">Viewing {type === 'club-product' ? 'orders' : 'bookings'} for</p>
-                        <h2 className="text-white font-bold text-lg leading-tight">{itemInfo?.title || "Loading..."}</h2>
-                        <p className="text-text-secondary text-xs">{itemInfo?.name} · {itemInfo?.price ? `Rs.${itemInfo.price}` : "Free"}</p>
+                        <h2 className="text-white font-bold text-lg leading-tight">{itemInfo?.name || "Loading..."}</h2>
+                        <p className="text-text-secondary text-xs">{itemInfo?.price ? `Rs.${itemInfo.price}` : "Free"}</p>
                     </div>
                     <button
                         onClick={() => navigate("/club-owner/dashboard")}
