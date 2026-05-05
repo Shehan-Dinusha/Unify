@@ -9,9 +9,6 @@ import {
   mockRequests,
   mockSemesters,
   mockCurrentUser,
-  mockModuleCategories,
-  mockCategoryFiles,
-  mockLearningFiles,
 } from "../data/mockData";
 import { ModuleActionSuccessModal } from "../components/common/ModuleActionModals";
 import * as learningService from "../services/learningService";
@@ -66,6 +63,11 @@ const BatchRepLearningDashboard = () => {
   React.useEffect(() => {
     if (!activeModuleId) return;
 
+    // Clear stale state before fetching new module details
+    setActiveModuleDetails(null);
+    setSelectedCategory(null);
+    setCategoryFiles([]);
+
     const fetchModuleData = async () => {
       setIsLoadingDetails(true);
       try {
@@ -85,19 +87,17 @@ const BatchRepLearningDashboard = () => {
 
         try {
           const catsRes = await learningService.getModuleCategories(activeModuleId);
-          const apiCategories = catsRes.data?.categories;
-          const catsData = apiCategories?.length > 0 ? apiCategories : (mockModuleCategories[activeModuleId] || []);
-          setModuleCategories(catsData);
-          if (catsData.length > 0) {
-            setSelectedCategory(catsData[0]);
+          const apiCategories = catsRes.data?.categories || [];
+          setModuleCategories(apiCategories);
+          if (apiCategories.length > 0) {
+            setSelectedCategory(apiCategories[0]);
           } else {
             setSelectedCategory(null);
           }
         } catch (err) {
           console.warn("Failed to fetch module categories", err);
-          const fallbackData = mockModuleCategories[activeModuleId] || [];
-          setModuleCategories(fallbackData);
-          setSelectedCategory(fallbackData.length > 0 ? fallbackData[0] : null);
+          setModuleCategories([]);
+          setSelectedCategory(null);
         }
       } finally {
         setIsLoadingDetails(false);
@@ -120,11 +120,10 @@ const BatchRepLearningDashboard = () => {
           activeModuleId,
           selectedCategory.id
         );
-        const filesData = filesRes.data?.length > 0 ? filesRes.data : (mockCategoryFiles[selectedCategory.id] || mockLearningFiles || []);
-        setCategoryFiles(filesData);
+        setCategoryFiles(filesRes.data || []);
       } catch (err) {
         console.warn("Failed to fetch materials", err);
-        setCategoryFiles(mockCategoryFiles[selectedCategory.id] || mockLearningFiles || []);
+        setCategoryFiles([]);
       }
     };
 
@@ -135,19 +134,14 @@ const BatchRepLearningDashboard = () => {
     if (!activeModuleId) return;
     try {
       const catsRes = await learningService.getModuleCategories(activeModuleId);
-      const apiCategories = catsRes.data?.categories;
-      const catsData = apiCategories?.length > 0 ? apiCategories : (mockModuleCategories[activeModuleId] || []);
-      setModuleCategories(catsData);
-      if (!selectedCategory && catsData.length > 0) {
-        setSelectedCategory(catsData[0]);
+      const apiCategories = catsRes.data?.categories || [];
+      setModuleCategories(apiCategories);
+      if (!selectedCategory && apiCategories.length > 0) {
+        setSelectedCategory(apiCategories[0]);
       }
     } catch (err) {
       console.error(err);
-      const fallbackData = mockModuleCategories[activeModuleId] || [];
-      setModuleCategories(fallbackData);
-      if (!selectedCategory && fallbackData.length > 0) {
-        setSelectedCategory(fallbackData[0]);
-      }
+      setModuleCategories([]);
     }
   };
 
@@ -158,11 +152,10 @@ const BatchRepLearningDashboard = () => {
         activeModuleId,
         selectedCategory.id
       );
-      const filesData = filesRes.data?.length > 0 ? filesRes.data : (mockCategoryFiles[selectedCategory.id] || mockLearningFiles || []);
-      setCategoryFiles(filesData);
+      setCategoryFiles(filesRes.data || []);
     } catch (err) {
       console.error(err);
-      setCategoryFiles(mockCategoryFiles[selectedCategory.id] || mockLearningFiles || []);
+      setCategoryFiles([]);
     }
   };
 
@@ -174,11 +167,11 @@ const BatchRepLearningDashboard = () => {
   // Compute Active Module Data derived from state
   const activeSemesterInfo = semesters.find(
     (sem) =>
-      sem.modules && sem.modules.some((mod) => mod.id === activeModuleId),
+      sem.modules && sem.modules.some((mod) => String(mod.id) === String(activeModuleId)),
   );
 
   const activeModuleData = activeModuleDetails || activeSemesterInfo?.modules.find(
-    (mod) => mod.id === activeModuleId,
+    (mod) => String(mod.id) === String(activeModuleId),
   );
 
   const handleAddModule = async (newModule) => {
@@ -193,14 +186,14 @@ const BatchRepLearningDashboard = () => {
       const res = await learningService.createModule({
         title: newModule.title,
         code: newModule.code,
-        semester: newModule.semester, // In AddModuleModal it is sem.id
+        semester: parseInt(newModule.semester, 10),
         visibility: visibilityIds,
       });
       const createdModule = res.data;
 
       setSemesters((prevSemesters) =>
         prevSemesters.map((sem) => {
-          if (sem.id === newModule.semester) {
+          if (String(sem.id) === String(newModule.semester)) {
             return {
               ...sem,
               modules: [
@@ -217,11 +210,17 @@ const BatchRepLearningDashboard = () => {
           return sem;
         }),
       );
+
+      if (createdModule?.id) {
+        setActiveModuleId(createdModule.id);
+      }
+      
       setActionModuleName(newModule.title);
       setShowSuccessModal(true);
     } catch (err) {
       console.error("Failed to create module", err);
-      alert("Failed to create module");
+      const errorMessage = err.response?.data?.message || err.message || "Unknown error";
+      alert(`Failed to create module: ${errorMessage}`);
     }
   };
 
@@ -249,7 +248,7 @@ const BatchRepLearningDashboard = () => {
         let updatedSemesters = prevSemesters.map((sem) => ({
           ...sem,
           modules: sem.modules
-            ? sem.modules.filter((mod) => mod.id !== activeModuleId)
+            ? sem.modules.filter((mod) => String(mod.id) !== String(activeModuleId))
             : [],
         }));
 
@@ -274,6 +273,15 @@ const BatchRepLearningDashboard = () => {
         return updatedSemesters;
       });
 
+      // Update active module details if we are viewing it
+      setActiveModuleDetails((prev) => prev ? {
+        ...prev,
+        name: editedData.title,
+        code: editedData.code,
+        degrees: editedData.visibility,
+        semester: selectedSemester ? { id: selectedSemester.id, name: selectedSemester.name } : prev.semester
+      } : null);
+
       setActionModuleName(editedData.title);
       setShowSuccessModal(true);
     } catch (err) {
@@ -291,7 +299,7 @@ const BatchRepLearningDashboard = () => {
         prevSemesters.map((sem) => ({
           ...sem,
           modules: sem.modules
-            ? sem.modules.filter((mod) => mod.id !== activeModuleId)
+            ? sem.modules.filter((mod) => String(mod.id) !== String(activeModuleId))
             : [],
         })),
       );
@@ -377,6 +385,7 @@ const BatchRepLearningDashboard = () => {
                   onEditSave={handleEditModule}
                   onDelete={handleDeleteModule}
                   moduleId={activeModuleId}
+                  categories={moduleCategories}
                   onMaterialUploaded={refreshFiles}
                 />
                 

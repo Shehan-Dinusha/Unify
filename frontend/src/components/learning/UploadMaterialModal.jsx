@@ -15,14 +15,16 @@ const UploadMaterialModal = ({
   onClose,
   moduleName = "Programming Fundamentals",
   moduleId,
+  categories = [],
   onSuccess,
 }) => {
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("Lecture Notes");
+  const [category, setCategory] = useState("");
   const [attachmentType, setAttachmentType] = useState("Upload File");
   const [selectedFile, setSelectedFile] = useState(null);
   const [linkUrl, setLinkUrl] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -32,24 +34,14 @@ const UploadMaterialModal = ({
   useEffect(() => {
     if (isOpen) {
       setTitle("");
-      setCategory("Lecture Notes");
+      setCategory(categories.length > 0 ? categories[0].title : "");
       setAttachmentType("Upload File");
       setSelectedFile(null);
       setLinkUrl("");
     }
-  }, [isOpen]);
+  }, [isOpen, categories]);
 
   if (!isOpen || !mounted) return null;
-
-  const categories = [
-    "Lecture Notes",
-    "Videos",
-    "Lab Reports",
-    "Past Papers",
-    "Additional",
-  ];
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleUpload = async () => {
     // Validate inputs
@@ -143,30 +135,30 @@ const UploadMaterialModal = ({
             <div className="w-full flex flex-wrap gap-x-6 gap-y-3">
               {categories.map((cat) => (
                 <label
-                  key={cat}
+                  key={cat.id || cat.title}
                   className="flex items-center gap-2 cursor-pointer group"
-                  onClick={() => setCategory(cat)}
+                  onClick={() => setCategory(cat.title)}
                 >
                   <div className="relative flex items-center justify-center">
                     <div
                       className={`w-4 h-4 rounded-full border-[1.5px] transition-colors ${
-                        category === cat
+                        category === cat.title
                           ? "border-primary-blue bg-primary-blue/10"
                           : "border-text-tertiary bg-transparent group-hover:border-text-secondary"
                       }`}
                     ></div>
-                    {category === cat && (
+                    {category === cat.title && (
                       <div className="absolute w-2 h-2 bg-primary-blue rounded-full"></div>
                     )}
                   </div>
                   <span
                     className={`text-sm font-inter transition-colors ${
-                      category === cat
+                      category === cat.title
                         ? "text-white font-medium"
                         : "text-text-secondary group-hover:text-text-primary"
                     }`}
                   >
-                    {cat}
+                    {cat.title}
                   </span>
                 </label>
               ))}

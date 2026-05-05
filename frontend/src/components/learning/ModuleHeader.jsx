@@ -21,6 +21,7 @@ const ModuleHeader = ({
   availableDegrees = [],
   primaryDegree = "Bsc.(Hons) IT",
   semesters = [],
+  categories = [],
 }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -112,6 +113,7 @@ const ModuleHeader = ({
         onClose={() => setIsUploadModalOpen(false)}
         moduleName={moduleName}
         moduleId={moduleId}
+        categories={categories}
         onSuccess={onMaterialUploaded}
       />
 
