@@ -13,6 +13,7 @@ const ModuleSidebar = ({
   activeSemesterId,
   activeModuleId,
   onSelectModule,
+  onAddModule,
   readOnly = false,
   title,
   className = "",
@@ -26,6 +27,7 @@ const ModuleSidebar = ({
   const [isAddModuleOpen, setIsAddModuleOpen] = useState(false);
   const [visibilitySemester, setVisibilitySemester] = useState(null);
   const [currentVisibility, setCurrentVisibility] = useState([]);
+  const [availableBatches, setAvailableBatches] = useState([]);
 
   useEffect(() => {
     if (activeSemesterId && !expandedSemesters.includes(activeSemesterId)) {
@@ -41,20 +43,13 @@ const ModuleSidebar = ({
     e.stopPropagation();
     setVisibilitySemester(semester);
     try {
-      // It expects semester visibility for a given degree and semester
-      // It returns an array of visible batch IDs or similar
       const res = await learningService.getSemesterVisibility(degreeId, semester.id);
-      // Fallback depending on backend structure
-      const batches = res?.data || [];
-      // Assuming it returns array of batch objects or batch ids. 
-      // Based on validator: visibleBatchIds
-      // Actually validator updateSemesterVisibilityValidator expects visibleBatchIds.
-      // So let's assume it returns { visibleBatchIds: [...] } or array of objects with id.
-      // We will parse it depending on what we get.
-      setCurrentVisibility(res?.data?.visibleBatchIds || (Array.isArray(res?.data) ? res.data.map(b => b.id || b) : []));
+      setCurrentVisibility(res?.data?.currentVisibility || []);
+      setAvailableBatches(res?.data?.availableBatches || []);
     } catch (err) {
       console.error("Failed to fetch semester visibility", err);
       setCurrentVisibility([]);
+      setAvailableBatches([]);
     }
   };
 
@@ -187,36 +182,7 @@ const ModuleSidebar = ({
         isOpen={!!visibilitySemester}
         onClose={() => setVisibilitySemester(null)}
         semesterName={visibilitySemester?.name}
-        availableBatches={[
-          {
-            id: "b25",
-            short: "'25",
-            name: "Batch 25",
-            colorBg: "bg-orange-900/30",
-            colorText: "text-orange-400",
-          },
-          {
-            id: "b24",
-            short: "'24",
-            name: "Batch 24",
-            colorBg: "bg-indigo-900/30",
-            colorText: "text-indigo-400",
-          },
-          {
-            id: "b23",
-            short: "'23",
-            name: "Batch 23",
-            colorBg: "bg-emerald-900/30",
-            colorText: "text-emerald-400",
-          },
-          {
-            id: "b22",
-            short: "'22",
-            name: "Batch 22",
-            colorBg: "bg-indigo-900/30",
-            colorText: "text-indigo-400",
-          },
-        ]}
+        availableBatches={availableBatches}
         // Default visibility is none by default per requirements.
         currentVisibility={currentVisibility}
         onSaveVisibility={async (data) => {

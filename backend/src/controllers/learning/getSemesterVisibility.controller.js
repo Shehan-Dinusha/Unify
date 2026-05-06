@@ -1,4 +1,9 @@
-import { SemesterVisibility, Batch, Degree, Semester } from "../../modules/index.js";
+import {
+  SemesterVisibility,
+  Batch,
+  Degree,
+  Semester,
+} from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -21,14 +26,20 @@ export const getSemesterVisibility = async (req, res, next) => {
     });
 
     // Format for frontend
-    const availableBatches = batches.map((b) => ({
-      id: b.id,
-      name: `Batch ${b.name}`,
-      short: `'${b.name}`,
-      // Assigning default colors for frontend rendering
-      colorBg: "bg-blue-900/30",
-      colorText: "text-blue-400",
-    }));
+    const availableBatches = batches.map((b) => {
+      const batchNameRaw = b.name || "";
+      const isAlreadyBatch = batchNameRaw.toLowerCase().includes("batch");
+      const name = isAlreadyBatch ? batchNameRaw : `Batch ${batchNameRaw}`;
+      const shortCode = batchNameRaw.replace(/batch/i, "").trim();
+
+      return {
+        id: b.id,
+        name,
+        short: `'${shortCode}`,
+        colorBg: "bg-indigo-900/30",
+        colorText: "text-indigo-400",
+      };
+    });
 
     // 2. Fetch current visibility config
     const visibilities = await SemesterVisibility.findAll({
