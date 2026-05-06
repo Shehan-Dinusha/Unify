@@ -23,7 +23,7 @@ const ProfileHeader = ({ profile, isPublic = false, className = "" }) => {
 
   const avatarSrc =
     profileImage ||
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2666F1&color=fff`;
 
   const handleReport = () => {
     navigate("/student/report-issue", {

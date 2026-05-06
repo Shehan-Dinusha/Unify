@@ -41,7 +41,7 @@ const ClubCheckout = () => {
                 const result = await orderService.createBooking(bookingData);
                 
                 sessionResponse = await orderService.createCheckoutSession({
-                    orderId: result.booking.bookingId,
+                    bookingId: result.booking.bookingId,
                     amount: subtotal,
                     productName: product.name,
                     successUrl: `${window.location.origin}/marketplace/club/payment-success?booking_id=${result.booking.id}`,

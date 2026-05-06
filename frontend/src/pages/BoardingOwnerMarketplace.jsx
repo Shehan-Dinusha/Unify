@@ -13,13 +13,13 @@ const BoardingOwnerMarketplace = () => {
     const user = { name: "Alex Johnson", role: "boarding_owner", displayRole: "Business & Organization" };
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filters, setFilters] = useState({ minPrice: 0, maxPrice: 100000, gender: "Any" });
+    const [filters, setFilters] = useState({ minPrice: 5000, maxPrice: 30000, gender: "Any" });
     const [selectedPost, setSelectedPost] = useState(null);
 
     const fetchFeed = async () => {
         try {
             setLoading(true);
-            const data = await postService.getFeed("boarding");
+            const data = await postService.getFilteredBoardingFeed(filters);
             const mappedPosts = data.feed.map(post => ({
                 ...post,
                 time: formatTimeAgo(post.createdAt),
@@ -34,24 +34,7 @@ const BoardingOwnerMarketplace = () => {
 
     useEffect(() => {
         fetchFeed();
-    }, []);
-
-    // Parse price for filter — handles number or string like "Rs. 4500"
-    const parsePriceNum = (priceStr) => {
-        if (!priceStr) return 0;
-        if (typeof priceStr === "number") return priceStr;
-        return parseInt(priceStr.replace(/[^0-9]/g, ""), 10) || 0;
-    };
-
-    const filteredFeed = posts.filter((post) => {
-        const price = parsePriceNum(post.price);
-        const inPrice = price >= filters.minPrice && price <= filters.maxPrice;
-        const inGender =
-            filters.gender === "Any" ||
-            post.gender === filters.gender ||
-            post.gender === "Any";
-        return inPrice && inGender;
-    });
+    }, [filters]);
 
     const headerRight = (
         <button 
@@ -77,8 +60,8 @@ const BoardingOwnerMarketplace = () => {
                             <Loader2 className="w-10 h-10 text-primary-blue animate-spin" />
                             <p className="text-text-secondary">Loading your boarding listings...</p>
                         </div>
-                    ) : filteredFeed.length > 0 ? (
-                        filteredFeed.map((post) => (
+                    ) : posts.length > 0 ? (
+                        posts.map((post) => (
                             <BoardingPostCard
                                 key={`${post.postType || "boarding"}-${post.id}`}
                                 post={post}
