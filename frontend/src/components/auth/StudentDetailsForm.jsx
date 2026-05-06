@@ -262,7 +262,7 @@ const StudentDetailsForm = ({ onNext, initialData, loading }) => {
           </p>
         </div>
 
-        <ImageUpload onChange={handleImageChange} label="Upload Photo (Optional)" />
+        <ImageUpload onChange={handleImageChange} label="Upload Photo (Optional)" value={initialData?.user?.avatar || null} />
 
         {loadingMeta ? (
           <p className="text-text-secondary text-body-small text-center animate-pulse">
