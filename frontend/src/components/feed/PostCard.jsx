@@ -14,6 +14,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import newsfeedService from "../../services/newsfeedService";
+import { formatTimeAgo } from "../../utils/formatters";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
 const CommentSection = ({ postComments, onAddComment, loading }) => {
@@ -144,6 +145,10 @@ const PostCard = ({
   const [loadingComments, setLoadingComments] = useState(false);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [imgFailed, setImgFailed] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const DESCRIPTION_LIMIT = 250;
+  const isLongDescription = description && description.length > DESCRIPTION_LIMIT;
 
   const postType = post?.postType || "normal";
   const postId = post?.id;
@@ -196,7 +201,7 @@ const PostCard = ({
           id: c.id,
           user: c.user?.name || "User",
           seed: c.user?.name || "User",
-          time: c.createdAt ? new Date(c.createdAt).toLocaleString() : "just now",
+          time: c.createdAt ? formatTimeAgo(c.createdAt) : "just now",
           text: c.content,
         }));
         setPostComments(fetchedComments);
@@ -246,18 +251,15 @@ const PostCard = ({
 
   return (
     <div className="w-full bg-[#1A2634] rounded-[24px] overflow-hidden border border-white/5 font-inter text-white">
-      {/* Post Image */}
-      {image ? (
-        <div className="relative w-full bg-black/20 flex justify-center items-center min-h-[200px] max-h-[500px] overflow-hidden">
+      {/* Post Image — only rendered when a valid image exists */}
+      {showImage && (
+        <div className="relative w-full bg-black/20 flex justify-center items-center max-h-[500px] overflow-hidden">
           <img
             src={image || "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22400%22%20viewBox%3D%220%200%20800%20400%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fsvg%3E"}
             alt="post"
             className="w-full h-auto min-h-[200px] object-cover sm:object-contain max-h-[500px]"
             loading="lazy"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22400%22%20viewBox%3D%220%200%20800%20400%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fsvg%3E";
-            }}
+            onError={() => setImgFailed(true)}
           />
         </div>
       ) : (
@@ -371,9 +373,23 @@ const PostCard = ({
         )}
 
         {/* Description */}
-        <p className="text-sm sm:text-body-medium text-[#94A3B8] leading-relaxed">
-          {description}
-        </p>
+        {description && (
+          <div className="text-sm sm:text-body-medium text-[#94A3B8] leading-relaxed">
+            <p className="inline">
+              {isLongDescription && !isExpanded
+                ? `${description.slice(0, DESCRIPTION_LIMIT).trimEnd()}...`
+                : description}
+            </p>
+            {isLongDescription && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="ml-1 text-primary-blue hover:text-primary-blue/80 text-sm font-medium transition-colors inline"
+              >
+                {isExpanded ? "See less" : "See more"}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Divider */}
         <div className="h-px bg-white/5 w-full my-2" />
