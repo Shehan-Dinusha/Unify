@@ -3,6 +3,7 @@ import { Play, Edit2, Trash2 } from "lucide-react";
 import Button from "../common/Button";
 import { EditMaterialModal, DeleteMaterialModal } from "./MaterialActionModals";
 import * as learningService from "../../services/learningService";
+import { useToast } from "../common/Toast";
 
 /**
  * Represents the table view showing files inside a specific category (e.g., Video Files)
@@ -16,6 +17,7 @@ const FileListTable = ({
   const [files, setFiles] = useState(initialFiles);
   const [editingFile, setEditingFile] = useState(null);
   const [deletingFile, setDeletingFile] = useState(null);
+  const toast = useToast();
 
   React.useEffect(() => {
     setFiles(initialFiles);
@@ -30,7 +32,7 @@ const FileListTable = ({
       onRefresh?.();
     } catch (err) {
       console.error("Failed to edit material", err);
-      alert("Failed to edit material");
+      toast.error("Error", "Failed to edit material");
     }
   };
 
@@ -40,7 +42,7 @@ const FileListTable = ({
       onRefresh?.();
     } catch (err) {
       console.error("Failed to delete material", err);
-      alert("Failed to delete material");
+      toast.error("Error", "Failed to delete material");
     }
   };
   return (

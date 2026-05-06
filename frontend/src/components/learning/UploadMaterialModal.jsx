@@ -5,6 +5,7 @@ import Button from "../common/Button";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import FileUpload from "../common/FileUpload";
+import { useToast } from "../common/Toast";
 import * as learningService from "../../services/learningService";
 
 /**
@@ -25,6 +26,7 @@ const UploadMaterialModal = ({
   const [linkUrl, setLinkUrl] = useState("");
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     setMounted(true);
@@ -50,7 +52,7 @@ const UploadMaterialModal = ({
     if (attachmentType === "Attach Link" && !linkUrl) return;
 
     if (!moduleId) {
-      alert("Module ID is missing!");
+      toast.error("Error", "Module ID is missing!");
       return;
     }
 
@@ -72,7 +74,7 @@ const UploadMaterialModal = ({
       onClose();
     } catch (err) {
       console.error("Failed to upload material", err);
-      alert("Failed to upload material");
+      toast.error("Upload Failed", "Failed to upload material. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

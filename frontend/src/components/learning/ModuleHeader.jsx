@@ -3,6 +3,7 @@ import Button from "../common/Button";
 import { useState } from "react";
 import UploadMaterialModal from "./UploadMaterialModal";
 import EditModuleModal from "./EditModuleModal";
+import { useToast } from "../common/Toast";
 
 /**
  * Renders the top header for the selected module showing details and access
@@ -25,6 +26,7 @@ const ModuleHeader = ({
 }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const toast = useToast();
 
   return (
     <div className="w-full p-4 sm:p-5 bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col gap-3.5">
@@ -86,7 +88,13 @@ const ModuleHeader = ({
             variant="primary"
             size="small"
             className="!bg-indigo-500 hover:!bg-indigo-600 shadow-[0_8.8px_13.2px_-2.6px_rgba(59,130,246,0.30)] !rounded-lg flex items-center gap-2 h-10 !px-3.5"
-            onClick={() => setIsUploadModalOpen(true)}
+            onClick={() => {
+              if (!categories || categories.length === 0) {
+                toast.warning("Category Required", "Please create at least one category before uploading a file.");
+                return;
+              }
+              setIsUploadModalOpen(true);
+            }}
           >
             <Upload size={14} className="text-white" />
             <span className="text-white font-medium">Upload File</span>

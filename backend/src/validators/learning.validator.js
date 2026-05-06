@@ -85,6 +85,9 @@ export const uploadMaterialValidator = [
     .isInt()
     .withMessage("Module ID must be an integer"),
   body("title").notEmpty().withMessage("Material title is required"),
+  body("category")
+    .notEmpty()
+    .withMessage("A category is required to upload material"),
   body("attachmentType")
     .isIn(["Upload File", "Attach Link"])
     .withMessage(

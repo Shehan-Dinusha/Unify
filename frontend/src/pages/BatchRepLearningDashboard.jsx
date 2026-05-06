@@ -12,6 +12,7 @@ import {
 } from "../data/mockData";
 import { ModuleActionSuccessModal } from "../components/common/ModuleActionModals";
 import * as learningService from "../services/learningService";
+import { useToast } from "../components/common/Toast";
 
 const BatchRepLearningDashboard = () => {
   const [semesters, setSemesters] = useState(mockSemesters);
@@ -31,6 +32,7 @@ const BatchRepLearningDashboard = () => {
   const [availableDegrees, setAvailableDegrees] = useState([]);
   const [availableDegreesObjs, setAvailableDegreesObjs] = useState([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const toast = useToast();
 
   // Fetch module details and categories when activeModuleId changes
   React.useEffect(() => {
@@ -220,7 +222,7 @@ const BatchRepLearningDashboard = () => {
     } catch (err) {
       console.error("Failed to create module", err);
       const errorMessage = err.response?.data?.message || err.message || "Unknown error";
-      alert(`Failed to create module: ${errorMessage}`);
+      toast.error("Error", `Failed to create module: ${errorMessage}`);
     }
   };
 
@@ -286,7 +288,7 @@ const BatchRepLearningDashboard = () => {
       setShowSuccessModal(true);
     } catch (err) {
       console.error("Failed to edit module", err);
-      alert("Failed to edit module");
+      toast.error("Error", "Failed to edit module");
     }
   };
 
@@ -306,7 +308,7 @@ const BatchRepLearningDashboard = () => {
       setShowDeleteModal(true);
     } catch (err) {
       console.error("Failed to delete module", err);
-      alert("Failed to delete module");
+      toast.error("Error", "Failed to delete module");
     }
   };
 

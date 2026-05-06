@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import CategoryModal from "./CategoryModal";
 import * as learningService from "../../services/learningService";
+import { useToast } from "../common/Toast";
 
 // Helper to get actual icon component from name
 const getIconFromName = (name) => {
@@ -168,6 +169,7 @@ const CategoryGrid = ({
   onRefresh,
 }) => {
   const [categories, setCategories] = useState(initialCategories);
+  const toast = useToast();
 
   useEffect(() => {
     setCategories(initialCategories);
@@ -195,7 +197,7 @@ const CategoryGrid = ({
       onRefresh?.();
     } catch (err) {
       console.error("Failed to delete category", err);
-      alert("Failed to delete category");
+      toast.error("Error", "Failed to delete category");
     }
   };
 
@@ -203,7 +205,7 @@ const CategoryGrid = ({
     try {
       if (modalMode === "create") {
         if (!activeModuleId) {
-          alert("No active module selected");
+          toast.error("Error", "No active module selected");
           return;
         }
         await learningService.createModuleCategory(activeModuleId, {
@@ -220,7 +222,7 @@ const CategoryGrid = ({
       setIsModalOpen(false);
     } catch (err) {
       console.error("Failed to save category", err);
-      alert("Failed to save category");
+      toast.error("Error", "Failed to save category");
     }
   };
 

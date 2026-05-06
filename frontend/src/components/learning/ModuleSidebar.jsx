@@ -4,6 +4,7 @@ import Button from "../common/Button";
 import AddModuleModal from "./AddModuleModal";
 import SemesterVisibilityModal from "./SemesterVisibilityModal";
 import * as learningService from "../../services/learningService";
+import { useToast } from "../common/Toast";
 
 /**
  * Renders the left sidebar for Semesters and Modules
@@ -28,6 +29,7 @@ const ModuleSidebar = ({
   const [visibilitySemester, setVisibilitySemester] = useState(null);
   const [currentVisibility, setCurrentVisibility] = useState([]);
   const [availableBatches, setAvailableBatches] = useState([]);
+  const toast = useToast();
 
   useEffect(() => {
     if (activeSemesterId && !expandedSemesters.includes(activeSemesterId)) {
@@ -194,7 +196,7 @@ const ModuleSidebar = ({
             setVisibilitySemester(null);
           } catch (err) {
             console.error("Failed to update semester visibility", err);
-            alert("Failed to update semester visibility");
+            toast.error("Error", "Failed to update semester visibility");
           }
         }}
       />

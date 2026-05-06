@@ -6,6 +6,9 @@ import {
   Download,
   MoreVertical,
   Share2,
+  Image as ImageIcon,
+  FileArchive,
+  FileCode,
 } from "lucide-react";
 import StudentVideoViewerModal from "./StudentVideoViewerModal";
 import StudentDocumentViewerModal from "./StudentDocumentViewerModal";
@@ -15,11 +18,13 @@ import StudentDocumentViewerModal from "./StudentDocumentViewerModal";
  */
 const getFileIconConfig = (fileName = "", type = "file") => {
   const lowerName = fileName.toLowerCase();
+  const lowerType = type ? type.toLowerCase() : "";
+
+  // Video
   if (
-    lowerName.includes("video") ||
-    lowerName.includes("lecture") ||
-    lowerName.includes("recording") ||
-    type === "video"
+    lowerType.startsWith("video/") ||
+    lowerType === "video" ||
+    lowerName.match(/\.(mp4|mov|avi|wmv|flv|mkv|webm)$/)
   ) {
     return {
       type: "video",
@@ -27,10 +32,12 @@ const getFileIconConfig = (fileName = "", type = "file") => {
       bg: "bg-indigo-500/10 outline-indigo-500/20",
     };
   }
+
+  // Link
   if (
+    lowerType === "link" ||
     lowerName.includes("link") ||
-    lowerName.includes("reference") ||
-    type === "link"
+    lowerName.includes("reference")
   ) {
     return {
       type: "link",
@@ -38,6 +45,48 @@ const getFileIconConfig = (fileName = "", type = "file") => {
       bg: "bg-teal-500/10 outline-teal-500/20",
     };
   }
+
+  // Image
+  if (
+    lowerType.startsWith("image/") ||
+    lowerName.match(/\.(jpeg|jpg|gif|png|webp|svg)$/)
+  ) {
+    return {
+      type: "image",
+      icon: <ImageIcon size={24} className="text-pink-500" />,
+      bg: "bg-pink-500/10 outline-pink-500/20",
+    };
+  }
+
+  // Archive
+  if (
+    lowerType.includes("zip") ||
+    lowerType.includes("tar") ||
+    lowerType.includes("rar") ||
+    lowerName.match(/\.(zip|rar|tar|gz|7z)$/)
+  ) {
+    return {
+      type: "archive",
+      icon: <FileArchive size={24} className="text-amber-500" />,
+      bg: "bg-amber-500/10 outline-amber-500/20",
+    };
+  }
+
+  // Code
+  if (
+    lowerType.includes("json") ||
+    lowerType.includes("javascript") ||
+    lowerType.includes("html") ||
+    lowerName.match(/\.(js|jsx|ts|tsx|html|css|json|py|java|cpp|c|cs)$/)
+  ) {
+    return {
+      type: "code",
+      icon: <FileCode size={24} className="text-emerald-500" />,
+      bg: "bg-emerald-500/10 outline-emerald-500/20",
+    };
+  }
+
+  // Document (Default)
   return {
     type: "document",
     icon: <FileText size={24} className="text-red-500" />,
@@ -49,7 +98,7 @@ const getFileIconConfig = (fileName = "", type = "file") => {
  * Represents a single file record in the student materials view
  */
 const StudentFileRecord = ({ file, onClick, onShare }) => {
-  const { icon, bg } = getFileIconConfig(file.name, file.type);
+  const { icon, bg } = getFileIconConfig(file.name, file.fileType || file.type);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -175,14 +224,18 @@ const StudentMaterialList = ({ categoryName = "Notes", files = [] }) => {
   };
 
   const handleFileClick = (file) => {
-    const config = getFileIconConfig(file.name, file.type);
+    const config = getFileIconConfig(file.name, file.fileType || file.type);
     if (config.type === "video") {
       setModalType("video");
-    } else if (config.type === "document") {
-      setModalType("document");
+    } else if (config.type === "link") {
+      if (file.url) {
+        window.open(file.url, "_blank");
+      } else {
+        showToast("No URL available for this link.");
+      }
     } else {
-      // It's a link, standard behavior could be to open the link in a new tab
-      // But for now, we'll just log or show document modal if needed.
+      // For images, code, archives, and generic documents, use the document viewer
+      setModalType("document");
     }
     setSelectedFile(file);
   };
