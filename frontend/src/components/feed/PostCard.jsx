@@ -33,7 +33,7 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
     setText("");
     // Reset height if ref exists
     if (inputRef.current) {
-      inputRef.current.style.height = 'inherit';
+      inputRef.current.style.height = "inherit";
     }
   };
 
@@ -75,10 +75,7 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
       )}
 
       {/* Input */}
-      <form 
-        onSubmit={handleSubmit} 
-        className="flex items-end gap-2"
-      >
+      <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <img
           src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me"
           alt="You"
@@ -92,11 +89,11 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
             onChange={(e) => {
               setText(e.target.value);
               // Auto-resize
-              e.target.style.height = 'inherit';
+              e.target.style.height = "inherit";
               e.target.style.height = `${e.target.scrollHeight}px`;
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 handleSubmit(e);
               }
@@ -148,13 +145,15 @@ const PostCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const DESCRIPTION_LIMIT = 250;
-  const isLongDescription = description && description.length > DESCRIPTION_LIMIT;
+  const isLongDescription =
+    description && description.length > DESCRIPTION_LIMIT;
 
   const postType = post?.postType || "normal";
   const postId = post?.id;
 
   // Detect invalid/placeholder image values — show styled placeholder instead of broken icon
-  const isValidImage = image && !image.includes("placeholder-post") && !imgFailed;
+  const isValidImage =
+    image && !image.includes("placeholder-post") && !imgFailed;
   const showImage = isValidImage;
 
   const handleToggleLike = async () => {
@@ -238,7 +237,7 @@ const PostCard = ({
           text: data.comment.content,
         };
         setPostComments((prev) =>
-          prev.map((c) => (c.id === tempComment.id ? realComment : c))
+          prev.map((c) => (c.id === tempComment.id ? realComment : c)),
         );
       }
     } catch (err) {
@@ -255,81 +254,13 @@ const PostCard = ({
       {showImage && (
         <div className="relative w-full bg-black/20 flex justify-center items-center max-h-[500px] overflow-hidden">
           <img
-            src={image || "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22400%22%20viewBox%3D%220%200%20800%20400%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fsvg%3E"}
+            src={image}
             alt="post"
-            className="w-full h-auto min-h-[200px] object-cover sm:object-contain max-h-[500px]"
+            className="w-full h-auto object-contain max-h-[500px]"
             loading="lazy"
             onError={() => setImgFailed(true)}
           />
         </div>
-      ) : (
-        /* No-image banner */
-        (() => {
-          const config = {
-            'club-event':   { icon: Calendar,      color: '#818cf8', glow: 'rgba(99,102,241,0.15)',  label: 'Club Event'      },
-            'club-product': { icon: ShoppingBag,   color: '#4ade80', glow: 'rgba(34,197,94,0.12)',   label: 'Marketplace'     },
-            'boarding':     { icon: Home,           color: '#c084fc', glow: 'rgba(168,85,247,0.15)',  label: 'Boarding'        },
-            'normal':       { icon: MessageSquare, color: '#fbbf24', glow: 'rgba(251,191,36,0.12)',  label: 'Community Post'  },
-          };
-          const cfg = config[postType] || config['normal'];
-          const Icon = cfg.icon;
-
-          return (
-            <div style={{
-              position: 'relative',
-              width: '100%',
-              height: '180px',
-              background: `linear-gradient(135deg, #0f172a 0%, #1e293b 100%)`,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '12px',
-              overflow: 'hidden',
-            }}>
-              {/* Radial colour glow */}
-              <div style={{
-                position: 'absolute', inset: 0, pointerEvents: 'none',
-                background: `radial-gradient(ellipse at 50% 50%, ${cfg.glow} 0%, transparent 70%)`,
-              }} />
-
-              {/* Icon bubble */}
-              <div style={{
-                position: 'relative', zIndex: 1,
-                padding: '16px',
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Icon size={36} color={cfg.color} strokeWidth={1.5} />
-              </div>
-
-              {/* Label */}
-              <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-                <p style={{
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  letterSpacing: '0.18em',
-                  textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,0.28)',
-                  marginBottom: '6px',
-                }}>
-                  {cfg.label}
-                </p>
-                <div style={{ height: '1px', width: '32px', background: 'rgba(255,255,255,0.10)', margin: '0 auto', borderRadius: '1px' }} />
-              </div>
-
-              {/* Corner accents */}
-              <div style={{ position: 'absolute', top: 10, left: 10, width: 32, height: 32,
-                borderTop: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px 0 0 0', pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: 10, right: 10, width: 32, height: 32,
-                borderBottom: '1px solid rgba(255,255,255,0.08)', borderRight: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '0 0 8px 0', pointerEvents: 'none' }} />
-            </div>
-          );
-        })()
       )}
 
       {/* Content Container */}
