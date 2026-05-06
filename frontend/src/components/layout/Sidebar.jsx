@@ -8,15 +8,11 @@ import {
   Store,
   GraduationCap,
   LayoutDashboard,
-  ShieldAlert,
-  UserX,
-  Zap,
-  UserCheck,
   ShoppingCart,
   ClipboardList,
-  LogOut,
 } from "lucide-react";
 import LogoutModal from "../profile/modals/LogoutModal";
+import { getCurrentUser, logout } from "../../services/authService";
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({
@@ -85,7 +81,7 @@ const SidebarItem = ({
 };
 
 const UnifiedSidebar = ({
-  user,
+  user: propUser,
   verificationCount,
   isOpen,
   onClose,
@@ -94,6 +90,10 @@ const UnifiedSidebar = ({
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+
+  // Get user from auth or fallback to prop
+  const authUser = getCurrentUser();
+  const user = authUser || propUser || { name: "Guest", role: "student" };
 
   // Configuration Map for different user roles
   const roleConfigs = {
@@ -159,34 +159,46 @@ const UnifiedSidebar = ({
     club: {
       title: "Clubs & Societies Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/news-feed" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
         { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
-        {
-          icon: LayoutDashboard,
-          label: "Order Dashboard",
-          path: "/club-owner/dashboard",
-        },
+        { icon: LayoutDashboard, label: "Order Dashboard", path: "/club-owner/dashboard" },
+      ],
+    },
+    club_society: {
+      title: "Clubs & Societies Dashboard",
+      links: [
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
+        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: LayoutDashboard, label: "Order Dashboard", path: "/club-owner/dashboard" },
       ],
     },
     boarding_owner: {
       title: "Boarding Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/boarding-owner/marketplace" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
       ],
     },
     food_cafe_owner: {
       title: "Food & Cafe Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/food-cafe-owner/marketplace" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
       ],
     },
     services_owner: {
       title: "Services Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/services-owner/marketplace" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
+        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+      ],
+    },
+    self_employed: {
+      title: "Services Dashboard",
+      links: [
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
       ],
     },
@@ -280,7 +292,7 @@ const UnifiedSidebar = ({
                 {user.name}
               </h4>
               <p className="text-text-tertiary text-body-extra-small font-normal font-inter uppercase tracking-widest">
-                {user.displayRole || user.role}
+                {user.role?.toLowerCase() === "student" ? "Student" : (user.displayRole || user.role)}
               </p>
             </div>
           </div>
@@ -293,9 +305,7 @@ const UnifiedSidebar = ({
           onClose={() => setShowLogoutModal(false)}
           onConfirm={() => {
             setShowLogoutModal(false);
-            // Mock logout: clear tokens if any and redirect to login
-            console.log("Logging out...");
-            navigate("/login");
+            logout();
           }}
         />
       )}
