@@ -47,14 +47,19 @@ export const getBatchReps = async (req, res, next) => {
             .toUpperCase();
         }
 
-        const avatarSrc = await resolveAvatarUrl(rep.user?.avatar, rep.user?.name);
+        const avatarSrc = await resolveAvatarUrl(
+          rep.user?.avatar,
+          rep.user?.name,
+        );
 
         return {
           userId: rep.user?.id,
           name: rep.user?.name || "Unknown User",
           avatarSrc,
           initials,
-          degreeText: `${rep.degree?.name || ""} ${rep.batch?.name || ""}`.trim(),
+          degreeText: [rep.degree?.name, rep.batch?.name]
+            .filter(Boolean)
+            .join(" • "),
           roleText: "Rep",
         };
       }),
@@ -65,7 +70,7 @@ export const getBatchReps = async (req, res, next) => {
       200,
       true,
       "Batch reps retrieved successfully",
-      formattedReps
+      formattedReps,
     );
   } catch (error) {
     next(error);

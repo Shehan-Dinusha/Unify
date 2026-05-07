@@ -6,7 +6,6 @@ const TeamMemberRow = ({
   avatarSrc,
   initials,
   degreeText,
-  roleText = "Rep",
   isYou = false,
   isLast = false,
 }) => (
@@ -36,7 +35,6 @@ const TeamMemberRow = ({
       </h4>
       <div className="text-gray-400 text-xs font-inter leading-5">
         <span className="font-bold">{degreeText}</span>
-        <span className="font-normal"> {roleText}</span>
       </div>
     </div>
   </div>
@@ -53,14 +51,13 @@ const BatchRepTeam = ({ degreeId = 18, currentUserId = 1 }) => {
         const res = await learningService.getBatchReps(degreeId);
         if (res?.data) {
           // Map backend response to component props
-          const mappedReps = res.data.map(rep => ({
-            id: rep.id,
-            name: `${rep.firstName} ${rep.lastName}`,
-            avatarSrc: rep.profilePicture,
-            initials: rep.firstName ? rep.firstName[0] + (rep.lastName ? rep.lastName[0] : '') : '??',
-            degreeText: `${rep.degree?.name || 'Degree'} B${rep.batchId || ''}`,
-            roleText: "Rep",
-            isYou: rep.id === currentUserId,
+          const mappedReps = res.data.map((rep) => ({
+            id: rep.userId,
+            name: rep.name,
+            avatarSrc: rep.avatarSrc,
+            initials: rep.initials,
+            degreeText: rep.degreeText,
+            isYou: rep.userId === currentUserId,
           }));
           setTeamMembers(mappedReps);
         }
