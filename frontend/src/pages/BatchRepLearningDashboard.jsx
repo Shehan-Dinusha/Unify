@@ -5,11 +5,7 @@ import ModuleHeader from "../components/learning/ModuleHeader";
 import CategoryGrid from "../components/learning/CategoryGrid";
 import FileListTable from "../components/learning/FileListTable";
 import BatchRepTeam from "../components/learning/BatchRepTeam";
-import {
-  mockRequests,
-  mockSemesters,
-  mockCurrentUser,
-} from "../data/mockData";
+import { mockRequests, mockSemesters, mockCurrentUser } from "../data/mockData";
 import { ModuleActionSuccessModal } from "../components/common/ModuleActionModals";
 import * as learningService from "../services/learningService";
 import { useToast } from "../components/common/Toast";
@@ -38,11 +34,12 @@ const BatchRepLearningDashboard = () => {
   React.useEffect(() => {
     const fetchStructure = async () => {
       try {
-        const res = await learningService.getBatchRepCourseStructure(currentDegreeId);
+        const res =
+          await learningService.getBatchRepCourseStructure(currentDegreeId);
         if (res?.data?.semesters) {
           setSemesters(res.data.semesters);
           setDegreeName(res.data.degreeName || "Bsc.(Hons) IT");
-          
+
           // Set initial active semester and module if valid
           if (res.data.semesters.length > 0) {
             const firstSem = res.data.semesters[0];
@@ -77,18 +74,27 @@ const BatchRepLearningDashboard = () => {
         // If it fails, we fall back to finding it in mockSemesters.
         let details = null;
         try {
-          details = await learningService.getModuleDetails(activeModuleId, currentDegreeId);
+          details = await learningService.getModuleDetails(
+            activeModuleId,
+            currentDegreeId,
+          );
           setActiveModuleDetails(details?.data?.module || null);
           if (details?.data?.availableDegrees) {
             setAvailableDegreesObjs(details.data.availableDegrees);
-            setAvailableDegrees(details.data.availableDegrees.map(d => d.name));
+            setAvailableDegrees(
+              details.data.availableDegrees.map((d) => d.name),
+            );
           }
         } catch (err) {
-          console.warn("Failed to fetch module details from API, using local state", err);
+          console.warn(
+            "Failed to fetch module details from API, using local state",
+            err,
+          );
         }
 
         try {
-          const catsRes = await learningService.getModuleCategories(activeModuleId);
+          const catsRes =
+            await learningService.getModuleCategories(activeModuleId);
           const apiCategories = catsRes.data?.categories || [];
           setModuleCategories(apiCategories);
           if (apiCategories.length > 0) {
@@ -120,7 +126,7 @@ const BatchRepLearningDashboard = () => {
       try {
         const filesRes = await learningService.getMaterialsByCategory(
           activeModuleId,
-          selectedCategory.id
+          selectedCategory.id,
         );
         setCategoryFiles(filesRes.data || []);
       } catch (err) {
@@ -152,7 +158,7 @@ const BatchRepLearningDashboard = () => {
     try {
       const filesRes = await learningService.getMaterialsByCategory(
         activeModuleId,
-        selectedCategory.id
+        selectedCategory.id,
       );
       setCategoryFiles(filesRes.data || []);
     } catch (err) {
@@ -169,19 +175,26 @@ const BatchRepLearningDashboard = () => {
   // Compute Active Module Data derived from state
   const activeSemesterInfo = semesters.find(
     (sem) =>
-      sem.modules && sem.modules.some((mod) => String(mod.id) === String(activeModuleId)),
+      sem.modules &&
+      sem.modules.some((mod) => String(mod.id) === String(activeModuleId)),
   );
 
-  const activeModuleData = activeModuleDetails || activeSemesterInfo?.modules.find(
-    (mod) => String(mod.id) === String(activeModuleId),
-  );
+  const activeModuleData =
+    activeModuleDetails ||
+    activeSemesterInfo?.modules.find(
+      (mod) => String(mod.id) === String(activeModuleId),
+    );
 
   const handleAddModule = async (newModule) => {
     try {
-      const visibilityIds = newModule.visibility.map(degreeName => {
-         const degObj = availableDegreesObjs.find(d => d.name === degreeName);
-         return degObj ? degObj.id : null;
-      }).filter(id => id !== null);
+      const visibilityIds = newModule.visibility
+        .map((degreeName) => {
+          const degObj = availableDegreesObjs.find(
+            (d) => d.name === degreeName,
+          );
+          return degObj ? degObj.id : null;
+        })
+        .filter((id) => id !== null);
 
       if (visibilityIds.length === 0) visibilityIds.push(currentDegreeId);
 
@@ -216,25 +229,32 @@ const BatchRepLearningDashboard = () => {
       if (createdModule?.id) {
         setActiveModuleId(createdModule.id);
       }
-      
+
       setActionModuleName(newModule.title);
       setShowSuccessModal(true);
     } catch (err) {
       console.error("Failed to create module", err);
-      const errorMessage = err.response?.data?.message || err.message || "Unknown error";
+      const errorMessage =
+        err.response?.data?.message || err.message || "Unknown error";
       toast.error("Error", `Failed to create module: ${errorMessage}`);
     }
   };
 
   const handleEditModule = async (editedData) => {
     try {
-      const selectedSemester = semesters.find(s => s.name === editedData.semester || s.id === editedData.semester);
+      const selectedSemester = semesters.find(
+        (s) => s.name === editedData.semester || s.id === editedData.semester,
+      );
       const semesterId = selectedSemester ? selectedSemester.id : null;
 
-      const visibilityIds = editedData.visibility.map(degreeName => {
-         const degObj = availableDegreesObjs.find(d => d.name === degreeName);
-         return degObj ? degObj.id : null;
-      }).filter(id => id !== null);
+      const visibilityIds = editedData.visibility
+        .map((degreeName) => {
+          const degObj = availableDegreesObjs.find(
+            (d) => d.name === degreeName,
+          );
+          return degObj ? degObj.id : null;
+        })
+        .filter((id) => id !== null);
 
       if (visibilityIds.length === 0) visibilityIds.push(currentDegreeId);
 
@@ -250,12 +270,17 @@ const BatchRepLearningDashboard = () => {
         let updatedSemesters = prevSemesters.map((sem) => ({
           ...sem,
           modules: sem.modules
-            ? sem.modules.filter((mod) => String(mod.id) !== String(activeModuleId))
+            ? sem.modules.filter(
+                (mod) => String(mod.id) !== String(activeModuleId),
+              )
             : [],
         }));
 
         updatedSemesters = updatedSemesters.map((sem) => {
-          if (sem.name === editedData.semester || sem.id === editedData.semester) {
+          if (
+            sem.name === editedData.semester ||
+            sem.id === editedData.semester
+          ) {
             return {
               ...sem,
               modules: [
@@ -276,13 +301,19 @@ const BatchRepLearningDashboard = () => {
       });
 
       // Update active module details if we are viewing it
-      setActiveModuleDetails((prev) => prev ? {
-        ...prev,
-        name: editedData.title,
-        code: editedData.code,
-        degrees: editedData.visibility,
-        semester: selectedSemester ? { id: selectedSemester.id, name: selectedSemester.name } : prev.semester
-      } : null);
+      setActiveModuleDetails((prev) =>
+        prev
+          ? {
+              ...prev,
+              name: editedData.title,
+              code: editedData.code,
+              degrees: editedData.visibility,
+              semester: selectedSemester
+                ? { id: selectedSemester.id, name: selectedSemester.name }
+                : prev.semester,
+            }
+          : null,
+      );
 
       setActionModuleName(editedData.title);
       setShowSuccessModal(true);
@@ -295,13 +326,15 @@ const BatchRepLearningDashboard = () => {
   const handleDeleteModule = async () => {
     try {
       await learningService.deleteModule(activeModuleId);
-      
+
       setActionModuleName(activeModuleData?.name || "Module");
       setSemesters((prevSemesters) =>
         prevSemesters.map((sem) => ({
           ...sem,
           modules: sem.modules
-            ? sem.modules.filter((mod) => String(mod.id) !== String(activeModuleId))
+            ? sem.modules.filter(
+                (mod) => String(mod.id) !== String(activeModuleId),
+              )
             : [],
         })),
       );
@@ -380,7 +413,12 @@ const BatchRepLearningDashboard = () => {
                   moduleName={activeModuleData?.name}
                   moduleCode={activeModuleData?.code || "N/A"}
                   semesterName={activeSemesterInfo?.name}
-                  degrees={activeModuleData?.degrees?.map(d => typeof d === 'string' ? d : d.name) || [degreeName]}
+                  isPublic={activeSemesterInfo?.isPublic ?? false}
+                  degrees={
+                    activeModuleData?.degrees?.map((d) =>
+                      typeof d === "string" ? d : d.name,
+                    ) || [degreeName]
+                  }
                   availableDegrees={availableDegrees}
                   primaryDegree={degreeName}
                   semesters={semesters}
@@ -390,21 +428,23 @@ const BatchRepLearningDashboard = () => {
                   categories={moduleCategories}
                   onMaterialUploaded={refreshFiles}
                 />
-                
-                <CategoryGrid 
+
+                <CategoryGrid
                   key={activeModuleId}
                   activeModuleId={activeModuleId}
                   initialCategories={moduleCategories}
                   selectedCategoryId={selectedCategory?.id}
-                  onCategoryClick={setSelectedCategory} 
+                  onCategoryClick={setSelectedCategory}
                   onRefresh={refreshCategories}
                 />
-                <FileListTable 
+                <FileListTable
                   activeModuleId={activeModuleId}
                   categoryId={selectedCategory?.id}
-                  categoryName={selectedCategory ? selectedCategory.title : "All Files"} 
+                  categoryName={
+                    selectedCategory ? selectedCategory.title : "All Files"
+                  }
                   categories={moduleCategories}
-                  files={categoryFiles} 
+                  files={categoryFiles}
                   onRefresh={refreshFiles}
                 />
               </>
@@ -432,7 +472,10 @@ const BatchRepLearningDashboard = () => {
         </div>
 
         {/* Full width Batch Rep Team */}
-        <BatchRepTeam degreeId={currentDegreeId} currentUserId={currentUserId} />
+        <BatchRepTeam
+          degreeId={currentDegreeId}
+          currentUserId={currentUserId}
+        />
 
         <ModuleActionSuccessModal
           isOpen={showSuccessModal}

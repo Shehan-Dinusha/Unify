@@ -90,7 +90,10 @@ const ModuleHeader = ({
             className="!bg-indigo-500 hover:!bg-indigo-600 shadow-[0_8.8px_13.2px_-2.6px_rgba(59,130,246,0.30)] !rounded-lg flex items-center gap-2 h-10 !px-3.5"
             onClick={() => {
               if (!categories || categories.length === 0) {
-                toast.warning("Category Required", "Please create at least one category before uploading a file.");
+                toast.warning(
+                  "Category Required",
+                  "Please create at least one category before uploading a file.",
+                );
                 return;
               }
               setIsUploadModalOpen(true);
@@ -104,8 +107,12 @@ const ModuleHeader = ({
 
       {/* Access Footer */}
       <div className="w-full pt-3.5 border-t border-gray-700 flex items-center gap-2">
-        <div className="px-2 py-0.5 bg-green-900 rounded flex justify-center items-center">
-          <span className="text-neutral-100 text-xs font-normal font-inter leading-5">
+        <div
+          className={`px-2 py-0.5 ${isPublic ? "bg-green-900" : "bg-red-900/50 outline outline-1 outline-red-800/50"} rounded flex justify-center items-center`}
+        >
+          <span
+            className={`text-xs font-normal font-inter leading-5 ${isPublic ? "text-neutral-100" : "text-red-300"}`}
+          >
             {isPublic ? "Public Access" : "Restricted Access"}
           </span>
         </div>

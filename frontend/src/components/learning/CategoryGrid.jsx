@@ -205,8 +205,7 @@ const CategoryGrid = ({
     try {
       if (modalMode === "create") {
         if (!activeModuleId) {
-          toast.error("Error", "No active module selected");
-          return;
+          throw new Error("No active module selected");
         }
         await learningService.createModuleCategory(activeModuleId, {
           title: categoryData.title,
@@ -222,7 +221,7 @@ const CategoryGrid = ({
       setIsModalOpen(false);
     } catch (err) {
       console.error("Failed to save category", err);
-      toast.error("Error", "Failed to save category");
+      throw err;
     }
   };
 

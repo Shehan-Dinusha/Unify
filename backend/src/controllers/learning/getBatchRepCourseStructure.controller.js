@@ -1,4 +1,9 @@
-import { Semester, AcademicModule, Degree } from "../../modules/index.js";
+import {
+  Semester,
+  AcademicModule,
+  Degree,
+  SemesterVisibility,
+} from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -14,7 +19,6 @@ export const getBatchRepCourseStructure = async (req, res, next) => {
       return sendResponse(res, 404, false, "Degree not found");
     }
 
-    // Fetch ALL semesters with their modules, filtered by degree via M2M
     const semesters = await Semester.findAll({
       attributes: ["id", "name"],
       order: [["name", "ASC"]],
@@ -37,15 +41,34 @@ export const getBatchRepCourseStructure = async (req, res, next) => {
       ],
     });
 
-    const formattedSemesters = semesters.map((sem) => ({
-      id: sem.id,
-      name: sem.name,
-      modules: sem.modules.map((mod) => ({
-        id: mod.id,
-        code: mod.code,
-        name: mod.name,
-      })),
-    }));
+    const formattedSemesters = await Promise.all(
+      semesters.map(async (sem) => {
+        const dbConfigCount = await SemesterVisibility.count({
+          where: {
+            semesterId: sem.id,
+            degreeId: parseInt(degreeId, 10),
+          },
+        });
+
+        const visibilityCount = await SemesterVisibility.count({
+          where: {
+            semesterId: sem.id,
+            degreeId: parseInt(degreeId, 10),
+            isVisible: true,
+          },
+        });
+        return {
+          id: sem.id,
+          name: sem.name,
+          isPublic: dbConfigCount === 0 || visibilityCount > 0,
+          modules: sem.modules.map((mod) => ({
+            id: mod.id,
+            code: mod.code,
+            name: mod.name,
+          })),
+        };
+      }),
+    );
 
     return sendResponse(
       res,

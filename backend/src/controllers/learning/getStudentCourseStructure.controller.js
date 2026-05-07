@@ -22,7 +22,11 @@ export const getStudentCourseStructure = async (req, res, next) => {
       attributes: ["degreeId", "batchId", "facultyId"],
     });
 
-    if (!studentProfile || !studentProfile.degreeId || !studentProfile.batchId) {
+    if (
+      !studentProfile ||
+      !studentProfile.degreeId ||
+      !studentProfile.batchId
+    ) {
       return sendResponse(res, 404, false, "Student profile not complete");
     }
 
@@ -40,27 +44,8 @@ export const getStudentCourseStructure = async (req, res, next) => {
       return sendResponse(res, 404, false, "Degree not found");
     }
 
-    const visibleSemesters = await SemesterVisibility.findAll({
-      where: {
-        degreeId,
-        batchId,
-        isVisible: true,
-      },
-      attributes: ["semesterId"],
-    });
-
-    if (visibleSemesters.length === 0) {
-      return sendResponse(res, 200, true, "No semesters visible for this batch", {
-        facultyName: faculty?.name || null,
-        degreeName: degree.name,
-        semesters: [],
-      });
-    }
-
-    const semesterIds = visibleSemesters.map((v) => v.semesterId);
-
-    const semesters = await Semester.findAll({
-      where: { id: semesterIds },
+    // Get ALL semesters connected to this degree's modules
+    const allSemesters = await Semester.findAll({
       attributes: ["id", "name"],
       order: [["id", "ASC"]],
       include: [
@@ -82,21 +67,62 @@ export const getStudentCourseStructure = async (req, res, next) => {
       ],
     });
 
-    const formattedSemesters = semesters.map((sem) => ({
-      id: sem.id,
-      name: sem.name,
-      modules: sem.modules.map((mod) => ({
-        id: mod.id,
-        code: mod.code,
-        name: mod.name,
-      })),
-    }));
+    // Filter to only include publicly available or explicitly assigned semesters
+    const formattedSemesters = [];
+    for (const sem of allSemesters) {
+      const dbConfigCount = await SemesterVisibility.count({
+        where: {
+          semesterId: sem.id,
+          degreeId: degreeId,
+        },
+      });
+      // If 0 config rows, it's public. If >0, student's batch must be mapped as true.
+      if (dbConfigCount === 0) {
+        formattedSemesters.push({
+          id: sem.id,
+          name: sem.name,
+          modules: sem.modules.map((mod) => ({
+            id: mod.id,
+            code: mod.code,
+            name: mod.name,
+          })),
+        });
+        continue;
+      }
 
-    return sendResponse(res, 200, true, "Course structure retrieved successfully", {
-      facultyName: faculty?.name || null,
-      degreeName: degree.name,
-      semesters: formattedSemesters,
-    });
+      const explicitVisibleCount = await SemesterVisibility.count({
+        where: {
+          semesterId: sem.id,
+          degreeId: degreeId,
+          batchId: batchId,
+          isVisible: true,
+        },
+      });
+
+      if (explicitVisibleCount > 0) {
+        formattedSemesters.push({
+          id: sem.id,
+          name: sem.name,
+          modules: sem.modules.map((mod) => ({
+            id: mod.id,
+            code: mod.code,
+            name: mod.name,
+          })),
+        });
+      }
+    }
+
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Course structure retrieved successfully",
+      {
+        facultyName: faculty?.name || null,
+        degreeName: degree.name,
+        semesters: formattedSemesters,
+      },
+    );
   } catch (error) {
     logger.error(`Error in getStudentCourseStructure: ${error.message}`);
     next(error);

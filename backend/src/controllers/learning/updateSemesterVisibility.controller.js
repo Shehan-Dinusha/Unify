@@ -1,4 +1,10 @@
-import { sequelize, SemesterVisibility, Degree, Semester } from "../../modules/index.js";
+import {
+  sequelize,
+  SemesterVisibility,
+  Degree,
+  Semester,
+  Batch,
+} from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -9,13 +15,17 @@ export const updateSemesterVisibility = async (req, res, next) => {
     const { degreeId, semesterId } = req.params;
     const { visibleBatchIds, notifyReps } = req.body;
 
-    const degree = await Degree.findByPk(parseInt(degreeId, 10), { transaction: t });
+    const degree = await Degree.findByPk(parseInt(degreeId, 10), {
+      transaction: t,
+    });
     if (!degree) {
       await t.rollback();
       return sendResponse(res, 404, false, "Degree not found");
     }
 
-    const semester = await Semester.findByPk(parseInt(semesterId, 10), { transaction: t });
+    const semester = await Semester.findByPk(parseInt(semesterId, 10), {
+      transaction: t,
+    });
     if (!semester) {
       await t.rollback();
       return sendResponse(res, 404, false, "Semester not found");
@@ -29,14 +39,22 @@ export const updateSemesterVisibility = async (req, res, next) => {
       transaction: t,
     });
 
-    if (visibleBatchIds.length > 0) {
-      const recordsToInsert = visibleBatchIds.map((batchId) => ({
+    const allBatches = await Batch.findAll({
+      attributes: ["id"],
+      transaction: t,
+    });
+
+    // We explicitly insert records for ALL batches to lock out the unselected ones,
+    // so we can distinguish "never configured" (0 rows) vs "configured" (rows exist).
+    if (allBatches && allBatches.length > 0) {
+      const recordsToInsert = allBatches.map((b) => ({
         degreeId: parseInt(degreeId, 10),
         semesterId: parseInt(semesterId, 10),
-        batchId: parseInt(batchId, 10),
-        isVisible: true,
+        batchId: b.id,
+        isVisible:
+          visibleBatchIds.includes(b.id) ||
+          visibleBatchIds.includes(String(b.id)),
       }));
-
       await SemesterVisibility.bulkCreate(recordsToInsert, { transaction: t });
     }
 

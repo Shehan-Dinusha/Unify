@@ -51,7 +51,22 @@ export const getSemesterVisibility = async (req, res, next) => {
       attributes: ["batchId"],
     });
 
-    const currentVisibility = visibilities.map((v) => v.batchId);
+    let currentVisibility = visibilities.map((v) => v.batchId);
+
+    // If no visibility rules exist yet, default to making it visible to everyone (Public)
+    if (currentVisibility.length === 0) {
+      const visibilityCount = await SemesterVisibility.count({
+        where: {
+          degreeId: parseInt(degreeId, 10),
+          semesterId: parseInt(semesterId, 10),
+        },
+      });
+      // ONLY default to all if it has literally never been configured.
+      // If count is 0, it means no records exist.
+      if (visibilityCount === 0) {
+        currentVisibility = availableBatches.map((b) => b.id);
+      }
+    }
 
     return sendResponse(
       res,
