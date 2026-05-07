@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { Search, CornerUpLeft } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Search, CornerUpLeft, Loader2 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
-import { mockNotifications } from "../data/mockData";
+import notificationService from "../services/notificationService";
 
 /* --- Helper Components --- */
 
@@ -39,7 +39,7 @@ const MatchIcon = () => (
 );
 
 /* --- Main Notification Card --- */
-const NotificationCard = ({ notification }) => {
+const NotificationCard = ({ notification, onMarkRead }) => {
   const { type, title, content, time, isUnread, avatar, avatars, image } = notification;
 
   // Render correct icon/avatar
@@ -72,6 +72,12 @@ const NotificationCard = ({ notification }) => {
     return <span className="text-text-primary">{title}</span>;
   };
 
+  const handleClick = () => {
+    if (isUnread && onMarkRead) {
+      onMarkRead(notification.id);
+    }
+  };
+
   return (
     <Card
       variant="container"
@@ -82,7 +88,7 @@ const NotificationCard = ({ notification }) => {
           : "hover:!bg-white/10 hover:!border-white/15 cursor-pointer"
       }`}
     >
-      <div className="flex items-start gap-4 p-5 sm:p-6 w-full h-full relative">
+      <div className="flex items-start gap-4 p-5 sm:p-6 w-full h-full relative" onClick={handleClick}>
         {/* Icon Area */}
         {renderIcon()}
 
@@ -116,14 +122,79 @@ const FILTERS = ["All", "Unread", "Lost & Found"];
 
 const Notification = () => {
   const [activeFilter, setActiveFilter] = useState("All");
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const unreadCount = mockNotifications.filter((n) => n.isUnread).length;
+  // Map frontend filter labels to backend query params
+  const getBackendFilter = (filter) => {
+    switch (filter) {
+      case "Unread":
+        return "unread";
+      case "Lost & Found":
+        return "match";
+      default:
+        return "all";
+    }
+  };
 
-  const filteredNotifications = mockNotifications.filter((n) => {
-    if (activeFilter === "Unread") return n.isUnread;
-    if (activeFilter === "Lost & Found") return n.type === "match";
-    return true;
-  });
+  // Normalize backend notification shape to match what the UI components expect
+  const normalizeNotification = (n) => {
+    const typeLower = (n.type || "general").toLowerCase();
+    return {
+      id: n.id,
+      type: typeLower,
+      title: n.title,
+      content: n.content,
+      time: n.time,
+      isUnread: n.isUnread,
+      image: n.image || null,
+      // For reply notifications, use the actor's avatar
+      avatar: n.avatar || null,
+      // For like notifications, build an avatars array from the actor
+      avatars: typeLower === "like" && n.avatar ? [n.avatar] : undefined,
+    };
+  };
+
+  const fetchNotifications = async (filter = activeFilter) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const backendFilter = getBackendFilter(filter);
+      const data = await notificationService.getNotifications(backendFilter);
+      const normalized = (data.notifications || []).map(normalizeNotification);
+      setNotifications(normalized);
+    } catch (err) {
+      setError(err.error || err.message || "Failed to load notifications");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [activeFilter]);
+
+  const handleFilterChange = (filter) => {
+    setActiveFilter(filter);
+  };
+
+  const handleMarkRead = async (notificationId) => {
+    try {
+      await notificationService.markAsRead(notificationId);
+      // Optimistically update local state
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === notificationId ? { ...n, isUnread: false } : n
+        )
+      );
+    } catch (err) {
+      // Silently fail — notification read status is non-critical
+      console.error("Failed to mark notification as read:", err);
+    }
+  };
+
+  const unreadCount = notifications.filter((n) => n.isUnread).length;
 
   const user = { name: "Alex Johnson", role: "student" };
 
@@ -136,7 +207,7 @@ const Notification = () => {
           {FILTERS.map((filter) => (
             <button
               key={filter}
-              onClick={() => setActiveFilter(filter)}
+              onClick={() => handleFilterChange(filter)}
               className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full text-body-small font-semibold transition-all duration-150 whitespace-nowrap ${
                 activeFilter === filter
                   ? "bg-primary-blue text-white"
@@ -162,9 +233,28 @@ const Notification = () => {
 
         {/* Notifications List */}
         <div className="flex flex-col gap-3 sm:gap-4">
-          {filteredNotifications.length > 0 ? (
-            filteredNotifications.map((notification) => (
-              <NotificationCard key={notification.id} notification={notification} />
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+              <Loader2 className="w-10 h-10 text-primary-blue animate-spin" />
+              <p className="text-text-secondary animate-pulse">Loading notifications...</p>
+            </div>
+          ) : error ? (
+            <div className="bg-state-error/10 border border-state-error/20 rounded-2xl p-6 text-center">
+              <p className="text-state-error font-semibold">{error}</p>
+              <button
+                onClick={() => fetchNotifications()}
+                className="mt-4 text-sm text-text-secondary hover:text-white underline"
+              >
+                Try again
+              </button>
+            </div>
+          ) : notifications.length > 0 ? (
+            notifications.map((notification) => (
+              <NotificationCard
+                key={notification.id}
+                notification={notification}
+                onMarkRead={handleMarkRead}
+              />
             ))
           ) : (
             <div className="py-20 text-center flex flex-col items-center gap-3">
