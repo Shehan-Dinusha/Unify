@@ -1,5 +1,6 @@
 import { ModuleCategory, AcademicModule } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
+import sequelize from "../../config/database.js";
 import logger from "../../utils/logger.js";
 
 /**
@@ -18,7 +19,18 @@ export const getModuleCategories = async (req, res) => {
 
     // Fetch all categories for the module, up to a maximum of 8
     const categories = await ModuleCategory.findAll({
-      attributes: ["id", "moduleId", "title", "iconName"],
+      attributes: [
+        "id",
+        "moduleId",
+        "title",
+        "iconName",
+        [
+          sequelize.literal(
+            `(SELECT COUNT(*) FROM materials WHERE materials."categoryId" = "ModuleCategory"."id")`,
+          ),
+          "fileCount",
+        ],
+      ],
       where: { moduleId },
       order: [["createdAt", "ASC"]],
       limit: 8,

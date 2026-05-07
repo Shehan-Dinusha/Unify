@@ -2,6 +2,7 @@ import {
   StudentProfile,
   Faculty,
   Degree,
+  Batch,
   Semester,
   AcademicModule,
   SemesterVisibility,
@@ -32,13 +33,11 @@ export const getStudentCourseStructure = async (req, res, next) => {
 
     const { degreeId, batchId, facultyId } = studentProfile;
 
-    const faculty = await Faculty.findByPk(facultyId, {
-      attributes: ["name"],
-    });
-
-    const degree = await Degree.findByPk(degreeId, {
-      attributes: ["name"],
-    });
+    const [faculty, degree, batch] = await Promise.all([
+      Faculty.findByPk(facultyId, { attributes: ["name"] }),
+      Degree.findByPk(degreeId, { attributes: ["name"] }),
+      Batch.findByPk(batchId, { attributes: ["name"] }),
+    ]);
 
     if (!degree) {
       return sendResponse(res, 404, false, "Degree not found");
@@ -120,6 +119,7 @@ export const getStudentCourseStructure = async (req, res, next) => {
       {
         facultyName: faculty?.name || null,
         degreeName: degree.name,
+        batchName: batch?.name || null,
         semesters: formattedSemesters,
       },
     );

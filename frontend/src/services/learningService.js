@@ -79,3 +79,8 @@ export const getBatchRepCourseStructure = async (degreeId) => {
   const response = await api.get('/learning/batch-rep/course-structure', { params: { degreeId } });
   return response.data;
 };
+
+export const getStudentCourseStructure = async (userId) => {
+  const response = await api.get('/learning/student/course-structure', { params: { userId } });
+  return response.data;
+};

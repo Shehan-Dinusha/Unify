@@ -110,9 +110,11 @@ const StudentFileRecord = ({ file, onClick, onShare }) => {
     };
     if (showMenu) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [showMenu]);
 
@@ -153,7 +155,7 @@ const StudentFileRecord = ({ file, onClick, onShare }) => {
           <div className="w-full flex flex-wrap justify-start items-center gap-2">
             <div className="flex flex-col justify-start items-start">
               <div className="justify-center text-gray-400 text-xs font-normal font-inter leading-5">
-                {file.size || "1.2 MB"}
+                {file.size || file.fileSize || "1.2 MB"}
               </div>
             </div>
             <div className="flex flex-col justify-start items-start">
@@ -163,14 +165,14 @@ const StudentFileRecord = ({ file, onClick, onShare }) => {
             </div>
             <div className="flex flex-col justify-start items-start">
               <div className="justify-center text-gray-400 text-xs font-normal font-inter leading-5">
-                {file.dateModified || "Added recently"}
+                {file.dateModified || file.modifiedDate || "Added recently"}
               </div>
             </div>
           </div>
         </div>
       </div>
       <div
-        className="flex justify-end items-center gap-2 opacity-100 sm:opacity-50 sm:group-hover:opacity-100 transition-opacity shrink-0 relative"
+        className="flex justify-end items-center gap-2 opacity-100 shrink-0 relative"
         ref={menuRef}
       >
         <button
