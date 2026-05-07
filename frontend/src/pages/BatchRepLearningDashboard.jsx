@@ -30,6 +30,18 @@ const BatchRepLearningDashboard = () => {
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const toast = useToast();
 
+  const refreshCourseStructure = async () => {
+    try {
+      const res = await learningService.getBatchRepCourseStructure(currentDegreeId);
+      if (res?.data?.semesters) {
+        setSemesters(res.data.semesters);
+        setDegreeName(res.data.degreeName || "Bsc.(Hons) IT");
+      }
+    } catch (err) {
+      console.error("Failed to refresh course structure", err);
+    }
+  };
+
   // Fetch module details and categories when activeModuleId changes
   React.useEffect(() => {
     const fetchStructure = async () => {
@@ -137,6 +149,26 @@ const BatchRepLearningDashboard = () => {
 
     fetchFiles();
   }, [activeModuleId, selectedCategory]);
+
+  const refreshActiveModule = async () => {
+    if (!activeModuleId) return;
+    try {
+      const details = await learningService.getModuleDetails(
+        activeModuleId,
+        currentDegreeId,
+      );
+      if (details?.data?.module) {
+        setActiveModuleDetails(details.data.module);
+      }
+    } catch (err) {
+      console.error("Failed to refresh module details", err);
+    }
+  };
+
+  const handleMaterialChanged = async () => {
+    await refreshActiveModule();
+    await refreshFiles();
+  };
 
   const refreshCategories = async () => {
     if (!activeModuleId) return;
@@ -399,6 +431,7 @@ const BatchRepLearningDashboard = () => {
               activeModuleId={activeModuleId}
               onSelectModule={setActiveModuleId}
               onAddModule={handleAddModule}
+              onRefreshSemesters={refreshCourseStructure}
               degreeId={currentDegreeId}
               availableDegrees={availableDegrees}
               primaryDegree={degreeName}
@@ -414,6 +447,7 @@ const BatchRepLearningDashboard = () => {
                   moduleCode={activeModuleData?.code || "N/A"}
                   semesterName={activeSemesterInfo?.name}
                   isPublic={activeSemesterInfo?.isPublic ?? false}
+                  lastUpdated={activeModuleData?.lastUpdated}
                   degrees={
                     activeModuleData?.degrees?.map((d) =>
                       typeof d === "string" ? d : d.name,
@@ -426,7 +460,7 @@ const BatchRepLearningDashboard = () => {
                   onDelete={handleDeleteModule}
                   moduleId={activeModuleId}
                   categories={moduleCategories}
-                  onMaterialUploaded={refreshFiles}
+                  onMaterialUploaded={handleMaterialChanged}
                 />
 
                 <CategoryGrid
@@ -445,7 +479,7 @@ const BatchRepLearningDashboard = () => {
                   }
                   categories={moduleCategories}
                   files={categoryFiles}
-                  onRefresh={refreshFiles}
+                  onRefresh={handleMaterialChanged}
                 />
               </>
             ) : (

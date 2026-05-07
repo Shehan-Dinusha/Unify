@@ -1,5 +1,6 @@
-import { AcademicModule, Semester, Degree } from "../../modules/index.js";
+import { AcademicModule, Semester, Degree, Material } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
+import { formatRelativeDate } from "../../utils/date.js";
 import logger from "../../utils/logger.js";
 
 export const getModuleDetails = async (req, res, next) => {
@@ -17,9 +18,9 @@ export const getModuleDetails = async (req, res, next) => {
 
     const degreeWhereClause = facultyId ? { facultyId } : {};
 
-    const [moduleDetails, allDegrees] = await Promise.all([
+    const [moduleDetails, allDegrees, latestMaterial] = await Promise.all([
       AcademicModule.findByPk(id, {
-        attributes: ["id", "name", "code"],
+        attributes: ["id", "name", "code", "updatedAt"],
         include: [
           {
             model: Degree,
@@ -40,12 +41,23 @@ export const getModuleDetails = async (req, res, next) => {
         attributes: ["id", "name"],
         where: degreeWhereClause,
         order: [["name", "ASC"]],
-      })
+      }),
+      Material.findOne({
+        where: { moduleId: id },
+        order: [["updatedAt", "DESC"]],
+        attributes: ["updatedAt"],
+      }),
     ]);
 
     if (!moduleDetails) {
       return sendResponse(res, 404, false, "Module not found.");
     }
+
+    const moduleJson = moduleDetails.toJSON();
+    const mostRecentDate = latestMaterial
+      ? new Date(Math.max(new Date(latestMaterial.updatedAt), new Date(moduleDetails.updatedAt)))
+      : moduleDetails.updatedAt;
+    moduleJson.lastUpdated = formatRelativeDate(mostRecentDate);
 
     logger.info(`Fetched details for module ID: ${id}`);
     return sendResponse(
@@ -54,7 +66,7 @@ export const getModuleDetails = async (req, res, next) => {
       true,
       "Module details fetched successfully.",
       {
-        module: moduleDetails,
+        module: moduleJson,
         availableDegrees: allDegrees
       }
     );

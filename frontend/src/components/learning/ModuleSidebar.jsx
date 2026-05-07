@@ -15,6 +15,7 @@ const ModuleSidebar = ({
   activeModuleId,
   onSelectModule,
   onAddModule,
+  onRefreshSemesters,
   readOnly = false,
   title,
   className = "",
@@ -194,6 +195,9 @@ const ModuleSidebar = ({
               notifyReps: data.notifyReps,
             });
             setVisibilitySemester(null);
+            if (onRefreshSemesters) {
+              await onRefreshSemesters();
+            }
           } catch (err) {
             console.error("Failed to update semester visibility", err);
             toast.error("Error", "Failed to update semester visibility");
