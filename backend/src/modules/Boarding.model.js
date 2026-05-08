@@ -58,6 +58,14 @@ const Boarding = sequelize.define(
       type: DataTypes.JSON, // Array of S3 object keys e.g. ['boardings/id/img1.jpg']
       allowNull: true,
     },
+    latitude: {
+      type: DataTypes.DECIMAL(10, 8),
+      allowNull: true,
+    },
+    longitude: {
+      type: DataTypes.DECIMAL(11, 8),
+      allowNull: true,
+    },
   },
   {
     tableName: "boardings",

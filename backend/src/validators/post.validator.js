@@ -63,7 +63,13 @@ export const createBoardingPostValidator = [
     .notEmpty().withMessage("Phone is required"),
   body("gender")
     .notEmpty().withMessage("Gender preference is required")
-    .isIn(["Male", "Female", "Any"]).withMessage("Invalid gender preference"),
+    .isIn(["Male Only", "Female Only", "Any"]).withMessage("Invalid gender preference"),
+  body("latitude")
+    .optional({ checkFalsy: true })
+    .isFloat({ min: -90, max: 90 }).withMessage("Invalid latitude"),
+  body("longitude")
+    .optional({ checkFalsy: true })
+    .isFloat({ min: -180, max: 180 }).withMessage("Invalid longitude"),
 ];
 
 export const postParamsValidator = [

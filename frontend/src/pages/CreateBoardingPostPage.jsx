@@ -7,6 +7,7 @@ import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import { useNavigate } from "react-router-dom";
 import postService from "../services/postService";
+import LocationPicker from "../components/boarding/LocationPicker";
 
 const CreateBoardingPostPage = () => {
     const navigate = useNavigate();
@@ -19,6 +20,8 @@ const CreateBoardingPostPage = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [location, setLocation] = useState("");
+    const [latitude, setLatitude] = useState(null);
+    const [longitude, setLongitude] = useState(null);
     const [roomType, setRoomType] = useState("");
     const [gender, setGender] = useState("Any");
     const [amenityInput, setAmenityInput] = useState("");
@@ -63,9 +66,19 @@ const CreateBoardingPostPage = () => {
 
     const handleCancel = () => navigate("/boarding-owner/marketplace");
     
+    const handleLocationChange = ({ lat, lng, address }) => {
+        setLatitude(lat);
+        setLongitude(lng);
+        setLocation(address);
+    };
+
     const handlePublish = async () => {
         if (!title || !description || !location || !price || !capacity || !phone || !slots || !roomType) {
             alert("Please fill in all required fields.");
+            return;
+        }
+        if (!latitude || !longitude) {
+            alert("Please pin your boarding location on the map.");
             return;
         }
 
@@ -82,6 +95,8 @@ const CreateBoardingPostPage = () => {
             data.append("slots", slots);
             data.append("phone", phone);
             data.append("amenities", JSON.stringify(amenities));
+            data.append("latitude", latitude);
+            data.append("longitude", longitude);
             
             images.forEach(img => {
                 if (img.file) {
@@ -96,7 +111,7 @@ const CreateBoardingPostPage = () => {
             navigate("/boarding-owner/marketplace");
         } catch (error) {
             console.error("Failed to publish boarding post:", error);
-            alert(error.error || "Failed to publish boarding post. Please try again.");
+            alert(error.message || "Failed to publish boarding post. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -203,18 +218,21 @@ const CreateBoardingPostPage = () => {
                                         <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                             Location <span className="text-red-500">*</span>
                                         </label>
-                                        <div className="relative">
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary">
-                                                <MapPin className="w-4 h-4" />
+
+                                        {/* Map picker */}
+                                        <LocationPicker
+                                            onChange={handleLocationChange}
+                                            initialLat={latitude}
+                                            initialLng={longitude}
+                                        />
+
+                                        {/* Address display (auto-filled by map) */}
+                                        {location && (
+                                            <div className="mt-3 flex items-start gap-2 px-3 py-2.5 bg-[#0F172A]/80 border border-white/10 rounded-xl">
+                                                <MapPin className="w-4 h-4 text-primary-blue mt-0.5 flex-shrink-0" />
+                                                <span className="text-sm text-white leading-snug">{location}</span>
                                             </div>
-                                            <input
-                                                type="text"
-                                                value={location}
-                                                onChange={(e) => setLocation(e.target.value)}
-                                                placeholder="Full address or nearby landmark"
-                                                className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors placeholder:text-text-secondary"
-                                            />
-                                        </div>
+                                        )}
                                     </div>
 
                                     {/* Room Type & Gender */}

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { X, MapPin, Star, Calendar, Phone, Home, Wifi, ChevronRight } from "lucide-react";
+import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
 
 /**
  * BoardingOverlay Component
@@ -82,6 +83,13 @@ const BoardingOverlay = ({ post, onClose }) => {
                                 {post.location}
                             </p>
                         </div>
+
+                        {/* Mini Google Map — only when coordinates are stored */}
+                        {post.latitude && post.longitude && (
+                            <div className="mt-4">
+                                <MiniMap lat={parseFloat(post.latitude)} lng={parseFloat(post.longitude)} />
+                            </div>
+                        )}
                     </div>
 
                     {/* Price Card */}
@@ -166,5 +174,55 @@ const InfoItem = ({ icon, label, value }) => (
         <span className="text-body-small-bold text-text-primary">{value}</span>
     </div>
 );
+
+// ── MiniMap ────────────────────────────────────────────────────────────────────
+const MINI_MAP_CONTAINER = { width: "100%", height: "180px", borderRadius: "12px" };
+const MINI_MAP_OPTIONS = {
+    disableDefaultUI: true,
+    gestureHandling: "none",
+    zoomControl: false,
+    styles: [
+        { elementType: "geometry", stylers: [{ color: "#0f172a" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#0f172a" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#64748b" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#1e3a5f" }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#2b5ea7" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#0c2340" }] },
+        { featureType: "poi", elementType: "geometry", stylers: [{ color: "#1e293b" }] },
+    ],
+};
+
+const MiniMap = ({ lat, lng }) => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    const { isLoaded } = useJsApiLoader({
+        googleMapsApiKey: apiKey || "",
+        libraries: [],
+    });
+
+    if (!apiKey || !isLoaded) return null;
+
+    const center = { lat, lng };
+    return (
+        <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-md">
+            <GoogleMap
+                mapContainerStyle={MINI_MAP_CONTAINER}
+                center={center}
+                zoom={15}
+                options={MINI_MAP_OPTIONS}
+            >
+                <Marker position={center} />
+            </GoogleMap>
+            <a
+                href={`https://www.google.com/maps?q=${lat},${lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 py-2 bg-white/5 hover:bg-white/10 transition-colors text-[11px] font-semibold text-primary-blue"
+            >
+                <MapPin size={11} />
+                Open in Google Maps
+            </a>
+        </div>
+    );
+};
 
 export default BoardingOverlay;
