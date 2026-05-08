@@ -63,6 +63,7 @@ const SelfEmployedDetailsForm = ({ onNext, initialData, loading }) => {
         <ImageUpload
           onChange={handleImageChange}
           label="Upload Photo (Optional)"
+          value={initialData?.user?.avatar || null}
         />
 
         <form

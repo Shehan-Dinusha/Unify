@@ -7,6 +7,7 @@ import {
 import { sendResponse } from "../../utils/response.js";
 import { formatRelativeDate } from "../../utils/date.js";
 import s3Service from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getMaterialsByCategory = async (req, res) => {
   try {
@@ -24,24 +25,27 @@ export const getMaterialsByCategory = async (req, res) => {
       return sendResponse(res, 404, false, "Category not found", null);
     }
 
+    const include = [];
+    if (req.user?.role !== "Student") {
+      include.push({
+        model: User,
+        as: "uploader",
+        attributes: ["name", "avatar"],
+      });
+    }
+
     const materials = await Material.findAll({
       where: {
         moduleId,
         categoryId,
       },
-      include: [
-        {
-          model: User,
-          as: "uploader",
-          attributes: ["name", "avatar"],
-        },
-      ],
+      include,
     });
 
     // Format response data
     const formattedMaterials = await Promise.all(
       materials.map(async (material) => {
-        const { uploaderId, createdAt, updatedAt, ...rest } = material.get({
+        const { uploaderId, createdAt, updatedAt, uploader, ...rest } = material.get({
           plain: true,
         });
 
@@ -55,8 +59,18 @@ export const getMaterialsByCategory = async (req, res) => {
           }
         }
 
+        // Resolve uploader avatar to a full URL
+        let resolvedUploader = null;
+        if (uploader) {
+          resolvedUploader = {
+            name: uploader.name,
+            avatar: await resolveAvatarUrl(uploader.avatar, uploader.name),
+          };
+        }
+
         return {
           ...rest,
+          uploader: resolvedUploader,
           url: fileUrl,
           modifiedDate: formatRelativeDate(material.updatedAt),
         };

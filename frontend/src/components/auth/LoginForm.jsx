@@ -63,14 +63,14 @@ const LoginForm = () => {
       if (role === "admin") {
         navigate("/admin");
       } else if (role === "student") {
-        navigate("/newsfeed");
+        navigate("/news-feed");
       } else if (role === "business") {
-        navigate("/business/dashboard");
+        navigate("/marketplace");
       } else if (role === "club") {
-        navigate("/club/dashboard");
+        // Always land on profile first — profile page handles verified vs unverified UX
+        navigate("/profile?role=club_society");
       } else {
-        // Fallback or generic dashboard
-        navigate("/newsfeed");
+        navigate("/news-feed");
       }
     } catch (err) {
       setErrors({ form: err.message });

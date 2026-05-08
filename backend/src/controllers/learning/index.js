@@ -13,3 +13,7 @@ export { editMaterial } from "./editMaterial.controller.js";
 export { deleteMaterial } from "./deleteMaterial.controller.js";
 export { getMaterialsByCategory } from "./getMaterialsByCategory.controller.js";
 export { getBatchReps } from "./getBatchReps.controller.js";
+export { getSemesterVisibility } from "./getSemesterVisibility.controller.js";
+export { updateSemesterVisibility } from "./updateSemesterVisibility.controller.js";
+export { getStudentCourseStructure } from "./getStudentCourseStructure.controller.js";
+export { getBatchRepCourseStructure } from "./getBatchRepCourseStructure.controller.js";

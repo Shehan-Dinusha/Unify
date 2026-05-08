@@ -20,18 +20,17 @@ export const uploadMaterial = async (req, res) => {
       return sendResponse(res, 404, false, "Module not found", null);
     }
 
-    let categoryId = null;
-    if (category) {
-      // Find category
-      const moduleCat = await ModuleCategory.findOne({
-        where: { moduleId, title: category },
-      });
 
-      if (!moduleCat) {
-        return sendResponse(res, 404, false, "Category not found", null);
-      }
-      categoryId = moduleCat.id;
+
+    // Find category
+    const moduleCat = await ModuleCategory.findOne({
+      where: { moduleId, title: category },
+    });
+
+    if (!moduleCat) {
+      return sendResponse(res, 404, false, "Category not found", null);
     }
+    const categoryId = moduleCat.id;
 
     let url = "";
     let fileType = "Link";

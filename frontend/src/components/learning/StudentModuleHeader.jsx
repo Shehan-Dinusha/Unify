@@ -9,7 +9,7 @@ const StudentModuleHeader = ({
   moduleCode = "CS302",
   semesterName = "Semester 3",
   batchName = "Batch 2024",
-  description = "Access all learning materials for IN1101 including lecture slides, recorded sessions, and lab assignments.",
+  description = "Access all learning materials for this course module",
 }) => {
   return (
     <div className="self-stretch flex flex-col justify-start items-start gap-2.5 w-full">
