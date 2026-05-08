@@ -4,20 +4,32 @@ import { Home, AlertTriangle } from "lucide-react";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
 
-const NotFound = () => {
+const NotFound = ({ status, customTitle, customSubtitle, customMessage }) => {
   const error = useRouteError();
-  console.error(error);
+  if (error) console.error(error);
 
-  let title = "Oops!";
-  let subtitle = "Something went wrong.";
-  let message = "An unexpected error has occurred.";
+  let errorCode = status || error?.status;
 
-  if (error?.status === 404) {
-    title = "404";
-    subtitle = "Page Not Found";
-    message = "The page you are looking for doesn't exist or has been moved.";
-  } else if (error?.statusText || error?.message) {
-    message = error.statusText || error.message;
+  let title = customTitle || "Oops!";
+  let subtitle = customSubtitle || "Something went wrong.";
+  let message = customMessage || "An unexpected error has occurred.";
+
+  if (!customTitle && !customSubtitle && !customMessage) {
+    if (errorCode === 401) {
+      title = "401";
+      subtitle = "Unauthorized";
+      message = "Please log in to access this page.";
+    } else if (errorCode === 403) {
+      title = "403";
+      subtitle = "Access Denied";
+      message = "You do not have permission to access this page.";
+    } else if (errorCode === 404) {
+      title = "404";
+      subtitle = "Page Not Found";
+      message = "The page you are looking for doesn't exist or has been moved.";
+    } else if (error?.statusText || error?.message) {
+      message = error.statusText || error.message;
+    }
   }
 
   return (

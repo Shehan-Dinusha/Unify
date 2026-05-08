@@ -251,7 +251,7 @@ const PostCard = ({
   return (
     <div className="w-full bg-[#1A2634] rounded-[24px] overflow-hidden border border-white/5 font-inter text-white">
       {/* Post Image */}
-      {showImage ? (
+      {showImage && (
         <div className="relative w-full bg-black/20 flex justify-center items-center min-h-[200px] max-h-[500px] overflow-hidden">
           <img
             src={image}

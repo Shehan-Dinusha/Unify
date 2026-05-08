@@ -16,6 +16,7 @@ import {
 } from "../services/followerService";
 
 import Avatar from "../components/common/Avatar";
+import NotFound from "./NotFound";
 
 const ITEMS_PER_PAGE = 10; // Keeping 10 for demonstration
 
@@ -105,6 +106,7 @@ const Followings = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState(null);
+  const [errorStatus, setErrorStatus] = useState(null);
 
   const [sortOrder, setSortOrder] = useState("asc");
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
@@ -123,8 +125,15 @@ const Followings = () => {
       setHasMore(data.hasMore);
       setPage(1);
     } catch (err) {
-      setError("Failed to load followings. Please try again later.");
-      console.error("Error fetching followings:", err);
+      if (
+        err.response &&
+        (err.response.status === 401 || err.response.status === 403)
+      ) {
+        setErrorStatus(err.response.status);
+      } else {
+        setError("Failed to load followings. Please try again later.");
+        console.error("Error fetching followings:", err);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -213,6 +222,10 @@ const Followings = () => {
         return "Name (A-Z)";
     }
   };
+
+  if (errorStatus) {
+    return <NotFound status={errorStatus} />;
+  }
 
   return (
     <MainLayout
