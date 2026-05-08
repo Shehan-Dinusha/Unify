@@ -1,4 +1,24 @@
 import { Order, ClubProductPost } from "../../modules/index.js";
+import { getFileUrl } from "../../services/s3.service.js";
+
+const resolveUrl = async (img) => {
+  if (!img) return img;
+  let imgPath = img;
+  if (typeof img === 'object' && img !== null) {
+    if (img.url) imgPath = img.url;
+    else return imgPath;
+  }
+  if (typeof imgPath !== 'string') return imgPath;
+  if (imgPath.includes("X-Amz-Signature")) return imgPath;
+  const s3Match = imgPath.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
+  if (s3Match) {
+    try { return await getFileUrl(s3Match[1]); } catch { return imgPath; }
+  }
+  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
+    try { return await getFileUrl(imgPath); } catch { return imgPath; }
+  }
+  return imgPath;
+};
 
 export const getStudentOrders = async (req, res) => {
   try {
@@ -23,10 +43,14 @@ export const getStudentOrders = async (req, res) => {
         where: { id: productIds },
         raw: true,
       });
-      productMap = products.reduce((acc, p) => {
-        acc[p.id] = p;
-        return acc;
-      }, {});
+      
+      // Resolve images
+      await Promise.all(products.map(async (p) => {
+        if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+          p.images = await Promise.all(p.images.map(resolveUrl));
+        }
+        productMap[p.id] = p;
+      }));
     }
 
     const formattedOrders = orders.map((o) => ({

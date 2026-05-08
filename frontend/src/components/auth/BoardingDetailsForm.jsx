@@ -8,7 +8,7 @@ import DatePicker from "../common/DatePicker";
 import ImageUpload from "../common/ImageUpload";
 import { validateNIC, validateDOB } from "../../utils/validation";
 
-const BoardingDetailsForm = ({ onNext }) => {
+const BoardingDetailsForm = ({ onNext, initialData, loading }) => {
   const genderOptions = [
     { value: "male", label: "Male" },
     { value: "female", label: "Female" },
@@ -16,14 +16,43 @@ const BoardingDetailsForm = ({ onNext }) => {
   ];
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    nic: "",
-    gender: "",
-    dob: "",
-    addresses: [{ street: "", city: "", postalCode: "" }],
+    firstName: initialData?.firstName || "",
+    lastName: initialData?.lastName || "",
+    nic: initialData?.nic || "",
+    gender: initialData?.gender?.toLowerCase() || "",
+    dob: "", // Will be set in useEffect
+    addresses: initialData?.addresses || [
+      { street: "", city: "", postalCode: "" },
+    ],
     profileImage: null,
   });
+
+  // Sync initialData when it becomes available
+  React.useEffect(() => {
+    if (initialData) {
+      // Format ISO date (YYYY-MM-DD) to MM/DD/YYYY
+      let formattedDob = "";
+      if (initialData.dob) {
+        const date = new Date(initialData.dob);
+        if (!isNaN(date.getTime())) {
+          formattedDob = `${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}/${date.getFullYear()}`;
+        }
+      }
+
+      setFormData({
+        firstName: initialData.firstName || "",
+        lastName: initialData.lastName || "",
+        nic: initialData.nic || "",
+        gender: initialData.gender?.toLowerCase() || "",
+        dob: formattedDob,
+        addresses:
+          initialData.addresses && initialData.addresses.length > 0
+            ? initialData.addresses
+            : [{ street: "", city: "", postalCode: "" }],
+        profileImage: null,
+      });
+    }
+  }, [initialData]);
 
   const [errors, setErrors] = useState({});
 
@@ -117,6 +146,7 @@ const BoardingDetailsForm = ({ onNext }) => {
         <ImageUpload
           onChange={handleImageChange}
           label="Upload Photo (Optional)"
+          value={initialData?.user?.avatar || null}
         />
 
         <form
@@ -245,9 +275,9 @@ const BoardingDetailsForm = ({ onNext }) => {
               size="large"
               type="submit"
               className="shadow-custom-shadow"
-              disabled={!isFormComplete}
+              disabled={!isFormComplete || loading}
             >
-              Save & Continue
+              {loading ? "Saving..." : "Save & Continue"}
             </Button>
           </div>
         </form>

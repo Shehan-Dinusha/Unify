@@ -13,6 +13,13 @@ const ImageUpload = ({
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState(value || null);
 
+  // Sync preview if value prop changes (e.g. after API data loads)
+  React.useEffect(() => {
+    if (value && !preview) {
+      setPreview(value);
+    }
+  }, [value]);
+
   const handleClick = () => {
     fileInputRef.current.click();
   };

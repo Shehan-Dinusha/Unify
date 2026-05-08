@@ -63,3 +63,24 @@ export const getMyProfile = async (role) => {
     handleError(error);
   }
 };
+
+export const changePassword = async (currentPassword, newPassword) => {
+  try {
+    const response = await api.put("/profiles/password", {
+      currentPassword,
+      newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+export const deleteAccount = async (password) => {
+  try {
+    const response = await api.delete("/profiles", { data: { password } });
+    return response.data;
+  } catch (error) {
+    handleError(error);
+  }
+};

@@ -61,12 +61,14 @@ const OtpForm = ({ email, onVerify, onBack, mode = "registration" }) => {
           otp: otpValue,
         };
 
+        let result;
         if (mode === "reset") {
-          await verifyResetOTP(payload);
+          result = await verifyResetOTP(payload);
         } else {
-          await verifyOTP(payload);
+          result = await verifyOTP(payload);
         }
-        onVerify(otpValue);
+        // Pass the full result so callers can detect special flows (e.g. linking)
+        onVerify(otpValue, result);
       } catch (err) {
         setError(err.message);
       } finally {

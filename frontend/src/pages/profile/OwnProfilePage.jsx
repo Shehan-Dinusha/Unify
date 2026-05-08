@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import MainLayout from "../../components/layout/MainLayout";
 import ProfileHeader from "../../components/profile/ProfileHeader";
@@ -9,58 +9,32 @@ import ClubOwnerView from "../../components/profile/owner/ClubOwnerView";
 import FoodCafeOwnerView from "../../components/profile/owner/FoodCafeOwnerView";
 import SelfEmployedOwnerView from "../../components/profile/owner/SelfEmployedOwnerView";
 import DeleteAccountModal from "../../components/profile/modals/DeleteAccountModal";
-import SwitchAccountModal from "../../components/profile/modals/SwitchAccountModal";
+import { getMyProfile, deleteAccount } from "../../services/profileService";
+import { getCurrentUser, logout } from "../../services/authService";
+import { useToast } from "../../components/common/Toast";
+import Button from "../../components/common/Button";
+import { Loader2 } from "lucide-react";
 
-// ------------------------------------------------------------------
-// MOCK DATA — swap with GET /api/profile when backend is ready
-// ------------------------------------------------------------------
-const mockProfiles = {
-  student: {
-    id: "1",
-    name: "Alex Johnson",
-    role: "student",
-    subtitle: "Batch 23",
-    badge: "B.Sc. Information Technology",
-    description: "Faculty of Information Technology",
-    profileImage: null,
-    memberSince: "2023",
-  },
-  boarding_owner: {
-    id: "2",
-    name: "John Doe",
-    role: "boarding_owner",
-    subtitle: "Registered Boarding Owner",
-    badge: "Member since 2021",
-    description: "Safe student accommodation",
-    profileImage: null,
-  },
-  club_society: {
-    id: "3",
-    name: "Reader's Club",
-    role: "club_society",
-    subtitle: "",
-    badge: "Member since 2023",
-    description: "A community for book lovers and writers",
-    profileImage: null,
-  },
-  food_cafe: {
-    id: "4",
-    name: "John Doe",
-    role: "food_cafe",
-    subtitle: "Registered Food Provider",
-    badge: "Member since 2021",
-    description: "Serving quality meals for students",
-    profileImage: null,
-  },
-  self_employed: {
-    id: "5",
-    name: "John Doe",
-    role: "self_employed",
-    subtitle: "Registered Service Provider",
-    badge: "Member since 2021",
-    description: "Student-focused support services",
-    profileImage: null,
-  },
+// Mapping between backend roles/categories and frontend "activeRole"
+const getFrontendRole = (backendUser, profile) => {
+  if (!backendUser) return "student";
+  const role = backendUser.role?.toLowerCase();
+
+  if (role === "student") return "student";
+  if (role === "club") return "club_society";
+  if (role === "business" && profile?.category) {
+    switch (profile.category.toLowerCase()) {
+      case "boarding":
+        return "boarding_owner";
+      case "food":
+        return "food_cafe";
+      case "self_employed":
+        return "self_employed";
+      default:
+        return "boarding_owner";
+    }
+  }
+  return "student";
 };
 
 // Role → sidebar config mapping
@@ -134,88 +108,169 @@ const OwnProfilePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const toast = useToast();
 
-  // Read role from ?role=boarding_owner — defaults to "student"
-  const activeRole = searchParams.get("role") || "student";
-
-  const profile = mockProfiles[activeRole] || mockProfiles.student;
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [activeRole, setActiveRole] = useState(searchParams.get("role") || "student");
 
   // State to track verification status
-  const [verificationStatus, setVerificationStatus] = useState(
-    () =>
-      localStorage.getItem("unify_club_verification_status") || "NOT_SUBMITTED",
+  const [verificationStatus, setVerificationStatus] = useState("NOT_SUBMITTED");
+  const [repStatus, setRepStatus] = useState("NOT_SUBMITTED");
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      const currentUser = getCurrentUser();
+      if (!currentUser) {
+        navigate("/login");
+        return;
+      }
+
+      // Backend role is Student, Business, or Club
+      const backendRole = currentUser.role?.toLowerCase();
+      // Service needs 'student', 'business', or 'club'
+      const serviceRole = backendRole === "admin" ? "student" : backendRole;
+      
+      const data = await getMyProfile(serviceRole);
+      
+      // Map backend data to frontend profile structure
+      let mappedProfile = {};
+      if (backendRole === "student") {
+        mappedProfile = {
+          id: data.id,
+          name: `${data.firstName} ${data.lastName}`,
+          role: "student",
+          subtitle: data.batch?.name || "",
+          badge: data.degree?.name || "",
+          description: data.faculty?.name || "",
+          profileImage: data.user?.avatar || null,
+          memberSince: new Date(data.createdAt).getFullYear().toString(),
+          ...data
+        };
+        setRepStatus(data.isBatchRep ? "APPROVED" : "NOT_SUBMITTED"); // Simplified logic
+      } else if (backendRole === "club") {
+        mappedProfile = {
+          id: data.id,
+          name: data.clubName,
+          role: "club_society",
+          subtitle: "",
+          badge: `Member since ${new Date(data.createdAt).getFullYear()}`,
+          description: data.about || "",
+          profileImage: data.logo || null,
+          ...data
+        };
+        setProfile(mappedProfile);
+        setActiveRole("club_society");
+        
+        // Use top-level verificationStatus from backend (robust, no nested parsing)
+        setVerificationStatus(data.verificationStatus || "NOT_SUBMITTED");
+        if (data.verificationReason) setVerificationReason(data.verificationReason);
+      } else if (backendRole === "business") {
+        const fRole = getFrontendRole(currentUser, data);
+        mappedProfile = {
+          id: data.id,
+          name: data.displayName || data.businessName,
+          role: fRole,
+          subtitle: data.category === "BOARDING" ? "Registered Boarding Owner" : 
+                    data.category === "FOOD" ? "Registered Food Provider" : "Registered Service Provider",
+          badge: `Member since ${new Date(data.createdAt).getFullYear()}`,
+          description: data.about || "",
+          profileImage: data.user?.avatar || null,
+          ...data
+        };
+        setActiveRole(fRole);
+      }
+
+      setProfile(mappedProfile);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast.error("Error", error.message || "Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  // Show a toast when returning from account linking flow (Deprecated but kept empty to avoid error)
+
+  const [verificationReason, setVerificationReason] = useState(
+    "Verification rejected. Please resubmit documents."
   );
-
-  const [repStatus, setRepStatus] = useState(
-    () => localStorage.getItem("unify_student_rep_status") || "NOT_SUBMITTED",
-  );
-
-  // Sync with localStorage on every navigation (e.g., coming back from verification pages)
-  React.useEffect(() => {
-    // Club Status
-    const clubStatus =
-      localStorage.getItem("unify_club_verification_status") || "NOT_SUBMITTED";
-    setVerificationStatus(clubStatus);
-
-    // Rep Status
-    const repStatus =
-      localStorage.getItem("unify_student_rep_status") || "NOT_SUBMITTED";
-    setRepStatus(repStatus);
-  }, [location.pathname, location.search]);
-
-  const verificationReason =
-    localStorage.getItem("unify_club_verification_reason") ||
-    "Verification rejected. Please resubmit documents.";
 
   const repReason =
     localStorage.getItem("unify_student_rep_reason") ||
     "Verification rejected. Please resubmit documents.";
 
-  const isClub = activeRole === "club_society";
-  const isApproved = verificationStatus === "APPROVED";
-  const shouldDisable = isClub && !isApproved;
-
-  const user = {
-    name: profile.name,
-    role: roleToSidebarRole[profile.role] || "student",
-    displayRole: roleDisplayNames[profile.role] || profile.role,
-  };
 
   // URL-based Modal state
   const activeModal = searchParams.get("modal");
   const deleteOpen = activeModal === "delete";
-  const switchOpen = activeModal === "switch";
 
   const handleEditProfile = () => navigate(`/profile/edit?role=${activeRole}`);
   const handleSecurity = () => navigate(`/profile/security?role=${activeRole}`);
 
-  // Opening modals adds to history
-  const handleSwitchAccount = () =>
-    navigate(`/profile?role=${activeRole}&modal=switch`);
   const handleDeleteAccount = () =>
     navigate(`/profile?role=${activeRole}&modal=delete`);
 
   // Closing modals goes back in history (closing the modal)
   const closeModal = () => navigate(-1);
 
-  const handleConfirmDelete = () => {
-    // Clear modal param on confirm
-    navigate(`/profile?role=${activeRole}`, { replace: true });
-    // TODO: call DELETE /api/profile when backend is ready
+  const handleConfirmDelete = async (password) => {
+    try {
+      await deleteAccount(password);
+      toast.success("Success", "Account deleted successfully");
+      logout(); // Logout and redirect to login
+    } catch (error) {
+      // Re-throw so the modal can show inline error
+      throw error;
+    }
   };
 
   const getPageTitle = () => {
-    if (switchOpen) return "Switch account";
     if (deleteOpen) return "Delete account";
     return "Profile";
   };
+
+  if (loading) {
+    return (
+      <MainLayout user={{ name: "Loading...", role: "student", displayRole: "Loading..." }} pageTitle="Profile" verificationCount={0}>
+        <div className="w-full h-[60vh] flex items-center justify-center">
+          <Loader2 className="w-8 h-8 text-primary-blue animate-spin" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <MainLayout user={{ name: "Error", role: "student", displayRole: "Error" }} pageTitle="Profile" verificationCount={0}>
+        <div className="w-full h-[60vh] flex flex-col items-center justify-center gap-4">
+          <p className="text-text-secondary">Failed to load profile data.</p>
+          <Button onClick={() => fetchProfile()}>Retry</Button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const user = {
+    name: profile.name,
+    role: roleToSidebarRole[profile.role] || "student",
+    displayRole: roleDisplayNames[profile.role] || profile.role,
+    avatar: profile.profileImage,
+  };
+
+  const isUnverifiedClub = activeRole === "club_society" && verificationStatus !== "APPROVED";
 
   return (
     <MainLayout
       user={user}
       pageTitle={getPageTitle()}
       verificationCount={0}
-      sidebarDisabled={shouldDisable}
+      sidebarDisabled={isUnverifiedClub}
     >
       <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md text-start px-1 md:px-0">
         {/* Row 1, Col 1 — Profile Card */}
@@ -235,9 +290,8 @@ const OwnProfilePage = () => {
           <AccountSettingsSection
             onEditProfile={handleEditProfile}
             onSecurity={handleSecurity}
-            onSwitchAccount={handleSwitchAccount}
             onDeleteAccount={handleDeleteAccount}
-            disabled={shouldDisable}
+            disabled={false}
           />
         </div>
       </div>
@@ -247,12 +301,6 @@ const OwnProfilePage = () => {
         <DeleteAccountModal
           onClose={closeModal}
           onConfirm={handleConfirmDelete}
-        />
-      )}
-      {switchOpen && (
-        <SwitchAccountModal
-          onClose={closeModal}
-          currentUser={user}
         />
       )}
     </MainLayout>

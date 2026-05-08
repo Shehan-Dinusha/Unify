@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
-import { User } from "../../modules/index.js";
+import { User, StudentProfile, BusinessProfile, ClubProfile } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { generateTokens } from "./auth.utils.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 /**
  * @desc    Login user
@@ -33,10 +34,21 @@ export const login = async (req, res) => {
     if (!isMatch) return sendResponse(res, 401, false, "Invalid credentials");
 
     const { accessToken, refreshToken } = await generateTokens(user);
+    const avatar = await resolveAvatarUrl(user.avatar, user.name);
+
+    let profileData = {};
+    if (user.role === "Student") {
+      const studentProfile = await StudentProfile.findOne({ where: { userId: user.id } });
+      if (studentProfile) profileData = { isBatchRep: studentProfile.isBatchRep };
+    } else if (user.role === "Business") {
+      const businessProfile = await BusinessProfile.findOne({ where: { userId: user.id } });
+      if (businessProfile) profileData = { category: businessProfile.category };
+    }
+
     return sendResponse(res, 200, true, "Login successful", {
       accessToken,
       refreshToken,
-      user: { id: user.id, email: user.email, phone: user.phone, name: user.name, role: user.role },
+      user: { id: user.id, email: user.email, phone: user.phone, name: user.name, role: user.role, avatar, ...profileData },
     });
   } catch (error) {
     logger.error("Login Error:", error);

@@ -9,7 +9,7 @@ import { GraduationCap, MapPin, Plus } from "lucide-react";
 import { validateDOB } from "../../utils/validation";
 import api from "../../services/api";
 
-const StudentDetailsForm = ({ onNext }) => {
+const StudentDetailsForm = ({ onNext, initialData, loading }) => {
   // ── Dropdown data from backend ─────────────────────────────────────────────
   const [universities, setUniversities] = useState([]);
   const [faculties, setFaculties] = useState([]);
@@ -25,18 +25,53 @@ const StudentDetailsForm = ({ onNext }) => {
 
   // ── Form state ─────────────────────────────────────────────────────────────
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    regNumber: "",
-    gender: "",
-    dob: "",
-    addresses: [{ street: "", city: "", postalCode: "" }],
-    universityId: "",
-    facultyId: "",
-    degreeId: "",
-    batchId: "",
+    firstName: initialData?.firstName || "",
+    lastName: initialData?.lastName || "",
+    regNumber: initialData?.registrationNumber || "",
+    gender: initialData?.gender?.toLowerCase() || "",
+    dob: "", // Will be set in useEffect
+    addresses: initialData?.addresses || [
+      { street: "", city: "", postalCode: "" },
+    ],
+    universityId: initialData?.universityId ? String(initialData.universityId) : "",
+    facultyId: initialData?.facultyId ? String(initialData.facultyId) : "",
+    degreeId: initialData?.degreeId ? String(initialData.degreeId) : "",
+    batchId: initialData?.batchId ? String(initialData.batchId) : "",
     profileImage: null,
   });
+
+  // Sync initialData when it becomes available
+  useEffect(() => {
+    if (initialData) {
+      // Format ISO date (YYYY-MM-DD) to MM/DD/YYYY
+      let formattedDob = "";
+      if (initialData.dateOfBirth) {
+        const date = new Date(initialData.dateOfBirth);
+        if (!isNaN(date.getTime())) {
+          formattedDob = `${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}/${date.getFullYear()}`;
+        }
+      }
+
+      setFormData({
+        firstName: initialData.firstName || "",
+        lastName: initialData.lastName || "",
+        regNumber: initialData.registrationNumber || "",
+        gender: initialData.gender?.toLowerCase() || "",
+        dob: formattedDob,
+        addresses:
+          initialData.addresses && initialData.addresses.length > 0
+            ? initialData.addresses
+            : [{ street: "", city: "", postalCode: "" }],
+        universityId: initialData.universityId
+          ? String(initialData.universityId)
+          : "",
+        facultyId: initialData.facultyId ? String(initialData.facultyId) : "",
+        degreeId: initialData.degreeId ? String(initialData.degreeId) : "",
+        batchId: initialData.batchId ? String(initialData.batchId) : "",
+        profileImage: null,
+      });
+    }
+  }, [initialData]);
 
   const [errors, setErrors] = useState({});
 
@@ -227,7 +262,7 @@ const StudentDetailsForm = ({ onNext }) => {
           </p>
         </div>
 
-        <ImageUpload onChange={handleImageChange} label="Upload Photo (Optional)" />
+        <ImageUpload onChange={handleImageChange} label="Upload Photo (Optional)" value={initialData?.user?.avatar || null} />
 
         {loadingMeta ? (
           <p className="text-text-secondary text-body-small text-center animate-pulse">
@@ -411,9 +446,9 @@ const StudentDetailsForm = ({ onNext }) => {
                 size="large"
                 type="submit"
                 className="shadow-custom-shadow"
-                disabled={!isFormComplete}
+                disabled={!isFormComplete || loading}
               >
-                Save & Continue
+                {loading ? "Saving..." : "Save & Continue"}
               </Button>
             </div>
           </form>

@@ -7,15 +7,18 @@ const handleError = (error) => {
   throw new Error(error.response?.data?.message || "Something went wrong");
 };
 
-/**
- * Store authentication data in localStorage.
- * Maps 'accessToken' to 'token' for interceptor compatibility.
- */
+// ─── Standard Auth Data ───────────────────────────────────────────────────────
+// Normal login/OTP: just sets the active session. Does NOT auto-add to any linked list.
+
 const setAuthData = (data) => {
   if (data.accessToken) localStorage.setItem("token", data.accessToken);
   if (data.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
-  if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+  if (data.user) {
+    localStorage.setItem("user", JSON.stringify(data.user));
+  }
 };
+
+// ─── Auth Operations ──────────────────────────────────────────────────────────
 
 export const login = async (identifier, password) => {
   try {
@@ -41,6 +44,7 @@ export const verifyOTP = async (otpData) => {
   try {
     const response = await api.post("/auth/verify-otp", otpData);
     const { data } = response.data;
+    // Always set auth data for the new account.
     setAuthData(data);
     return data;
   } catch (error) {
@@ -85,6 +89,7 @@ export const resetPassword = async (data) => {
 };
 
 export const logout = () => {
+
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("user");

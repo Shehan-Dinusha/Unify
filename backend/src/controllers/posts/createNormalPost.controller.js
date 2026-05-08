@@ -7,7 +7,7 @@ const getUploadedFileUrls = (files) => {
 
 export const createNormalPost = async (req, res) => {
   try {
-    const { description, hours, phone, tags: tagsRaw, postType, category: bodyCategory } = req.body;
+    const { description, postType, category: bodyCategory } = req.body;
 
     // Determine category and hardcoded userId based on postType
     // userId=1: Club Owner, userId=3: Food Owner, userId=4: Self Employed Pro
@@ -25,14 +25,7 @@ export const createNormalPost = async (req, res) => {
       userId = 1; // Club Owner (hardcoded for development)
     }
 
-    let tags = [];
-    if (tagsRaw) {
-      try {
-        tags = typeof tagsRaw === "string" ? JSON.parse(tagsRaw) : tagsRaw;
-      } catch (e) {
-        tags = [];
-      }
-    }
+
 
     const images = getUploadedFileUrls(req.files);
 
@@ -41,9 +34,6 @@ export const createNormalPost = async (req, res) => {
       description,
       images,
       category,
-      hours,
-      phone,
-      tags,
     });
 
     res.status(201).json({ success: true, post });
