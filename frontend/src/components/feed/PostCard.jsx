@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSavedPosts } from "../../context/SavedPostsContext";
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../../services/authService";
 import {
   MapPin,
   Send,
@@ -17,7 +18,7 @@ import newsfeedService from "../../services/newsfeedService";
 import { formatTimeAgo } from "../../utils/formatters";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
-const CommentSection = ({ postComments, onAddComment, loading }) => {
+const CommentSection = ({ postComments, onAddComment, loading, currentUser }) => {
   const [text, setText] = useState("");
   const inputRef = useRef(null);
 
@@ -52,9 +53,9 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
           {postComments.map((c) => (
             <div key={c.id} className="flex gap-3 items-start">
               <img
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.user?.name || c.user || "User")}`}
+                src={c.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.user?.name || c.user || "User")}`}
                 alt={c.user?.name || c.user || "User"}
-                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5"
+                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5 object-cover"
               />
               <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
                 <div className="flex items-center gap-2 mb-1">
@@ -77,9 +78,9 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
       {/* Input */}
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <img
-          src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me"
+          src={currentUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUser?.name || "Me")}`}
           alt="You"
-          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1"
+          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1 object-cover"
         />
         <div className="flex-1 flex items-end bg-white/5 border border-white/10 rounded-2xl px-4 py-2 gap-2 focus-within:border-primary-blue/50 transition-colors">
           <textarea
@@ -143,6 +144,7 @@ const PostCard = ({
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [imgFailed, setImgFailed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const currentUser = getCurrentUser();
 
   const DESCRIPTION_LIMIT = 250;
   const isLongDescription =
@@ -199,6 +201,7 @@ const PostCard = ({
         const fetchedComments = (data.comments || []).map((c) => ({
           id: c.id,
           user: c.user?.name || "User",
+          avatar: c.user?.avatar,
           seed: c.user?.name || "User",
           time: c.createdAt ? formatTimeAgo(c.createdAt) : "just now",
           text: c.content,
@@ -217,8 +220,9 @@ const PostCard = ({
     // Optimistic add
     const tempComment = {
       id: `new-${Date.now()}`,
-      user: "You",
-      seed: "Me",
+      user: currentUser?.name || "You",
+      avatar: currentUser?.avatar,
+      seed: currentUser?.name || "Me",
       time: "just now",
       text,
     };
@@ -231,8 +235,9 @@ const PostCard = ({
       if (data.comment) {
         const realComment = {
           id: data.comment.id,
-          user: data.comment.user?.name || "You",
-          seed: data.comment.user?.name || "Me",
+          user: data.comment.user?.name || currentUser?.name || "You",
+          avatar: data.comment.user?.avatar || currentUser?.avatar,
+          seed: data.comment.user?.name || currentUser?.name || "Me",
           time: "just now",
           text: data.comment.content,
         };
@@ -399,6 +404,7 @@ const PostCard = ({
             postComments={postComments}
             onAddComment={handleAddComment}
             loading={loadingComments}
+            currentUser={currentUser}
           />
         )}
       </div>
