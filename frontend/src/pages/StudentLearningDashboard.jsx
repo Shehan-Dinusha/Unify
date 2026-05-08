@@ -19,6 +19,7 @@ const CATEGORY_SUBTITLES = {
 const enrichCategories = (categories) =>
   categories.map((cat) => ({
     ...cat,
+    fileCount: cat.fileCount || 0,
     subtitle: CATEGORY_SUBTITLES[cat.title] || "Files & Docs",
   }));
 
@@ -42,7 +43,8 @@ const StudentLearningDashboard = () => {
     const fetchStructure = async () => {
       setIsLoading(true);
       try {
-        const res = await learningService.getStudentCourseStructure(currentUserId);
+        const res =
+          await learningService.getStudentCourseStructure(currentUserId);
         if (res?.data) {
           setSemesters(res.data.semesters || []);
           setFacultyName(res.data.facultyName || "");
@@ -112,9 +114,8 @@ const StudentLearningDashboard = () => {
     fetchFiles();
   }, [activeModuleId, selectedCategory]);
 
-  const activeSemesterInfo = semesters.find(
-    (sem) =>
-      sem.modules?.some((mod) => String(mod.id) === String(activeModuleId)),
+  const activeSemesterInfo = semesters.find((sem) =>
+    sem.modules?.some((mod) => String(mod.id) === String(activeModuleId)),
   );
 
   const activeModuleData = activeSemesterInfo?.modules?.find(
@@ -177,10 +178,13 @@ const StudentLearningDashboard = () => {
             ) : semesters.length === 0 ? (
               <div className="w-full p-10 flex flex-col items-center justify-center gap-3 bg-slate-800 rounded-xl outline outline-1 outline-slate-700 text-gray-400">
                 <Lock size={32} className="text-gray-500" />
-                <p className="text-sm font-medium">No semesters available yet</p>
+                <p className="text-sm font-medium">
+                  No semesters available yet
+                </p>
                 <p className="text-xs text-gray-500 text-center max-w-md">
-                  Your batch rep hasn't granted access to any semesters for your batch and degree.
-                  Check back later or contact your batch representative.
+                  Your batch rep hasn't granted access to any semesters for your
+                  batch and degree. Check back later or contact your batch
+                  representative.
                 </p>
               </div>
             ) : activeModuleData ? (
@@ -199,14 +203,22 @@ const StudentLearningDashboard = () => {
                   onCategoryClick={setSelectedCategory}
                 />
 
-                <StudentMaterialList
-                  categoryName={selectedCategory?.title || "Files"}
-                  files={categoryFiles}
-                />
+                {moduleCategories.length > 0 ? (
+                  <StudentMaterialList
+                    categoryName={selectedCategory?.title || "Files"}
+                    files={categoryFiles}
+                  />
+                ) : (
+                  <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
+                    <p>No categories available for this module yet.</p>
+                  </div>
+                )}
               </>
             ) : (
               <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
-                <p>Select a module from the sidebar to view learning materials.</p>
+                <p>
+                  Select a module from the sidebar to view learning materials.
+                </p>
               </div>
             )}
           </div>

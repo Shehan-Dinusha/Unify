@@ -26,7 +26,7 @@ export const getModuleCategories = async (req, res) => {
         "iconName",
         [
           sequelize.literal(
-            `(SELECT COUNT(*) FROM materials WHERE materials."categoryId" = "ModuleCategory"."id")`,
+            `(SELECT CAST(COUNT(*) AS INTEGER) FROM materials WHERE materials."categoryId" = "ModuleCategory"."id")`,
           ),
           "fileCount",
         ],
@@ -34,6 +34,7 @@ export const getModuleCategories = async (req, res) => {
       where: { moduleId },
       order: [["createdAt", "ASC"]],
       limit: 8,
+      raw: true,
     });
 
     return sendResponse(res, 200, true, "Categories retrieved successfully", {
