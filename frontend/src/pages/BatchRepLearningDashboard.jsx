@@ -5,30 +5,199 @@ import ModuleHeader from "../components/learning/ModuleHeader";
 import CategoryGrid from "../components/learning/CategoryGrid";
 import FileListTable from "../components/learning/FileListTable";
 import BatchRepTeam from "../components/learning/BatchRepTeam";
-import {
-  mockRequests,
-  mockSemesters,
-  mockLearningFiles,
-  mockModuleCategories,
-  mockCategoryFiles,
-  mockCurrentUser,
-} from "../data/mockData";
+import { mockRequests, mockSemesters, mockCurrentUser } from "../data/mockData";
 import { ModuleActionSuccessModal } from "../components/common/ModuleActionModals";
+import * as learningService from "../services/learningService";
+import { useToast } from "../components/common/Toast";
 
 const BatchRepLearningDashboard = () => {
   const [semesters, setSemesters] = useState(mockSemesters);
   const [activeSemesterId, setActiveSemesterId] = useState("sem1");
   const [activeModuleId, setActiveModuleId] = useState("mod1");
+  const [degreeName, setDegreeName] = useState("Bsc.(Hons) IT");
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  React.useEffect(() => {
-    const categoriesForModule = mockModuleCategories[activeModuleId] || [];
-    if (categoriesForModule.length > 0) {
-      setSelectedCategory(categoriesForModule[0]);
-    } else {
-      setSelectedCategory(null);
+  // Temporary auth context since auth isn't connected yet
+  const currentUserId = 1;
+  const currentDegreeId = 18;
+
+  // Real data states
+  const [moduleCategories, setModuleCategories] = useState([]);
+  const [categoryFiles, setCategoryFiles] = useState([]);
+  const [activeModuleDetails, setActiveModuleDetails] = useState(null);
+  const [availableDegrees, setAvailableDegrees] = useState([]);
+  const [availableDegreesObjs, setAvailableDegreesObjs] = useState([]);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const toast = useToast();
+
+  const refreshCourseStructure = async () => {
+    try {
+      const res = await learningService.getBatchRepCourseStructure(currentDegreeId);
+      if (res?.data?.semesters) {
+        setSemesters(res.data.semesters);
+        setDegreeName(res.data.degreeName || "Bsc.(Hons) IT");
+      }
+    } catch (err) {
+      console.error("Failed to refresh course structure", err);
     }
+  };
+
+  // Fetch module details and categories when activeModuleId changes
+  React.useEffect(() => {
+    const fetchStructure = async () => {
+      try {
+        const res =
+          await learningService.getBatchRepCourseStructure(currentDegreeId);
+        if (res?.data?.semesters) {
+          setSemesters(res.data.semesters);
+          setDegreeName(res.data.degreeName || "Bsc.(Hons) IT");
+
+          // Set initial active semester and module if valid
+          if (res.data.semesters.length > 0) {
+            const firstSem = res.data.semesters[0];
+            setActiveSemesterId(firstSem.id);
+            if (firstSem.modules && firstSem.modules.length > 0) {
+              setActiveModuleId(firstSem.modules[0].id);
+            } else {
+              setActiveModuleId(null);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch course structure", err);
+        // Retains mockSemesters on failure
+      }
+    };
+    fetchStructure();
+  }, [currentDegreeId]);
+
+  React.useEffect(() => {
+    if (!activeModuleId) return;
+
+    // Clear stale state before fetching new module details
+    setActiveModuleDetails(null);
+    setSelectedCategory(null);
+    setCategoryFiles([]);
+
+    const fetchModuleData = async () => {
+      setIsLoadingDetails(true);
+      try {
+        // We handle the case where activeModuleId might be a mock ID.
+        // If it fails, we fall back to finding it in mockSemesters.
+        let details = null;
+        try {
+          details = await learningService.getModuleDetails(
+            activeModuleId,
+            currentDegreeId,
+          );
+          setActiveModuleDetails(details?.data?.module || null);
+          if (details?.data?.availableDegrees) {
+            setAvailableDegreesObjs(details.data.availableDegrees);
+            setAvailableDegrees(
+              details.data.availableDegrees.map((d) => d.name),
+            );
+          }
+        } catch (err) {
+          console.warn(
+            "Failed to fetch module details from API, using local state",
+            err,
+          );
+        }
+
+        try {
+          const catsRes =
+            await learningService.getModuleCategories(activeModuleId);
+          const apiCategories = catsRes.data?.categories || [];
+          setModuleCategories(apiCategories);
+          if (apiCategories.length > 0) {
+            setSelectedCategory(apiCategories[0]);
+          } else {
+            setSelectedCategory(null);
+          }
+        } catch (err) {
+          console.warn("Failed to fetch module categories", err);
+          setModuleCategories([]);
+          setSelectedCategory(null);
+        }
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    };
+
+    fetchModuleData();
   }, [activeModuleId]);
+
+  // Fetch materials when selectedCategory changes
+  React.useEffect(() => {
+    if (!activeModuleId || !selectedCategory) {
+      setCategoryFiles([]);
+      return;
+    }
+
+    const fetchFiles = async () => {
+      try {
+        const filesRes = await learningService.getMaterialsByCategory(
+          activeModuleId,
+          selectedCategory.id,
+        );
+        setCategoryFiles(filesRes.data || []);
+      } catch (err) {
+        console.warn("Failed to fetch materials", err);
+        setCategoryFiles([]);
+      }
+    };
+
+    fetchFiles();
+  }, [activeModuleId, selectedCategory]);
+
+  const refreshActiveModule = async () => {
+    if (!activeModuleId) return;
+    try {
+      const details = await learningService.getModuleDetails(
+        activeModuleId,
+        currentDegreeId,
+      );
+      if (details?.data?.module) {
+        setActiveModuleDetails(details.data.module);
+      }
+    } catch (err) {
+      console.error("Failed to refresh module details", err);
+    }
+  };
+
+  const handleMaterialChanged = async () => {
+    await refreshActiveModule();
+    await refreshFiles();
+  };
+
+  const refreshCategories = async () => {
+    if (!activeModuleId) return;
+    try {
+      const catsRes = await learningService.getModuleCategories(activeModuleId);
+      const apiCategories = catsRes.data?.categories || [];
+      setModuleCategories(apiCategories);
+      if (!selectedCategory && apiCategories.length > 0) {
+        setSelectedCategory(apiCategories[0]);
+      }
+    } catch (err) {
+      console.error(err);
+      setModuleCategories([]);
+    }
+  };
+
+  const refreshFiles = async () => {
+    if (!activeModuleId || !selectedCategory) return;
+    try {
+      const filesRes = await learningService.getMaterialsByCategory(
+        activeModuleId,
+        selectedCategory.id,
+      );
+      setCategoryFiles(filesRes.data || []);
+    } catch (err) {
+      console.error(err);
+      setCategoryFiles([]);
+    }
+  };
 
   // Success Modal States
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -38,90 +207,174 @@ const BatchRepLearningDashboard = () => {
   // Compute Active Module Data derived from state
   const activeSemesterInfo = semesters.find(
     (sem) =>
-      sem.modules && sem.modules.some((mod) => mod.id === activeModuleId),
+      sem.modules &&
+      sem.modules.some((mod) => String(mod.id) === String(activeModuleId)),
   );
 
-  const activeModuleData = activeSemesterInfo?.modules.find(
-    (mod) => mod.id === activeModuleId,
-  );
-
-  const handleAddModule = (newModule) => {
-    setSemesters((prevSemesters) =>
-      prevSemesters.map((sem) => {
-        if (sem.id === newModule.semester) {
-          return {
-            ...sem,
-            modules: [
-              ...(sem.modules || []),
-              {
-                id: `mod-${Date.now()}`,
-                name: newModule.title,
-                code: newModule.code,
-                degrees: newModule.visibility,
-              },
-            ],
-          };
-        }
-        return sem;
-      }),
+  const activeModuleData =
+    activeModuleDetails ||
+    activeSemesterInfo?.modules.find(
+      (mod) => String(mod.id) === String(activeModuleId),
     );
-    setActionModuleName(newModule.title);
-    setShowSuccessModal(true);
+
+  const handleAddModule = async (newModule) => {
+    try {
+      const visibilityIds = newModule.visibility
+        .map((degreeName) => {
+          const degObj = availableDegreesObjs.find(
+            (d) => d.name === degreeName,
+          );
+          return degObj ? degObj.id : null;
+        })
+        .filter((id) => id !== null);
+
+      if (visibilityIds.length === 0) visibilityIds.push(currentDegreeId);
+
+      const res = await learningService.createModule({
+        title: newModule.title,
+        code: newModule.code,
+        semester: parseInt(newModule.semester, 10),
+        visibility: visibilityIds,
+      });
+      const createdModule = res.data;
+
+      setSemesters((prevSemesters) =>
+        prevSemesters.map((sem) => {
+          if (String(sem.id) === String(newModule.semester)) {
+            return {
+              ...sem,
+              modules: [
+                ...(sem.modules || []),
+                {
+                  id: createdModule?.id || `mod-${Date.now()}`,
+                  name: newModule.title,
+                  code: newModule.code,
+                  degrees: newModule.visibility,
+                },
+              ],
+            };
+          }
+          return sem;
+        }),
+      );
+
+      if (createdModule?.id) {
+        setActiveModuleId(createdModule.id);
+      }
+
+      setActionModuleName(newModule.title);
+      setShowSuccessModal(true);
+    } catch (err) {
+      console.error("Failed to create module", err);
+      const errorMessage =
+        err.response?.data?.message || err.message || "Unknown error";
+      toast.error("Error", `Failed to create module: ${errorMessage}`);
+    }
   };
 
-  const handleEditModule = (editedData) => {
-    setSemesters((prevSemesters) => {
-      // First, remove the module from wherever it currently is
-      let updatedSemesters = prevSemesters.map((sem) => ({
-        ...sem,
-        modules: sem.modules
-          ? sem.modules.filter((mod) => mod.id !== activeModuleId)
-          : [],
-      }));
+  const handleEditModule = async (editedData) => {
+    try {
+      const selectedSemester = semesters.find(
+        (s) => s.name === editedData.semester || s.id === editedData.semester,
+      );
+      const semesterId = selectedSemester ? selectedSemester.id : null;
 
-      // Then, add the updated module to its new semester Destination
-      updatedSemesters = updatedSemesters.map((sem) => {
-        if (
-          sem.name === editedData.semester ||
-          sem.id === editedData.semester
-        ) {
-          return {
-            ...sem,
-            modules: [
-              ...(sem.modules || []),
-              {
-                id: activeModuleId, // keep same ID
-                name: editedData.title,
-                code: editedData.code,
-                degrees: editedData.visibility,
-              },
-            ],
-          };
-        }
-        return sem;
+      const visibilityIds = editedData.visibility
+        .map((degreeName) => {
+          const degObj = availableDegreesObjs.find(
+            (d) => d.name === degreeName,
+          );
+          return degObj ? degObj.id : null;
+        })
+        .filter((id) => id !== null);
+
+      if (visibilityIds.length === 0) visibilityIds.push(currentDegreeId);
+
+      await learningService.editModuleDetails(activeModuleId, {
+        title: editedData.title,
+        code: editedData.code,
+        semester: semesterId,
+        visibility: visibilityIds,
       });
 
-      return updatedSemesters;
-    });
+      // Update local state
+      setSemesters((prevSemesters) => {
+        let updatedSemesters = prevSemesters.map((sem) => ({
+          ...sem,
+          modules: sem.modules
+            ? sem.modules.filter(
+                (mod) => String(mod.id) !== String(activeModuleId),
+              )
+            : [],
+        }));
 
-    setActionModuleName(editedData.title);
-    setShowSuccessModal(true);
+        updatedSemesters = updatedSemesters.map((sem) => {
+          if (
+            sem.name === editedData.semester ||
+            sem.id === editedData.semester
+          ) {
+            return {
+              ...sem,
+              modules: [
+                ...(sem.modules || []),
+                {
+                  id: activeModuleId,
+                  name: editedData.title,
+                  code: editedData.code,
+                  degrees: editedData.visibility,
+                },
+              ],
+            };
+          }
+          return sem;
+        });
+
+        return updatedSemesters;
+      });
+
+      // Update active module details if we are viewing it
+      setActiveModuleDetails((prev) =>
+        prev
+          ? {
+              ...prev,
+              name: editedData.title,
+              code: editedData.code,
+              degrees: editedData.visibility,
+              semester: selectedSemester
+                ? { id: selectedSemester.id, name: selectedSemester.name }
+                : prev.semester,
+            }
+          : null,
+      );
+
+      setActionModuleName(editedData.title);
+      setShowSuccessModal(true);
+    } catch (err) {
+      console.error("Failed to edit module", err);
+      toast.error("Error", "Failed to edit module");
+    }
   };
 
-  const handleDeleteModule = () => {
-    setActionModuleName(activeModuleData?.name || "Module");
+  const handleDeleteModule = async () => {
+    try {
+      await learningService.deleteModule(activeModuleId);
 
-    setSemesters((prevSemesters) =>
-      prevSemesters.map((sem) => ({
-        ...sem,
-        modules: sem.modules
-          ? sem.modules.filter((mod) => mod.id !== activeModuleId)
-          : [],
-      })),
-    );
-
-    // We defer clearing the active module ID until the modal is closed so UI doesn't immediately snap behind the modal
-    setShowDeleteModal(true);
+      setActionModuleName(activeModuleData?.name || "Module");
+      setSemesters((prevSemesters) =>
+        prevSemesters.map((sem) => ({
+          ...sem,
+          modules: sem.modules
+            ? sem.modules.filter(
+                (mod) => String(mod.id) !== String(activeModuleId),
+              )
+            : [],
+        })),
+      );
+      setShowDeleteModal(true);
+    } catch (err) {
+      console.error("Failed to delete module", err);
+      toast.error("Error", "Failed to delete module");
+    }
   };
 
   const closeDeleteModal = () => {
@@ -164,7 +417,7 @@ const BatchRepLearningDashboard = () => {
           </svg>
           <span>Faculty of Information Technology</span>
           <span className="font-normal mx-0.5">/</span>
-          <span>Bsc.(Hons) IT</span>
+          <span>{degreeName}</span>
         </div>
 
         {/* Dashboard Layout */}
@@ -172,11 +425,16 @@ const BatchRepLearningDashboard = () => {
           {/* Left Column (Sticky Sidebar) */}
           <div className="w-full lg:w-60 shrink-0 lg:sticky lg:top-[28px] z-10 flex flex-col gap-2">
             <ModuleSidebar
+              title={degreeName}
               semesters={semesters}
               activeSemesterId={activeSemesterId}
               activeModuleId={activeModuleId}
               onSelectModule={setActiveModuleId}
               onAddModule={handleAddModule}
+              onRefreshSemesters={refreshCourseStructure}
+              degreeId={currentDegreeId}
+              availableDegrees={availableDegrees}
+              primaryDegree={degreeName}
             />
           </div>
 
@@ -188,21 +446,40 @@ const BatchRepLearningDashboard = () => {
                   moduleName={activeModuleData?.name}
                   moduleCode={activeModuleData?.code || "N/A"}
                   semesterName={activeSemesterInfo?.name}
-                  degrees={activeModuleData?.degrees || ["Bsc.(Hons) IT"]}
+                  isPublic={activeSemesterInfo?.isPublic ?? false}
+                  lastUpdated={activeModuleData?.lastUpdated}
+                  degrees={
+                    activeModuleData?.degrees?.map((d) =>
+                      typeof d === "string" ? d : d.name,
+                    ) || [degreeName]
+                  }
+                  availableDegrees={availableDegrees}
+                  primaryDegree={degreeName}
+                  semesters={semesters}
                   onEditSave={handleEditModule}
                   onDelete={handleDeleteModule}
+                  moduleId={activeModuleId}
+                  categories={moduleCategories}
+                  onMaterialUploaded={handleMaterialChanged}
                 />
-                
-                <CategoryGrid 
+
+                <CategoryGrid
                   key={activeModuleId}
-                  initialCategories={mockModuleCategories[activeModuleId] || []}
+                  activeModuleId={activeModuleId}
+                  initialCategories={moduleCategories}
                   selectedCategoryId={selectedCategory?.id}
-                  onCategoryClick={setSelectedCategory} 
+                  onCategoryClick={setSelectedCategory}
+                  onRefresh={refreshCategories}
                 />
-                <FileListTable 
-                  categoryName={selectedCategory ? selectedCategory.title : "All Files"} 
-                  categories={mockModuleCategories[activeModuleId] || []}
-                  files={selectedCategory ? (mockCategoryFiles[selectedCategory.id] || []) : mockLearningFiles} 
+                <FileListTable
+                  activeModuleId={activeModuleId}
+                  categoryId={selectedCategory?.id}
+                  categoryName={
+                    selectedCategory ? selectedCategory.title : "All Files"
+                  }
+                  categories={moduleCategories}
+                  files={categoryFiles}
+                  onRefresh={handleMaterialChanged}
                 />
               </>
             ) : (
@@ -229,7 +506,10 @@ const BatchRepLearningDashboard = () => {
         </div>
 
         {/* Full width Batch Rep Team */}
-        <BatchRepTeam />
+        <BatchRepTeam
+          degreeId={currentDegreeId}
+          currentUserId={currentUserId}
+        />
 
         <ModuleActionSuccessModal
           isOpen={showSuccessModal}

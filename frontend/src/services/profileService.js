@@ -76,9 +76,9 @@ export const changePassword = async (currentPassword, newPassword) => {
   }
 };
 
-export const deleteAccount = async () => {
+export const deleteAccount = async (password) => {
   try {
-    const response = await api.delete("/profiles");
+    const response = await api.delete("/profiles", { data: { password } });
     return response.data;
   } catch (error) {
     handleError(error);

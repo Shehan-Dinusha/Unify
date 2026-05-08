@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import MainLayout from "../../components/layout/MainLayout";
 import StudentDetailsForm from "../../components/auth/StudentDetailsForm";
@@ -10,9 +10,6 @@ import { getMyProfile, updateStudentProfile, updateBusinessProfile, updateClubPr
 import { getCurrentUser } from "../../services/authService";
 import { useToast } from "../../components/common/Toast";
 import { Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
-
-// Note: Names will be fetched from backend
 
 /* ─── Page ──────────────────────────────────────────────────────── */
 const EditProfilePage = () => {
@@ -51,15 +48,38 @@ const EditProfilePage = () => {
   }, []);
 
   const currentUser = getCurrentUser();
-  const user = {
-    name: profile?.clubName || profile?.displayName || profile?.businessName || currentUser?.name || "User",
-    role: (profile?.user?.role || currentUser?.role)?.toLowerCase() === "business" ? "business" : 
-          (profile?.user?.role || currentUser?.role)?.toLowerCase() === "club" ? "club" : "student",
-    displayRole: (profile?.user?.role || currentUser?.role) === "Club" ? "CLUBS & SOCIETIES" : 
-                 (profile?.user?.role || currentUser?.role) === "Business" ? "BUSINESS & ORGANIZATION" : 
-                 (profile?.user?.role || currentUser?.role)?.toUpperCase() || "STUDENT",
-    avatar: profile?.user?.avatar || profile?.logo || currentUser?.avatar,
-  };
+
+  // Derive sidebar user info reactively from profile state
+  const user = useMemo(() => {
+    const backendRole = (profile?.user?.role || currentUser?.role)?.toLowerCase();
+    
+    // Pick correct display name based on role
+    let displayName = currentUser?.name || "User";
+    if (backendRole === "club") {
+      displayName = profile?.clubName || currentUser?.name || "User";
+    } else if (backendRole === "business") {
+      displayName = profile?.displayName || profile?.businessName || currentUser?.name || "User";
+    } else if (backendRole === "student") {
+      displayName = profile ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || currentUser?.name : currentUser?.name || "User";
+    }
+
+    // Pick correct sidebar role key
+    let sidebarRole = "student";
+    if (backendRole === "club") sidebarRole = "club";
+    else if (backendRole === "business") sidebarRole = "business";
+
+    // Pick correct display role label
+    let displayRole = "STUDENT";
+    if (backendRole === "club") displayRole = "CLUBS & SOCIETIES";
+    else if (backendRole === "business") displayRole = "BUSINESS & ORGANIZATION";
+
+    return {
+      name: displayName,
+      role: sidebarRole,
+      displayRole,
+      avatar: profile?.user?.avatar || profile?.logo || currentUser?.avatar,
+    };
+  }, [profile, currentUser]);
 
   // Called when the form's save button is submitted
   const handleSave = async (formData) => {
