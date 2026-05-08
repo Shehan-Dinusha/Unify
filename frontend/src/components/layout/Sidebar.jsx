@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import LogoutModal from "../profile/modals/LogoutModal";
 import { getCurrentUser, logout } from "../../services/authService";
+import { useNotifications } from "../../context/NotificationContext";
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({
@@ -90,6 +91,7 @@ const UnifiedSidebar = ({
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  const { unreadCount } = useNotifications();
 
   // Get user from auth or fallback to prop
   const authUser = getCurrentUser();
@@ -101,7 +103,7 @@ const UnifiedSidebar = ({
       title: "Student Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
         { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
@@ -112,7 +114,7 @@ const UnifiedSidebar = ({
       title: "Batch Rep Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
         { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
@@ -162,7 +164,7 @@ const UnifiedSidebar = ({
       title: "Clubs & Societies Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/business/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
         { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
         {
           icon: LayoutDashboard,
@@ -175,21 +177,21 @@ const UnifiedSidebar = ({
       title: "Boarding Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/business/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
       ],
     },
     food_cafe_owner: {
       title: "Food & Cafe Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/business/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
       ],
     },
     self_employed: {
       title: "Services Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/business/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
       ],
     },
   };

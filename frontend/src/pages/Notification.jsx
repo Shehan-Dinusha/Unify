@@ -1,8 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { Search, CornerUpLeft, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Search, CornerUpLeft, Loader2, Heart, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import notificationService from "../services/notificationService";
+import { getCurrentUser } from "../services/authService";
+import { useNotifications } from "../context/NotificationContext";
+
+/**
+ * Returns a valid avatar URL.
+ * If the user has a real avatar, use it. Otherwise generate a ui-avatar matching the profile page.
+ */
+const getAvatarUrl = (avatar, name) => {
+  if (avatar) return avatar;
+  const seed = encodeURIComponent(name || "User");
+  return `https://ui-avatars.com/api/?name=${seed}&background=2666F1&color=fff`;
+};
 
 /* --- Helper Components --- */
 
@@ -16,17 +29,12 @@ const ReplyAvatar = ({ avatar }) => (
   </div>
 );
 
-// Stacked Avatars for Like
-const LikeAvatars = ({ avatars }) => (
-  <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
-    <div className="w-9 h-9 bg-white/10 rounded-full flex items-center justify-center relative">
-       {/* If we strictly follow the design, it's just two mini avatars overlapping inside the circle or just the circle */}
-       {avatars && avatars[0] && (
-         <img src={avatars[0]} className="absolute -top-1 -left-1 w-6 h-6 rounded-full border-2 border-dark-1 object-cover z-10" alt="Like 1"/>
-       )}
-       {avatars && avatars[1] && (
-         <img src={avatars[1]} className="absolute bottom-0 right-0 w-6 h-6 rounded-full border-2 border-dark-1 object-cover" alt="Like 2"/>
-       )}
+// Avatar for Like
+const LikeAvatar = ({ avatar }) => (
+  <div className="relative w-10 h-10 shrink-0">
+    <img src={avatar} alt="Like" className="w-full h-full rounded-full object-cover" />
+    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-state-error rounded-full border-2 border-dark-1 flex items-center justify-center">
+      <Heart size={10} className="text-white" fill="currentColor" />
     </div>
   </div>
 );
@@ -39,7 +47,7 @@ const MatchIcon = () => (
 );
 
 /* --- Main Notification Card --- */
-const NotificationCard = ({ notification, onMarkRead }) => {
+const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
   const { type, title, content, time, isUnread, avatar, avatars, image } = notification;
 
   // Render correct icon/avatar
@@ -48,7 +56,7 @@ const NotificationCard = ({ notification, onMarkRead }) => {
       case "reply":
         return <ReplyAvatar avatar={avatar} />;
       case "like":
-        return <LikeAvatars avatars={avatars} />;
+        return <LikeAvatar avatar={avatar} />;
       case "match":
         return <MatchIcon />;
       default:
@@ -58,7 +66,7 @@ const NotificationCard = ({ notification, onMarkRead }) => {
 
   // Format title (Make names blue for replies if we loosely split)
   const renderTitle = () => {
-    if (type === "reply") {
+    if (type === "reply" || type === "like") {
       const words = title.split(" ");
       if (words.length >= 2) {
         return (
@@ -75,6 +83,10 @@ const NotificationCard = ({ notification, onMarkRead }) => {
   const handleClick = () => {
     if (isUnread && onMarkRead) {
       onMarkRead(notification.id);
+    }
+    // Navigate to the NewsFeed and scroll to the related post
+    if (notification.referenceId && notification.referenceType && onNavigate) {
+      onNavigate(notification.referenceId, notification.referenceType);
     }
   };
 
@@ -118,13 +130,30 @@ const NotificationCard = ({ notification, onMarkRead }) => {
 };
 
 /* --- Page --- */
-const FILTERS = ["All", "Unread", "Lost & Found"];
+const BASE_FILTERS = ["All", "Unread"];
+const STUDENT_FILTERS = ["All", "Unread", "Lost & Found"];
 
 const Notification = () => {
+  const navigate = useNavigate();
+  const authUser = getCurrentUser();
+  const isStudent = authUser?.role === "Student";
+  const FILTERS = isStudent ? STUDENT_FILTERS : BASE_FILTERS;
+  const { refreshUnreadCount } = useNotifications();
+
   const [activeFilter, setActiveFilter] = useState("All");
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const searchInputRef = useRef(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearch]);
 
   // Map frontend filter labels to backend query params
   const getBackendFilter = (filter) => {
@@ -141,6 +170,8 @@ const Notification = () => {
   // Normalize backend notification shape to match what the UI components expect
   const normalizeNotification = (n) => {
     const typeLower = (n.type || "general").toLowerCase();
+    const actorName = n.actorName || n.actor?.name || "User";
+    const actorAvatar = getAvatarUrl(n.avatar || n.actor?.avatar, actorName);
     return {
       id: n.id,
       type: typeLower,
@@ -149,10 +180,11 @@ const Notification = () => {
       time: n.time,
       isUnread: n.isUnread,
       image: n.image || null,
-      // For reply notifications, use the actor's avatar
-      avatar: n.avatar || null,
-      // For like notifications, build an avatars array from the actor
-      avatars: typeLower === "like" && n.avatar ? [n.avatar] : undefined,
+      // Post reference — used for navigation on click
+      referenceId: n.referenceId || null,
+      referenceType: n.referenceType || null,
+      // For reply/like notifications, use the actor's real avatar (or Dicebear fallback)
+      avatar: actorAvatar,
     };
   };
 
@@ -173,7 +205,8 @@ const Notification = () => {
 
   useEffect(() => {
     fetchNotifications();
-  }, [activeFilter]);
+    refreshUnreadCount();
+  }, [activeFilter, refreshUnreadCount]);
 
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
@@ -188,18 +221,83 @@ const Notification = () => {
           n.id === notificationId ? { ...n, isUnread: false } : n
         )
       );
+      refreshUnreadCount(); // update the sidebar badge
     } catch (err) {
       // Silently fail — notification read status is non-critical
       console.error("Failed to mark notification as read:", err);
     }
   };
 
+  const handleNavigateToPost = (referenceId, referenceType) => {
+    navigate("/news-feed", {
+      state: {
+        targetPostId: referenceId,
+        targetPostType: referenceType,
+      },
+    });
+  };
+
   const unreadCount = notifications.filter((n) => n.isUnread).length;
 
-  const user = { name: "Alex Johnson", role: "student" };
+  const user = authUser ? { name: authUser.name, role: authUser.role || "student" } : { name: "Guest", role: "student" };
+
+  const filteredNotifications = searchQuery.trim()
+    ? notifications.filter(
+        (n) =>
+          n.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          n.content?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : notifications;
+
+  const headerRight = (
+    <div className="flex items-center gap-2">
+      {showSearch && (
+        <div className="flex items-center bg-dark-2 border border-primary-blue/30 rounded-full px-4 py-1.5 animate-in slide-in-from-right-4 duration-200">
+          <Search size={16} className="text-text-secondary mr-2 shrink-0" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search notifications..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="bg-transparent text-sm text-white placeholder-text-secondary outline-none w-48 sm:w-64"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="ml-1 text-text-secondary hover:text-white transition-colors"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      )}
+      <button
+        onClick={() => {
+          setShowSearch(!showSearch);
+          if (showSearch) setSearchQuery("");
+        }}
+        className={`p-2 flex items-center justify-center shrink-0 rounded-full transition-colors ${
+          showSearch
+            ? "bg-primary-blue/20 text-primary-blue"
+            : "hover:bg-white/5"
+        }`}
+      >
+        {showSearch ? (
+          <X size={20} className="text-primary-blue" />
+        ) : (
+          <img
+            src="/icon_search.svg"
+            alt="Search"
+            className="w-6 h-6 opacity-70"
+          />
+        )}
+      </button>
+    </div>
+  );
 
   return (
-    <MainLayout user={user} pageTitle="Notifications">
+    <MainLayout user={user} pageTitle="Notifications" headerRight={headerRight}>
       <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto px-2 sm:px-0">
         
         {/* Filter Tabs */}
@@ -248,12 +346,13 @@ const Notification = () => {
                 Try again
               </button>
             </div>
-          ) : notifications.length > 0 ? (
-            notifications.map((notification) => (
+          ) : filteredNotifications.length > 0 ? (
+            filteredNotifications.map((notification) => (
               <NotificationCard
                 key={notification.id}
                 notification={notification}
                 onMarkRead={handleMarkRead}
+                onNavigate={handleNavigateToPost}
               />
             ))
           ) : (
