@@ -18,6 +18,8 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import CategoryModal from "./CategoryModal";
+import * as learningService from "../../services/learningService";
+import { useToast } from "../common/Toast";
 
 // Helper to get actual icon component from name
 const getIconFromName = (name) => {
@@ -163,8 +165,11 @@ const CategoryGrid = ({
   onCategoryClick,
   initialCategories = [],
   selectedCategoryId,
+  activeModuleId,
+  onRefresh,
 }) => {
   const [categories, setCategories] = useState(initialCategories);
+  const toast = useToast();
 
   useEffect(() => {
     setCategories(initialCategories);
@@ -186,25 +191,37 @@ const CategoryGrid = ({
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await learningService.deleteModuleCategory(id);
+      onRefresh?.();
+    } catch (err) {
+      console.error("Failed to delete category", err);
+      toast.error("Error", "Failed to delete category");
+    }
   };
 
-  const handleSaveCategory = (categoryData) => {
-    if (modalMode === "create") {
-      setCategories((prev) => [...prev, { ...categoryData, fileCount: 0 }]);
-    } else {
-      setCategories((prev) =>
-        prev.map((c) =>
-          c.id === categoryData.id
-            ? {
-                ...c,
-                title: categoryData.title,
-                iconName: categoryData.iconName,
-              }
-            : c,
-        ),
-      );
+  const handleSaveCategory = async (categoryData) => {
+    try {
+      if (modalMode === "create") {
+        if (!activeModuleId) {
+          throw new Error("No active module selected");
+        }
+        await learningService.createModuleCategory(activeModuleId, {
+          title: categoryData.title,
+          iconName: categoryData.iconName,
+        });
+      } else {
+        await learningService.updateModuleCategory(categoryData.id, {
+          title: categoryData.title,
+          iconName: categoryData.iconName,
+        });
+      }
+      onRefresh?.();
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error("Failed to save category", err);
+      throw err;
     }
   };
 
