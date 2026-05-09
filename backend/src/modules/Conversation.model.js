@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
+import { encryptText, decryptText } from "../utils/encryption.util.js";
 
 const Conversation = sequelize.define(
   "Conversation",
@@ -22,8 +23,15 @@ const Conversation = sequelize.define(
       defaultValue: DataTypes.NOW,
     },
     lastMessageText: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true,
+      get() {
+        const rawValue = this.getDataValue("lastMessageText");
+        return rawValue ? decryptText(rawValue) : null;
+      },
+      set(value) {
+        this.setDataValue("lastMessageText", value ? encryptText(value) : null);
+      },
     },
     status: {
       type: DataTypes.ENUM("seen", "delivered"),
