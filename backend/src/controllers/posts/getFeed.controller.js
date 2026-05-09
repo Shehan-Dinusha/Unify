@@ -136,7 +136,7 @@ export const getFeed = async (req, res) => {
       );
     } else if (type === "services") {
       tasks.push(
-        fetchPosts(NormalPost, "services", "author", {
+        fetchPosts(NormalPost, "service", "author", {
           category: "SELF_EMPLOYED",
         }),
       );

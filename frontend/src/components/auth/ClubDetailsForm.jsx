@@ -68,6 +68,7 @@ const ClubDetailsForm = ({ onNext, initialData, loading }) => {
         <ImageUpload
           onChange={handleImageChange}
           label="Upload photo (Optional)"
+          value={initialData?.logo || initialData?.profileImage || initialData?.user?.avatar || null}
         />
 
         <form

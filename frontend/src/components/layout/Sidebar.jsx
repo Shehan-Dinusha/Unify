@@ -8,15 +8,12 @@ import {
   Store,
   GraduationCap,
   LayoutDashboard,
-  ShieldAlert,
-  UserX,
-  Zap,
-  UserCheck,
   ShoppingCart,
   ClipboardList,
-  LogOut,
 } from "lucide-react";
 import LogoutModal from "../profile/modals/LogoutModal";
+import { getCurrentUser, logout } from "../../services/authService";
+import { useNotifications } from "../../context/NotificationContext";
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({
@@ -85,7 +82,7 @@ const SidebarItem = ({
 };
 
 const UnifiedSidebar = ({
-  user,
+  user: propUser,
   verificationCount,
   isOpen,
   onClose,
@@ -94,6 +91,11 @@ const UnifiedSidebar = ({
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  const { unreadCount } = useNotifications();
+
+  // Get user from auth or fallback to prop
+  const authUser = getCurrentUser();
+  const user = authUser || propUser || { name: "Guest", role: "student" };
 
   // Configuration Map for different user roles
   const roleConfigs = {
@@ -101,7 +103,18 @@ const UnifiedSidebar = ({
       title: "Student Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
+        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
+        { icon: Store, label: "Marketplace", path: "/marketplace" },
+        { icon: GraduationCap, label: "Learning", path: "/student-learning" },
+      ],
+    },
+    batch_rep: {
+      title: "Batch Rep Dashboard",
+      links: [
+        { icon: Rss, label: "News Feed", path: "/news-feed" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
         { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
@@ -147,20 +160,11 @@ const UnifiedSidebar = ({
         },
       ],
     },
-    business: {
-      title: "Business Dashboard",
-      links: [
-        { icon: Rss, label: "News Feed", path: "/business/news-feed", childPaths: ["/business/boost-post"] },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
-        { icon: ShoppingCart, label: "My Products", path: "/my-products" },
-        { icon: ClipboardList, label: "Order History", path: "/order-history" },
-      ],
-    },
     club: {
       title: "Clubs & Societies Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
         { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
         {
           icon: LayoutDashboard,
@@ -172,31 +176,45 @@ const UnifiedSidebar = ({
     boarding_owner: {
       title: "Boarding Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/boarding-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
       ],
     },
     food_cafe_owner: {
       title: "Food & Cafe Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/food-cafe-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
       ],
     },
-    services_owner: {
+    self_employed: {
       title: "Services Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/services-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
       ],
     },
   };
 
-  const isClub = user.role?.toLowerCase() === "club_society" || user.role?.toLowerCase() === "club";
+  const isClub =
+    user.role?.toLowerCase() === "club_society" ||
+    user.role?.toLowerCase() === "club";
   const shouldDisableNav = sidebarDisabled && isClub;
 
+  let configKey = user.role?.toLowerCase();
+  if (configKey === "student" && user.isBatchRep) {
+    configKey = "batch_rep";
+  }
+  // Map generic business role to specific config if category exists
+  if (configKey === "business") {
+    const category = user.category || user.BusinessProfile?.category;
+    if (category === "BOARDING") configKey = "boarding_owner";
+    else if (category === "FOOD") configKey = "food_cafe_owner";
+    else if (category === "SELF_EMPLOYED") configKey = "self_employed";
+  }
+
   const currentConfig =
-    roleConfigs[user.role.toLowerCase()] || roleConfigs.student;
+    roleConfigs[configKey] || roleConfigs.student;
 
   const handleNavClick = (path) => {
     if (onClose) onClose();
@@ -272,7 +290,10 @@ const UnifiedSidebar = ({
           >
             <img
               className="w-10 h-10 rounded-full object-cover border border-white/20 group-hover:border-primary-blue transition-colors"
-              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=2666F1&color=fff`}
+              src={
+                user.avatar ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=2666F1&color=fff`
+              }
               alt="Avatar"
             />
             <div className="overflow-hidden">
@@ -280,7 +301,9 @@ const UnifiedSidebar = ({
                 {user.name}
               </h4>
               <p className="text-text-tertiary text-body-extra-small font-normal font-inter uppercase tracking-widest">
-                {user.displayRole || user.role}
+                {user.role?.toLowerCase() === "student"
+                  ? "Student"
+                  : user.displayRole || user.role}
               </p>
             </div>
           </div>
@@ -293,9 +316,7 @@ const UnifiedSidebar = ({
           onClose={() => setShowLogoutModal(false)}
           onConfirm={() => {
             setShowLogoutModal(false);
-            // Mock logout: clear tokens if any and redirect to login
-            console.log("Logging out...");
-            navigate("/login");
+            logout();
           }}
         />
       )}

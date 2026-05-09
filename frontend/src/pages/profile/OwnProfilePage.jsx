@@ -219,13 +219,14 @@ const OwnProfilePage = () => {
   // Closing modals goes back in history (closing the modal)
   const closeModal = () => navigate(-1);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (password) => {
     try {
-      await deleteAccount();
+      await deleteAccount(password);
       toast.success("Success", "Account deleted successfully");
       logout(); // Logout and redirect to login
     } catch (error) {
-      toast.error("Error", error.message || "Failed to delete account");
+      // Re-throw so the modal can show inline error
+      throw error;
     }
   };
 

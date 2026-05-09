@@ -85,6 +85,9 @@ export const uploadMaterialValidator = [
     .isInt()
     .withMessage("Module ID must be an integer"),
   body("title").notEmpty().withMessage("Material title is required"),
+  body("category")
+    .notEmpty()
+    .withMessage("A category is required to upload material"),
   body("attachmentType")
     .isIn(["Upload File", "Attach Link"])
     .withMessage(
@@ -136,6 +139,58 @@ export const getMaterialsByCategoryValidator = [
 ];
 
 export const getBatchRepsValidator = [
+  query("degreeId")
+    .notEmpty()
+    .withMessage("Degree ID is required")
+    .isInt()
+    .withMessage("Degree ID must be an integer"),
+];
+
+export const getSemesterVisibilityValidator = [
+  query("degreeId")
+    .notEmpty()
+    .withMessage("Degree ID is required")
+    .isInt()
+    .withMessage("Degree ID must be an integer"),
+  query("semesterId")
+    .notEmpty()
+    .withMessage("Semester ID is required")
+    .isInt()
+    .withMessage("Semester ID must be an integer"),
+];
+
+export const updateSemesterVisibilityValidator = [
+  param("degreeId")
+    .notEmpty()
+    .withMessage("Degree ID is required")
+    .isInt()
+    .withMessage("Degree ID must be an integer"),
+  param("semesterId")
+    .notEmpty()
+    .withMessage("Semester ID is required")
+    .isInt()
+    .withMessage("Semester ID must be an integer"),
+  body("visibleBatchIds")
+    .isArray()
+    .withMessage("visibleBatchIds must be an array"),
+  body("visibleBatchIds.*")
+    .isInt()
+    .withMessage("Each item in visibleBatchIds must be an integer"),
+  body("notifyReps")
+    .optional()
+    .isBoolean()
+    .withMessage("notifyReps must be a boolean"),
+];
+
+export const getStudentCourseStructureValidator = [
+  query("userId")
+    .notEmpty()
+    .withMessage("User ID is required")
+    .isInt()
+    .withMessage("User ID must be an integer"),
+];
+
+export const getBatchRepCourseStructureValidator = [
   query("degreeId")
     .notEmpty()
     .withMessage("Degree ID is required")

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSavedPosts } from "../../context/SavedPostsContext";
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../../services/authService";
 import {
   MapPin,
   Send,
@@ -14,9 +15,10 @@ import {
   MessageSquare,
 } from "lucide-react";
 import newsfeedService from "../../services/newsfeedService";
+import { formatTimeAgo } from "../../utils/formatters";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
-const CommentSection = ({ postComments, onAddComment, loading }) => {
+const CommentSection = ({ postComments, onAddComment, loading, currentUser }) => {
   const [text, setText] = useState("");
   const inputRef = useRef(null);
 
@@ -32,7 +34,7 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
     setText("");
     // Reset height if ref exists
     if (inputRef.current) {
-      inputRef.current.style.height = 'inherit';
+      inputRef.current.style.height = "inherit";
     }
   };
 
@@ -51,9 +53,9 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
           {postComments.map((c) => (
             <div key={c.id} className="flex gap-3 items-start">
               <img
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.user?.name || c.user || "User")}`}
+                src={c.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.user?.name || c.user || "User")}`}
                 alt={c.user?.name || c.user || "User"}
-                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5"
+                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5 object-cover"
               />
               <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
                 <div className="flex items-center gap-2 mb-1">
@@ -74,14 +76,11 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
       )}
 
       {/* Input */}
-      <form 
-        onSubmit={handleSubmit} 
-        className="flex items-end gap-2"
-      >
+      <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <img
-          src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me"
+          src={currentUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUser?.name || "Me")}`}
           alt="You"
-          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1"
+          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1 object-cover"
         />
         <div className="flex-1 flex items-end bg-white/5 border border-white/10 rounded-2xl px-4 py-2 gap-2 focus-within:border-primary-blue/50 transition-colors">
           <textarea
@@ -91,11 +90,11 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
             onChange={(e) => {
               setText(e.target.value);
               // Auto-resize
-              e.target.style.height = 'inherit';
+              e.target.style.height = "inherit";
               e.target.style.height = `${e.target.scrollHeight}px`;
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 handleSubmit(e);
               }
@@ -145,12 +144,19 @@ const PostCard = ({
   const [loadingComments, setLoadingComments] = useState(false);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [imgFailed, setImgFailed] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const currentUser = getCurrentUser();
+
+  const DESCRIPTION_LIMIT = 250;
+  const isLongDescription =
+    description && description.length > DESCRIPTION_LIMIT;
 
   const postType = post?.postType || "normal";
   const postId = post?.id;
 
   // Detect invalid/placeholder image values — show styled placeholder instead of broken icon
-  const isValidImage = image && !image.includes("placeholder-post") && !imgFailed;
+  const isValidImage =
+    image && !image.includes("placeholder-post") && !imgFailed;
   const showImage = isValidImage;
 
   const handleToggleLike = async () => {
@@ -196,8 +202,9 @@ const PostCard = ({
         const fetchedComments = (data.comments || []).map((c) => ({
           id: c.id,
           user: c.user?.name || "User",
+          avatar: c.user?.avatar,
           seed: c.user?.name || "User",
-          time: c.createdAt ? new Date(c.createdAt).toLocaleString() : "just now",
+          time: c.createdAt ? formatTimeAgo(c.createdAt) : "just now",
           text: c.content,
         }));
         setPostComments(fetchedComments);
@@ -214,8 +221,9 @@ const PostCard = ({
     // Optimistic add
     const tempComment = {
       id: `new-${Date.now()}`,
-      user: "You",
-      seed: "Me",
+      user: currentUser?.name || "You",
+      avatar: currentUser?.avatar,
+      seed: currentUser?.name || "Me",
       time: "just now",
       text,
     };
@@ -228,13 +236,14 @@ const PostCard = ({
       if (data.comment) {
         const realComment = {
           id: data.comment.id,
-          user: data.comment.user?.name || "You",
-          seed: data.comment.user?.name || "Me",
+          user: data.comment.user?.name || currentUser?.name || "You",
+          avatar: data.comment.user?.avatar || currentUser?.avatar,
+          seed: data.comment.user?.name || currentUser?.name || "Me",
           time: "just now",
           text: data.comment.content,
         };
         setPostComments((prev) =>
-          prev.map((c) => (c.id === tempComment.id ? realComment : c))
+          prev.map((c) => (c.id === tempComment.id ? realComment : c)),
         );
       }
     } catch (err) {
@@ -282,87 +291,18 @@ const PostCard = ({
       style={cardGlowStyle}
     >
       {/* Post Image */}
-      {image ? (
+      {showImage && (
         <div className="relative w-full bg-black/20 flex justify-center items-center min-h-[200px] max-h-[500px] overflow-hidden">
           <img
-            src={image || "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22400%22%20viewBox%3D%220%200%20800%20400%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fsvg%3E"}
+            src={image}
             alt="post"
-            className="w-full h-auto min-h-[200px] object-cover sm:object-contain max-h-[500px]"
+            className="w-full h-auto object-contain max-h-[500px]"
             loading="lazy"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22400%22%20viewBox%3D%220%200%20800%20400%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fsvg%3E";
+            onError={() => {
+              setImgFailed(true);
             }}
           />
         </div>
-      ) : (
-        /* No-image banner */
-        (() => {
-          const config = {
-            'club-event':   { icon: Calendar,      color: '#818cf8', glow: 'rgba(99,102,241,0.15)',  label: 'Club Event'      },
-            'club-product': { icon: ShoppingBag,   color: '#4ade80', glow: 'rgba(34,197,94,0.12)',   label: 'Marketplace'     },
-            'boarding':     { icon: Home,           color: '#c084fc', glow: 'rgba(168,85,247,0.15)',  label: 'Boarding'        },
-            'normal':       { icon: MessageSquare, color: '#fbbf24', glow: 'rgba(251,191,36,0.12)',  label: 'Community Post'  },
-          };
-          const cfg = config[postType] || config['normal'];
-          const Icon = cfg.icon;
-
-          return (
-            <div style={{
-              position: 'relative',
-              width: '100%',
-              height: '180px',
-              background: `linear-gradient(135deg, #0f172a 0%, #1e293b 100%)`,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '12px',
-              overflow: 'hidden',
-            }}>
-              {/* Radial colour glow */}
-              <div style={{
-                position: 'absolute', inset: 0, pointerEvents: 'none',
-                background: `radial-gradient(ellipse at 50% 50%, ${cfg.glow} 0%, transparent 70%)`,
-              }} />
-
-              {/* Icon bubble */}
-              <div style={{
-                position: 'relative', zIndex: 1,
-                padding: '16px',
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Icon size={36} color={cfg.color} strokeWidth={1.5} />
-              </div>
-
-              {/* Label */}
-              <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-                <p style={{
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  letterSpacing: '0.18em',
-                  textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,0.28)',
-                  marginBottom: '6px',
-                }}>
-                  {cfg.label}
-                </p>
-                <div style={{ height: '1px', width: '32px', background: 'rgba(255,255,255,0.10)', margin: '0 auto', borderRadius: '1px' }} />
-              </div>
-
-              {/* Corner accents */}
-              <div style={{ position: 'absolute', top: 10, left: 10, width: 32, height: 32,
-                borderTop: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px 0 0 0', pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: 10, right: 10, width: 32, height: 32,
-                borderBottom: '1px solid rgba(255,255,255,0.08)', borderRight: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '0 0 8px 0', pointerEvents: 'none' }} />
-            </div>
-          );
-        })()
       )}
 
       {/* Content Container */}
@@ -432,9 +372,23 @@ const PostCard = ({
         )}
 
         {/* Description */}
-        <p className="text-sm sm:text-body-medium text-[#94A3B8] leading-relaxed">
-          {description}
-        </p>
+        {description && (
+          <div className="text-sm sm:text-body-medium text-[#94A3B8] leading-relaxed">
+            <p className="inline">
+              {isLongDescription && !isExpanded
+                ? `${description.slice(0, DESCRIPTION_LIMIT).trimEnd()}...`
+                : description}
+            </p>
+            {isLongDescription && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="ml-1 text-primary-blue hover:text-primary-blue/80 text-sm font-medium transition-colors inline"
+              >
+                {isExpanded ? "See less" : "See more"}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Divider */}
         <div className="h-px bg-white/5 w-full my-2" />
@@ -511,6 +465,7 @@ const PostCard = ({
             postComments={postComments}
             onAddComment={handleAddComment}
             loading={loadingComments}
+            currentUser={currentUser}
           />
         )}
       </div>

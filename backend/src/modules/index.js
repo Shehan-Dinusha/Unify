@@ -583,6 +583,9 @@ User.hasMany(Notification, {
 });
 Notification.belongsTo(User, { foreignKey: "userId", as: "user" });
 
+// Actor (the user who triggered the notification)
+Notification.belongsTo(User, { foreignKey: "actorId", as: "actor" });
+
 // --- Student Reports ---
 User.hasMany(StudentReport, {
   foreignKey: "studentId",

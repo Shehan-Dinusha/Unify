@@ -6,24 +6,15 @@ import Input from "../common/Input";
 import Select from "../common/Select";
 import { X, Lock, Save, ChevronDown, Trash2 } from "lucide-react";
 
-const availableDegrees = [
-  "Bsc.(Hons) AI",
-  "BSc Data Science",
-  "BSc Artificial Intelligence",
-  "BSc Software Engineering",
-  "BSc Computer Systems",
-  "BSc Information Systems",
-  "BSc Cyber Security",
-];
-
-const primaryDegree = "Bsc.(Hons) IT";
-
 const EditModuleModal = ({
   isOpen,
   onClose,
   onSave,
   onDelete,
   initialData,
+  availableDegrees = [],
+  primaryDegree = "Bsc.(Hons) IT",
+  semesters = [],
 }) => {
   const [title, setTitle] = useState("");
   const [code, setCode] = useState("");
@@ -133,16 +124,7 @@ const EditModuleModal = ({
                 placeholder="Select..."
                 value={semester}
                 onChange={(e) => setSemester(e.target.value)}
-                options={[
-                  { label: "Semester 1", value: "Semester 1" },
-                  { label: "Semester 2", value: "Semester 2" },
-                  { label: "Semester 3", value: "Semester 3" },
-                  { label: "Semester 4", value: "Semester 4" },
-                  { label: "Semester 5", value: "Semester 5" },
-                  { label: "Semester 6", value: "Semester 6" },
-                  { label: "Semester 7", value: "Semester 7" },
-                  { label: "Semester 8", value: "Semester 8" },
-                ]}
+                options={semesters.map(sem => ({ label: sem.name, value: sem.name }))}
               />
             </div>
           </div>

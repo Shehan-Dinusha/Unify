@@ -1,4 +1,5 @@
 import { NormalPost, ClubProductPost, ClubEventPost, Boarding, Comment, User } from "../../modules/index.js";
+import { notifyComment } from "../../services/notification.service.js";
 
 const getModelConfig = (type) => {
   switch (type) {
@@ -55,6 +56,21 @@ export const addComment = async (req, res) => {
         },
       ],
     });
+
+    // Send notification to the post owner (non-blocking)
+    const postOwnerId = post.authorId || post.hostId;
+    if (postOwnerId) {
+      const actor = await User.findByPk(userId, { attributes: ["name"] });
+      notifyComment({
+        postOwnerId,
+        actorId: userId,
+        actorName: actor?.name || "Someone",
+        postId: parseInt(id, 10),
+        postType: type,
+        commentText: content.trim(),
+        commentId: comment.id,
+      });
+    }
 
     return res.status(201).json({ success: true, comment: commentWithUser });
   } catch (error) {
