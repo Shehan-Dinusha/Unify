@@ -5,6 +5,7 @@ import {
   Faculty,
   Degree,
   Batch,
+  VerificationRequest,
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
@@ -117,7 +118,18 @@ export const getMyStudentProfile = async (req, res) => {
     const profile = await StudentProfile.findOne({
       where: { userId: req.user.id },
       include: [
-        { model: User, as: "user", attributes: ["name", "email", "avatar", "role"] },
+        {
+          model: User,
+          as: "user",
+          attributes: ["name", "email", "avatar", "role"],
+          include: [
+            {
+              model: VerificationRequest,
+              as: "verificationRequest",
+              attributes: ["status", "adminMessage"],
+            },
+          ],
+        },
         { model: University, as: "university", attributes: ["name"] },
         { model: Faculty, as: "faculty", attributes: ["name"] },
         { model: Degree, as: "degree", attributes: ["name"] },
@@ -132,6 +144,29 @@ export const getMyStudentProfile = async (req, res) => {
     // Convert S3 key to presigned URL or UI-Avatar fallback
     const profileJson = profile.toJSON();
     profileJson.user.avatar = await resolveAvatarUrl(profileJson.user?.avatar, profileJson.user?.name || "User");
+
+    // Surface batch rep verification status at top level
+    const vReq = profileJson.user?.verificationRequest;
+    if (profileJson.isBatchRep) {
+      profileJson.repVerificationStatus = "APPROVED";
+    } else if (vReq) {
+      profileJson.repVerificationStatus = vReq.status === "DECLINED" ? "REJECTED" : vReq.status;
+    } else {
+      const removedRequest = await VerificationRequest.findOne({
+        where: { userId: req.user.id, status: "DECLINED" },
+        paranoid: false,
+        order: [["deletedAt", "DESC"]],
+      });
+      if (removedRequest?.deletedAt) {
+        profileJson.repVerificationStatus = "REMOVED";
+        profileJson.repVerificationReason = removedRequest.adminMessage || null;
+      } else {
+        profileJson.repVerificationStatus = "NOT_SUBMITTED";
+      }
+    }
+    if (!profileJson.repVerificationReason) {
+      profileJson.repVerificationReason = vReq?.adminMessage || null;
+    }
 
     return sendResponse(
       res,

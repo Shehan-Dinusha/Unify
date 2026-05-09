@@ -125,9 +125,21 @@ export const getMyClubProfile = async (req, res) => {
     } else if (vReq) {
       profileJson.verificationStatus = vReq.status === "DECLINED" ? "REJECTED" : vReq.status;
     } else {
-      profileJson.verificationStatus = "NOT_SUBMITTED";
+      const removedRequest = await VerificationRequest.findOne({
+        where: { userId: req.user.id, status: "DECLINED" },
+        paranoid: false,
+        order: [["deletedAt", "DESC"]],
+      });
+      if (removedRequest?.deletedAt) {
+        profileJson.verificationStatus = "REMOVED";
+        profileJson.verificationReason = removedRequest.adminMessage || null;
+      } else {
+        profileJson.verificationStatus = "NOT_SUBMITTED";
+      }
     }
-    profileJson.verificationReason = vReq?.adminMessage || null;
+    if (!profileJson.verificationReason) {
+      profileJson.verificationReason = vReq?.adminMessage || null;
+    }
 
     return sendResponse(res, 200, true, "Club profile fetched successfully", profileJson);
   } catch (error) {

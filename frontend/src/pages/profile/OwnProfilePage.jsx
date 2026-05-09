@@ -117,6 +117,7 @@ const OwnProfilePage = () => {
   // State to track verification status
   const [verificationStatus, setVerificationStatus] = useState("NOT_SUBMITTED");
   const [repStatus, setRepStatus] = useState("NOT_SUBMITTED");
+  const [repReason, setRepReason] = useState("");
 
   const fetchProfile = async () => {
     try {
@@ -148,7 +149,8 @@ const OwnProfilePage = () => {
           memberSince: new Date(data.createdAt).getFullYear().toString(),
           ...data
         };
-        setRepStatus(data.isBatchRep ? "APPROVED" : "NOT_SUBMITTED"); // Simplified logic
+        setRepStatus(data.repVerificationStatus || "NOT_SUBMITTED");
+        if (data.repVerificationReason) setRepReason(data.repVerificationReason);
       } else if (backendRole === "club") {
         mappedProfile = {
           id: data.id,
@@ -200,10 +202,6 @@ const OwnProfilePage = () => {
   const [verificationReason, setVerificationReason] = useState(
     "Verification rejected. Please resubmit documents."
   );
-
-  const repReason =
-    localStorage.getItem("unify_student_rep_reason") ||
-    "Verification rejected. Please resubmit documents.";
 
 
   // URL-based Modal state
