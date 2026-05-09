@@ -6,11 +6,7 @@ export const toggleOwnerLike = async (req, res, next) => {
   try {
     const { reviewId } = req.params;
 
-    // Fallback to 3 for testing if req.user is not yet defined
-    const currentUserId = req.user?.id || 3;
-
-
-
+    const currentUserId = req.user.id;
     const review = await Review.findByPk(reviewId);
 
     if (!review) {

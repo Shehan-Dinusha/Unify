@@ -8,26 +8,33 @@ export const submitReview = async (req, res, next) => {
   try {
     const { targetId, rating, review: content, isAnonymous } = req.body;
 
-    // Fallback to 1 for testing if req.user is not yet defined
-    const reviewerId = req.user?.id || req.body.reviewerId || 1;
-
-
-
-    // Check if reviewer and target exist
+    const reviewerId = req.user.id; // Check if reviewer and target exist
     const reviewerExists = await User.findByPk(reviewerId);
     if (!reviewerExists) {
       return sendResponse(res, 404, false, "Reviewer not found.");
     }
 
     if (reviewerExists.role !== "Student" && reviewerExists.role !== "Club") {
-      return sendResponse(res, 403, false, "Only Students and Clubs can submit reviews.");
+      return sendResponse(
+        res,
+        403,
+        false,
+        "Only Students and Clubs can submit reviews.",
+      );
     }
 
     // If the reviewer is a Club, they must be verified first
     if (reviewerExists.role === "Club") {
-      const clubProfile = await ClubProfile.findOne({ where: { userId: reviewerId } });
+      const clubProfile = await ClubProfile.findOne({
+        where: { userId: reviewerId },
+      });
       if (!clubProfile || !clubProfile.isVerified) {
-        return sendResponse(res, 403, false, "Only verified Clubs can submit reviews.");
+        return sendResponse(
+          res,
+          403,
+          false,
+          "Only verified Clubs can submit reviews.",
+        );
       }
     }
 
@@ -37,7 +44,12 @@ export const submitReview = async (req, res, next) => {
     }
 
     if (targetExists.role !== "Business") {
-      return sendResponse(res, 400, false, "Reviews can only be given to Business accounts.");
+      return sendResponse(
+        res,
+        400,
+        false,
+        "Reviews can only be given to Business accounts.",
+      );
     }
 
     // check if user has already submitted a review for this target

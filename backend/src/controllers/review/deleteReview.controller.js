@@ -6,11 +6,7 @@ export const deleteReview = async (req, res, next) => {
   try {
     const reviewId = req.params.id;
 
-    // Fallback to 1 for testing if req.user is not yet defined
-    const reviewerId = req.user?.id || req.body.reviewerId || 1;
-
-
-
+    const reviewerId = req.user.id;
     const existingReview = await Review.findByPk(reviewId);
 
     if (!existingReview) {
@@ -23,7 +19,7 @@ export const deleteReview = async (req, res, next) => {
         res,
         403,
         false,
-        "Unauthorized: You can only delete your own reviews."
+        "Unauthorized: You can only delete your own reviews.",
       );
     }
 
