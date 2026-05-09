@@ -12,6 +12,7 @@ import {
   Download,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import NotFound from "./NotFound";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import FileUpload from "../components/common/FileUpload";
@@ -24,6 +25,7 @@ import {
 
 const ClubVerification = () => {
   const navigate = useNavigate();
+  const [errorStatus, setErrorStatus] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState("idle");
   const [submittedFile, setSubmittedFile] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -48,6 +50,10 @@ const ClubVerification = () => {
       setLoading(true);
       const response = await verificationService.getStatus();
       if (response.success && response.data.hasRequest) {
+        if (response.data.requestedRole !== "Club") {
+          setErrorStatus(403);
+          return;
+        }
         setSubmissionStatus(response.data.status);
         setDeclineReason(response.data.declineReason || "");
         setApprovedRole(response.data.requestedRole || response.data.role || "");
@@ -63,6 +69,10 @@ const ClubVerification = () => {
       }
     } catch (error) {
       console.error("Error fetching status:", error);
+      setErrorMessage(
+        error.response?.data?.message || "Failed to load verification status.",
+      );
+      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }
@@ -184,6 +194,10 @@ const ClubVerification = () => {
   };
 
   const config = getStatusConfig();
+
+  if (errorStatus) {
+    return <NotFound />;
+  }
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 to-slate-800 relative overflow-hidden flex items-center justify-center font-inter p-4">

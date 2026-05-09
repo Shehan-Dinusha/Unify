@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
 
 export const deleteVerificationRequest = async (req, res, next) => {
   try {
-    const userId = req.body.userId || 1;
+    const userId = req.user.id;
 
     const existingRequest = await VerificationRequest.findOne({
       where: { userId },

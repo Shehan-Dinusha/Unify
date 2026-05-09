@@ -8,6 +8,23 @@ export const submitVerificationRequest = async (req, res, next) => {
     const userId = req.user.id;
     const requestedRole = req.body.requestedRole || "Batch Rep";
 
+    if (requestedRole === "Club" && req.user.role !== "Club") {
+      return sendResponse(
+        res,
+        403,
+        false,
+        "Only Club accounts can submit club verification requests.",
+      );
+    }
+    if (requestedRole === "Batch Rep" && req.user.role !== "Student") {
+      return sendResponse(
+        res,
+        403,
+        false,
+        "Only Students can submit batch rep verification requests.",
+      );
+    }
+
     if (!req.file) {
       return sendResponse(
         res,

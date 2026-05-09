@@ -57,6 +57,10 @@ const BatchRepVerification = () => {
       setLoading(true);
       const response = await verificationService.getStatus();
       if (response.success && response.data.hasRequest) {
+        if (response.data.requestedRole !== "Batch Rep") {
+          setSubmissionStatus("idle");
+          return;
+        }
         setSubmissionStatus(response.data.status);
         setDeclineReason(response.data.declineReason || "");
         setApprovedRole(response.data.requestedRole || response.data.role || "");
@@ -71,6 +75,10 @@ const BatchRepVerification = () => {
       }
     } catch (error) {
       console.error("Error fetching status:", error);
+      setErrorMessage(
+        error.response?.data?.message || "Failed to load verification status.",
+      );
+      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }

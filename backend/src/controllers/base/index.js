@@ -7,3 +7,4 @@ export { seedReports } from "./seedReports.controller.js";
 export { seedSuspensions } from "./seedSuspensions.controller.js";
 export { seedLearningData } from "./seedLearningData.controller.js";
 export { seedAllUserTypes } from "./seed_all_user_types.js";
+export { seedAdmin } from "./seedAdmin.controller.js";
