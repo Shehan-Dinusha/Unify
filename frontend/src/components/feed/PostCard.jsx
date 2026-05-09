@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSavedPosts } from "../../context/SavedPostsContext";
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../../services/authService";
 import {
   MapPin,
   Send,
@@ -17,7 +18,7 @@ import newsfeedService from "../../services/newsfeedService";
 import { formatTimeAgo } from "../../utils/formatters";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
-const CommentSection = ({ postComments, onAddComment, loading }) => {
+const CommentSection = ({ postComments, onAddComment, loading, currentUser }) => {
   const [text, setText] = useState("");
   const inputRef = useRef(null);
 
@@ -52,9 +53,9 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
           {postComments.map((c) => (
             <div key={c.id} className="flex gap-3 items-start">
               <img
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.user?.name || c.user || "User")}`}
+                src={c.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.user?.name || c.user || "User")}`}
                 alt={c.user?.name || c.user || "User"}
-                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5"
+                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5 object-cover"
               />
               <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
                 <div className="flex items-center gap-2 mb-1">
@@ -77,9 +78,9 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
       {/* Input */}
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <img
-          src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me"
+          src={currentUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUser?.name || "Me")}`}
           alt="You"
-          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1"
+          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1 object-cover"
         />
         <div className="flex-1 flex items-end bg-white/5 border border-white/10 rounded-2xl px-4 py-2 gap-2 focus-within:border-primary-blue/50 transition-colors">
           <textarea
@@ -129,6 +130,7 @@ const PostCard = ({
   initialIsLiked = false,
   initialIsSaved = false,
   isPromoted,
+  boostMeta,
   showBoost = false,
 }) => {
   const { toggleSavePost, isPostSaved } = useSavedPosts();
@@ -143,6 +145,7 @@ const PostCard = ({
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [imgFailed, setImgFailed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const currentUser = getCurrentUser();
 
   const DESCRIPTION_LIMIT = 250;
   const isLongDescription =
@@ -199,6 +202,7 @@ const PostCard = ({
         const fetchedComments = (data.comments || []).map((c) => ({
           id: c.id,
           user: c.user?.name || "User",
+          avatar: c.user?.avatar,
           seed: c.user?.name || "User",
           time: c.createdAt ? formatTimeAgo(c.createdAt) : "just now",
           text: c.content,
@@ -217,8 +221,9 @@ const PostCard = ({
     // Optimistic add
     const tempComment = {
       id: `new-${Date.now()}`,
-      user: "You",
-      seed: "Me",
+      user: currentUser?.name || "You",
+      avatar: currentUser?.avatar,
+      seed: currentUser?.name || "Me",
       time: "just now",
       text,
     };
@@ -231,8 +236,9 @@ const PostCard = ({
       if (data.comment) {
         const realComment = {
           id: data.comment.id,
-          user: data.comment.user?.name || "You",
-          seed: data.comment.user?.name || "Me",
+          user: data.comment.user?.name || currentUser?.name || "You",
+          avatar: data.comment.user?.avatar || currentUser?.avatar,
+          seed: data.comment.user?.name || currentUser?.name || "Me",
           time: "just now",
           text: data.comment.content,
         };
@@ -248,17 +254,53 @@ const PostCard = ({
     }
   };
 
+  // Determine boost visual style from boostMeta
+  const highlightStyle = boostMeta?.highlightStyle || "none";
+
+  // Build card border classes based on highlightStyle
+  const cardBorderClass = (() => {
+    if (!isPromoted || !boostMeta) return "border border-white/5";
+    switch (highlightStyle) {
+      case "gold":
+        return "border-2 border-yellow-400/60";
+      case "blue":
+        return "border-2 border-blue-500/50";
+      case "subtle":
+        return "border border-white/15";
+      default:
+        return "border border-white/5";
+    }
+  })();
+
+  // Glow shadow for premium tiers (applied via inline style to avoid Babel parse issues)
+  const cardGlowStyle = (() => {
+    if (!isPromoted || !boostMeta) return {};
+    switch (highlightStyle) {
+      case "gold":
+        return { boxShadow: "0 0 20px rgba(251, 191, 36, 0.15)" };
+      case "blue":
+        return { boxShadow: "0 0 16px rgba(59, 130, 246, 0.12)" };
+      default:
+        return {};
+    }
+  })();
+
   return (
-    <div className="w-full bg-[#1A2634] rounded-[24px] overflow-hidden border border-white/5 font-inter text-white">
-      {/* Post Image — only rendered when a valid image exists */}
+    <div
+      className={"w-full bg-[#1A2634] rounded-[24px] overflow-hidden font-inter text-white transition-all duration-300 " + cardBorderClass}
+      style={cardGlowStyle}
+    >
+      {/* Post Image */}
       {showImage && (
-        <div className="relative w-full bg-black/20 flex justify-center items-center max-h-[500px] overflow-hidden">
+        <div className="relative w-full bg-black/20 flex justify-center items-center min-h-[200px] max-h-[500px] overflow-hidden">
           <img
             src={image}
             alt="post"
             className="w-full h-auto object-contain max-h-[500px]"
             loading="lazy"
-            onError={() => setImgFailed(true)}
+            onError={() => {
+              setImgFailed(true);
+            }}
           />
         </div>
       )}
@@ -282,9 +324,35 @@ const PostCard = ({
           </div>
 
           {isPromoted && (
-            <span className="text-[11px] font-bold bg-[#FBBF24]/10 text-[#FBBF24] px-3 py-1 rounded-full">
-              Promoted
-            </span>
+            (() => {
+              const style = boostMeta?.highlightStyle || "none";
+              switch (style) {
+                case "gold":
+                  return (
+                    <span className="text-[11px] font-bold bg-gradient-to-r from-[#FBBF24]/20 to-[#F59E0B]/20 text-[#FBBF24] px-3 py-1 rounded-full border border-[#FBBF24]/30 flex items-center gap-1">
+                      ⚡ Featured
+                    </span>
+                  );
+                case "blue":
+                  return (
+                    <span className="text-[11px] font-bold bg-[#3B82F6]/15 text-[#60A5FA] px-3 py-1 rounded-full border border-[#3B82F6]/30">
+                      Promoted
+                    </span>
+                  );
+                case "subtle":
+                  return (
+                    <span className="text-[10px] font-medium text-[#94A3B8]/70 tracking-wider uppercase">
+                      Sponsored
+                    </span>
+                  );
+                default:
+                  return (
+                    <span className="text-[11px] font-bold bg-[#FBBF24]/10 text-[#FBBF24] px-3 py-1 rounded-full">
+                      Promoted
+                    </span>
+                  );
+              }
+            })()
           )}
         </div>
 
@@ -397,6 +465,7 @@ const PostCard = ({
             postComments={postComments}
             onAddComment={handleAddComment}
             loading={loadingComments}
+            currentUser={currentUser}
           />
         )}
       </div>

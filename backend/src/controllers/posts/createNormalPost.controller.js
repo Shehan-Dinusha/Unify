@@ -5,25 +5,22 @@ const getUploadedFileUrls = (files) => {
   return files.map((file) => file.location || `/uploads/verifications/${file.filename}`);
 };
 
-export const createNormalPost = async (req, res) => {
-  try {
-    const { description, postType, category: bodyCategory } = req.body;
+  export const createNormalPost = async (req, res) => {
+    try {
+      const { description, postType, category: bodyCategory } = req.body;
 
-    // Determine category and hardcoded userId based on postType
-    // userId=1: Club Owner, userId=3: Food Owner, userId=4: Self Employed Pro
-    let category = bodyCategory || "CLUB";
-    let userId = 1; // default: club owner
+      // Determine category based on postType
+      let category = bodyCategory || "CLUB";
+      // Use the authenticated user ID; fallback to 1 for safety in dev
+      const userId = req.user?.id || 1;
 
-    if (postType === "food-cafe") {
-      category = "FOOD";
-      userId = 3; // Food Owner (hardcoded for development)
-    } else if (postType === "service") {
-      category = "SELF_EMPLOYED";
-      userId = 4; // Self Employed Pro (hardcoded for development)
-    } else if (postType === "club") {
-      category = "CLUB";
-      userId = 1; // Club Owner (hardcoded for development)
-    }
+      if (postType === "food-cafe") {
+        category = "FOOD";
+      } else if (postType === "service") {
+        category = "SELF_EMPLOYED";
+      } else if (postType === "club") {
+        category = "CLUB";
+      }
 
 
 

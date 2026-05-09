@@ -28,6 +28,8 @@ export const createBoardingPost = async (req, res) => {
       roomType: req.body.roomType,
       amenities,
       images,
+      latitude: req.body.latitude ? parseFloat(req.body.latitude) : null,
+      longitude: req.body.longitude ? parseFloat(req.body.longitude) : null,
     });
 
     res.status(201).json({ success: true, post });
