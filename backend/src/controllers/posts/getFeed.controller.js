@@ -1,5 +1,6 @@
 import { NormalPost, ClubProductPost, ClubEventPost, Boarding, User, Comment, PostLike, SavedItem } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
+import boostService from "../../services/boost.service.js";
 
 const resolveImageUrl = async (img) => {
   if (!img) return img;
@@ -43,11 +44,45 @@ const resolvePostImages = async (post) => {
   return resolved;
 };
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════
+ * getFeed — The BOOST-AWARE Feed Controller
+ * ═══════════════════════════════════════════════════════════════════════
+ *
+ * HOW THE 6 BOOST FEATURES WORK HERE:
+ *
+ * ┌─────────────────────────┬──────────────────────────────────────────┐
+ * │ boostConfig Parameter   │ What it does in this controller          │
+ * ├─────────────────────────┼──────────────────────────────────────────┤
+ * │ feedPriority (1-10)     │ Boosted posts sort to the TOP of feed.  │
+ * │                         │ Lower number = higher position.          │
+ * │                         │ feedPriority=1 always shows first.      │
+ * ├─────────────────────────┼──────────────────────────────────────────┤
+ * │ visibilityMultiplier    │ The post can appear MULTIPLE times in   │
+ * │ (1-5)                   │ the feed. 2x = post shows twice, once   │
+ * │                         │ at its priority slot and again lower.   │
+ * ├─────────────────────────┼──────────────────────────────────────────┤
+ * │ highlightStyle          │ Injected into the post response so the  │
+ * │ ("none"|"subtle"|       │ frontend PostCard renders a matching    │
+ * │  "blue"|"gold")         │ border/glow/badge style.                │
+ * ├─────────────────────────┼──────────────────────────────────────────┤
+ * │ crossCategoryReach      │ If true, the post appears in EVERY      │
+ * │ (boolean)               │ category feed (club, boarding, etc.)    │
+ * │                         │ even if it belongs to a different one.  │
+ * ├─────────────────────────┼──────────────────────────────────────────┤
+ * │ analyticsLevel          │ Passed through to frontend. "basic"     │
+ * │ ("none"|"basic"|        │ shows impression count. "detailed"      │
+ * │  "detailed")            │ shows impressions + clicks + CTR.       │
+ * └─────────────────────────┴──────────────────────────────────────────┘
+ */
 export const getFeed = async (req, res) => {
   try {
     const { type = "all" } = req.query;
     const userId = req.user?.id || 1; // Default to 1 for development
-    const limit = 20;
+
+    // ═══════ STEP 1: Fetch the active boost map from DB ═══════
+    // Returns Map<postId, boostMeta> for all posts with active boosts
+    const boostMap = await boostService.getActiveBoostsForFeed();
 
     // Helper to fetch posts and inject type
     const fetchPosts = async (
@@ -120,24 +155,151 @@ export const getFeed = async (req, res) => {
     // Combine results from different models
     let combinedFeed = results.flat();
 
-    // Sort accordingly
+    // ═══════ STEP 2: FEATURE — crossCategoryReach ═══════
+    // If a boosted post has crossCategoryReach=true and we're filtering
+    // by a specific category, INJECT that post into this feed too.
+    if (type !== "all" && type !== "popular") {
+      const existingIds = new Set(combinedFeed.map((p) => `${p.postType}-${p.id}`));
+
+      for (const [postId, boostMeta] of boostMap.entries()) {
+        if (boostMeta.crossCategoryReach) {
+          // Check if this post is already in the current feed
+          // We need to find it from any model
+          const key1 = `normal-${postId}`;
+          const key2 = `club-product-${postId}`;
+          const key3 = `club-event-${postId}`;
+          const key4 = `boarding-${postId}`;
+
+          if (!existingIds.has(key1) && !existingIds.has(key2) && !existingIds.has(key3) && !existingIds.has(key4)) {
+            // This boosted post isn't in the current category feed — inject it
+            // Try to find the post from any model
+            const models = [
+              { Model: NormalPost, type: "normal", authorKey: "author" },
+              { Model: ClubProductPost, type: "club-product", authorKey: "author" },
+              { Model: ClubEventPost, type: "club-event", authorKey: "author" },
+              { Model: Boarding, type: "boarding", authorKey: "host" },
+            ];
+
+            for (const { Model, type: pType, authorKey } of models) {
+              const post = await Model.findOne({
+                where: { id: postId },
+                include: [
+                  {
+                    model: User,
+                    as: authorKey,
+                    attributes: ["id", "name", "email", "avatar", "role"],
+                  },
+                ],
+                raw: true,
+                nest: true,
+              });
+
+              if (post) {
+                combinedFeed.push({
+                  ...post,
+                  postType: pType,
+                  author: post[authorKey],
+                  _crossCategoryInjected: true,
+                });
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // ═══════ STEP 3: FEATURE — feedPriority sorting ═══════
+    // Split feed into boosted posts and regular posts
+    const boostedPosts = [];
+    const regularPosts = [];
+
+    for (const post of combinedFeed) {
+      const boostMeta = boostMap.get(post.id);
+      if (boostMeta) {
+        boostedPosts.push({ ...post, _boostMeta: boostMeta });
+      } else {
+        regularPosts.push(post);
+      }
+    }
+
+    // Sort boosted posts by feedPriority (lower = higher in feed)
+    boostedPosts.sort((a, b) => {
+      const priorityDiff = (a._boostMeta.feedPriority || 10) - (b._boostMeta.feedPriority || 10);
+      if (priorityDiff !== 0) return priorityDiff;
+      // Same priority? Higher price wins
+      return (b._boostMeta.packagePrice || 0) - (a._boostMeta.packagePrice || 0);
+    });
+
+    // Sort regular posts normally
     if (type === "popular") {
-      combinedFeed.sort((a, b) => {
+      regularPosts.sort((a, b) => {
         const likesDiff = (b.likesCount || 0) - (a.likesCount || 0);
         if (likesDiff !== 0) return likesDiff;
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
-      combinedFeed = combinedFeed.slice(0, 7);
     } else {
-      combinedFeed.sort(
+      regularPosts.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
     }
 
-    // Resolve S3 image keys/private URLs to presigned URLs
-    const resolvedFeed = await Promise.all(combinedFeed.map(resolvePostImages));
+    // ═══════ STEP 3.5: FEATURE — autoRefreshHours ═══════
+    // If a boosted post has autoRefreshHours > 0, treat its createdAt as
+    // the most recent refresh cycle. This makes it appear as "fresh" content
+    // even if the original post is days old — like OLX/Facebook ad bumping.
+    const now = new Date();
+    for (const post of boostedPosts) {
+      const refreshHours = post._boostMeta.autoRefreshHours || 0;
+      if (refreshHours > 0) {
+        const purchaseDate = new Date(post._boostMeta.purchaseDate || post.createdAt);
+        const hoursSincePurchase = (now - purchaseDate) / (1000 * 60 * 60);
+        const refreshCycles = Math.floor(hoursSincePurchase / refreshHours);
+        // Set createdAt to the latest refresh point (so it sorts as recent)
+        const latestRefresh = new Date(purchaseDate.getTime() + refreshCycles * refreshHours * 60 * 60 * 1000);
+        post.createdAt = latestRefresh > purchaseDate ? latestRefresh.toISOString() : post.createdAt;
+      }
+    }
 
-    // Inject interaction state (comments count, isLiked, isSaved)
+    // ═══════ STEP 4: FEATURE — visibilityMultiplier ═══════
+    // If a boosted post has visibilityMultiplier > 1, insert duplicate
+    // entries at calculated positions deeper in the feed.
+    const boostDuplicates = [];
+    for (const post of boostedPosts) {
+      const multiplier = post._boostMeta.visibilityMultiplier || 1;
+      if (multiplier > 1) {
+        // Insert extra copies spaced evenly through the regular feed
+        for (let i = 1; i < multiplier; i++) {
+          boostDuplicates.push({
+            ...post,
+            _duplicateSlot: i, // Which duplicate this is (for position calc)
+          });
+        }
+      }
+    }
+
+    // Build the final feed: boosted first, then regular posts with duplicates inserted
+    let finalFeed = [...boostedPosts, ...regularPosts];
+
+    // Insert duplicates at spaced positions within the regular section
+    for (const dup of boostDuplicates) {
+      // Space them evenly: slot 1 goes at ~33% through, slot 2 at ~66%, etc.
+      const insertIndex = Math.min(
+        boostedPosts.length + Math.floor((regularPosts.length / (dup._boostMeta.visibilityMultiplier + 1)) * (dup._duplicateSlot + 1)),
+        finalFeed.length
+      );
+      finalFeed.splice(insertIndex, 0, dup);
+    }
+
+    // Trim to limit
+    if (type === "popular") {
+      finalFeed = finalFeed.slice(0, 7);
+    }
+
+    // Resolve S3 image keys/private URLs to presigned URLs
+    const resolvedFeed = await Promise.all(finalFeed.map(resolvePostImages));
+
+    // ═══════ STEP 5: Inject boostMeta + interactions into each post ═══════
     const feedWithInteractions = await Promise.all(
       resolvedFeed.map(async (post) => {
         const [commentsCount, likeRecord, saveRecord] = await Promise.all([
@@ -146,11 +308,29 @@ export const getFeed = async (req, res) => {
           SavedItem.findOne({ where: { userId, postId: post.id, postType: post.postType } }),
         ]);
 
+        const boostMeta = boostMap.get(post.id);
+
         return {
           ...post,
           commentsCount,
           isLiked: !!likeRecord,
           isSaved: !!saveRecord,
+          // ═══════ FEATURE — highlightStyle + analyticsLevel ═══════
+          // These are passed to the frontend PostCard so it knows how to render
+          isPromoted: !!boostMeta,
+          boostMeta: boostMeta
+            ? {
+                packageName: boostMeta.packageName,
+                packageBadge: boostMeta.packageBadge,
+                highlightStyle: boostMeta.highlightStyle,
+                analyticsAccess: boostMeta.analyticsAccess,
+                expiresAt: boostMeta.expiryDate,
+              }
+            : null,
+          // Clean up internal fields
+          _boostMeta: undefined,
+          _duplicateSlot: undefined,
+          _crossCategoryInjected: undefined,
         };
       })
     );

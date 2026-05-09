@@ -1,17 +1,17 @@
 import express from 'express';
 import { BoostController } from '../controllers/index.js';
-// import { authenticateToken } from '../middlewares/auth.middleware.js';
+import { protect, authorize } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
 /**
  * Boost System Routes
  * 100% Compatible with Frontend UI Scenarios.
- * [TEMPORARY] Authentication bypassed for testing.
  *
  * Covers:
  * - Package Management (Admin: BoostController + BoostPackageForm pages)
- * - Campaign Lifecycle (Business User: BoostSelectPackage + BoostConfirmOrder + BoostPostSuccess)
+ * - Purchase Flow (Business User: BoostSelectPackage + BoostConfirmOrder + BoostPostSuccess)
+ * - Campaign Lifecycle (Business User)
  * - Analytics & Interactions (Admin/Business: BoostAnalytics page)
  * - Payment Webhook (Stripe Stub)
  */
@@ -21,6 +21,7 @@ const router = express.Router();
 // POST /api/v1/boosts/packages - Create a new boost package
 router.post(
   '/packages',
+  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
   BoostController.createPackage
 );
 
@@ -39,13 +40,31 @@ router.get(
 // PUT /api/v1/boosts/packages/:id - Update package details
 router.put(
   '/packages/:id',
+  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
   BoostController.updatePackage
 );
 
 // DELETE /api/v1/boosts/packages/:id - Archive (soft-delete) a package
 router.delete(
   '/packages/:id',
+  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
   BoostController.deletePackage
+);
+
+// ── Purchase (User) ─────────────────────────────────────────────────────────
+
+// POST /api/v1/boosts/purchase - Purchase a boost package
+router.post(
+  '/purchase',
+  // protect,  // TODO: Re-enable after auth testing
+  BoostController.purchaseBoost
+);
+
+// GET /api/v1/boosts/my-boosts - Get user's active boosts where expiryDate > NOW
+router.get(
+  '/my-boosts',
+  // protect,  // TODO: Re-enable after auth testing
+  BoostController.getMyBoosts
 );
 
 // ── Admin Statistics ─────────────────────────────────────────────────────────
@@ -53,13 +72,22 @@ router.delete(
 // GET /api/v1/boosts/admin/statistics - Admin dashboard boost stats
 router.get(
   '/admin/statistics',
+  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
   BoostController.getBoostStatistics
 );
 
 // GET /api/v1/boosts/admin/logs - Admin configuration changes logs
 router.get(
   '/admin/logs',
+  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
   BoostController.getLogs
+);
+
+// GET /api/v1/boosts/admin/stats - Admin dashboard stats (DB-driven tiles)
+router.get(
+  '/admin/stats',
+  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
+  BoostController.getAdminStats
 );
 
 // ── Campaign Management (Business User) ──────────────────────────────────────

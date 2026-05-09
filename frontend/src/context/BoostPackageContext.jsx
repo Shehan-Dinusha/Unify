@@ -1,67 +1,159 @@
-import React, { createContext, useContext, useState } from 'react';
-import { mockBoostPackages, mockBoostLogs } from '../data/mockData';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import * as boostAPI from '../services/boostService';
 
 const BoostPackageContext = createContext();
 
 export const useBoostPackages = () => useContext(BoostPackageContext);
 
-// Helper to format relative time
-const formatTime = (date) => {
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) +
-        ', ' + date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
-
 export const BoostPackageProvider = ({ children }) => {
-    const [packages, setPackages] = useState(mockBoostPackages);
-    const [logs, setLogs] = useState(mockBoostLogs);
+    const [packages, setPackages] = useState([]);
+    const [logs, setLogs] = useState([]);
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    const pushLog = (log) => {
-        setLogs(prev => [log, ...prev]);
+    // ── Fetch packages from DB on mount ────────────────────────────────
+    const fetchPackages = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await boostAPI.getPackages();
+            if (response.success && response.data?.packages) {
+                setPackages(response.data.packages);
+            }
+        } catch (err) {
+            setError(err.message);
+            console.error('Failed to fetch packages:', err.message);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // ── Fetch logs from DB on mount ────────────────────────────────────
+    const fetchLogs = useCallback(async () => {
+        try {
+            const response = await boostAPI.getBoostLogs();
+            if (response.success && response.data?.logs) {
+                setLogs(response.data.logs);
+            }
+        } catch (err) {
+            console.error('Failed to fetch logs:', err.message);
+        }
+    }, []);
+
+    // ── Fetch stats from DB ────────────────────────────────────────────
+    const fetchStats = useCallback(async () => {
+        try {
+            const response = await boostAPI.getAdminStats();
+            if (response.success && response.data?.stats) {
+                setStats(response.data.stats);
+            }
+        } catch (err) {
+            console.error('Failed to fetch boost stats:', err.message);
+        }
+    }, []);
+
+    // ── Load all data on mount ─────────────────────────────────────────
+    useEffect(() => {
+        fetchPackages();
+        fetchLogs();
+        fetchStats();
+    }, [fetchPackages, fetchLogs, fetchStats]);
+
+    // ── Add Package (calls API) ────────────────────────────────────────
+    const addPackage = async (pkgData) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await boostAPI.createPackage(pkgData);
+            if (response.success && response.data) {
+                // Refresh packages and logs from DB
+                await fetchPackages();
+                await fetchLogs();
+                return response.data;
+            }
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const addPackage = (pkg) => {
-        const newPkg = {
-            ...pkg,
-            id: `pkg-${String(Date.now()).slice(-5)}`,
-            status: 'live',
-        };
-        setPackages(prev => [...prev, newPkg]);
-        pushLog({
-            id: `log-${Date.now()}`,
-            type: 'package_added',
-            title: `New package '${pkg.name}' created`,
-            description: `Tier added with pricing: Rs. ${Number(pkg.price).toLocaleString()} / ${pkg.duration}`,
-            time: `Just now • ${formatTime(new Date())}`,
-        });
-        return newPkg;
+    // ── Update Package (calls API) ─────────────────────────────────────
+    const updatePackage = async (id, updatedData) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await boostAPI.updatePackage(id, updatedData);
+            if (response.success) {
+                // Refresh packages and logs from DB
+                await fetchPackages();
+                await fetchLogs();
+                return response.data;
+            }
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const updatePackage = (id, updatedData) => {
-        const existing = packages.find(p => p.id === id);
-        setPackages(prev => prev.map(p => p.id === id ? { ...p, ...updatedData } : p));
-        pushLog({
-            id: `log-${Date.now()}`,
-            type: 'package_updated',
-            title: `Package '${updatedData.name || existing?.name}' updated`,
-            description: `Configured: Rs. ${Number(updatedData.price).toLocaleString()} / ${updatedData.duration}`,
-            time: `Just now • ${formatTime(new Date())}`,
-        });
+    // ── Delete Package (calls API) ─────────────────────────────────────
+    const deletePackage = async (id) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await boostAPI.deletePackage(id);
+            if (response.success) {
+                // Refresh packages and logs from DB
+                await fetchPackages();
+                await fetchLogs();
+                return response.data;
+            }
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const deletePackage = (id) => {
-        const existing = packages.find(p => p.id === id);
-        setPackages(prev => prev.filter(p => p.id !== id));
-        pushLog({
-            id: `log-${Date.now()}`,
-            type: 'package_deleted',
-            title: `Package '${existing?.name}' removed`,
-            description: 'Package tier has been decommissioned from active lists',
-            time: `Just now • ${formatTime(new Date())}`,
-        });
+    // ── Purchase Boost (calls API) ─────────────────────────────────────
+    const purchaseBoost = async (packageId, postId = null) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await boostAPI.purchaseBoost(packageId, postId);
+            if (response.success) {
+                return response.data;
+            }
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <BoostPackageContext.Provider value={{ packages, logs, addPackage, updatePackage, deletePackage }}>
+        <BoostPackageContext.Provider
+            value={{
+                packages,
+                logs,
+                stats,
+                loading,
+                error,
+                addPackage,
+                updatePackage,
+                deletePackage,
+                purchaseBoost,
+                fetchPackages,
+                fetchLogs,
+                fetchStats,
+            }}
+        >
             {children}
         </BoostPackageContext.Provider>
     );

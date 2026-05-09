@@ -5,14 +5,15 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { useBoostPackages } from '../context/BoostPackageContext';
 import { mockRequests } from '../data/mockData';
-import { Plus, Pencil, CheckCircle2, DollarSign, Clock, Trash2, AlertTriangle, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, CheckCircle2, DollarSign, Clock, Trash2, AlertTriangle, ChevronLeft, ChevronRight, RefreshCw, Loader2 } from 'lucide-react';
 
 const BoostController = () => {
     const navigate = useNavigate();
-    const { packages, logs, deletePackage } = useBoostPackages();
+    const { packages, logs, stats, loading, error, deletePackage } = useBoostPackages();
 
     // Delete modal state
     const [deleteTarget, setDeleteTarget] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Carousel state — show 3 cards at a time
     const [carouselIndex, setCarouselIndex] = useState(0);
@@ -31,15 +32,22 @@ const BoostController = () => {
         setDeleteTarget(pkg);
     };
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         if (deleteTarget) {
-            deletePackage(deleteTarget.id);
-            setDeleteTarget(null);
-            // Adjust carousel index if needed
-            const newLen = packages.length - 1;
-            const newMax = Math.max(0, newLen - visibleCount);
-            if (carouselIndex > newMax) {
-                setCarouselIndex(newMax);
+            setIsDeleting(true);
+            try {
+                await deletePackage(deleteTarget.id);
+                setDeleteTarget(null);
+                // Adjust carousel index if needed
+                const newLen = packages.length - 1;
+                const newMax = Math.max(0, newLen - visibleCount);
+                if (carouselIndex > newMax) {
+                    setCarouselIndex(newMax);
+                }
+            } catch (err) {
+                console.error('Failed to delete package:', err.message);
+            } finally {
+                setIsDeleting(false);
             }
         }
     };
@@ -48,12 +56,32 @@ const BoostController = () => {
         setDeleteTarget(null);
     };
 
-    // Stats data
-    const stats = [
-        { label: 'Active Packages', value: String(packages.length), change: '~0%', changeColor: 'text-text-secondary' },
-        { label: 'Monthly Revenue', value: 'Rs. 10,000', change: '↑12%', changeColor: 'text-state-success' },
-        { label: 'Total Boosts (30d)', value: '1,284', change: '↑8%', changeColor: 'text-state-success' },
-        { label: 'Average Duration', value: '4.2 Days', change: 'Stable', changeColor: 'text-text-secondary' },
+    // Stats data — computed from DB via context
+    const statTiles = [
+        {
+            label: 'Active Packages',
+            value: String(packages.length),
+            change: stats ? `${stats.activePackages} live` : '~',
+            changeColor: 'text-text-secondary',
+        },
+        {
+            label: 'Monthly Revenue',
+            value: stats ? `Rs. ${Number(stats.monthlyRevenue).toLocaleString()}` : 'Loading...',
+            change: stats ? `${stats.revenueChange >= 0 ? '\u2191' : '\u2193'}${Math.abs(stats.revenueChange)}%` : '',
+            changeColor: stats && stats.revenueChange >= 0 ? 'text-state-success' : 'text-state-error',
+        },
+        {
+            label: 'Total Boosts (30d)',
+            value: stats ? String(stats.totalBoosts30d) : 'Loading...',
+            change: stats ? `${stats.boostsChange >= 0 ? '\u2191' : '\u2193'}${Math.abs(stats.boostsChange)}%` : '',
+            changeColor: stats && stats.boostsChange >= 0 ? 'text-state-success' : 'text-state-error',
+        },
+        {
+            label: 'Average Duration',
+            value: stats ? `${stats.avgDurationDays} Days` : 'Loading...',
+            change: 'Avg',
+            changeColor: 'text-text-secondary',
+        },
     ];
 
     return (
@@ -81,9 +109,17 @@ const BoostController = () => {
                         </Button>
                     </div>
 
+                    {/* Error Banner */}
+                    {error && (
+                        <div className="bg-state-error/10 border border-state-error/30 rounded-2xl p-md flex items-center gap-sm">
+                            <AlertTriangle size={18} className="text-state-error flex-shrink-0" />
+                            <p className="text-body-small text-state-error font-inter">{error}</p>
+                        </div>
+                    )}
+
                     {/* Stats Row */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-md">
-                        {stats.map((stat, i) => (
+                        {statTiles.map((stat, i) => (
                             <Card key={i} variant="container" padding="p-md">
                                 <div className="flex flex-col gap-sm">
                                     <p className="text-body-extra-small text-text-secondary font-inter">{stat.label}</p>
@@ -96,7 +132,16 @@ const BoostController = () => {
                         ))}
                     </div>
 
+                    {/* Loading State */}
+                    {loading && packages.length === 0 && (
+                        <div className="flex items-center justify-center py-xl">
+                            <Loader2 size={32} className="text-primary-blue animate-spin" />
+                            <span className="ml-3 text-body-small text-text-secondary font-inter">Loading packages...</span>
+                        </div>
+                    )}
+
                     {/* Package Cards Carousel */}
+                    {packages.length > 0 && (
                     <div className="relative">
                         {/* Left Arrow */}
                         {canGoLeft && (
@@ -133,7 +178,7 @@ const BoostController = () => {
                                             <h3 className="text-body-large-bold text-text-primary font-inter">{pkg.name}</h3>
                                             <div className="flex items-center gap-1">
                                                 <button
-                                                    onClick={() => navigate(`/boost-controller/edit/${pkg.id}`)}
+                                                    onClick={() => navigate(`/boost-controller/edit/${encodeURIComponent(pkg.id)}`)}
                                                     className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-primary-blue/20 transition-colors"
                                                 >
                                                     <Pencil size={14} className="text-text-secondary group-hover:text-text-primary" />
@@ -148,7 +193,7 @@ const BoostController = () => {
                                         </div>
 
                                         <div className="flex items-baseline gap-1 mb-1">
-                                            <span className="text-base md:text-heading-small text-text-primary font-inter font-bold whitespace-nowrap">Rs. {pkg.price.toLocaleString()}</span>
+                                            <span className="text-base md:text-heading-small text-text-primary font-inter font-bold whitespace-nowrap">Rs. {Number(pkg.price).toLocaleString()}</span>
                                             <span className="text-body-extra-small text-text-secondary font-inter">/ {pkg.duration}</span>
                                         </div>
 
@@ -159,7 +204,7 @@ const BoostController = () => {
 
                                         {/* Features */}
                                         <div className="flex flex-col gap-sm mt-auto">
-                                            {pkg.features.map((feature, idx) => (
+                                            {(pkg.features || []).map((feature, idx) => (
                                                 <div key={idx} className="flex items-center gap-sm">
                                                     <CheckCircle2 size={16} className="text-state-success flex-shrink-0" />
                                                     <span className="text-body-small text-text-soft font-inter">{feature}</span>
@@ -196,6 +241,16 @@ const BoostController = () => {
                             </div>
                         )}
                     </div>
+                    )}
+
+                    {/* Empty state */}
+                    {!loading && packages.length === 0 && !error && (
+                        <Card variant="card" padding="p-lg" className="text-center">
+                            <p className="text-body-small text-text-secondary font-inter">
+                                No boost packages configured yet. Click "Add New Package" to create one.
+                            </p>
+                        </Card>
+                    )}
 
                     {/* Recent Configuration Changes */}
                     <Card variant="card" padding="p-lg">
@@ -208,6 +263,9 @@ const BoostController = () => {
                                 View All Logs
                             </button>
                         </div>
+                        {logs.length === 0 && !loading && (
+                            <p className="text-body-small text-text-secondary font-inter py-md text-center">No configuration changes recorded yet.</p>
+                        )}
                         <div className="flex flex-col">
                             {logs.map((log) => (
                                 <div
@@ -251,10 +309,15 @@ const BoostController = () => {
                                 </p>
                             </div>
                             <div className="px-8 pb-8 pt-2 flex flex-col gap-3">
-                                <button onClick={confirmDelete} className="w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
-                                    <Trash2 size={18} /> Yes, Delete Package
+                                <button
+                                    onClick={confirmDelete}
+                                    disabled={isDeleting}
+                                    className="w-full h-12 rounded-2xl bg-gradient-to-r from-state-error to-red-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-state-error/30 hover:shadow-xl hover:shadow-state-error/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isDeleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                                    {isDeleting ? 'Deleting...' : 'Yes, Delete Package'}
                                 </button>
-                                <button onClick={cancelDelete} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200">
+                                <button onClick={cancelDelete} disabled={isDeleting} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200 disabled:opacity-50">
                                     Cancel
                                 </button>
                             </div>
