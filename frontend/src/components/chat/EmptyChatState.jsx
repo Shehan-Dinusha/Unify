@@ -18,19 +18,12 @@ export const EmptyChatList = ({ onStartChat }) => (
 
 export const EmptyInbox = () => (
   <div className="flex flex-col items-center justify-center h-full text-center p-3xl max-w-2xl mx-auto animate-in fade-in zoom-in duration-700">
-    <div className="w-32 h-32 bg-white/5 rounded-[40px] flex items-center justify-center mb-2xl relative group">
-       {/* Glow effect */}
-      <div className="absolute inset-0 bg-primary-blue/10 rounded-[40px] blur-3xl opacity-50 group-hover:opacity-100 transition-opacity" />
+    <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-xl relative group">
+      {/* Glow effect */}
+      <div className="absolute inset-0 bg-primary-blue/10 rounded-3xl blur-2xl opacity-50" />
       
-      <div className="relative">
-        <div className="w-20 h-20 bg-dark-2 rounded-2xl border border-white/10 flex items-center justify-center shadow-2xl transition-transform group-hover:scale-105 duration-500">
-          <MessageSquare size={36} className="text-primary-blue opacity-80" />
-        </div>
-        <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-dark-3 rounded-2xl border border-white/10 flex items-center justify-center shadow-xl">
-           <div className="w-8 h-8 rounded-full bg-state-success/20 flex items-center justify-center">
-             <HeartHandshake size={20} className="text-state-success" />
-           </div>
-        </div>
+      <div className="relative w-12 h-12 bg-dark-2 rounded-2xl border border-white/10 flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110 duration-500">
+        <MessageSquare size={24} className="text-primary-blue opacity-80" />
       </div>
     </div>
     

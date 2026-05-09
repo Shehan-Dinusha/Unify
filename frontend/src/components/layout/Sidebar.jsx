@@ -14,6 +14,7 @@ import {
 import LogoutModal from "../profile/modals/LogoutModal";
 import { getCurrentUser, logout } from "../../services/authService";
 import { useNotifications } from "../../context/NotificationContext";
+import { useChat } from "../../context/ChatContext";
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({
@@ -92,6 +93,7 @@ const UnifiedSidebar = ({
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
   const { unreadCount } = useNotifications();
+  const { unreadMessageCount } = useChat();
 
   // Get user from auth or fallback to prop
   const authUser = getCurrentUser();
@@ -104,7 +106,7 @@ const UnifiedSidebar = ({
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
         { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
         { icon: GraduationCap, label: "Learning", path: "/student-learning" },
@@ -115,7 +117,7 @@ const UnifiedSidebar = ({
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
         { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
         { icon: GraduationCap, label: "Learning", path: "/learning" },
@@ -165,7 +167,7 @@ const UnifiedSidebar = ({
       links: [
         { icon: Rss, label: "News Feed", path: "/business/news-feed" },
         { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
         {
           icon: LayoutDashboard,
           label: "Order Dashboard",
