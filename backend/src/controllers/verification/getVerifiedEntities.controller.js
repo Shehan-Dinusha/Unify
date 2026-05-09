@@ -94,6 +94,7 @@ export const getVerifiedEntities = async (req, res, next) => {
 
         return {
           id: request.id,
+          userId: request.user?.id,
           name: request.user?.name || "Unknown User",
           type: request.requestedRole,
           verifiedDate: formatRelativeDate(request.updatedAt),
