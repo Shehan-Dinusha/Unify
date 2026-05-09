@@ -25,6 +25,7 @@ import StudentSubmittedReports from "../pages/StudentSubmittedReports";
 import StudentReportDetail from "../pages/StudentReportDetail";
 import StudentReportWithdrawal from "../pages/StudentReportWithdrawal";
 import StudentReportWithdrawalSuccess from "../pages/StudentReportWithdrawalSuccess";
+import MarketplaceReviews from "../pages/MarketplaceReviews";
 
 export const studentRoutes = [
   // Core student experience

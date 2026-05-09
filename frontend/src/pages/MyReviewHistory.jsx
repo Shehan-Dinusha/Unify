@@ -10,6 +10,7 @@ import {
   ReviewDeletedModal,
 } from "../components/common/ReviewModals";
 import StarRating from "../components/common/StarRating";
+import NotFound from "./NotFound";
 
 const ReviewHistoryCard = ({ review, onDelete }) => {
   return (
@@ -127,11 +128,13 @@ const MyReviewHistory = () => {
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errorStatus, setErrorStatus] = useState(null);
 
   const fetchReviewsData = async () => {
     try {
       setIsLoading(true);
       setError(null);
+      setErrorStatus(null);
       const data = await getMyReviews();
       setReviews(data.reviews || []);
       setSummary(
@@ -142,7 +145,16 @@ const MyReviewHistory = () => {
         },
       );
     } catch (err) {
-      setError("Failed to load reviews.");
+      if (
+        err.response &&
+        (err.response.status === 401 ||
+          err.response.status === 403 ||
+          err.response.status === 404)
+      ) {
+        setErrorStatus(err.response.status);
+      } else {
+        setError("Failed to load reviews.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -160,11 +172,8 @@ const MyReviewHistory = () => {
     "Lowest Rating",
   ];
 
-  const user = {
-    name: "Alex Johnson",
-    role: "student",
-    displayRole: "Student",
-  };
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
 
   const handleDeleteClick = (id) => {
     setReviewToDelete(id);
@@ -213,6 +222,10 @@ const MyReviewHistory = () => {
   };
 
   const sortedReviews = getSortedReviews();
+
+  if (errorStatus) {
+    return <NotFound status={errorStatus} />;
+  }
 
   if (isLoading) {
     return (
