@@ -170,9 +170,27 @@ const ClubOwnerDashboard = () => {
     fetchDashboardData();
   }, [user.id, chartFilter]);
 
+  const handleWalletClick = async () => {
+    try {
+      const res = await orderService.getStripeLoginLink();
+      if (res.success && res.url) {
+        window.open(res.url, "_blank");
+      }
+    } catch (error) {
+      if (error.error === "ONBOARDING_INCOMPLETE" || error.error?.includes("setup payments first")) {
+        // If not setup, start onboarding
+        const onboardRes = await orderService.onboardClub();
+        if (onboardRes.url) window.location.href = onboardRes.url;
+      } else {
+        console.error("Failed to get wallet link:", error);
+        alert(error.error || "Could not open wallet. Please try again later.");
+      }
+    }
+  };
+
   const headerRight = (
     <button
-      onClick={() => navigate("/club-owner/wallet")}
+      onClick={handleWalletClick}
       className="flex items-center gap-2 bg-primary-blue hover:bg-primary-blue/90 text-white px-3 sm:px-5 py-2 rounded-full font-bold text-xs sm:text-sm transition-all shadow-[0_0_15px_rgba(43,140,238,0.4)] shrink-0 whitespace-nowrap"
     >
       <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

@@ -264,6 +264,28 @@ const orderService = {
       throw error.response?.data || error.message;
     }
   },
+  /**
+   * Start Stripe onboarding for a club owner
+   */
+  onboardClub: async () => {
+    try {
+      const response = await api.post("/payments/onboard-club");
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+  /**
+   * Get Stripe dashboard login link for club owner
+   */
+  getStripeLoginLink: async () => {
+    try {
+      const response = await api.post("/payments/login-link");
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
 
 export default orderService;

@@ -31,15 +31,21 @@ const ClubCheckout = () => {
             if (product.postType === "club-event") {
                 // Extract tierId (default to first tier if available)
                 const tierId = product.tiers && product.tiers.length > 0 ? product.tiers[0].name : "Standard";
-                
+
                 const bookingData = {
                     userId: user.id,
                     eventId: product.id,
                     tierId,
                     qty: quantity || 1,
                 };
-                
+
                 const result = await orderService.createBooking(bookingData);
+                
+                // Handle Free Events
+                if (subtotal === 0) {
+                    navigate(`/marketplace/club/payment-success?booking_id=${result.booking.id}`);
+                    return;
+                }
                 
                 sessionResponse = await orderService.createCheckoutSession({
                     bookingId: result.booking.bookingId,
@@ -61,6 +67,12 @@ const ClubCheckout = () => {
 
                 const result = await orderService.createOrder(orderData);
                 
+                // Handle Free Products
+                if (subtotal === 0) {
+                    navigate(`/marketplace/club/payment-success?order_id=${result.order.id}`);
+                    return;
+                }
+                
                 sessionResponse = await orderService.createCheckoutSession({
                     orderId: result.order.orderId,
                     amount: subtotal,
@@ -69,7 +81,7 @@ const ClubCheckout = () => {
                     cancelUrl: window.location.href,
                 });
             }
-            
+
             if (sessionResponse.success && sessionResponse.url) {
                 // Redirect to Stripe Checkout page
                 window.location.href = sessionResponse.url;
@@ -78,7 +90,8 @@ const ClubCheckout = () => {
             }
         } catch (error) {
             console.error("Checkout failed:", error);
-            alert("Failed to proceed to payment. Please try again.");
+            const errorMsg = typeof error === 'string' ? error : (error.error || error.message || "Failed to proceed to payment. Please try again.");
+            alert(errorMsg);
         } finally {
             setLoading(false);
         }

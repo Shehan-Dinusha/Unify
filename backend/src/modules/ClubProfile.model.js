@@ -41,6 +41,17 @@ const ClubProfile = sequelize.define(
       allowNull: true,
     },
 
+    stripeAccountId: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: true,
+    },
+
+    verificationStatus: {
+      type: DataTypes.ENUM("PENDING", "VERIFIED", "REJECTED"),
+      defaultValue: "PENDING",
+    },
+
     isVerified: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
