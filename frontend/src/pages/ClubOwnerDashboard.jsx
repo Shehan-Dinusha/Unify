@@ -6,6 +6,7 @@ import { BarChart, DonutChart, ProgressBar } from "../components/chart";
 import orderService from "../services/orderService";
 import { useNavigate } from "react-router-dom";
 import { getImageUrl } from "../utils/formatters";
+import { getCurrentUser } from "../services/authService";
 import {
   ShoppingBag,
   Clock,
@@ -93,9 +94,9 @@ const ClubOwnerDashboard = () => {
   const [clubPosts, setClubPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const user = {
-    id: 1, // Using hardcoded ID 1 as per current project pattern
-    name: "Alex Johnson",
+  const user = getCurrentUser() || {
+    id: 0,
+    name: "Guest",
     role: "club",
     displayRole: "Clubs & Societies Dashboard",
   };

@@ -1,4 +1,4 @@
-import { Boarding, User } from "../../modules/index.js";
+import { Boarding, User, Comment, PostLike, SavedItem } from "../../modules/index.js";
 import { Op } from "sequelize";
 import { getFileUrl } from "../../services/s3.service.js";
 
@@ -27,12 +27,11 @@ const resolvePostImages = async (post) => {
 export const getFilteredBoardingFeed = async (req, res) => {
   try {
     const { minPrice, maxPrice, gender } = req.query;
+    const userId = req.user?.id;
     
     const whereClause = {};
 
     // Gender filtering
-    // If user selects "Male Only", they can see "Male Only" AND "Any" boardings
-    // If they select "Any", we don't apply any gender filter
     if (gender && gender !== 'Any') {
       whereClause.gender = {
         [Op.in]: [gender, 'Any']
@@ -78,7 +77,25 @@ export const getFilteredBoardingFeed = async (req, res) => {
 
     const resolvedFeed = await Promise.all(formattedPosts.map(resolvePostImages));
 
-    res.status(200).json({ success: true, feed: resolvedFeed });
+    // Inject interaction state (comments count, isLiked, isSaved)
+    const feedWithInteractions = await Promise.all(
+      resolvedFeed.map(async (post) => {
+        const [commentsCount, likeRecord, saveRecord] = await Promise.all([
+          Comment.count({ where: { postId: post.id, postType: post.postType } }),
+          userId ? PostLike.findOne({ where: { userId, postId: post.id, postType: post.postType } }) : null,
+          userId ? SavedItem.findOne({ where: { userId, postId: post.id, postType: post.postType } }) : null,
+        ]);
+
+        return {
+          ...post,
+          commentsCount,
+          isLiked: !!likeRecord,
+          isSaved: !!saveRecord,
+        };
+      })
+    );
+
+    res.status(200).json({ success: true, feed: feedWithInteractions });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

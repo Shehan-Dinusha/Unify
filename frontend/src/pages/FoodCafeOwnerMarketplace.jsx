@@ -34,7 +34,7 @@ const FoodCafeOwnerMarketplace = () => {
     }, []);
 
     const headerRight = (
-        <button 
+        <button
             onClick={() => navigate("/food-cafe-owner/create-post")}
             className="bg-primary-blue text-white px-6 py-2 rounded-full font-inter font-bold text-body-medium hover:brightness-110 transition-all shadow-custom"
         >

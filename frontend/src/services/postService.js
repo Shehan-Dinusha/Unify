@@ -63,6 +63,32 @@ const postService = {
       throw error.response?.data || error.message;
     }
   },
+  
+  /**
+   * Fetch all posts created by the current user
+   */
+  getMyPosts: async () => {
+    try {
+      const response = await api.get(`/posts/my-posts?type=my-posts`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
+   * Delete a post by type and ID
+   * @param {string} type - 'normal', 'club-product', 'club-event', 'boarding'
+   * @param {number|string} id - Post ID
+   */
+  deletePost: async (type, id) => {
+    try {
+      const response = await api.delete(`/posts/${type}/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
 
 export default postService;

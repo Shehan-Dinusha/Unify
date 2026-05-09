@@ -6,11 +6,12 @@ import Button from "../components/common/Button";
 import { ShoppingBag, ArrowRight } from "lucide-react";
 import { getImageUrl } from "../utils/formatters";
 import orderService from "../services/orderService";
+import { getCurrentUser } from "../services/authService";
 
 const ClubCheckout = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
+    const user = getCurrentUser();
     const [loading, setLoading] = useState(false);
 
     const { product, selectedColor, selectedSize, quantity } = location.state || {};
@@ -32,7 +33,7 @@ const ClubCheckout = () => {
                 const tierId = product.tiers && product.tiers.length > 0 ? product.tiers[0].name : "Standard";
                 
                 const bookingData = {
-                    userId: 5, // Mock student user
+                    userId: user.id,
                     eventId: product.id,
                     tierId,
                     qty: quantity || 1,
@@ -49,7 +50,7 @@ const ClubCheckout = () => {
                 });
             } else {
                 const orderData = {
-                    userId: 5, // Mock student user
+                    userId: user.id,
                     postId: product.id,
                     qty: quantity || 1,
                     color: selectedColor?.name,

@@ -12,8 +12,11 @@ import {
   ShoppingBag,
   Home,
   MessageSquare,
+  Trash2,
 } from "lucide-react";
+import Card from "../common/Card";
 import newsfeedService from "../../services/newsfeedService";
+import postService from "../../services/postService";
 import { formatTimeAgo } from "../../utils/formatters";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
@@ -130,6 +133,8 @@ const PostCard = ({
   initialIsSaved = false,
   isPromoted,
   showBoost = false,
+  isManagementMode = false,
+  onPostUpdate,
 }) => {
   const { toggleSavePost, isPostSaved } = useSavedPosts();
   // const isSavedLocal = post ? isPostSaved(post.id) : false; // Use initialIsSaved from props instead
@@ -248,10 +253,22 @@ const PostCard = ({
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this post? This action cannot be undone.")) return;
+
+    try {
+      await postService.deletePost(postType, postId);
+      if (onPostUpdate) onPostUpdate();
+    } catch (err) {
+      console.error("Failed to delete post:", err);
+      alert(err.error || "Failed to delete post. Please try again.");
+    }
+  };
+
   return (
-    <div className="w-full bg-[#1A2634] rounded-[24px] overflow-hidden border border-white/5 font-inter text-white">
+    <Card variant="card" padding="p-0" className="w-full overflow-hidden">
       {/* Post Image */}
-      {showImage ? (
+      {showImage && (
         <div className="relative w-full bg-black/20 flex justify-center items-center min-h-[200px] max-h-[500px] overflow-hidden">
           <img
             src={image}
@@ -328,69 +345,103 @@ const PostCard = ({
         <div className="h-px bg-white/5 w-full my-2" />
 
         {/* Actions */}
-        <div className="grid grid-cols-4 text-[#94A3B8] text-xs sm:text-body-small">
-          {/* Like */}
-          <button
-            onClick={handleToggleLike}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isLiked ? "text-primary-blue" : ""}`}
-          >
-            <div className="flex items-center gap-1.5">
-              <Heart
-                size={20}
-                className={isLiked ? "fill-current" : ""}
-                strokeWidth={isLiked ? 0 : 1.8}
-              />
-              <span>{likeCount}</span>
-            </div>
-            <span className="text-[11px]">Like</span>
-          </button>
+        <div className={`grid ${isManagementMode ? 'grid-cols-2' : 'grid-cols-4'} text-[#94A3B8] text-xs sm:text-body-small`}>
+          {isManagementMode ? (
+            <>
+              {/* Boost */}
+              <button
+                className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-[#FBBF24]"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Zap
+                    size={20}
+                    className="group-hover:fill-[#FBBF24]/20"
+                    strokeWidth={1.8}
+                  />
+                </div>
+                <span className="text-[11px]">Boost</span>
+              </button>
 
-          {/* Comment */}
-          <button
-            onClick={handleToggleComments}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${showComments ? "text-primary-blue" : ""}`}
-          >
-            <div className="flex items-center gap-1.5">
-              <MessageCircle size={20} strokeWidth={1.8} />
-              <span>{commentCount}</span>
-            </div>
-            <span className="text-[11px]">Comment</span>
-          </button>
+              {/* Delete */}
+              <button
+                onClick={handleDelete}
+                className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Trash2
+                    size={20}
+                    className="group-hover:fill-state-error/10"
+                    strokeWidth={1.8}
+                  />
+                </div>
+                <span className="text-[11px]">Delete</span>
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Like */}
+              <button
+                onClick={handleToggleLike}
+                className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isLiked ? "text-primary-blue" : ""}`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <Heart
+                    size={20}
+                    className={isLiked ? "fill-current" : ""}
+                    strokeWidth={isLiked ? 0 : 1.8}
+                  />
+                  <span>{likeCount}</span>
+                </div>
+                <span className="text-[11px]">Like</span>
+              </button>
 
-          {/* Save */}
-          <button
-            onClick={handleToggleSave}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? "text-primary-blue" : ""}`}
-          >
-            <div className="flex items-center gap-1.5">
-              <Bookmark
-                size={20}
-                className={isSaved ? "fill-current" : ""}
-                strokeWidth={isSaved ? 0 : 1.8}
-              />
-            </div>
-            <span className="text-[11px]">{isSaved ? "Saved" : "Save"}</span>
-          </button>
+              {/* Comment */}
+              <button
+                onClick={handleToggleComments}
+                className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${showComments ? "text-primary-blue" : ""}`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <MessageCircle size={20} strokeWidth={1.8} />
+                  <span>{commentCount}</span>
+                </div>
+                <span className="text-[11px]">Comment</span>
+              </button>
 
-          {/* Report */}
-          <button
-            onClick={() =>
-              reportNavigate("/student/report-issue", {
-                state: { postData: post, from: "/news-feed" },
-              })
-            }
-            className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error"
-          >
-            {" "}
-            <div className="flex items-center gap-1.5">
-              <img
-                src="/icon_report_marketplace.svg"
-                alt="Report"
-                className="w-5 h-5 opacity-70 group-hover:opacity-100"
-              />
-            </div>
-            <span className="text-[11px]">Report</span>
-          </button>
+              {/* Save */}
+              <button
+                onClick={handleToggleSave}
+                className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? "text-primary-blue" : ""}`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <Bookmark
+                    size={20}
+                    className={isSaved ? "fill-current" : ""}
+                    strokeWidth={isSaved ? 0 : 1.8}
+                  />
+                </div>
+                <span className="text-[11px]">{isSaved ? "Saved" : "Save"}</span>
+              </button>
+
+              {/* Report */}
+              <button
+                onClick={() =>
+                  reportNavigate("/student/report-issue", {
+                    state: { postData: post, from: "/news-feed" },
+                  })
+                }
+                className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error"
+              >
+                <div className="flex items-center gap-1.5">
+                  <img
+                    src="/icon_report_marketplace.svg"
+                    alt="Report"
+                    className="w-5 h-5 opacity-70 group-hover:opacity-100"
+                  />
+                </div>
+                <span className="text-[11px]">Report</span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Comment Section (ClubPostCard style) */}
@@ -402,7 +453,7 @@ const PostCard = ({
           />
         )}
       </div>
-    </div>
+    </Card>
   );
 };
 
