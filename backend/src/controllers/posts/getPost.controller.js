@@ -60,6 +60,7 @@ const getModelConfig = (type) => {
     case "normal":
     case "food-cafe":
     case "services":
+    case "service":
       return { Model: NormalPost, authorKey: "author" };
     case "club-product":
       return { Model: ClubProductPost, authorKey: "author" };
@@ -99,7 +100,7 @@ export const getPost = async (req, res) => {
 
     // Convert to plain object to inject properties
     const postData = post.get({ plain: true });
-    postData.postType = type;
+    postData.postType = type === "services" ? "service" : type;
 
     // Normalize author property for consistency
     if (authorKey !== "author") {

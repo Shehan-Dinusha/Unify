@@ -24,6 +24,8 @@ const CategoryModal = ({
 }) => {
   const [name, setName] = useState("");
   const [selectedIcon, setSelectedIcon] = useState("FileText");
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -34,6 +36,7 @@ const CategoryModal = ({
         setName("");
         setSelectedIcon("FileText");
       }
+      setError("");
     }
   }, [isOpen, initialData]);
 
@@ -52,14 +55,27 @@ const CategoryModal = ({
     { name: "MoreHorizontal", icon: MoreHorizontal },
   ];
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) return;
-    onSave({
-      id: initialData?.id || Date.now().toString(),
-      title: name,
-      iconName: selectedIcon,
-    });
-    onClose();
+    setError("");
+    setIsSaving(true);
+    try {
+      await onSave({
+        id: initialData?.id || Date.now().toString(),
+        title: name,
+        iconName: selectedIcon,
+      });
+      // onClose() is generally called by the parent, but we can call it if needed,
+      // though the parent sets modal open false on success.
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to save category. It may already exist.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -96,10 +112,18 @@ const CategoryModal = ({
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setError("");
+                }}
                 placeholder="e.g. Assignments, Tutorials, Case Studies"
-                className="w-full px-4 py-3 bg-blue-500/20 rounded-lg shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] outline-gray-600 focus:outline-blue-500 text-white placeholder-gray-400 text-base font-normal font-inter leading-5 focus:ring-0"
+                className={`w-full px-4 py-3 ${error ? "bg-red-500/10 outline-red-500" : "bg-blue-500/20 outline-gray-600 focus:outline-blue-500"} rounded-lg shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] outline outline-1 outline-offset-[-1px] text-white placeholder-gray-400 text-base font-normal font-inter leading-5 focus:ring-0`}
               />
+              {error && (
+                <span className="text-red-400 text-sm font-normal mt-1">
+                  {error}
+                </span>
+              )}
             </div>
 
             <div className="flex flex-col gap-3">
@@ -144,14 +168,18 @@ const CategoryModal = ({
           </button>
           <button
             onClick={handleSave}
-            disabled={!name.trim() || !selectedIcon}
+            disabled={!name.trim() || !selectedIcon || isSaving}
             className={`flex-1 h-10 rounded-xl flex justify-center items-center text-sm font-bold font-inter leading-5 transition-colors ${
-              !name.trim() || !selectedIcon
+              !name.trim() || !selectedIcon || isSaving
                 ? "bg-blue-500/30 text-white/50 cursor-not-allowed"
                 : "bg-blue-500 hover:bg-blue-600 text-white shadow-[0px_10px_15px_-3px_rgba(43,140,238,0.25)]"
             }`}
           >
-            {mode === "create" ? "Create Category" : "Save Changes"}
+            {isSaving
+              ? "Saving..."
+              : mode === "create"
+                ? "Create Category"
+                : "Save Changes"}
           </button>
         </div>
       </Card>

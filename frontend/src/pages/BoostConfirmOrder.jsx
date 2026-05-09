@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
@@ -10,25 +10,44 @@ import {
   CalendarDays,
   Lock,
   ArrowLeft,
+  Loader2,
+  AlertTriangle,
 } from 'lucide-react';
 
 const BoostConfirmOrder = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { packages } = useBoostPackages();
+  const { packages, purchaseBoost } = useBoostPackages();
+
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [purchaseError, setPurchaseError] = useState(null);
 
   // Get data passed from select page
   const {
-    packageId = 'pkg-002',
+    packageId,
     subtotal: passedSubtotal,
     tax: passedTax,
     total: passedTotal,
     durationDays: passedDuration,
   } = location.state || {};
 
-  const selectedPkg = packages.find((p) => p.id === packageId) || packages[1];
+  const selectedPkg = packages.find((p) => p.id === packageId) || packages[0];
 
-  // Calculate values
+  if (!selectedPkg) {
+    return (
+      <MainLayout
+        user={{ name: 'Alex Johnson', role: 'business', displayRole: 'Business & Organization' }}
+        pageTitle="Boost Your Post"
+        verificationCount={0}
+      >
+        <div className="flex items-center justify-center py-xl min-h-[400px]">
+          <p className="text-body-small text-text-secondary font-inter">No package selected. Please go back and select a package.</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Calculate values from DB package data
   const durationDays =
     passedDuration ||
     (selectedPkg.durationUnit === 'Hours'
@@ -36,8 +55,8 @@ const BoostConfirmOrder = () => {
       : selectedPkg.durationUnit === 'Days'
         ? selectedPkg.durationValue
         : selectedPkg.durationValue * 7);
-  const dailyRate = durationDays > 0 ? Math.round(selectedPkg.price / durationDays * 100) / 100 : selectedPkg.price;
-  const subtotal = passedSubtotal || selectedPkg.price;
+  const dailyRate = durationDays > 0 ? Math.round(Number(selectedPkg.price) / durationDays * 100) / 100 : Number(selectedPkg.price);
+  const subtotal = passedSubtotal || Number(selectedPkg.price);
   const tax = passedTax ?? 0;
   const total = passedTotal || subtotal + tax;
 
@@ -49,7 +68,24 @@ const BoostConfirmOrder = () => {
     d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const dateRange = `${formatDate(startDate)} - ${formatDate(endDate)}`;
 
-  // Package badge
+  // Estimated reach — calculated from boostConfig parameters
+  const getEstimatedReach = () => {
+    const config = selectedPkg.boostConfig || {};
+    const baseReach = 500; // base impressions per day for any boosted post
+    const priorityBonus = Math.max(1, (11 - (config.feedPriority || 10)) / 2); // priority #1 = 5x, #10 = 0.5x
+    const visMultiplier = config.visibilityMultiplier || 1;
+    const crossCatBonus = config.crossCategoryReach ? 2.5 : 1; // cross-category = 2.5x more reach
+    const refreshBonus = config.autoRefreshHours ? (24 / config.autoRefreshHours) * 0.3 + 1 : 1; // more refreshes = more exposure
+
+    const totalReach = Math.round(baseReach * durationDays * priorityBonus * visMultiplier * crossCatBonus * refreshBonus);
+
+    if (totalReach >= 10000) return `~${Math.round(totalReach / 1000)}k Views`;
+    if (totalReach >= 1000) return `~${(totalReach / 1000).toFixed(1)}k Views`;
+    return `~${totalReach} Views`;
+  };
+  const estimatedReach = getEstimatedReach();
+
+  // Package badge from DB
   const badgeLabel =
     selectedPkg.badge === 'Most Popular'
       ? 'Most Popular'
@@ -59,46 +95,34 @@ const BoostConfirmOrder = () => {
           ? selectedPkg.badge
           : null;
 
-  // Reach estimates
-  const reachMap = {
-    'pkg-001': '20k - 30k',
-    'pkg-002': '50k - 70k',
-    'pkg-003': '100k - 150k',
-  };
-  const audienceMap = {
-    'pkg-001': 'General',
-    'pkg-002': 'Tech Pros',
-    'pkg-003': 'Enterprise',
-  };
-  const audienceDescMap = {
-    'pkg-001': 'Standard audience reach',
-    'pkg-002': 'Highly targeted segment',
-    'pkg-003': 'Maximum reach potential',
-  };
+  // Benefits from DB package features — no hardcoded fallbacks
+  const benefits = (selectedPkg.features || []).slice(0, 6);
 
-  const estReach = reachMap[packageId] || '50k - 70k';
-  const audience = audienceMap[packageId] || 'Tech Pros';
-  const audienceDesc = audienceDescMap[packageId] || 'Highly targeted segment';
+  const handleProceedToPayment = async () => {
+    setIsPurchasing(true);
+    setPurchaseError(null);
 
-  // Benefits
-  const benefits = [
-    ...selectedPkg.features.slice(0, 4),
-  ];
-  // Pad to 4 if needed
-  while (benefits.length < 4) {
-    const defaults = ['2x Reach Multiplier', 'Priority Support 24/7', 'Detailed Analytics Report', 'Ad Optimization'];
-    benefits.push(defaults[benefits.length]);
-  }
+    try {
+      // Call the purchase API endpoint
+      const result = await purchaseBoost(packageId, null);
 
-  const handleProceedToPayment = () => {
-    navigate('/business/boost-post/success', {
-      state: {
-        packageId,
-        packageName: selectedPkg.name,
-        budget: total,
-        durationDays,
-      },
-    });
+      // Navigate to success page with DB response data
+      navigate('/business/boost-post/success', {
+        state: {
+          packageId,
+          packageName: selectedPkg.name,
+          budget: total,
+          durationDays,
+          transactionId: result?.transactionId,
+          purchaseDate: result?.purchaseDate,
+          expiryDate: result?.expiryDate,
+          purchaseId: result?.purchaseId,
+        },
+      });
+    } catch (err) {
+      setPurchaseError(err.message || 'Failed to process payment. Please try again.');
+      setIsPurchasing(false);
+    }
   };
 
   const handleModifyPackage = () => {
@@ -121,6 +145,14 @@ const BoostConfirmOrder = () => {
             Review your package details before activation.
           </p>
         </div>
+
+        {/* Error Banner */}
+        {purchaseError && (
+          <div className="bg-state-error/10 border border-state-error/30 rounded-2xl p-md flex items-center gap-sm">
+            <AlertTriangle size={18} className="text-state-error flex-shrink-0" />
+            <p className="text-body-small text-state-error font-inter">{purchaseError}</p>
+          </div>
+        )}
 
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row gap-lg">
@@ -145,14 +177,10 @@ const BoostConfirmOrder = () => {
                       </div>
                     )}
                     <h2 className="text-heading-small md:text-heading-medium text-text-primary font-inter">
-                      {selectedPkg.name === 'Growth'
-                        ? 'Gold Tier Package'
-                        : selectedPkg.name === 'Dominate'
-                          ? 'Platinum Tier Package'
-                          : 'Silver Tier Package'}
+                      {selectedPkg.name} Package
                     </h2>
                     <p className="text-body-small text-text-secondary font-inter mt-1 max-w-md">
-                      Maximize your visibility with priority placement across our premium network.
+                      {selectedPkg.description || 'Boost your post visibility across the Unify network.'}
                     </p>
                   </div>
                 </div>
@@ -166,7 +194,7 @@ const BoostConfirmOrder = () => {
                       <Eye size={14} className="text-state-success" />
                       <span className="text-body-extra-small text-text-secondary font-inter">Est. Reach</span>
                     </div>
-                    <p className="text-body-large-bold text-text-primary font-inter">{estReach}</p>
+                    <p className="text-body-large-bold text-text-primary font-inter">{estimatedReach}</p>
                     <p className="text-body-extra-small text-text-secondary font-inter">Impressions guaranteed</p>
                   </Card>
 
@@ -175,8 +203,12 @@ const BoostConfirmOrder = () => {
                       <Users size={14} className="text-primary-blue" />
                       <span className="text-body-extra-small text-text-secondary font-inter">Audience</span>
                     </div>
-                    <p className="text-body-large-bold text-text-primary font-inter">{audience}</p>
-                    <p className="text-body-extra-small text-text-secondary font-inter">{audienceDesc}</p>
+                    <p className="text-body-large-bold text-text-primary font-inter">
+                      {selectedPkg.boostConfig?.crossCategoryReach ? 'All Users' : 'Targeted'}
+                    </p>
+                    <p className="text-body-extra-small text-text-secondary font-inter">
+                      {selectedPkg.boostConfig?.crossCategoryReach ? 'All category feeds' : 'Own category feed'}
+                    </p>
                   </Card>
 
                   <Card variant="container" padding="p-md" className="text-center">
@@ -190,7 +222,7 @@ const BoostConfirmOrder = () => {
                 </div>
               </div>
 
-              {/* Included Benefits */}
+              {/* Included Benefits — from DB features */}
               <div className="px-lg pb-lg">
                 <Card variant="container" padding="p-lg">
                   <h4 className="text-body-medium-bold text-text-primary font-inter mb-md">Included Benefits</h4>
@@ -251,14 +283,19 @@ const BoostConfirmOrder = () => {
                 <div className="mt-lg flex flex-col gap-3">
                   <button
                     onClick={handleProceedToPayment}
-                    className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+                    disabled={isPurchasing}
+                    className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Lock size={16} />
-                    Proceed to Payment
+                    {isPurchasing ? (
+                      <><Loader2 size={16} className="animate-spin" /> Processing...</>
+                    ) : (
+                      <><Lock size={16} /> Proceed to Payment</>
+                    )}
                   </button>
                   <button
                     onClick={handleModifyPackage}
-                    className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
+                    disabled={isPurchasing}
+                    className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
                   >
                     Modify Package
                   </button>

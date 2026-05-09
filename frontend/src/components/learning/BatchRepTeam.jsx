@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import * as learningService from "../../services/learningService";
 
 const TeamMemberRow = ({
   name,
   avatarSrc,
   initials,
   degreeText,
-  roleText = "Rep",
   isYou = false,
   isLast = false,
 }) => (
@@ -35,34 +35,43 @@ const TeamMemberRow = ({
       </h4>
       <div className="text-gray-400 text-xs font-inter leading-5">
         <span className="font-bold">{degreeText}</span>
-        <span className="font-normal"> {roleText}</span>
       </div>
     </div>
   </div>
 );
 
-const BatchRepTeam = () => {
-  const teamMembers = [
-    {
-      name: "Alex Morgan",
-      avatarSrc: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
-      degreeText: "Bsc.(Hons) IT B23",
-      roleText: "Rep",
-    },
-    {
-      name: "John Doe",
-      initials: "JD",
-      degreeText: "Bsc.(Hons) IT B22",
-      roleText: "Rep",
-      isYou: true,
-    },
-    {
-      name: "Sarah Kelly",
-      avatarSrc: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-      degreeText: "Bsc.(Hons) IT B21",
-      roleText: "Rep",
-    },
-  ];
+const BatchRepTeam = ({ degreeId = 18, currentUserId = 1 }) => {
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReps = async () => {
+      try {
+        setIsLoading(true);
+        const res = await learningService.getBatchReps(degreeId);
+        if (res?.data) {
+          // Map backend response to component props
+          const mappedReps = res.data.map((rep) => ({
+            id: rep.userId,
+            name: rep.name,
+            avatarSrc: rep.avatarSrc,
+            initials: rep.initials,
+            degreeText: rep.degreeText,
+            isYou: rep.userId === currentUserId,
+          }));
+          setTeamMembers(mappedReps);
+        }
+      } catch (error) {
+        console.error("Failed to fetch batch reps", error);
+        // Fallback to empty if fails
+        setTeamMembers([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReps();
+  }, [degreeId]);
 
   return (
     <div className="w-full bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col overflow-hidden">
@@ -77,13 +86,23 @@ const BatchRepTeam = () => {
       </div>
 
       <div className="flex flex-col w-full">
-        {teamMembers.map((member, idx) => (
-          <TeamMemberRow
-            key={idx}
-            {...member}
-            isLast={idx === teamMembers.length - 1}
-          />
-        ))}
+        {isLoading ? (
+          <div className="px-5 py-8 text-center text-gray-400 text-sm">
+            Loading batch reps...
+          </div>
+        ) : teamMembers.length > 0 ? (
+          teamMembers.map((member, idx) => (
+            <TeamMemberRow
+              key={member.id || idx}
+              {...member}
+              isLast={idx === teamMembers.length - 1}
+            />
+          ))
+        ) : (
+          <div className="px-5 py-8 text-center text-gray-400 text-sm">
+            No batch reps found.
+          </div>
+        )}
       </div>
     </div>
   );

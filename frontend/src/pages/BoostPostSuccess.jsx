@@ -8,14 +8,33 @@ const BoostPostSuccess = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // All data comes from the DB purchase response passed via location.state
   const {
-    packageName = 'Growth',
-    budget = 500,
-    durationDays = 7,
+    packageName = 'Boost Package',
+    budget = 0,
+    durationDays = 0,
+    transactionId,
+    purchaseDate,
+    expiryDate,
+    purchaseId,
   } = location.state || {};
 
-  const campaignId = `#Campaign-${Math.floor(1000 + Math.random() * 9000)}-X`;
-  const campaignName = 'Summer Sale Campaign';
+  // Format dates from DB response
+  const formatDateTime = (isoString) => {
+    if (!isoString) return 'N/A';
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const displayTransactionId = transactionId || `#TXN-${Date.now()}`;
+  const activationTimestamp = formatDateTime(purchaseDate);
+  const expiryTimestamp = formatDateTime(expiryDate);
 
   return (
     <MainLayout
@@ -45,28 +64,24 @@ const BoostPostSuccess = () => {
               Your listing is now being promoted to a wider audience with premium priority.
             </p>
 
-            {/* Campaign Details Card */}
+            {/* Transaction Details Card — all from DB response */}
             <div className="w-full bg-white/5 rounded-2xl border border-white/10 overflow-hidden mb-4 sm:mb-6">
               {/* Campaign Header */}
               <div className="p-md sm:p-lg flex items-center gap-md">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/10 overflow-hidden flex-shrink-0">
-                  <img
-                    src="/img_post1.jpg"
-                    alt="Campaign"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary-blue/20 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 size={24} className="text-primary-blue" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-center gap-sm">
                     <h4 className="text-body-small-bold sm:text-body-medium-bold text-text-primary font-inter truncate">
-                      {campaignName}
+                      {packageName} Boost
                     </h4>
                     <span className="text-[10px] font-bold bg-state-success/15 text-state-success px-2 py-0.5 rounded-full flex-shrink-0">
                       Active
                     </span>
                   </div>
                   <p className="text-body-extra-small text-text-secondary font-inter">
-                    ID: {campaignId}
+                    ID: {displayTransactionId}
                   </p>
                   <div className="flex items-center gap-1 mt-0.5">
                     <CalendarDays size={11} className="text-text-secondary" />
@@ -77,24 +92,24 @@ const BoostPostSuccess = () => {
                 </div>
               </div>
 
-              {/* Campaign Stats */}
+              {/* Stats from DB */}
               <div className="border-t border-white/10 grid grid-cols-3 divide-x divide-white/10">
                 <div className="p-md sm:p-lg text-left">
                   <p className="text-body-extra-small text-text-secondary font-inter mb-0.5">Budget</p>
                   <p className="text-body-small-bold sm:text-body-medium-bold text-text-primary font-inter">
-                    Rs.{budget.toLocaleString()}
+                    Rs.{Number(budget).toLocaleString()}
                   </p>
                 </div>
                 <div className="p-md sm:p-lg text-left">
-                  <p className="text-body-extra-small text-text-secondary font-inter mb-0.5">Est. Reach</p>
+                  <p className="text-body-extra-small text-text-secondary font-inter mb-0.5">Activated</p>
                   <p className="text-body-small-bold sm:text-body-medium-bold text-text-primary font-inter">
-                    ~5k Views
+                    {activationTimestamp}
                   </p>
                 </div>
                 <div className="p-md sm:p-lg text-left">
-                  <p className="text-body-extra-small text-text-secondary font-inter mb-0.5">Placement</p>
+                  <p className="text-body-extra-small text-text-secondary font-inter mb-0.5">Expires</p>
                   <p className="text-body-small-bold sm:text-body-medium-bold text-text-primary font-inter">
-                    Homepage
+                    {expiryTimestamp}
                   </p>
                 </div>
               </div>
