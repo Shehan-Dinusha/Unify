@@ -1,8 +1,10 @@
 import "dotenv/config";
+import { createServer } from "http";
 import app from "./app.js";
 import logger from "./utils/logger.js";
 import { sequelize } from "./modules/index.js"; // Registers all models + associations
 import { startOtpCleanupJob } from "./jobs/otpCleanup.job.js";
+import { initializeSocket } from "./socket/index.js";
 
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || "development";
@@ -31,9 +33,14 @@ const startServer = async () => {
     // 3. Start background jobs
     startOtpCleanupJob();
 
-    // 4. Start HTTP server
-    app.listen(PORT, () => {
+    // 4. Create HTTP server and attach Socket.IO
+    const httpServer = createServer(app);
+    initializeSocket(httpServer);
+
+    // 5. Start HTTP + WebSocket server
+    httpServer.listen(PORT, () => {
       logger.info(`🚀 Server running in [${NODE_ENV}] mode on port ${PORT}`);
+      logger.info(`🔌 Socket.IO listening on ws://localhost:${PORT}`);
     });
   } catch (error) {
     logger.error("❌ Unable to start server:", error);

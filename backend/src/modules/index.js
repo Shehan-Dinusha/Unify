@@ -575,6 +575,8 @@ UserSuspensionHistory.belongsTo(User, { foreignKey: "performedBy", as: "performe
 User.hasMany(UserSuspension, { foreignKey: "reactivatedBy", as: "reactivatedSuspensions" });
 UserSuspension.belongsTo(User, { foreignKey: "reactivatedBy", as: "reactivatedByUser" });
 
+
+
 // ── Exports ───────────────────────────────────────────────────────────────────
 export {
   sequelize,

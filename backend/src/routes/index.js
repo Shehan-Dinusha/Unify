@@ -20,6 +20,7 @@ import businessManagementRoutes from "./businessManagement.routes.js";
 import adminToolsRoutes from "./adminTools.routes.js";
 import lostAndFoundRoutes from "./lostAndFound.routes.js";
 import newsfeedRoutes from "./newsfeed.routes.js";
+import chatRoutes from "./chat.routes.js";
 
 const router = express.Router();
 
@@ -45,5 +46,6 @@ router.use("/admin/businesses", businessManagementRoutes);
 router.use("/admin/tools", adminToolsRoutes);
 router.use("/lost-and-found", lostAndFoundRoutes);
 router.use("/newsfeed", newsfeedRoutes);
+router.use("/chat", chatRoutes);
 
 export default router;

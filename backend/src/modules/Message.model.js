@@ -23,7 +23,7 @@ const Message = sequelize.define(
     },
     attachments: {
       type: DataTypes.JSON,
-      allowNull: true, // Array of URLs e.g. images, files sent in chat
+      allowNull: true, // Array of { key, name, type, size }
     },
     isRead: {
       type: DataTypes.BOOLEAN,
@@ -33,6 +33,11 @@ const Message = sequelize.define(
   {
     tableName: "messages",
     timestamps: true,
+    indexes: [
+      { fields: ["conversationId", "createdAt"] },
+      { fields: ["senderId"] },
+      { fields: ["conversationId", "isRead"] },
+    ],
   },
 );
 

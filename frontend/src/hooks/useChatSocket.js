@@ -1,46 +1,116 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
+import { io } from "socket.io-client";
 
 /**
- * A mock hook to simulate WebSocket communication.
- * This can be easily replaced with actual Socket.io or WebSocket logic.
+ * Real Socket.IO hook for chat.
+ * Connects to the backend Socket.IO server using the JWT token from localStorage.
+ * Provides methods for joining/leaving rooms, sending messages, and handling events.
  */
-export const useChatSocket = (userId) => {
+export const useChatSocket = () => {
+  const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [lastMessage, setLastMessage] = useState(null);
 
   useEffect(() => {
-    // Simulate connection delay
-    const timer = setTimeout(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    // Derive socket URL from API URL (strip /api/v1 suffix)
+    const SOCKET_URL =
+      (import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1").replace(
+        "/api/v1",
+        "",
+      );
+
+    const newSocket = io(SOCKET_URL, {
+      auth: { token },
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+    });
+
+    newSocket.on("connect", () => {
+      console.log("⚡ Chat socket connected:", newSocket.id);
       setIsConnected(true);
-      console.log('Chat socket connected for user:', userId);
-    }, 1000);
+    });
+
+    newSocket.on("disconnect", (reason) => {
+      console.log("🔌 Chat socket disconnected:", reason);
+      setIsConnected(false);
+    });
+
+    newSocket.on("connect_error", (err) => {
+      console.error("Socket auth failed:", err.message);
+      setIsConnected(false);
+    });
+
+    setSocket(newSocket);
 
     return () => {
-      clearTimeout(timer);
+      newSocket.disconnect();
+      setSocket(null);
       setIsConnected(false);
     };
-  }, [userId]);
-
-  /**
-   * Simulate sending a message via WebSocket
-   */
-  const sendMessage = useCallback((messageData) => {
-    console.log('Sending message via socket:', messageData);
-    
-    // Simulate an echo or automated response for demonstration
-    if (messageData.text.toLowerCase().includes('hello')) {
-      setTimeout(() => {
-        setLastMessage({
-          id: `socket-${Date.now()}`,
-          sender: messageData.receiverName || 'System',
-          text: `Hello! I'm ${messageData.receiverName}. How can I help you today?`,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          isMe: false,
-          convId: messageData.convId
-        });
-      }, 1500);
-    }
   }, []);
 
-  return { isConnected, sendMessage, lastMessage };
+  const joinRoom = useCallback(
+    (conversationId) => {
+      socket?.emit("chat:join", { conversationId });
+    },
+    [socket],
+  );
+
+  const leaveRoom = useCallback(
+    (conversationId) => {
+      socket?.emit("chat:leave", { conversationId });
+    },
+    [socket],
+  );
+
+  const sendMessage = useCallback(
+    ({ conversationId, text, attachments }) => {
+      socket?.emit("chat:send", { conversationId, text, attachments });
+    },
+    [socket],
+  );
+
+  const markRead = useCallback(
+    (conversationId) => {
+      socket?.emit("chat:read", { conversationId });
+    },
+    [socket],
+  );
+
+  const deleteMessage = useCallback(
+    (conversationId, messageId) => {
+      socket?.emit("chat:delete_message", { conversationId, messageId });
+    },
+    [socket],
+  );
+
+  const startTyping = useCallback(
+    (conversationId) => {
+      socket?.emit("chat:typing", { conversationId });
+    },
+    [socket],
+  );
+
+  const stopTyping = useCallback(
+    (conversationId) => {
+      socket?.emit("chat:stop_typing", { conversationId });
+    },
+    [socket],
+  );
+
+  return {
+    socket,
+    isConnected,
+    joinRoom,
+    leaveRoom,
+    sendMessage,
+    markRead,
+    deleteMessage,
+    startTyping,
+    stopTyping,
+  };
 };
