@@ -484,7 +484,7 @@ const ReceivedReviews = () => {
               ))
           ) : (
             <div className="text-gray-400 text-sm font-inter text-center py-8">
-              No reviews found matching the criteria.
+              No reviews yet
             </div>
           )}
         </div>

@@ -556,7 +556,8 @@ const MarketplaceReviews = () => {
     } catch (err) {
       if (
         err.response &&
-        (err.response.status === 401 ||
+        (err.response.status === 400 ||
+          err.response.status === 401 ||
           err.response.status === 403 ||
           err.response.status === 404)
       ) {
@@ -564,6 +565,8 @@ const MarketplaceReviews = () => {
       } else {
         setError("Failed to load reviews.");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -706,9 +709,11 @@ const MarketplaceReviews = () => {
           ) : (
             <Card
               variant="card"
-              className="w-full lg:w-96 h-[470px] flex flex-col justify-center items-center"
+              className="w-full lg:w-96 h-[470px]"
             >
-              <span className="text-gray-400">No reviews yet</span>
+              <div className="flex flex-col justify-center items-center h-full text-gray-400">
+                No reviews yet
+              </div>
             </Card>
           )}
           {hasSubmitted ? (

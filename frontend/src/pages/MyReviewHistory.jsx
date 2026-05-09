@@ -3,6 +3,7 @@ import { Trash2, ChevronDown, ThumbsUp, ThumbsDown, Heart } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import Avatar from "../components/common/Avatar";
 import LoadMoreButton from "../components/common/LoadMoreButton";
 import { getMyReviews, deleteReview } from "../services/reviewService";
 import {
