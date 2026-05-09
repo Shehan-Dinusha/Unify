@@ -4,3 +4,4 @@ export * from "./createConversation.controller.js";
 export * from "./deleteConversation.controller.js";
 export * from "./searchChatUsers.controller.js";
 export * from "./uploadChatAttachments.controller.js";
+export * from "./getUnreadCount.controller.js";

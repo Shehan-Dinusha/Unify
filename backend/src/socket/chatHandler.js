@@ -168,6 +168,9 @@ export const registerChatHandlers = (io, socket) => {
           readBy: userId,
           readAt: new Date(),
         });
+
+        // Notify the user's personal room to refresh their global unread count
+        io.to(`user:${userId}`).emit("chat:unread_count_update");
       }
     } catch (error) {
       logger.error("chat:read error:", error);

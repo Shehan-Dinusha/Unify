@@ -8,6 +8,7 @@ import { EmptyInbox, EmptyChatList } from "../../components/chat/EmptyChatState"
 import { useChatSocket } from "../../hooks/useChatSocket";
 import { getCurrentUser } from "../../services/authService";
 import * as chatService from "../../services/chatService";
+import { useChat } from "../../context/ChatContext";
 
 const TABS = ["All", "Unread"];
 
@@ -32,6 +33,7 @@ const ChatPage = () => {
     socket, isConnected, joinRoom, leaveRoom, sendMessage,
     markRead, deleteMessage, startTyping, stopTyping
   } = useChatSocket();
+  const { refreshUnreadCount } = useChat();
 
   const searchInputRef = useRef(null);
   const prevChatIdRef = useRef(null);
@@ -87,12 +89,17 @@ const ChatPage = () => {
                 // Increment unread only if this chat isn't active
                 unreadCount:
                   activeChatId === conversationId
-                    ? c.unreadCount
+                    ? 0
                     : (c.unreadCount || 0) + 1,
               }
             : c,
         ),
       );
+
+      // If this is the active chat, mark as read immediately
+      if (activeChatId === conversationId) {
+        markRead(conversationId);
+      }
     };
 
     // Conversation list update for chats not currently open

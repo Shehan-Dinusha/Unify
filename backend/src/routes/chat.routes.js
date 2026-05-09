@@ -10,6 +10,7 @@ import {
   deleteConversation,
   searchChatUsers,
   uploadChatAttachments,
+  getUnreadCount,
 } from "../controllers/chat/index.js";
 
 const router = Router();
@@ -19,6 +20,9 @@ router.use(protect, authorize("Student", "Club"));
 
 // GET /api/v1/chat/conversations — List user's conversations
 router.get("/conversations", getConversations);
+
+// GET /api/v1/chat/unread-count — Get total unread chat messages
+router.get("/unread-count", getUnreadCount);
 
 // GET /api/v1/chat/conversations/:id/messages — Get messages (paginated)
 router.get("/conversations/:id/messages", getMessages);

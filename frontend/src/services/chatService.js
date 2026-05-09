@@ -64,6 +64,15 @@ export const uploadChatAttachments = async (files) => {
   return res.data;
 };
 
+/**
+ * Get total unread message count across all conversations.
+ */
+export const getUnreadCount = async () => {
+  const res = await api.get("/chat/unread-count");
+  return res.data;
+};
+
+
 export default {
   getConversations,
   getMessages,
@@ -71,4 +80,5 @@ export default {
   deleteConversation,
   searchChatUsers,
   uploadChatAttachments,
+  getUnreadCount,
 };
