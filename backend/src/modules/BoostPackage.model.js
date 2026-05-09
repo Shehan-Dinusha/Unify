@@ -48,6 +48,29 @@ const BoostPackage = sequelize.define(
       allowNull: true,
       comment: "Array of feature strings displayed on the package card",
     },
+    /**
+     * boostConfig — The 5 engine parameters that ACTUALLY control boost behavior.
+     *
+     * {
+     *   feedPriority:         Number (1-10) — Lower = higher position in feed. 1 = always first.
+     *   visibilityMultiplier: Number (1-5)  — How many extra times the post can appear across feed loads.
+     *   highlightStyle:       String ("none"|"subtle"|"blue"|"gold") — Visual card style in feed.
+     *   crossCategoryReach:   Boolean — If true, post appears in ALL category feeds, not just its own.
+     *   analyticsLevel:       String ("none"|"basic"|"detailed") — What stats the business user can see.
+     * }
+     */
+    boostConfig: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: {
+        feedPriority: 10,
+        visibilityMultiplier: 1,
+        highlightStyle: "none",
+        crossCategoryReach: false,
+        analyticsLevel: "none",
+      },
+      comment: "Engine parameters that control actual boost behavior in the feed",
+    },
     status: {
       type: DataTypes.ENUM("live", "archived"),
       allowNull: false,

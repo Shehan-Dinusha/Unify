@@ -36,6 +36,7 @@ import BoostPackage from "./BoostPackage.model.js";
 import BoostCampaign from "./BoostCampaign.model.js";
 import BoostInteraction from "./BoostInteraction.model.js";
 import BoostLog from "./BoostLog.model.js";
+import BoostPurchase from "./BoostPurchase.model.js";
 import AdminLog from "./AdminLog.model.js";
 import UserActivityLog from "./UserActivityLog.model.js";
 import UserFollower from "./UserFollower.model.js";
@@ -361,6 +362,42 @@ User.hasMany(BoostInteraction, {
 });
 BoostInteraction.belongsTo(User, { foreignKey: "userId", as: "user" });
 
+// --- Boost Purchases ---
+BoostPackage.hasMany(BoostPurchase, {
+  foreignKey: "packageId",
+  as: "purchases",
+});
+BoostPurchase.belongsTo(BoostPackage, {
+  foreignKey: "packageId",
+  as: "package",
+});
+
+User.hasMany(BoostPurchase, {
+  foreignKey: "userId",
+  as: "boostPurchases",
+  onDelete: "CASCADE",
+});
+BoostPurchase.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+Post.hasMany(BoostPurchase, {
+  foreignKey: "postId",
+  as: "boostPurchases",
+  onDelete: "CASCADE",
+  constraints: false,
+});
+BoostPurchase.belongsTo(Post, {
+  foreignKey: "postId",
+  as: "post",
+  constraints: false,
+});
+
+// --- Boost Logs ---
+BoostLog.belongsTo(BoostPackage, {
+  foreignKey: "packageId",
+  as: "package",
+  constraints: false,
+});
+
 // --- Admin Logs ---
 User.hasMany(AdminLog, {
   foreignKey: "adminId",
@@ -605,6 +642,7 @@ export {
   BoostCampaign,
   BoostInteraction,
   BoostLog,
+  BoostPurchase,
   AdminLog,
   UserActivityLog,
   UserFollower,

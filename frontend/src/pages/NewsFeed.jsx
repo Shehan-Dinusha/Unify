@@ -220,6 +220,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
                       initialIsLiked={post.isLiked}
                       initialIsSaved={post.isSaved}
                       isPromoted={post.isPromoted}
+                      boostMeta={post.boostMeta}
                       showBoost={user.role === 'business'}
                     />
                   </div>

@@ -131,6 +131,7 @@ const PostCard = ({
   initialIsLiked = false,
   initialIsSaved = false,
   isPromoted,
+  boostMeta,
   showBoost = false,
 }) => {
   const { toggleSavePost, isPostSaved } = useSavedPosts();
@@ -244,10 +245,44 @@ const PostCard = ({
     }
   };
 
+  // Determine boost visual style from boostMeta
+  const highlightStyle = boostMeta?.highlightStyle || "none";
+
+  // Build card border classes based on highlightStyle
+  const cardBorderClass = (() => {
+    if (!isPromoted || !boostMeta) return "border border-white/5";
+    switch (highlightStyle) {
+      case "gold":
+        return "border-2 border-yellow-400/60";
+      case "blue":
+        return "border-2 border-blue-500/50";
+      case "subtle":
+        return "border border-white/15";
+      default:
+        return "border border-white/5";
+    }
+  })();
+
+  // Glow shadow for premium tiers (applied via inline style to avoid Babel parse issues)
+  const cardGlowStyle = (() => {
+    if (!isPromoted || !boostMeta) return {};
+    switch (highlightStyle) {
+      case "gold":
+        return { boxShadow: "0 0 20px rgba(251, 191, 36, 0.15)" };
+      case "blue":
+        return { boxShadow: "0 0 16px rgba(59, 130, 246, 0.12)" };
+      default:
+        return {};
+    }
+  })();
+
   return (
-    <div className="w-full bg-[#1A2634] rounded-[24px] overflow-hidden border border-white/5 font-inter text-white">
+    <div
+      className={"w-full bg-[#1A2634] rounded-[24px] overflow-hidden font-inter text-white transition-all duration-300 " + cardBorderClass}
+      style={cardGlowStyle}
+    >
       {/* Post Image */}
-      {image && (
+      {image ? (
         <div className="relative w-full bg-black/20 flex justify-center items-center min-h-[200px] max-h-[500px] overflow-hidden">
           <img
             src={image || "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22400%22%20viewBox%3D%220%200%20800%20400%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fsvg%3E"}
@@ -349,9 +384,35 @@ const PostCard = ({
           </div>
 
           {isPromoted && (
-            <span className="text-[11px] font-bold bg-[#FBBF24]/10 text-[#FBBF24] px-3 py-1 rounded-full">
-              Promoted
-            </span>
+            (() => {
+              const style = boostMeta?.highlightStyle || "none";
+              switch (style) {
+                case "gold":
+                  return (
+                    <span className="text-[11px] font-bold bg-gradient-to-r from-[#FBBF24]/20 to-[#F59E0B]/20 text-[#FBBF24] px-3 py-1 rounded-full border border-[#FBBF24]/30 flex items-center gap-1">
+                      ⚡ Featured
+                    </span>
+                  );
+                case "blue":
+                  return (
+                    <span className="text-[11px] font-bold bg-[#3B82F6]/15 text-[#60A5FA] px-3 py-1 rounded-full border border-[#3B82F6]/30">
+                      Promoted
+                    </span>
+                  );
+                case "subtle":
+                  return (
+                    <span className="text-[10px] font-medium text-[#94A3B8]/70 tracking-wider uppercase">
+                      Sponsored
+                    </span>
+                  );
+                default:
+                  return (
+                    <span className="text-[11px] font-bold bg-[#FBBF24]/10 text-[#FBBF24] px-3 py-1 rounded-full">
+                      Promoted
+                    </span>
+                  );
+              }
+            })()
           )}
         </div>
 
