@@ -12,6 +12,7 @@ import {
   deleteNotification,
 } from "../../services/notification.service.js";
 import { formatRelativeDate } from "../../utils/date.js";
+import s3Service from "../../services/s3.service.js";
 
 /**
  * GET /notifications
@@ -29,16 +30,27 @@ export const getNotifications = async (req, res) => {
     });
 
     // Format each notification for the frontend
-    const formatted = notifications.map((n) => {
+    const formatted = await Promise.all(notifications.map(async (n) => {
       const json = n.toJSON();
+      
+      let signedImage = json.image;
+      if (signedImage && !signedImage.startsWith("http")) {
+        try {
+          signedImage = await s3Service.getFileUrl(signedImage);
+        } catch (err) {
+          console.error("Failed to sign notification image URL:", err);
+        }
+      }
+
       return {
         ...json,
         time: formatRelativeDate(json.createdAt),
         // Map actor info into the shape the frontend expects
         avatar: json.actor?.avatar || null,
         actorName: json.actor?.name || null,
+        image: signedImage,
       };
-    });
+    }));
 
     return res.status(200).json({
       success: true,

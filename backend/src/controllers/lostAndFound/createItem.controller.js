@@ -1,14 +1,14 @@
 import LostAndFound from "../../modules/LostAndFound.model.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
-import s3Service from "../../services/s3.service.js"; // <-- Import S3 Service
-import fs from "fs"; // <-- Import File System
+import s3Service from "../../services/s3.service.js";
+import { runMatchingEngine } from "../../services/lostAndFoundMatcher.service.js";
+import fs from "fs";
 
 export const createItem = catchAsync(async (req, res, next) => {
   // express-validator and multer guarantee this payload is clean
   const { type, title, description, location, date, timeOfDay } = req.body;
   
-  // Assume a middleware provides req.user; fallback to 1 as default for testing
-  const userId = req.user?.id || 1; 
+  const userId = req.user.id; 
 
   //------------------------------------------------------------------------------
 /*
@@ -61,8 +61,14 @@ export const createItem = catchAsync(async (req, res, next) => {
     location,
     date,
     timeOfDay,
-    images: s3ImageKeys, // Save S3 keys in the database array
+    images: s3ImageKeys,
     status: "Active"
   });
-  return sendResponse(res, 201, true, "Item created successfully.", newItem);
+
+  // Respond immediately — do NOT await the matching engine
+  sendResponse(res, 201, true, "Item created successfully.", newItem);
+
+  // Fire-and-forget: run TF-IDF matching in the background.
+  // Any errors inside runMatchingEngine are caught and logged internally.
+  runMatchingEngine(newItem);
 });

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../services/authService";
 import {
   MapPin,
   Upload,
@@ -13,7 +14,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
-import { getItems, getItemById } from "../services/lostAndFoundService";
+import { getItems, getItemById, getItemMatches } from "../services/lostAndFoundService";
 import CreatePostModal from "../components/lost-found/CreatePostModal";
 import ReportItemForm from "../components/lost-found/ReportItemForm";
 
@@ -88,7 +89,7 @@ const ItemCard = ({ item, onSelect }) => {
 };
 
 /* ─── Item Detail View ───────────────────────────────────────── */
-const ItemDetailView = ({ item, onBack }) => {
+const ItemDetailView = ({ item, matches, onBack, onSelectMatch }) => {
   const isLost = item.type === "lost";
   const [activeImage, setActiveImage] = useState(0);
 
@@ -154,6 +155,41 @@ const ItemDetailView = ({ item, onBack }) => {
               {item.description}
             </p>
           </div>
+
+          {/* Matches Section (Only visible to post owner) */}
+          {matches && matches.length > 0 && (
+            <div className="rounded-2xl border border-primary-blue/30 bg-primary-blue/5 p-5 flex flex-col gap-4">
+              <div className="flex items-center gap-2 text-text-primary">
+                <Lightbulb size={18} className="text-primary-blue" />
+                <span className="text-body-medium-bold">Potential  Matches</span>
+              </div>
+              <p className="text-[12px] text-text-secondary -mt-2">
+                Our algorithm found these potential matches based on description, location, and time.
+              </p>
+              <div className="flex flex-col gap-3">
+                {matches.map((match) => (
+                  <div 
+                    key={match.id} 
+                    onClick={() => onSelectMatch?.(match.id)}
+                    className="bg-dark-3 rounded-xl p-3 border border-white/5 flex gap-3 cursor-pointer hover:border-primary-blue/50 transition-colors"
+                  >
+                    <img src={match.images?.[0] || "https://placehold.co/100x100"} alt={match.title} className="w-16 h-16 rounded-lg object-cover shrink-0" />
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-body-small-bold text-text-primary line-clamp-1">{match.title}</span>
+                        <span className="text-[10px] font-bold text-primary-blue bg-primary-blue/10 px-2 py-0.5 rounded-md shrink-0">
+                          {Math.round(match.score * 100)}% Match
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-text-tertiary mt-1 flex items-center gap-1">
+                        <MapPin size={10} /> <span className="truncate">{match.location}</span>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Right Column ── */}
@@ -224,7 +260,11 @@ const ItemDetailView = ({ item, onBack }) => {
             </span>
             <div className="flex items-center gap-3">
               <img
-                src={item.postedBy.avatar}
+                src={
+                  !item.postedBy.avatar || item.postedBy.avatar.includes("placehold") || item.postedBy.avatar.includes("dicebear")
+                    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(item.postedBy.name || "User")}&background=2666F1&color=fff`
+                    : item.postedBy.avatar
+                }
                 alt={item.postedBy.name}
                 className="w-10 h-10 rounded-full object-cover"
               />
@@ -233,7 +273,7 @@ const ItemDetailView = ({ item, onBack }) => {
                   {item.postedBy.name}
                 </span>
                 <span className="text-body-extra-small text-text-tertiary">
-                  {item.postedBy.department}
+                  {item.postedBy.degree}
                 </span>
               </div>
             </div>
@@ -254,15 +294,21 @@ const ItemDetailView = ({ item, onBack }) => {
 const FILTERS = ["All", "Lost Items", "Found Items"];
 
 /* ─── Item Detail View Wrapper ───────────────────────────────── */
-const ItemDetailViewWrapper = ({ id, onBack }) => {
+const ItemDetailViewWrapper = ({ id, onBack, onSelectMatch }) => {
   const [item, setItem] = useState(null);
+  const [matches, setMatches] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchItem = async () => {
       try {
+        setLoading(true);
         const data = await getItemById(id);
         setItem(data);
+        
+        // Try to fetch matches (will return null if not owner)
+        const matchData = await getItemMatches(id).catch(() => null);
+        setMatches(matchData?.matches || null);
       } catch (error) {
         console.error("Failed to fetch item details", error);
       } finally {
@@ -275,11 +321,14 @@ const ItemDetailViewWrapper = ({ id, onBack }) => {
   if (loading) return <div className="text-center text-text-secondary py-10">Loading item...</div>;
   if (!item) return <div className="text-center text-text-secondary py-10">Item not found. <button onClick={onBack} className="text-primary-blue hover:underline">Go back</button></div>;
 
-  return <ItemDetailView item={item} onBack={onBack} />;
+  return <ItemDetailView item={item} matches={matches} onBack={onBack} onSelectMatch={onSelectMatch} />;
 };
 
 /* ─── Page ───────────────────────────────────────────────────── */
 const LostAndFound = () => {
+  const navigate = useNavigate();
+  const currentUser = getCurrentUser();
+
   const [activeFilter, setActiveFilter] = useState("All");
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -287,6 +336,12 @@ const LostAndFound = () => {
   // Sync view state with URL search params so the browser back button works
   const [searchParams, setSearchParams] = useSearchParams();
   const view = searchParams.get("view") || "list";
+
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/login");
+    }
+  }, [currentUser, navigate]);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -315,7 +370,11 @@ const LostAndFound = () => {
     [setSearchParams]
   );
 
-  const user = { name: "Alex Johnson", role: "student" };
+  const user = {
+    name: currentUser?.name || "Unknown User",
+    role: currentUser?.role?.toLowerCase() || "student",
+    avatar: currentUser?.avatar,
+  };
 
   const filteredItems =
     activeFilter === "All"
@@ -334,6 +393,8 @@ const LostAndFound = () => {
     </button>
   ) : null;
 
+  if (!currentUser) return null;
+
   return (
     <MainLayout
       user={user}
@@ -342,7 +403,11 @@ const LostAndFound = () => {
       headerRight={headerRight}
     >
       {view === "detail" ? (
-        <ItemDetailViewWrapper id={Number(searchParams.get("id"))} onBack={() => setView("list")} />
+        <ItemDetailViewWrapper 
+          id={Number(searchParams.get("id"))} 
+          onBack={() => setView("list")} 
+          onSelectMatch={(matchId) => setSearchParams({ view: "detail", id: String(matchId) })}
+        />
       ) : view === "lostForm" || view === "foundForm" ? (
         <ReportItemForm
           type={view === "lostForm" ? "lost" : "found"}
@@ -387,23 +452,7 @@ const LostAndFound = () => {
             </div>
           )}
 
-          {activeFilter === "All" && !isLoading && filteredItems.length > 0 && (
-            <button className="mx-auto flex items-center gap-2 text-body-small text-text-secondary hover:text-text-primary transition-colors py-3">
-              Load more items
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-          )}
+
         </div>
       )}
 

@@ -53,7 +53,11 @@ const CommentSection = ({ postComments, onAddComment, loading, currentUser }) =>
           {postComments.map((c) => (
             <div key={c.id} className="flex gap-3 items-start">
               <img
-                src={c.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.user?.name || c.user || "User")}`}
+                src={
+                  c.avatar && !c.avatar.includes("placehold") && !c.avatar.includes("dicebear")
+                    ? c.avatar
+                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || c.user || "User")}&background=2666F1&color=fff`
+                }
                 alt={c.user?.name || c.user || "User"}
                 className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5 object-cover"
               />
@@ -78,7 +82,11 @@ const CommentSection = ({ postComments, onAddComment, loading, currentUser }) =>
       {/* Input */}
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <img
-          src={currentUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentUser?.name || "Me")}`}
+          src={
+            currentUser?.avatar && !currentUser.avatar.includes("placehold") && !currentUser.avatar.includes("dicebear")
+              ? currentUser.avatar
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || "Me")}&background=2666F1&color=fff`
+          }
           alt="You"
           className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1 object-cover"
         />
@@ -115,10 +123,10 @@ const CommentSection = ({ postComments, onAddComment, loading, currentUser }) =>
   );
 };
 
-/* ─── PostCard ───────────────────────────────────────────────── */
 const PostCard = ({
   post,
   author,
+  authorAvatar,
   authorInitial,
   time,
   title,
@@ -310,9 +318,15 @@ const PostCard = ({
         {/* Author Section */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#7551FF] flex items-center justify-center text-white text-body-medium-bold">
-              {authorInitial}
-            </div>
+            <img
+              src={
+                authorAvatar && !authorAvatar.includes("placehold") && !authorAvatar.includes("dicebear")
+                  ? authorAvatar
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(author || "User")}&background=2666F1&color=fff`
+              }
+              alt={author}
+              className="w-10 h-10 rounded-full border border-white/20 object-cover"
+            />
             <div>
               <p className="text-body-small-bold sm:text-body-medium-bold text-[#E2E8F0]">
                 {author}

@@ -4,19 +4,30 @@ import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import PostCard from "../components/feed/PostCard";
 import { useSavedPosts } from "../context/SavedPostsContext";
+import { getCurrentUser } from "../services/authService";
 
 /* ─── My Saved Posts Page ─────────────────────────────────────── */
 const MySavedPosts = () => {
   const navigate = useNavigate();
   const { savedPosts } = useSavedPosts();
+  const currentUser = getCurrentUser();
+
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/login");
+    }
+  }, [currentUser, navigate]);
 
   const searchInputRef = useRef(null);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  if (!currentUser) return null;
+
   const user = {
-    name: "Alex Johnson",
-    role: "student",
+    name: currentUser.name || "Unknown User",
+    role: currentUser.role?.toLowerCase() || "student",
+    avatar: currentUser.avatar,
   };
 
   // Auto-focus search input when search bar opens
@@ -131,7 +142,20 @@ const MySavedPosts = () => {
               <PostCard
                 key={post.id}
                 post={post}
-                {...post}
+                author={post.author?.name || post.author || "Unknown User"}
+                authorAvatar={post.author?.avatar || null}
+                authorInitial={
+                  (post.author?.name || post.author || "?")?.charAt(0)
+                }
+                time={post.time || ""}
+                title={post.title || post.name}
+                location={post.location || post.pickupNote}
+                description={post.description}
+                image={post.coverImage || post.image || post.images?.[0]}
+                likes={post.likesCount || 0}
+                comments={post.commentsCount || 0}
+                initialIsLiked={post.isLiked}
+                initialIsSaved={true}
               />
             ))}
           </div>
