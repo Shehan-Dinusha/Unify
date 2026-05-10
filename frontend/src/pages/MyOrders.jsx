@@ -5,6 +5,7 @@ import Card from "../components/common/Card";
 import { ChevronRight, Loader2, Package, Calendar, Ticket } from "lucide-react";
 import orderService from "../services/orderService";
 import { getImageUrl } from "../utils/formatters";
+import { getCurrentUser } from "../services/authService";
 
 const MyOrders = () => {
     const navigate = useNavigate();
@@ -14,8 +15,8 @@ const MyOrders = () => {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState("All");
     const [viewType, setViewType] = useState("Marketplace"); // "Marketplace" or "Events"
-    
-    const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
+
+    const user = getCurrentUser();
     const tabs = ["All", "In Progress", "Completed"];
 
     useEffect(() => {
@@ -27,8 +28,8 @@ const MyOrders = () => {
             setLoading(true);
             // Using mock user ID 5 for now to match the checkout mock user
             const [ordersRes, bookingsRes] = await Promise.all([
-                orderService.getStudentOrders(5),
-                orderService.getStudentBookings(5)
+                orderService.getStudentOrders(user.id),
+                orderService.getStudentBookings(user.id)
             ]);
 
             if (ordersRes.success) setOrders(ordersRes.orders);
@@ -61,22 +62,22 @@ const MyOrders = () => {
     const getStatusStyles = (status) => {
         switch (status) {
             // Product order statuses
-            case "PENDING":              return "bg-state-warning/10 text-state-warning border-state-warning/20";
-            case "Order Placed":         return "bg-primary-blue/10 text-primary-blue border-primary-blue/20";
-            case "Seller Confirmed":     return "bg-purple-400/10 text-purple-400 border-purple-400/20";
-            case "Ready for Pickup":     return "bg-state-success/10 text-state-success border-state-success/20";
-            case "Order Completed":      return "bg-white/10 text-text-secondary border-white/20";
+            case "PENDING": return "bg-state-warning/10 text-state-warning border-state-warning/20";
+            case "Order Placed": return "bg-primary-blue/10 text-primary-blue border-primary-blue/20";
+            case "Seller Confirmed": return "bg-purple-400/10 text-purple-400 border-purple-400/20";
+            case "Ready for Pickup": return "bg-state-success/10 text-state-success border-state-success/20";
+            case "Order Completed": return "bg-white/10 text-text-secondary border-white/20";
             // Event booking statuses
-            case "CONFIRMED":            return "bg-primary-blue/10 text-primary-blue border-primary-blue/20";
-            case "ATTENDED":             return "bg-state-success/10 text-state-success border-state-success/20";
-            case "CANCELLED":            return "bg-state-error/10 text-state-error border-state-error/20";
+            case "CONFIRMED": return "bg-primary-blue/10 text-primary-blue border-primary-blue/20";
+            case "ATTENDED": return "bg-state-success/10 text-state-success border-state-success/20";
+            case "CANCELLED": return "bg-state-error/10 text-state-error border-state-error/20";
             // Legacy/fallback
             case "COMPLETED":
-            case "DELIVERED":            return "bg-white/10 text-text-secondary border-white/20";
+            case "DELIVERED": return "bg-white/10 text-text-secondary border-white/20";
             case "IN PROGRESS":
             case "PROCESSING":
-            case "SHIPPED":              return "bg-primary-blue/10 text-primary-blue border-primary-blue/20";
-            default:                     return "bg-white/10 text-text-secondary border-white/20";
+            case "SHIPPED": return "bg-primary-blue/10 text-primary-blue border-primary-blue/20";
+            default: return "bg-white/10 text-text-secondary border-white/20";
         }
     };
 
@@ -101,11 +102,10 @@ const MyOrders = () => {
                             <button
                                 key={type}
                                 onClick={() => setViewType(type)}
-                                className={`flex-1 md:flex-none px-lg py-sm rounded-xl text-body-small-bold transition-all duration-300 flex items-center justify-center gap-2 ${
-                                    viewType === type
-                                        ? "bg-primary-blue text-white shadow-lg shadow-primary-blue/20"
-                                        : "text-text-tertiary hover:text-text-secondary"
-                                }`}
+                                className={`flex-1 md:flex-none px-lg py-sm rounded-xl text-body-small-bold transition-all duration-300 flex items-center justify-center gap-2 ${viewType === type
+                                    ? "bg-primary-blue text-white shadow-lg shadow-primary-blue/20"
+                                    : "text-text-tertiary hover:text-text-secondary"
+                                    }`}
                             >
                                 {type === "Marketplace" ? <Package size={16} /> : <Ticket size={16} />}
                                 {type}
@@ -119,11 +119,10 @@ const MyOrders = () => {
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`flex-1 md:flex-none px-lg py-sm rounded-xl text-body-small-bold transition-all duration-300 ${
-                                    activeTab === tab
-                                        ? "bg-white/10 text-text-primary shadow-lg"
-                                        : "text-text-tertiary hover:text-text-secondary"
-                                }`}
+                                className={`flex-1 md:flex-none px-lg py-sm rounded-xl text-body-small-bold transition-all duration-300 ${activeTab === tab
+                                    ? "bg-white/10 text-text-primary shadow-lg"
+                                    : "text-text-tertiary hover:text-text-secondary"
+                                    }`}
                             >
                                 {tab}
                             </button>
@@ -159,7 +158,7 @@ const MyOrders = () => {
                                             <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden bg-white/5 border border-white/10 shrink-0">
                                                 <img
                                                     src={getImageUrl(
-                                                        viewType === "Marketplace" 
+                                                        viewType === "Marketplace"
                                                             ? (item.clubProduct?.images?.[0] || item.clubProduct?.coverImage)
                                                             : (item.event?.coverImage)
                                                     )}

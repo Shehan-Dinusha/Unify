@@ -1,5 +1,4 @@
-import BoostPackage from "../../modules/BoostPackage.model.js";
-import BoostLog from "../../modules/BoostLog.model.js";
+import boostService from "../../services/boost.service.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -9,36 +8,13 @@ import logger from "../../utils/logger.js";
  */
 export const deletePackage = async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const pkg = await BoostPackage.findByPk(id);
-
-    if (!pkg) {
-      return sendResponse(res, 404, false, 'Boost package not found');
-    }
-
-    if (pkg.status === 'archived') {
-      return sendResponse(res, 400, false, 'Package is already archived');
-    }
-
-    pkg.status = 'archived';
-    await pkg.save();
-
-    await BoostLog.create({
-      id: `log-${Date.now()}`,
-      type: 'package_deleted',
-      title: `Package '${pkg.name}' removed`,
-      description: 'Package tier has been decommissioned from active lists'
-    });
-
-    logger.info(`Boost package ${id} archived by admin. Name: ${pkg.name}`);
-
-    const plain = pkg.toJSON();
-    plain.price = Number(plain.price);
-    plain.duration = `${plain.durationValue} ${plain.durationUnit}`;
-
-    return sendResponse(res, 200, true, 'Boost package deleted successfully', plain);
+    const adminId = req.user?.id || null;
+    const result = await boostService.deletePackage(req.params.id, adminId);
+    return sendResponse(res, 200, true, "Boost package deleted successfully", result);
   } catch (error) {
+    if (error.statusCode) {
+      return sendResponse(res, error.statusCode, false, error.message);
+    }
     logger.error(`Error in deletePackage controller: ${error.message}`);
     next(error);
   }

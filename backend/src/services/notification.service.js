@@ -102,8 +102,8 @@ export const notifyLike = async ({
     userId: postOwnerId,
     actorId,
     type: "Like",
-    title: "New likes on your post",
-    content: `${actorName} liked your post "${postTitle}".`,
+    title: `${actorName} liked your post`,
+    content: "",
     referenceId: postId,
     referenceType: postType,
     dedupeKey: `like:${actorId}:${postType}:${postId}`,
@@ -140,7 +140,7 @@ export const notifyComment = async ({
     userId: postOwnerId,
     actorId,
     type: "Reply",
-    title: `${actorName} replied to your post`,
+    title: `${actorName} commented on your post`,
     content: `"${truncated}"`,
     referenceId: commentId,
     referenceType: postType,
@@ -156,6 +156,7 @@ export const notifyComment = async ({
  * @param {string} params.matchTitle   - Title of the matched found item
  * @param {number} params.lostItemId   - The user's lost item ID
  * @param {number} params.foundItemId  - The found item ID
+ * @param {number} [params.score]      - Match score (0 to 1)
  * @param {string} [params.image]      - Thumbnail of the found item
  */
 export const notifyMatch = async ({
@@ -163,13 +164,15 @@ export const notifyMatch = async ({
   matchTitle,
   lostItemId,
   foundItemId,
+  score = null,
   image = null,
 }) => {
+  const matchText = score !== null ? ` (${Math.round(score * 100)}% match)` : "";
   return notifyUser({
     userId,
     type: "Match",
     title: "Potential match found",
-    content: `A new item "${matchTitle}" has been posted that matches your lost item report.`,
+    content: `A new item "${matchTitle}" has been posted that matches your item report${matchText}.`,
     referenceId: foundItemId,
     referenceType: "LostAndFound",
     dedupeKey: `match:${lostItemId}:${foundItemId}`,

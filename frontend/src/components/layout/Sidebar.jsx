@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import LogoutModal from "../profile/modals/LogoutModal";
 import { getCurrentUser, logout, refreshCurrentUser } from "../../services/authService";
+import { useNotifications } from "../../context/NotificationContext";
+import { useChat } from "../../context/ChatContext";
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({
@@ -28,11 +30,10 @@ const SidebarItem = ({
 }) => {
   const navigate = useNavigate();
 
-  const baseStyles = `w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 ${
-    disabled
-      ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
-      : "cursor-pointer group"
-  }`;
+  const baseStyles = `w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 ${disabled
+    ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
+    : "cursor-pointer group"
+    }`;
 
   const activeStyles = active
     ? "bg-primary-blue shadow-custom text-text-primary"
@@ -91,6 +92,8 @@ const UnifiedSidebar = ({
   const navigate = useNavigate();
   const [freshUser, setFreshUser] = React.useState(null);
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  const { unreadCount } = useNotifications();
+  const { unreadMessageCount } = useChat();
 
   useEffect(() => {
     refreshCurrentUser().then((updated) => {
@@ -108,8 +111,8 @@ const UnifiedSidebar = ({
       title: "Student Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
+        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
         { icon: GraduationCap, label: "Learning", path: "/student-learning" },
@@ -119,8 +122,8 @@ const UnifiedSidebar = ({
       title: "Batch Rep Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
+        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
         { icon: GraduationCap, label: "Learning", path: "/learning" },
@@ -171,6 +174,7 @@ const UnifiedSidebar = ({
         { icon: Rss, label: "News Feed", path: "/business/news-feed" },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
         { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: Store, label: "Marketplace", path: "/club-owner/marketplace" },
         {
           icon: LayoutDashboard,
           label: "Order Dashboard",
@@ -181,21 +185,21 @@ const UnifiedSidebar = ({
     boarding_owner: {
       title: "Boarding Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
+        { icon: Rss, label: "News Feed", path: "/boarding-owner/marketplace" },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
       ],
     },
     food_cafe_owner: {
       title: "Food & Cafe Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
+        { icon: Rss, label: "News Feed", path: "/food-cafe-owner/marketplace" },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
       ],
     },
     self_employed: {
       title: "Services Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
+        { icon: Rss, label: "News Feed", path: "/services-owner/marketplace" },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
       ],
     },
@@ -210,6 +214,11 @@ const UnifiedSidebar = ({
   if (configKey === "student" && user.isBatchRep) {
     configKey = "batch_rep";
   }
+  // Map club_society to club config
+  if (configKey === "club_society") {
+    configKey = "club";
+  }
+
   // Map generic business role to specific config if category exists
   if (configKey === "business") {
     const category = user.category || user.BusinessProfile?.category;

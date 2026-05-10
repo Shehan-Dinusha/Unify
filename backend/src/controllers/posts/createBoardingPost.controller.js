@@ -7,8 +7,8 @@ const getUploadedFileUrls = (files) => {
 
 export const createBoardingPost = async (req, res) => {
   try {
-    // Hardcode userId to 2 (Boarding Owner) for development
-    const userId = 2;
+    // Use logged in user, or hardcode userId to 2 (Boarding Owner) for development fallback
+    const userId = req.user ? req.user.id : (req.body.userId || 2);
 
     const images = getUploadedFileUrls(req.files);
 

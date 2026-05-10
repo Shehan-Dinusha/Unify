@@ -9,20 +9,15 @@ export const createNormalPost = async (req, res) => {
   try {
     const { description, postType, category: bodyCategory } = req.body;
 
-    // Determine category and hardcoded userId based on postType
-    // userId=1: Club Owner, userId=3: Food Owner, userId=4: Self Employed Pro
     let category = bodyCategory || "CLUB";
-    let userId = 1; // default: club owner
+    const userId = req.user ? req.user.id : (req.body.userId || 1);
 
     if (postType === "food-cafe") {
       category = "FOOD";
-      userId = 3; // Food Owner (hardcoded for development)
     } else if (postType === "service") {
       category = "SELF_EMPLOYED";
-      userId = 4; // Self Employed Pro (hardcoded for development)
     } else if (postType === "club") {
       category = "CLUB";
-      userId = 1; // Club Owner (hardcoded for development)
     }
 
 

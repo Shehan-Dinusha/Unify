@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../services/authService";
 import { Search, X, Loader2 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import StatsCard from "../components/common/StatsCard";
@@ -9,7 +10,15 @@ import newsfeedService from "../services/newsfeedService";
 import { formatTimeAgo, getImageUrl } from "../utils/formatters";
 
 const NewsFeed = ({ userRole = 'student' }) => {
+  const navigate = useNavigate();
   const location = useLocation();
+  const currentUser = getCurrentUser();
+
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/login");
+    }
+  }, [currentUser, navigate]);
   const postRefs = useRef({});
   const searchInputRef = useRef(null);
   const [showSearch, setShowSearch] = useState(false);
@@ -25,10 +34,12 @@ const NewsFeed = ({ userRole = 'student' }) => {
     events: 0
   });
 
+  const role = currentUser?.role?.toLowerCase() || userRole;
   const user = {
-    name: "Alex Johnson",
-    role: userRole,
-    ...(userRole === 'business' ? { displayRole: 'Business & Organization' } : {}),
+    name: currentUser?.name || "Unknown User",
+    role: role,
+    avatar: currentUser?.avatar,
+    ...(role === 'business' ? { displayRole: 'Business & Organization' } : {}),
   };
 
   useEffect(() => {
@@ -136,6 +147,8 @@ const NewsFeed = ({ userRole = 'student' }) => {
     </div>
   );
 
+  if (!currentUser) return null;
+
   return (
     <MainLayout
       user={user}
@@ -209,6 +222,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
                     <PostCard
                       post={post}
                       author={post.author?.name || "Unknown User"}
+                      authorAvatar={post.author?.avatar}
                       authorInitial={post.author?.name?.charAt(0) || "?"}
                       time={formatTimeAgo(post.createdAt)}
                       title={post.title || post.name}
@@ -220,6 +234,7 @@ const NewsFeed = ({ userRole = 'student' }) => {
                       initialIsLiked={post.isLiked}
                       initialIsSaved={post.isSaved}
                       isPromoted={post.isPromoted}
+                      boostMeta={post.boostMeta}
                       showBoost={user.role === 'business'}
                     />
                   </div>

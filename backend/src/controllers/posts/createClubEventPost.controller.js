@@ -15,8 +15,8 @@ export const createClubEventPost = async (req, res) => {
     // Validate if the user is a Club Owner
     let clubProfile = await ClubProfile.findOne({ where: { userId } });
 
-    // FOR DEVELOPMENT: If no profile exists, create a dummy one for userId 1
-    if (!clubProfile && userId == 1) {
+    // FOR DEVELOPMENT: If no profile exists, create a dummy one
+    if (!clubProfile) {
       clubProfile = await ClubProfile.create({
         userId,
         clubName: "Default Club",

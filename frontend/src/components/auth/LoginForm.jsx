@@ -56,16 +56,30 @@ const LoginForm = () => {
       }
 
       const data = await login(formattedIdentifier, password);
-      
+
       // Navigate based on user role (Navigation occurs AFTER tokens are stored in authService)
       const role = data.user.role.toLowerCase();
-      
+
       if (role === "admin") {
         navigate("/admin");
       } else if (role === "student") {
         navigate("/news-feed");
       } else if (role === "business") {
-        navigate("/marketplace");
+        // Redirection based on business category
+        const category = data.user.category?.toUpperCase();
+        console.log("ROLE:", role);
+        console.log("CATEGORY FROM BACKEND:", data.user.category);
+        console.log("NORMALIZED CATEGORY:", category);
+
+        if (category === "BOARDING") {
+          navigate("/boarding-owner/marketplace");
+        } else if (category === "FOOD") {
+          navigate("/food-cafe-owner/marketplace");
+        } else if (category === "SELF_EMPLOYED") {
+          navigate("/services-owner/marketplace");
+        } else {
+          navigate("/marketplace");
+        }
       } else if (role === "club") {
         // Always land on profile first — profile page handles verified vs unverified UX
         navigate("/profile?role=club_society");

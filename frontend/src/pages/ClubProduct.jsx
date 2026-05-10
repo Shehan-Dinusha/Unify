@@ -3,9 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
-import { Zap, Minus, Plus, Loader2 } from "lucide-react";
+import { Zap, Minus, Plus, Loader2, MapPin } from "lucide-react";
 import postService from "../services/postService";
 import { getImageUrl } from "../utils/formatters";
+import { getCurrentUser } from "../services/authService";
 
 const Pill = ({ children }) => (
     <span className="px-sm py-xs rounded-full bg-white/5 border border-white/10 text-body-extra-small-bold text-text-tertiary">
@@ -16,7 +17,7 @@ const Pill = ({ children }) => (
 const ClubProduct = () => {
     const { type, id } = useParams();
     const navigate = useNavigate();
-    const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
+    const user = getCurrentUser();
 
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -27,6 +28,7 @@ const ClubProduct = () => {
     const [activeSize, setActiveSize] = useState("");
     const [qty, setQty] = useState(1);
     const [isDescExpanded, setIsDescExpanded] = useState(false);
+    const [activeTier, setActiveTier] = useState(null);
 
     useEffect(() => {
         const fetchProductDetails = async () => {
@@ -39,6 +41,7 @@ const ClubProduct = () => {
                 if (data.post.images?.length > 0) setActiveImg(0);
                 if (data.post.colors?.length > 0) setActiveColor(data.post.colors[0].id);
                 if (data.post.sizes?.length > 0) setActiveSize(data.post.sizes[0]);
+                if (data.post.tiers?.length > 0) setActiveTier(data.post.tiers[0].name);
                 
             } catch (err) {
                 console.error("Failed to fetch product:", err);
@@ -52,12 +55,23 @@ const ClubProduct = () => {
     }, [id, type]);
 
     const images = useMemo(() => {
-        if (!post?.images) return [];
-        return post.images.map((img, idx) => ({
-            id: idx,
-            src: getImageUrl(img),
-            alt: post.name
-        }));
+        // If images array exists and has content, use it
+        if (post?.images && post.images.length > 0) {
+            return post.images.map((img, idx) => ({
+                id: idx,
+                src: getImageUrl(img),
+                alt: post.name
+            }));
+        }
+        // Fallback to coverImage if images array is empty or missing
+        if (post?.coverImage) {
+            return [{
+                id: 0,
+                src: getImageUrl(post.coverImage),
+                alt: post.name
+            }];
+        }
+        return [];
     }, [post]);
 
     const currentImg = useMemo(
@@ -100,8 +114,16 @@ const ClubProduct = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-[520px_1fr] gap-2xl">
                         {/* LEFT: Gallery */}
                         <div>
-                            <div className="w-full aspect-square rounded-3xl overflow-hidden bg-white/5 border border-white/10">
-                                <img src={currentImg?.src} alt={currentImg?.alt} className="w-full h-full object-cover" />
+                            <div className="w-full aspect-square rounded-3xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center">
+                                <img 
+                                    src={currentImg?.src || "/placeholder-post.jpg"} 
+                                    alt={currentImg?.alt || "Product"} 
+                                    className="w-full h-full object-cover" 
+                                    onError={(e) => {
+                                        e.target.src = "/placeholder-post.jpg";
+                                        e.target.className = "w-1/2 h-1/2 object-contain opacity-20";
+                                    }}
+                                />
                             </div>
 
                             <div className="mt-lg flex gap-md overflow-x-auto scrollbar-hide md:overflow-x-visible">
@@ -144,7 +166,9 @@ const ClubProduct = () => {
 
                             {/* Price row */}
                             <div className="mt-sm md:mt-md flex items-center gap-md flex-wrap">
-                                <span className="text-heading-small text-primary-blue">Rs.{post.price}</span>
+                                <span className="text-heading-small text-primary-blue">
+                                    Rs.{activeTier ? post.tiers.find(t => t.name === activeTier)?.price : post.price}
+                                </span>
                             </div>
 
                             {/* Description */}
@@ -225,6 +249,35 @@ const ClubProduct = () => {
                                 </div>
                             )}
 
+                            {/* Tiers (For Events) */}
+                            {post.tiers?.length > 0 && (
+                                <div className="mt-lg">
+                                    <div className="flex items-center gap-sm">
+                                        <p className="text-body-extra-small-bold text-text-tertiary tracking-widest uppercase">Ticket Type:</p>
+                                        <p className="text-body-extra-small-bold text-text-primary">{activeTier}</p>
+                                    </div>
+
+                                    <div className="mt-sm flex gap-sm flex-wrap">
+                                        {post.tiers.map((t) => {
+                                            const active = t.name === activeTier;
+                                            return (
+                                                <button
+                                                    key={t.name}
+                                                    type="button"
+                                                    onClick={() => setActiveTier(t.name)}
+                                                    className={`h-10 px-lg rounded-full border transition-all text-body-small-bold ${active
+                                                        ? "bg-primary-blue/15 border-primary-blue text-primary-blue"
+                                                        : "bg-white/5 border-white/10 text-text-tertiary hover:border-white/20 hover:text-text-primary"
+                                                        }`}
+                                                >
+                                                    {t.name} (Rs.{t.price})
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Qty + Buy — sticky on mobile */}
                             <div className="
                                 fixed bottom-0 left-0 right-0 z-50 p-md bg-dark-1/90 backdrop-blur-lg border-t border-white/10
@@ -253,21 +306,32 @@ const ClubProduct = () => {
                                         variant="primary"
                                         size="large"
                                         className="flex-1 min-w-0 md:min-w-[260px] justify-center"
-                                        onClick={() => navigate("/marketplace/club/checkout", {
-                                            state: {
-                                                product: post,
-                                                selectedColor: post.colors?.find(c => c.id === activeColor),
-                                                selectedSize: activeSize,
-                                                quantity: qty
-                                            }
-                                        })}
+                                        onClick={() => {
+                                            const finalPrice = activeTier ? post.tiers.find(t => t.name === activeTier)?.price : post.price;
+                                            navigate("/marketplace/club/checkout", {
+                                                state: {
+                                                    product: { ...post, price: finalPrice },
+                                                    selectedColor: post.colors?.find(c => c.id === activeColor),
+                                                    selectedSize: activeSize || activeTier, // Use tier as size for events
+                                                    quantity: qty
+                                                }
+                                            });
+                                        }}
                                     >
                                         Buy Now
                                     </Button>
                                 </div>
-                                <p className="mt-sm md:mt-md text-body-small text-text-tertiary text-left md:text-center">
-                                    {post.pickupNote || "Ready for pickup once order is confirmed."}
-                                </p>
+                                <div className="mt-lg p-md rounded-2xl bg-white/[0.03] border border-white/5 flex items-start gap-md">
+                                    <div className="p-xs rounded-lg bg-primary-blue/10 text-primary-blue shrink-0 mt-0.5">
+                                        <MapPin size={16} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[10px] md:text-body-extra-small-bold text-text-tertiary uppercase tracking-wider mb-1">Pickup Information</p>
+                                        <p className="text-body-small text-text-secondary leading-relaxed">
+                                            {post.pickupNote || "Ready for pickup once order is confirmed. Check your email for further instructions."}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                             {/* Spacer on mobile so content isn't hidden behind sticky bar */}
                             <div className="h-28 md:hidden" />

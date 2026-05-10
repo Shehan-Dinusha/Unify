@@ -61,7 +61,7 @@ export const getBookingsByEvent = async (req, res) => {
       clubEvent: event,
     }));
 
-    res.status(200).json({ success: true, bookings: formattedBookings });
+    res.status(200).json({ success: true, bookings: formattedBookings, event });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -8,10 +8,7 @@ export const editItem = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const updates = req.body; // sanitized by express-validator
   
-  //if (!req.user) return sendResponse(res, 401, false, "Unauthorized");
-
-  // for testing
-  const userId = 1; // test user
+  const userId = req.user.id;
 
 
 

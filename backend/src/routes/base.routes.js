@@ -7,6 +7,7 @@ import {
   seedReviews,
   seedReports,
   seedSuspensions,
+  seedBoostData,
   seedLearningData,
   seedAllUserTypes,
   seedAdmin,
@@ -22,6 +23,7 @@ router.post("/seed-followers", seedFollowers);
 router.post("/seed-reviews", seedReviews);
 router.post("/seed-reports", seedReports);
 router.post("/seed-suspensions", seedSuspensions);
+router.post("/seed-boost-data", seedBoostData);
 router.post("/seed-learning-data", seedLearningData);
 router.post("/seed-all-users", seedAllUserTypes);
 router.post("/seed-admin", seedAdmin);

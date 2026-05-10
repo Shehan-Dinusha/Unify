@@ -24,6 +24,7 @@ import {
   postParamsValidator,
   commentValidator,
 } from "../validators/post.validator.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 
 const router = express.Router();
@@ -31,6 +32,8 @@ const router = express.Router();
 // Create Normal Post (Supports multiple images)
 router.post(
   "/normal",
+  protect,
+  authorize("Club"),
   uploadToS3({ type: "array", fieldName: "images", folder: "posts", maxCount: 10 }),
   createNormalPostValidator,
   validate,
@@ -40,6 +43,8 @@ router.post(
 // Create Club Product Post (Supports multiple images)
 router.post(
   "/club-product",
+  protect,
+  authorize("Club"),
   uploadToS3({ type: "array", fieldName: "images", folder: "posts/products", maxCount: 10 }),
   createClubProductPostValidator,
   validate,
@@ -49,6 +54,8 @@ router.post(
 // Create Club Event Post (Supports one cover image)
 router.post(
   "/club-event",
+  protect,
+  authorize("Club"),
   uploadToS3({ type: "array", fieldName: "coverImage", folder: "posts/events", maxCount: 1 }),
   createClubEventPostValidator,
   validate,
@@ -58,6 +65,8 @@ router.post(
 // Create Boarding Post (Supports multiple images)
 router.post(
   "/boarding",
+  protect,
+  authorize("Business"),
   uploadToS3({ type: "array", fieldName: "images", folder: "posts/boarding", maxCount: 10 }),
   createBoardingPostValidator,
   validate,
@@ -67,6 +76,8 @@ router.post(
 // Create Food & Cafe Post
 router.post(
   "/food-cafe",
+  protect,
+  authorize("Business"),
   uploadToS3({ type: "array", fieldName: "images", folder: "posts/food", maxCount: 10 }),
   createNormalPostValidator,
   validate,
@@ -76,6 +87,8 @@ router.post(
 // Create Service Post
 router.post(
   "/service",
+  protect,
+  authorize("Business"),
   uploadToS3({ type: "array", fieldName: "images", folder: "posts/services", maxCount: 10 }),
   createNormalPostValidator,
   validate,
@@ -86,10 +99,15 @@ router.post(
 // ── Unified Post Routes ───────────────────────────────────────────────────────
 
 // Get unified feed
-router.get("/feed", getFeed);
+router.get("/feed",
+  protect,
+  getFeed);
+
+// Get current user's posts (Protected)
+router.get("/my-posts", protect, getFeed);
 
 // Get filtered boarding feed
-router.get("/boarding/filter", getFilteredBoardingFeed);
+router.get("/boarding/filter", protect, getFilteredBoardingFeed);
 // Get saved posts
 router.get("/saved", getSavedPosts);
 
@@ -97,16 +115,16 @@ router.get("/saved", getSavedPosts);
 router.get("/:type/:id", postParamsValidator, validate, getPost);
 
 // Delete specific post dynamically
-router.delete("/:type/:id", postParamsValidator, validate, deletePost);
+router.delete("/:type/:id", protect, postParamsValidator, validate, deletePost);
 
 // Toggle Like
-router.post("/:type/:id/like", postParamsValidator, validate, toggleLike);
+router.post("/:type/:id/like", protect, postParamsValidator, validate, toggleLike);
 
 // Comments
-router.get("/:type/:id/comments", postParamsValidator, validate, getComments);
-router.post("/:type/:id/comments", postParamsValidator, commentValidator, validate, addComment);
+router.get("/:type/:id/comments", protect, postParamsValidator, validate, getComments);
+router.post("/:type/:id/comments", protect, postParamsValidator, commentValidator, validate, addComment);
 
 // Toggle Save
-router.post("/:type/:id/save", postParamsValidator, validate, toggleSave);
+router.post("/:type/:id/save", protect, postParamsValidator, validate, toggleSave);
 
 export default router;

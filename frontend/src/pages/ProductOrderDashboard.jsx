@@ -5,6 +5,7 @@ import Card from "../components/common/Card";
 import { ShoppingBag, Send, ChevronDown, Check } from "lucide-react";
 import orderService from "../services/orderService";
 import { getImageUrl } from "../utils/formatters";
+import { getCurrentUser } from "../services/authService";
 
 const getInitials = (name) => {
     if (!name) return "??";
@@ -87,9 +88,9 @@ const ProductOrderDashboard = () => {
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const [messageText, setMessageText] = useState("");
 
-    const user = {
-        id: 1, // Mock current user
-        name: "Alex Johnson",
+    const user = getCurrentUser() || {
+        id: 0,
+        name: "Guest",
         role: "club",
         displayRole: "Clubs & Societies Dashboard",
     };
@@ -114,13 +115,17 @@ const ProductOrderDashboard = () => {
                         qty: o.qty,
                         size: o.size || "-",
                         colorHex: o.colorHex || null,
-                        status: o.status
+                        status: o.status,
+                        createdAt: o.createdAt
                     }));
                     setOrders(formatted);
                 }
             } else if (type === "club-event") {
                 const res = await orderService.getBookingsByEvent(id);
                 if (res.success) {
+                    if (res.event) setItemInfo(res.event);
+                    else if (res.bookings?.length > 0) setItemInfo(res.bookings[0].clubEvent);
+
                     const formatted = res.bookings.map(b => ({
                         id: b.id,
                         displayId: `#${b.id.toString().padStart(4, '0')}`,
@@ -131,12 +136,10 @@ const ProductOrderDashboard = () => {
                         qty: b.qty,
                         size: b.tierId || "Standard",
                         colorHex: null,
-                        status: b.status
+                        status: b.status,
+                        createdAt: b.createdAt
                     }));
                     setOrders(formatted);
-                    if (res.bookings.length > 0) {
-                        setItemInfo(res.bookings[0].clubEvent);
-                    }
                 }
             }
         } catch (error) {
@@ -200,6 +203,12 @@ const ProductOrderDashboard = () => {
         return acc;
     }, {});
 
+    const todayCount = orders.filter(o => {
+        const orderDate = new Date(o.createdAt).toDateString();
+        const today = new Date().toDateString();
+        return orderDate === today;
+    }).length;
+
     const sizeDist = orders.reduce((acc, o) => {
         const key = o.size === "XL" || o.size === "XXL" ? "L/XL" : o.size;
         acc[key] = (acc[key] || 0) + o.qty;
@@ -239,8 +248,8 @@ const ProductOrderDashboard = () => {
                 {/* ── Product context strip ── */}
                 <div className="flex items-center gap-4">
                     <img
-                        src={itemInfo ? (type === "club-product" ? getImageUrl(itemInfo.images?.[0]) : getImageUrl(itemInfo.coverImage)) : ""}
-                        alt={itemInfo?.title || "Item"}
+                        src={itemInfo ? (type === "club-product" ? getImageUrl(itemInfo.images?.[0]) : getImageUrl(itemInfo.coverImage)) : "/placeholder-post.jpg"}
+                        alt={itemInfo?.name || "Item"}
                         className="w-14 h-14 rounded-2xl object-cover border border-white/10"
                     />
                     <div>
@@ -266,7 +275,9 @@ const ProductOrderDashboard = () => {
                         </div>
                         <div className="flex items-end gap-3">
                             <span className="text-4xl font-bold">{total}</span>
-                            <span className="text-state-success text-xs font-bold mb-1.5">+2 today</span>
+                            {todayCount > 0 && (
+                                <span className="text-state-success text-xs font-bold mb-1.5">+{todayCount} today</span>
+                            )}
                         </div>
                     </Card>
 

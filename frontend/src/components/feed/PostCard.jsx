@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSavedPosts } from "../../context/SavedPostsContext";
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../../services/authService";
 import {
   MapPin,
   Send,
@@ -12,12 +13,15 @@ import {
   ShoppingBag,
   Home,
   MessageSquare,
+  Trash2,
 } from "lucide-react";
+import Card from "../common/Card";
 import newsfeedService from "../../services/newsfeedService";
+import postService from "../../services/postService";
 import { formatTimeAgo } from "../../utils/formatters";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
-const CommentSection = ({ postComments, onAddComment, loading }) => {
+const CommentSection = ({ postComments, onAddComment, loading, currentUser }) => {
   const [text, setText] = useState("");
   const inputRef = useRef(null);
 
@@ -52,9 +56,13 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
           {postComments.map((c) => (
             <div key={c.id} className="flex gap-3 items-start">
               <img
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.user?.name || c.user || "User")}`}
+                src={
+                  c.avatar && !c.avatar.includes("placehold") && !c.avatar.includes("dicebear")
+                    ? c.avatar
+                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || c.user || "User")}&background=2666F1&color=fff`
+                }
                 alt={c.user?.name || c.user || "User"}
-                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5"
+                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5 object-cover"
               />
               <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
                 <div className="flex items-center gap-2 mb-1">
@@ -77,9 +85,13 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
       {/* Input */}
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <img
-          src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me"
+          src={
+            currentUser?.avatar && !currentUser.avatar.includes("placehold") && !currentUser.avatar.includes("dicebear")
+              ? currentUser.avatar
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || "Me")}&background=2666F1&color=fff`
+          }
           alt="You"
-          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1"
+          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1 object-cover"
         />
         <div className="flex-1 flex items-end bg-white/5 border border-white/10 rounded-2xl px-4 py-2 gap-2 focus-within:border-primary-blue/50 transition-colors">
           <textarea
@@ -114,10 +126,10 @@ const CommentSection = ({ postComments, onAddComment, loading }) => {
   );
 };
 
-/* ─── PostCard ───────────────────────────────────────────────── */
 const PostCard = ({
   post,
   author,
+  authorAvatar,
   authorInitial,
   time,
   title,
@@ -129,7 +141,10 @@ const PostCard = ({
   initialIsLiked = false,
   initialIsSaved = false,
   isPromoted,
+  boostMeta,
   showBoost = false,
+  isManagementMode = false,
+  onPostUpdate,
 }) => {
   const { toggleSavePost, isPostSaved } = useSavedPosts();
   // const isSavedLocal = post ? isPostSaved(post.id) : false; // Use initialIsSaved from props instead
@@ -143,6 +158,7 @@ const PostCard = ({
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [imgFailed, setImgFailed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const currentUser = getCurrentUser();
 
   const DESCRIPTION_LIMIT = 250;
   const isLongDescription =
@@ -199,6 +215,7 @@ const PostCard = ({
         const fetchedComments = (data.comments || []).map((c) => ({
           id: c.id,
           user: c.user?.name || "User",
+          avatar: c.user?.avatar,
           seed: c.user?.name || "User",
           time: c.createdAt ? formatTimeAgo(c.createdAt) : "just now",
           text: c.content,
@@ -217,8 +234,9 @@ const PostCard = ({
     // Optimistic add
     const tempComment = {
       id: `new-${Date.now()}`,
-      user: "You",
-      seed: "Me",
+      user: currentUser?.name || "You",
+      avatar: currentUser?.avatar,
+      seed: currentUser?.name || "Me",
       time: "just now",
       text,
     };
@@ -231,8 +249,9 @@ const PostCard = ({
       if (data.comment) {
         const realComment = {
           id: data.comment.id,
-          user: data.comment.user?.name || "You",
-          seed: data.comment.user?.name || "Me",
+          user: data.comment.user?.name || currentUser?.name || "You",
+          avatar: data.comment.user?.avatar || currentUser?.avatar,
+          seed: data.comment.user?.name || currentUser?.name || "Me",
           time: "just now",
           text: data.comment.content,
         };
@@ -248,8 +267,56 @@ const PostCard = ({
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this post? This action cannot be undone.")) return;
+
+    try {
+      await postService.deletePost(postType, postId);
+      if (onPostUpdate) onPostUpdate();
+    } catch (err) {
+      console.error("Failed to delete post:", err);
+      alert(err.error || "Failed to delete post. Please try again.");
+    }
+  };
+
   return (
-    <div className="w-full bg-[#1A2634] rounded-[24px] overflow-hidden border border-white/5 font-inter text-white">
+    <Card variant="card" padding="p-0" className="w-full overflow-hidden">
+  // Determine boost visual style from boostMeta
+  const highlightStyle = boostMeta?.highlightStyle || "none";
+
+  // Build card border classes based on highlightStyle
+  const cardBorderClass = (() => {
+    if (!isPromoted || !boostMeta) return "border border-white/5";
+    switch (highlightStyle) {
+      case "gold":
+        return "border-2 border-yellow-400/60";
+      case "blue":
+        return "border-2 border-blue-500/50";
+      case "subtle":
+        return "border border-white/15";
+      default:
+        return "border border-white/5";
+    }
+  })();
+
+  // Glow shadow for premium tiers (applied via inline style to avoid Babel parse issues)
+  const cardGlowStyle = (() => {
+    if (!isPromoted || !boostMeta) return {};
+    switch (highlightStyle) {
+      case "gold":
+        return { boxShadow: "0 0 20px rgba(251, 191, 36, 0.15)" };
+      case "blue":
+        return { boxShadow: "0 0 16px rgba(59, 130, 246, 0.12)" };
+      default:
+        return {};
+    }
+  })();
+
+  return (
+    <div
+      className={"w-full bg-[#1A2634] rounded-[24px] overflow-hidden font-inter text-white transition-all duration-300 " + cardBorderClass}
+      style={cardGlowStyle}
+    >
       {/* Post Image */}
       {showImage && (
         <div className="relative w-full bg-black/20 flex justify-center items-center min-h-[200px] max-h-[500px] overflow-hidden">
@@ -270,9 +337,15 @@ const PostCard = ({
         {/* Author Section */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#7551FF] flex items-center justify-center text-white text-body-medium-bold">
-              {authorInitial}
-            </div>
+            <img
+              src={
+                authorAvatar && !authorAvatar.includes("placehold") && !authorAvatar.includes("dicebear")
+                  ? authorAvatar
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(author || "User")}&background=2666F1&color=fff`
+              }
+              alt={author}
+              className="w-10 h-10 rounded-full border border-white/20 object-cover"
+            />
             <div>
               <p className="text-body-small-bold sm:text-body-medium-bold text-[#E2E8F0]">
                 {author}
@@ -284,9 +357,35 @@ const PostCard = ({
           </div>
 
           {isPromoted && (
-            <span className="text-[11px] font-bold bg-[#FBBF24]/10 text-[#FBBF24] px-3 py-1 rounded-full">
-              Promoted
-            </span>
+            (() => {
+              const style = boostMeta?.highlightStyle || "none";
+              switch (style) {
+                case "gold":
+                  return (
+                    <span className="text-[11px] font-bold bg-gradient-to-r from-[#FBBF24]/20 to-[#F59E0B]/20 text-[#FBBF24] px-3 py-1 rounded-full border border-[#FBBF24]/30 flex items-center gap-1">
+                      ⚡ Featured
+                    </span>
+                  );
+                case "blue":
+                  return (
+                    <span className="text-[11px] font-bold bg-[#3B82F6]/15 text-[#60A5FA] px-3 py-1 rounded-full border border-[#3B82F6]/30">
+                      Promoted
+                    </span>
+                  );
+                case "subtle":
+                  return (
+                    <span className="text-[10px] font-medium text-[#94A3B8]/70 tracking-wider uppercase">
+                      Sponsored
+                    </span>
+                  );
+                default:
+                  return (
+                    <span className="text-[11px] font-bold bg-[#FBBF24]/10 text-[#FBBF24] px-3 py-1 rounded-full">
+                      Promoted
+                    </span>
+                  );
+              }
+            })()
           )}
         </div>
 
@@ -328,69 +427,103 @@ const PostCard = ({
         <div className="h-px bg-white/5 w-full my-2" />
 
         {/* Actions */}
-        <div className="grid grid-cols-4 text-[#94A3B8] text-xs sm:text-body-small">
-          {/* Like */}
-          <button
-            onClick={handleToggleLike}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isLiked ? "text-primary-blue" : ""}`}
-          >
-            <div className="flex items-center gap-1.5">
-              <Heart
-                size={20}
-                className={isLiked ? "fill-current" : ""}
-                strokeWidth={isLiked ? 0 : 1.8}
-              />
-              <span>{likeCount}</span>
-            </div>
-            <span className="text-[11px]">Like</span>
-          </button>
+        <div className={`grid ${isManagementMode ? 'grid-cols-2' : 'grid-cols-4'} text-[#94A3B8] text-xs sm:text-body-small`}>
+          {isManagementMode ? (
+            <>
+              {/* Boost */}
+              <button
+                className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-[#FBBF24]"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Zap
+                    size={20}
+                    className="group-hover:fill-[#FBBF24]/20"
+                    strokeWidth={1.8}
+                  />
+                </div>
+                <span className="text-[11px]">Boost</span>
+              </button>
 
-          {/* Comment */}
-          <button
-            onClick={handleToggleComments}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${showComments ? "text-primary-blue" : ""}`}
-          >
-            <div className="flex items-center gap-1.5">
-              <MessageCircle size={20} strokeWidth={1.8} />
-              <span>{commentCount}</span>
-            </div>
-            <span className="text-[11px]">Comment</span>
-          </button>
+              {/* Delete */}
+              <button
+                onClick={handleDelete}
+                className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Trash2
+                    size={20}
+                    className="group-hover:fill-state-error/10"
+                    strokeWidth={1.8}
+                  />
+                </div>
+                <span className="text-[11px]">Delete</span>
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Like */}
+              <button
+                onClick={handleToggleLike}
+                className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isLiked ? "text-primary-blue" : ""}`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <Heart
+                    size={20}
+                    className={isLiked ? "fill-current" : ""}
+                    strokeWidth={isLiked ? 0 : 1.8}
+                  />
+                  <span>{likeCount}</span>
+                </div>
+                <span className="text-[11px]">Like</span>
+              </button>
 
-          {/* Save */}
-          <button
-            onClick={handleToggleSave}
-            className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? "text-primary-blue" : ""}`}
-          >
-            <div className="flex items-center gap-1.5">
-              <Bookmark
-                size={20}
-                className={isSaved ? "fill-current" : ""}
-                strokeWidth={isSaved ? 0 : 1.8}
-              />
-            </div>
-            <span className="text-[11px]">{isSaved ? "Saved" : "Save"}</span>
-          </button>
+              {/* Comment */}
+              <button
+                onClick={handleToggleComments}
+                className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${showComments ? "text-primary-blue" : ""}`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <MessageCircle size={20} strokeWidth={1.8} />
+                  <span>{commentCount}</span>
+                </div>
+                <span className="text-[11px]">Comment</span>
+              </button>
 
-          {/* Report */}
-          <button
-            onClick={() =>
-              reportNavigate("/student/report-issue", {
-                state: { postData: post, from: "/news-feed" },
-              })
-            }
-            className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error"
-          >
-            {" "}
-            <div className="flex items-center gap-1.5">
-              <img
-                src="/icon_report_marketplace.svg"
-                alt="Report"
-                className="w-5 h-5 opacity-70 group-hover:opacity-100"
-              />
-            </div>
-            <span className="text-[11px]">Report</span>
-          </button>
+              {/* Save */}
+              <button
+                onClick={handleToggleSave}
+                className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${isSaved ? "text-primary-blue" : ""}`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <Bookmark
+                    size={20}
+                    className={isSaved ? "fill-current" : ""}
+                    strokeWidth={isSaved ? 0 : 1.8}
+                  />
+                </div>
+                <span className="text-[11px]">{isSaved ? "Saved" : "Save"}</span>
+              </button>
+
+              {/* Report */}
+              <button
+                onClick={() =>
+                  reportNavigate("/student/report-issue", {
+                    state: { postData: post, from: "/news-feed" },
+                  })
+                }
+                className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error"
+              >
+                <div className="flex items-center gap-1.5">
+                  <img
+                    src="/icon_report_marketplace.svg"
+                    alt="Report"
+                    className="w-5 h-5 opacity-70 group-hover:opacity-100"
+                  />
+                </div>
+                <span className="text-[11px]">Report</span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Comment Section (ClubPostCard style) */}
@@ -399,10 +532,11 @@ const PostCard = ({
             postComments={postComments}
             onAddComment={handleAddComment}
             loading={loadingComments}
+            currentUser={currentUser}
           />
         )}
       </div>
-    </div>
+    </Card>
   );
 };
 

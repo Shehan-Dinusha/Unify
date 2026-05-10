@@ -7,11 +7,9 @@ const getUploadedFileUrls = (files) => {
 
 export const createClubProductPost = async (req, res) => {
   try {
-    // Hardcode userId to 1 as requested
-    const userId = 1;
+    const userId = req.user ? req.user.id : (req.body.userId || 1);
 
-
-    // FOR DEVELOPMENT: Skip club profile check when userId is hardcoded to 1
+    // FOR DEVELOPMENT: Skip club profile check when using a dummy setup
     // In production this would validate against the authenticated user's club profile
 
     const images = getUploadedFileUrls(req.files);

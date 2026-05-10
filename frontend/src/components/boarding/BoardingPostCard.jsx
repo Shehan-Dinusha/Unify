@@ -150,9 +150,9 @@ const CommentSection = ({ postComments, onAddComment }) => {
 
 /* ─── Main Card ──────────────────────────────────────────────── */
 const BoardingPostCard = ({ post, onClick }) => {
-    const [liked, setLiked] = useState(false);
+    const [liked, setLiked] = useState(post.isLiked || false);
     const [likes, setLikes] = useState(post.likesCount || post.stats?.likes || 0);
-    const [saved, setSaved] = useState(false);
+    const [saved, setSaved] = useState(post.isSaved || false);
     const [boosted, setBoosted] = useState(false);
     const [reported, setReported] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);

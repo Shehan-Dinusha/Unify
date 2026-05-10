@@ -77,6 +77,11 @@ export const upsertClubProfile = async (req, res) => {
       logger.info(`Club profile created for user ${userId}`);
     }
 
+    // Sync clubName with the base User table so the name isn't left as the phone number
+    if (clubName) {
+      await req.user.update({ name: clubName });
+    }
+
     return sendResponse(res, 200, true, "Club profile saved successfully", profile);
   } catch (error) {
     logger.error("Upsert Club Profile Error:", error);

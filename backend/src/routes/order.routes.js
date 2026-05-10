@@ -1,5 +1,6 @@
 import express from "express";
 import { OrderController } from "../controllers/index.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -7,7 +8,11 @@ const router = express.Router();
 router.post("/", OrderController.createOrder);
 
 // Routes for fetching orders
-router.get("/student/:userId", OrderController.getStudentOrders);
+router.get("/student/:userId",
+  protect,
+  authorize("Student"),
+  OrderController.getStudentOrders);
+
 router.get("/club/:userId", OrderController.getClubOrders);
 
 // Analytics routes for club owners

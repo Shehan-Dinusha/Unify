@@ -103,6 +103,14 @@ const EditProfilePage = () => {
         await updateClubProfile(formData);
       }
 
+      // Sync the new name/avatar back to localStorage so the Sidebar updates immediately
+      const newName = formData.clubName || formData.businessName || `${formData.firstName} ${formData.lastName}`.trim();
+      if (newName && newName !== "undefined undefined") {
+        const updatedUser = { ...currentUser, name: newName };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        window.dispatchEvent(new Event("storage")); // Trigger reactive updates if any
+      }
+
       toast.success("Success", "Profile updated successfully");
       navigate(`/profile?role=${activeRole}`);
     } catch (error) {

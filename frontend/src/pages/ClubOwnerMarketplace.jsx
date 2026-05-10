@@ -14,10 +14,10 @@ const ClubOwnerMarketplace = () => {
     const [loading, setLoading] = useState(true);
     const [trendingLoading, setTrendingLoading] = useState(true);
 
-    const user = { 
-        name: "Alex Johnson", 
-        role: "club", 
-        displayRole: "Clubs & Societies" 
+    const user = {
+        name: "Alex Johnson",
+        role: "club",
+        displayRole: "Clubs & Societies"
     };
 
     const fetchFeed = async () => {
@@ -92,10 +92,10 @@ const ClubOwnerMarketplace = () => {
     );
 
     return (
-        <MainLayout 
-            user={user} 
-            pageTitle="Club" 
-            headerRight={headerRight} 
+        <MainLayout
+            user={user}
+            pageTitle="Club"
+            headerRight={headerRight}
             verificationCount={0}
         >
             <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-2xl">
@@ -124,13 +124,13 @@ const ClubOwnerMarketplace = () => {
                 </div>
             </div>
 
-            <CreatePostModal 
-                isOpen={isModalOpen} 
+            <CreatePostModal
+                isOpen={isModalOpen}
                 onClose={() => {
                     setIsModalOpen(false);
                     // Refresh feed after publishing a new post
                     fetchFeed();
-                }} 
+                }}
             />
         </MainLayout>
     );
