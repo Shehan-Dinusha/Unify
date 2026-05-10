@@ -172,8 +172,8 @@ const UnifiedSidebar = ({
       title: "Clubs & Societies Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/business/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
+        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
         { icon: Store, label: "Marketplace", path: "/club-owner/marketplace" },
         {
           icon: LayoutDashboard,
@@ -186,21 +186,21 @@ const UnifiedSidebar = ({
       title: "Boarding Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/boarding-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
       ],
     },
     food_cafe_owner: {
       title: "Food & Cafe Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/food-cafe-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
       ],
     },
     self_employed: {
       title: "Services Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/services-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
       ],
     },
   };

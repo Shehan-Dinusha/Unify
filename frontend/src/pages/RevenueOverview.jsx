@@ -1,66 +1,142 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import { LineChart, DonutChart } from '../components/chart';
 import { mockRequests } from '../data/mockData';
-
-// ─── Data ───────────────────────────────────────────────────────────────────
-
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const yAxisLabels = ['15M', '12M', '9M', '6M', '3M', '0'];
-const actualRevenue = [2.1, 3.2, 4.8, 5.5, 7.2, 8.8, 9.5, 9.4, 10.5, 11.8, 12.5, 12.8];
-const projectedRevenue = [2.0, 3.0, 4.2, 5.8, 7.5, 9.2, 10.5, 11.2, 12.0, 12.8, 13.5, 14.5];
-const MAX_REV = 15;
-const TOOLTIP_IDX = 7; // Aug
-
-const breakdownSegments = [
-    { label: 'Club Tickets', value: 55, color: '#2B8CEE' },
-    { label: 'Biz Boosts', value: 25, color: '#6A3093' },
-    { label: 'Merchandise', value: 15, color: '#FBBF24' },
-    { label: 'Donations', value: 5, color: '#9CA3AF' },
-];
+import {
+  getRevenueOverview,
+  getRevenueTrajectory,
+  getRevenueBreakdown,
+} from '../services/adminDashboardService';
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const RevenueOverview = () => {
-    const statsTiles = [
+    // ─── API State ──────────────────────────────────────────────────────────
+    const [stats, setStats] = useState(null);
+    const [trajectory, setTrajectory] = useState(null);
+    const [breakdown, setBreakdown] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const [statsRes, trajRes, breakdownRes] = await Promise.all([
+                    getRevenueOverview(),
+                    getRevenueTrajectory(),
+                    getRevenueBreakdown(),
+                ]);
+                setStats(statsRes.data);
+                setTrajectory(trajRes.data);
+                setBreakdown(breakdownRes.data);
+            } catch (err) {
+                console.error('Revenue overview fetch error:', err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    // ─── Derived values ──────────────────────────────────────────────────
+    const months = trajectory?.months || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const actualRevenue = trajectory?.actual || [];
+    const projectedRevenue = trajectory?.projected || [];
+    const MAX_REV = trajectory?.maxVal || 15;
+    const yAxisLabels = trajectory?.yAxisLabels || ['15M', '12M', '9M', '6M', '3M', '0'];
+
+    // Find the peak month for tooltip
+    const TOOLTIP_IDX = actualRevenue.length > 0
+        ? actualRevenue.indexOf(Math.max(...actualRevenue))
+        : 7;
+
+    const breakdownSegments = breakdown?.segments || [];
+    const breakdownCenterLabel = breakdown?.totalRevenueFormatted || '0';
+
+    // ─── Stats tiles (from API) ──────────────────────────────────────────
+    const statsTiles = stats ? [
         {
             title: 'Total Revenue',
-            subtitle: 'Academic Year 2024',
-            value: 'Rs. 12.8K',
-            change: '↘ 18.2% vs last semester',
-            changeClass: 'text-state-error',
+            subtitle: `Academic Year ${new Date().getFullYear()}`,
+            value: stats.totalRevenueFormatted,
+            change: stats.totalRevenueTrend,
+            changeClass: stats.totalRevenueTrendClass,
             icon: '🏛',
             iconBg: 'bg-state-error/20',
         },
         {
             title: 'Biz Boosts',
             subtitle: 'From Campus Partners',
-            value: 'Rs. 1000',
-            change: '↘ 12.4% vs last month',
-            changeClass: 'text-state-error',
+            value: stats.bizBoostsFormatted,
+            change: stats.bizBoostsTrend,
+            changeClass: stats.bizBoostsTrendClass,
             icon: '🏢',
             iconBg: 'bg-primary-blue/20',
         },
         {
             title: 'Avg. Spend',
             subtitle: 'Per Active Student',
-            value: 'Rs. 250',
-            change: '— 0.0% stable',
-            changeClass: 'text-text-secondary',
+            value: stats.avgSpendFormatted,
+            change: stats.avgSpendTrend,
+            changeClass: stats.avgSpendTrendClass,
             icon: '💳',
             iconBg: 'bg-state-success/20',
         },
         {
             title: 'Projected Annual',
             subtitle: 'Based on Q1 & Q2 trends',
-            value: 'Rs. 100K',
-            change: '🌱 Growth — Exceeding targets',
-            changeClass: 'text-state-success',
+            value: stats.projectedAnnualFormatted,
+            change: stats.projectedAnnualTrend,
+            changeClass: stats.projectedAnnualTrendClass,
             icon: '📊',
             iconBg: 'bg-primary-accent/20',
         },
-    ];
+    ] : [];
+
+    // ─── Loading / Error States ──────────────────────────────────────────
+    if (loading) {
+        return (
+            <MainLayout
+                user={{ name: 'Alex Johnson', role: 'admin' }}
+                pageTitle="Revenue Overview"
+                verificationCount={mockRequests.length}
+            >
+                <div className="flex items-center justify-center h-64">
+                    <div className="flex flex-col items-center gap-md">
+                        <div className="w-10 h-10 border-3 border-primary-blue border-t-transparent rounded-full animate-spin" />
+                        <p className="text-body-small text-text-secondary">Loading revenue data...</p>
+                    </div>
+                </div>
+            </MainLayout>
+        );
+    }
+
+    if (error) {
+        return (
+            <MainLayout
+                user={{ name: 'Alex Johnson', role: 'admin' }}
+                pageTitle="Revenue Overview"
+                verificationCount={mockRequests.length}
+            >
+                <div className="flex items-center justify-center h-64">
+                    <div className="flex flex-col items-center gap-md text-center">
+                        <span className="text-3xl">⚠️</span>
+                        <p className="text-body-large-bold text-text-primary">Failed to load revenue data</p>
+                        <p className="text-body-small text-text-secondary">{error}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-lg py-sm bg-primary-blue text-text-primary rounded-xl text-body-small-bold hover:bg-primary-blue/80 transition-colors"
+                        >
+                            Retry
+                        </button>
+                    </div>
+                </div>
+            </MainLayout>
+        );
+    }
 
     return (
         <MainLayout
@@ -178,7 +254,7 @@ const RevenueOverview = () => {
                                 segments={breakdownSegments}
                                 size={160}
                                 strokeWidth={22}
-                                centerLabel="12.8K"
+                                centerLabel={breakdownCenterLabel}
                                 centerSubLabel="Total LKR"
                             />
 

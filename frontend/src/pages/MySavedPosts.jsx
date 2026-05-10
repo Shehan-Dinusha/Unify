@@ -5,6 +5,7 @@ import MainLayout from "../components/layout/MainLayout";
 import PostCard from "../components/feed/PostCard";
 import { useSavedPosts } from "../context/SavedPostsContext";
 import { getCurrentUser } from "../services/authService";
+import { formatTimeAgo, getImageUrl } from "../utils/formatters";
 
 /* ─── My Saved Posts Page ─────────────────────────────────────── */
 const MySavedPosts = () => {
@@ -42,7 +43,7 @@ const MySavedPosts = () => {
     ? savedPosts.filter(
         (post) =>
           post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          post.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          post.author?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           post.description?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : savedPosts;
@@ -147,11 +148,11 @@ const MySavedPosts = () => {
                 authorInitial={
                   (post.author?.name || post.author || "?")?.charAt(0)
                 }
-                time={post.time || ""}
+                time={post.createdAt ? formatTimeAgo(post.createdAt) : post.time || ""}
                 title={post.title || post.name}
                 location={post.location || post.pickupNote}
                 description={post.description}
-                image={post.coverImage || post.image || post.images?.[0]}
+                image={getImageUrl(post.coverImage || post.image || post.images?.[0])}
                 likes={post.likesCount || 0}
                 comments={post.commentsCount || 0}
                 initialIsLiked={post.isLiked}
