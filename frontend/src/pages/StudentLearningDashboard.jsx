@@ -187,38 +187,44 @@ const StudentLearningDashboard = () => {
                   representative.
                 </p>
               </div>
-            ) : activeModuleData ? (
-              <>
-                <StudentModuleHeader
-                  moduleName={activeModuleData?.name}
-                  moduleCode={activeModuleData?.code || "N/A"}
-                  semesterName={activeSemesterInfo?.name}
-                  batchName={batchName}
-                />
-
-                <StudentCategoryGrid
-                  key={activeModuleId}
-                  categories={moduleCategories}
-                  selectedCategoryId={selectedCategory?.id}
-                  onCategoryClick={setSelectedCategory}
-                />
-
-                {moduleCategories.length > 0 ? (
-                  <StudentMaterialList
-                    categoryName={selectedCategory?.title || "Files"}
-                    files={categoryFiles}
+            ) : semesters.some(sem => sem.modules?.length > 0) ? (
+              activeModuleData ? (
+                <>
+                  <StudentModuleHeader
+                    moduleName={activeModuleData?.name}
+                    moduleCode={activeModuleData?.code || "N/A"}
+                    semesterName={activeSemesterInfo?.name}
+                    batchName={batchName}
                   />
-                ) : (
-                  <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
-                    <p>No categories available for this module yet.</p>
-                  </div>
-                )}
-              </>
+
+                  <StudentCategoryGrid
+                    key={activeModuleId}
+                    categories={moduleCategories}
+                    selectedCategoryId={selectedCategory?.id}
+                    onCategoryClick={setSelectedCategory}
+                  />
+
+                  {moduleCategories.length > 0 ? (
+                    <StudentMaterialList
+                      categoryName={selectedCategory?.title || "Files"}
+                      files={categoryFiles}
+                    />
+                  ) : (
+                    <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
+                      <p>No categories available for this module yet.</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
+                  <p>
+                    Select a module from the sidebar to view learning materials.
+                  </p>
+                </div>
+              )
             ) : (
               <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
-                <p>
-                  Select a module from the sidebar to view learning materials.
-                </p>
+                <p>No modules available yet. Contact your batch rep.</p>
               </div>
             )}
           </div>

@@ -485,7 +485,7 @@ const BatchRepLearningDashboard = () => {
                   onRefresh={handleMaterialChanged}
                 />
               </>
-            ) : (
+            ) : semesters.some(sem => sem.modules?.length > 0) ? (
               <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -503,6 +503,25 @@ const BatchRepLearningDashboard = () => {
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                 </svg>
                 <p>Select a module from the sidebar to view details</p>
+              </div>
+            ) : (
+              <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="48"
+                  height="48"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mb-4 opacity-50"
+                >
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+                <p>Create a module first to start uploading materials</p>
               </div>
             )}
           </div>
