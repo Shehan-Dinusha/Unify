@@ -23,7 +23,8 @@ export const addComment = async (req, res) => {
   try {
     const { type, id } = req.params;
     const { content } = req.body;
-    const userId = req.user?.id || 1; // Default to 1 for development
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
 
     if (!content || !content.trim()) {
       return res.status(400).json({ error: "Comment content is required." });
