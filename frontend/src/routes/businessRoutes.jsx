@@ -153,7 +153,10 @@ export const selfEmployedRoutes = [
 ];
 
 export const businessRoutes = [
-  ...businessSharedRoutes,
+  {
+    element: <ProtectedRoute allowedRoles={["Business", "Club", "Admin"]} />,
+    children: businessSharedRoutes,
+  },
   ...clubRoutes,
   ...boardingOwnerRoutes,
   ...foodCafeRoutes,

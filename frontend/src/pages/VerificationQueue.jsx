@@ -3,7 +3,6 @@ import MainLayout from "../components/layout/MainLayout";
 import VerifiedList from "../components/verification/VerifiedList";
 import RequestList from "../components/verification/RequestList";
 import verificationService from "../services/verificationService";
-import NotFound from "./NotFound";
 import {
   VerificationConfirmationModal,
   VerificationSuccessModal,
@@ -13,7 +12,6 @@ import {
 } from "../components/common/VerificationModals";
 
 const VerificationQueue = () => {
-  const [errorStatus, setErrorStatus] = useState(null);
   const [activeTab, setActiveTab] = useState("requests");
   const [requests, setRequests] = useState([]);
   const [requestStats, setRequestStats] = useState(null);
@@ -48,10 +46,6 @@ const VerificationQueue = () => {
         setRequestStats(response.data?.stats || null);
       }
     } catch (error) {
-      if (error.response?.status === 403) {
-        setErrorStatus(403);
-        return;
-      }
       setErrorMessage("Failed to fetch pending requests.");
       setShowErrorModal(true);
       setRequests([]);
@@ -191,10 +185,6 @@ const VerificationQueue = () => {
       </button>
     </div>
   );
-
-  if (errorStatus) {
-    return <NotFound />;
-  }
 
   return (
     <MainLayout

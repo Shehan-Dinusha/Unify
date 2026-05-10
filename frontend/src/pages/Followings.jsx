@@ -127,7 +127,7 @@ const Followings = () => {
     } catch (err) {
       if (
         err.response &&
-        (err.response.status === 401 || err.response.status === 403)
+        err.response.status === 403
       ) {
         setErrorStatus(err.response.status);
       } else {
