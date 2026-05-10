@@ -7,10 +7,11 @@ import postService from "../services/postService";
 import { formatTimeAgo } from "../utils/formatters";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { getCurrentUser } from "../services/authService";
 
 const BoardingOwnerMarketplace = () => {
     const navigate = useNavigate();
-    const user = { name: "Alex Johnson", role: "boarding_owner", displayRole: "Business & Organization" };
+    const user = getCurrentUser();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({ minPrice: 5000, maxPrice: 30000, gender: "Any" });
@@ -37,7 +38,7 @@ const BoardingOwnerMarketplace = () => {
     }, [filters]);
 
     const headerRight = (
-        <button 
+        <button
             onClick={() => navigate("/boarding-owner/create-post")}
             className="bg-primary-blue text-white px-6 py-2 rounded-full font-inter font-bold text-body-medium hover:brightness-110 transition-all shadow-custom"
         >
@@ -46,9 +47,9 @@ const BoardingOwnerMarketplace = () => {
     );
 
     return (
-        <MainLayout 
-            user={user} 
-            pageTitle="Boarding" 
+        <MainLayout
+            user={user}
+            pageTitle="Boarding"
             verificationCount={0}
             headerRight={headerRight}
         >

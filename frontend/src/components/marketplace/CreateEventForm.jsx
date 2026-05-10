@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import {
     ImagePlus, MapPin, Calendar, Clock, ChevronRight,
-    LayoutGrid, Edit3, Info
+    LayoutGrid, Edit3, Info, Loader2
 } from "lucide-react";
 import Card from "../common/Card";
 import ClubPostCard from "../club/ClubPostCard";
+
 
 /* ─── Toggle ─────────────────────────────────────────────────── */
 const Toggle = ({ value, onChange }) => (
@@ -156,19 +157,19 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                 <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                     Event Cover Image
                                 </label>
-                                <div 
+                                <div
                                     onClick={() => fileInputRef.current?.click()}
                                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                                     onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
                                     onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFile(e.dataTransfer.files); }}
                                     className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-colors cursor-pointer group ${isDragging ? 'border-primary-blue bg-primary-blue/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
                                 >
-                                    <input 
-                                        type="file" 
-                                        ref={fileInputRef} 
-                                        className="hidden" 
-                                        accept="image/*" 
-                                        onChange={(e) => handleFile(e.target.files)} 
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) => handleFile(e.target.files)}
                                     />
                                     {coverImage ? (
                                         <div className="w-full relative rounded-lg overflow-hidden group">
@@ -309,7 +310,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                         Feed Preview
                     </div>
                     <div className="pointer-events-none">
-                        <ClubPostCard 
+                        <ClubPostCard
                             post={{
                                 id: "preview",
                                 clubName: "Your Club Name",
@@ -322,8 +323,8 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                 postType: "club-event",
                                 stats: { likes: 0 },
                                 comments: []
-                            }} 
-                            isOwner={false} 
+                            }}
+                            isOwner={false}
                         />
                     </div>
 

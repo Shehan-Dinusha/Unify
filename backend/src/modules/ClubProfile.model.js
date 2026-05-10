@@ -41,6 +41,12 @@ const ClubProfile = sequelize.define(
       allowNull: true,
     },
 
+    stripeAccountId: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: true,
+    },
+
     isVerified: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

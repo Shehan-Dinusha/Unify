@@ -1,4 +1,4 @@
-import { Order, ClubProductPost } from "../../modules/index.js";
+import { Order, User, ClubProductPost } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
 
 const resolveUrl = async (img) => {
@@ -35,17 +35,25 @@ export const getStudentOrders = async (req, res) => {
       raw: true,
     });
 
-    // Manually join ClubProductPost data
+    // Manually join ClubProductPost data with author
     const productIds = [...new Set(orders.map((o) => o.itemId).filter((id) => id))];
     let productMap = {};
     if (productIds.length > 0) {
       const products = await ClubProductPost.findAll({
         where: { id: productIds },
-        raw: true,
+        include: [
+          {
+            model: User,
+            as: "author",
+            attributes: ["id", "name", "avatar"],
+          },
+        ],
+        // Note: Removing raw:true to allow nested include handling
       });
       
-      // Resolve images
-      await Promise.all(products.map(async (p) => {
+      // Resolve images and map products
+      await Promise.all(products.map(async (pInstance) => {
+        const p = pInstance.get({ plain: true });
         if (p.images && Array.isArray(p.images) && p.images.length > 0) {
           p.images = await Promise.all(p.images.map(resolveUrl));
         }

@@ -43,6 +43,9 @@ export const login = async (req, res) => {
     } else if (user.role === "Business") {
       const businessProfile = await BusinessProfile.findOne({ where: { userId: user.id } });
       if (businessProfile) profileData = { category: businessProfile.category };
+    } else if (user.role === "Club") {
+      const clubProfile = await ClubProfile.findOne({ where: { userId: user.id } });
+      if (clubProfile) profileData = { stripeAccountId: clubProfile.stripeAccountId };
     }
 
     return sendResponse(res, 200, true, "Login successful", {

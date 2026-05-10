@@ -24,7 +24,8 @@ import {
   postParamsValidator,
   commentValidator,
 } from "../validators/post.validator.js";
-import { protect } from "../middlewares/auth.middleware.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
+
 
 const router = express.Router();
 
@@ -32,6 +33,7 @@ const router = express.Router();
 router.post(
   "/normal",
   protect,
+  authorize("Club"),
   uploadToS3({ type: "array", fieldName: "images", folder: "posts", maxCount: 10 }),
   createNormalPostValidator,
   validate,
@@ -42,6 +44,7 @@ router.post(
 router.post(
   "/club-product",
   protect,
+  authorize("Club"),
   uploadToS3({ type: "array", fieldName: "images", folder: "posts/products", maxCount: 10 }),
   createClubProductPostValidator,
   validate,
@@ -52,6 +55,7 @@ router.post(
 router.post(
   "/club-event",
   protect,
+  authorize("Club"),
   uploadToS3({ type: "array", fieldName: "coverImage", folder: "posts/events", maxCount: 1 }),
   createClubEventPostValidator,
   validate,
@@ -62,6 +66,7 @@ router.post(
 router.post(
   "/boarding",
   protect,
+  authorize("Business"),
   uploadToS3({ type: "array", fieldName: "images", folder: "posts/boarding", maxCount: 10 }),
   createBoardingPostValidator,
   validate,
@@ -72,6 +77,7 @@ router.post(
 router.post(
   "/food-cafe",
   protect,
+  authorize("Business"),
   uploadToS3({ type: "array", fieldName: "images", folder: "posts/food", maxCount: 10 }),
   createNormalPostValidator,
   validate,
@@ -82,6 +88,7 @@ router.post(
 router.post(
   "/service",
   protect,
+  authorize("Business"),
   uploadToS3({ type: "array", fieldName: "images", folder: "posts/services", maxCount: 10 }),
   createNormalPostValidator,
   validate,
@@ -92,10 +99,15 @@ router.post(
 // ── Unified Post Routes ───────────────────────────────────────────────────────
 
 // Get unified feed
-router.get("/feed", getFeed);
+router.get("/feed",
+  protect,
+  getFeed);
+
+// Get current user's posts (Protected)
+router.get("/my-posts", protect, getFeed);
 
 // Get filtered boarding feed
-router.get("/boarding/filter", getFilteredBoardingFeed);
+router.get("/boarding/filter", protect, getFilteredBoardingFeed);
 // Get saved posts
 router.get("/saved", getSavedPosts);
 

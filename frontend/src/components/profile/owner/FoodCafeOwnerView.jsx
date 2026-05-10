@@ -14,6 +14,7 @@ const FoodCafeOwnerView = () => {
       iconBg: "bg-purple-500/20",
       title: "My Posts",
       description: "View and manage your boarding advertisements and updates.",
+      path: "/my-posts",
     },
     {
       icon: "⭐",

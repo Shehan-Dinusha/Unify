@@ -62,6 +62,7 @@ const ClubOwnerView = ({
       iconBg: "bg-purple-500/20",
       title: "My Posts",
       description: "View and manage your advertisements and updates.",
+      path: "/my-posts",
       disabled: !isApproved,
     },
     {

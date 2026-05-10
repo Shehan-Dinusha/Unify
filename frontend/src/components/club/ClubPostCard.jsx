@@ -119,7 +119,6 @@ const CommentSection = ({ postComments, onAddComment }) => {
 const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick }) => {
     const navigate = useNavigate();
 
-    const [boosted, setBoosted] = useState(false);
     const [saved, setSaved] = useState(false);
     const [reported, setReported] = useState(false);
     const [liked, setLiked] = useState(false);
@@ -128,7 +127,6 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
     const [likes, setLikes] = useState(post.stats?.likes ?? 0);
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const toggleBoost = () => { setBoosted(p => !p); };
     const toggleSave = () => setSaved(p => !p);
     const toggleReport = () => setReported(p => !p);
 
@@ -237,16 +235,7 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
                         onClick={() => setCommentOpen(o => !o)}
                     />
 
-                    {/* Boost */}
-                    {isOwner && (
-                        <ActionBtn
-                            svgSrc="/icon_boost_controller.svg"
-                            label="Boost"
-                            activeColor="text-yellow-400"
-                            active={boosted}
-                            onClick={toggleBoost}
-                        />
-                    )}
+
                     {/* Save */}
                     <ActionBtn
                         svgSrc="/icon_save_marketplace.svg"

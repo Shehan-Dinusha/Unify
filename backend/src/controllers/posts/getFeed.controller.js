@@ -78,7 +78,8 @@ const resolvePostImages = async (post) => {
 export const getFeed = async (req, res) => {
   try {
     const { type = "all" } = req.query;
-    const userId = req.user?.id || 1; // Default to 1 for development
+    const userId = req.user?.id;
+    const limit = 20;
 
     // ═══════ STEP 1: Fetch the active boost map from DB ═══════
     // Returns Map<postId, boostMeta> for all posts with active boosts
@@ -144,6 +145,15 @@ export const getFeed = async (req, res) => {
       tasks.push(fetchPosts(ClubProductPost, "club-product", "author", { isVisible: true }));
     } else if (type === "event") {
       tasks.push(fetchPosts(ClubEventPost, "club-event", "author", { isVisible: true }));
+    } else if (type === "my-posts") {
+      if (!userId) {
+        return res.status(401).json({ success: false, message: "Unauthorized" });
+      }
+      // Fetch ALL posts by the current user, including hidden ones
+      tasks.push(fetchPosts(NormalPost, "normal", "author", { authorId: userId }));
+      tasks.push(fetchPosts(ClubProductPost, "club-product", "author", { authorId: userId }));
+      tasks.push(fetchPosts(ClubEventPost, "club-event", "author", { authorId: userId }));
+      tasks.push(fetchPosts(Boarding, "boarding", "host", { hostId: userId }));
     } else if (type === "popular") {
       tasks.push(fetchPosts(ClubProductPost, "club-product", "author", { isVisible: true }, [["likesCount", "DESC"], ["createdAt", "DESC"]]));
       tasks.push(fetchPosts(ClubEventPost, "club-event", "author", { isVisible: true }, [["likesCount", "DESC"], ["createdAt", "DESC"]]));

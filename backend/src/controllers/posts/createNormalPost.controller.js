@@ -5,22 +5,20 @@ const getUploadedFileUrls = (files) => {
   return files.map((file) => file.location || `/uploads/verifications/${file.filename}`);
 };
 
-  export const createNormalPost = async (req, res) => {
-    try {
-      const { description, postType, category: bodyCategory } = req.body;
+export const createNormalPost = async (req, res) => {
+  try {
+    const { description, postType, category: bodyCategory } = req.body;
 
-      // Determine category based on postType
-      let category = bodyCategory || "CLUB";
-      // Use the authenticated user ID; fallback to 1 for safety in dev
-      const userId = req.user?.id || 1;
+    let category = bodyCategory || "CLUB";
+    const userId = req.user ? req.user.id : (req.body.userId || 1);
 
-      if (postType === "food-cafe") {
-        category = "FOOD";
-      } else if (postType === "service") {
-        category = "SELF_EMPLOYED";
-      } else if (postType === "club") {
-        category = "CLUB";
-      }
+    if (postType === "food-cafe") {
+      category = "FOOD";
+    } else if (postType === "service") {
+      category = "SELF_EMPLOYED";
+    } else if (postType === "club") {
+      category = "CLUB";
+    }
 
 
 

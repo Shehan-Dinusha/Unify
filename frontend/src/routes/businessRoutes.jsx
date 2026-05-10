@@ -1,6 +1,7 @@
 import React from "react";
 import MainLayout from "../components/layout/MainLayout";
 import { mockRequests } from "../data/mockData";
+import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 import NewsFeed from "../pages/NewsFeed";
 import Marketplace from "../pages/Marketplace";
@@ -16,6 +17,7 @@ import FollowersDirectory from "../pages/FollowersDirectory";
 import CreateProductPage from "../pages/CreateProductPage";
 import CreateEventPage from "../pages/CreateEventPage";
 import CreateNormalPostPage from "../pages/CreateNormalPostPage";
+import MyPosts from "../pages/MyPosts";
 import ChatPage from "../pages/chat/ChatPage";
 import OwnProfilePage from "../pages/profile/OwnProfilePage";
 import EditProfilePage from "../pages/profile/EditProfilePage";
@@ -67,6 +69,7 @@ export const businessSharedRoutes = [
   { path: "/business/boost-post", element: <BoostSelectPackage /> },
   { path: "/business/boost-post/confirm", element: <BoostConfirmOrder /> },
   { path: "/business/boost-post/success", element: <BoostPostSuccess /> },
+  { path: "/my-posts", element: <MyPosts /> },
   { path: "/messages", element: <ChatPage /> },
   { path: "/profile", element: <OwnProfilePage /> },
   { path: "/profile/edit", element: <EditProfilePage /> },
@@ -94,54 +97,59 @@ export const businessSharedRoutes = [
 
 // Clubs & societies
 export const clubRoutes = [
-  { path: "/marketplace/club", element: <Club /> },
-  { path: "/club-owner/marketplace", element: <ClubOwnerMarketplace /> },
-  { path: "/club-owner/create-product", element: <CreateProductPage /> },
-  { path: "/club-owner/create-event", element: <CreateEventPage /> },
-  { path: "/club-owner/create-post", element: <CreateNormalPostPage /> },
-  { path: "/club-owner/dashboard", element: <ClubOwnerDashboard /> },
   {
-    path: "/club-owner/product-orders/:type/:id",
-    element: <ProductOrderDashboard />,
-  },
-  { path: "/club-owner/wallet", element: <ClubWalletPage /> },
-  { path: "/marketplace/club/product/:type/:id", element: <ClubProduct /> },
-  { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
-  {
-    path: "/marketplace/club/payment-success",
-    element: <ClubPaymentSuccess />,
-  },
-  { path: "/club/followers", element: <FollowersDirectory /> },
+    element: <ProtectedRoute allowedRoles={["Club", "Admin"]} />,
+    children: [
+      //{ path: "/marketplace/club", element: <Club /> },
+      { path: "/club-owner/marketplace", element: <ClubOwnerMarketplace /> },
+      { path: "/club-owner/create-product", element: <CreateProductPage /> },
+      { path: "/club-owner/create-event", element: <CreateEventPage /> },
+      { path: "/club-owner/create-post", element: <CreateNormalPostPage /> },
+      { path: "/club-owner/dashboard", element: <ClubOwnerDashboard /> },
+      { path: "/club-owner/product-orders/:type/:id", element: <ProductOrderDashboard /> },
+      { path: "/club-owner/wallet", element: <ClubWalletPage /> },
+      { path: "/marketplace/club/product/:type/:id", element: <ClubProduct /> },
+      { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
+      { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
+      { path: "/club/followers", element: <FollowersDirectory /> },
+    ]
+  }
 ];
 
 // Boarding owners
 export const boardingOwnerRoutes = [
-  { path: "/marketplace/boarding", element: <Boarding /> },
   {
-    path: "/boarding-owner/marketplace",
-    element: <BoardingOwnerMarketplace />,
-  },
-  { path: "/boarding-owner/create-post", element: <CreateBoardingPostPage /> },
+    element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["BOARDING"]} />,
+    children: [
+      { path: "/marketplace/boarding", element: <Boarding /> },
+      { path: "/boarding-owner/marketplace", element: <BoardingOwnerMarketplace /> },
+      { path: "/boarding-owner/create-post", element: <CreateBoardingPostPage /> },
+    ]
+  }
 ];
 
 // Food & café
 export const foodCafeRoutes = [
-  { path: "/marketplace/food-cafe", element: <FoodCafe /> },
   {
-    path: "/food-cafe-owner/marketplace",
-    element: <FoodCafeOwnerMarketplace />,
-  },
-  { path: "/food-cafe-owner/create-post", element: <CreateFoodCafePostPage /> },
+    element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["FOOD"]} />,
+    children: [
+      { path: "/marketplace/food-cafe", element: <FoodCafe /> },
+      { path: "/food-cafe-owner/marketplace", element: <FoodCafeOwnerMarketplace /> },
+      { path: "/food-cafe-owner/create-post", element: <CreateFoodCafePostPage /> },
+    ]
+  }
 ];
 
 // Self-employed services
 export const selfEmployedRoutes = [
-  { path: "/marketplace/services", element: <Services /> },
   {
-    path: "/services-owner/marketplace",
-    element: <ServicesOwnerMarketplace />,
-  },
-  { path: "/services-owner/create-post", element: <CreateServicePostPage /> },
+    element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["SELF_EMPLOYED"]} />,
+    children: [
+      { path: "/marketplace/services", element: <Services /> },
+      { path: "/services-owner/marketplace", element: <ServicesOwnerMarketplace /> },
+      { path: "/services-owner/create-post", element: <CreateServicePostPage /> },
+    ]
+  }
 ];
 
 export const businessRoutes = [

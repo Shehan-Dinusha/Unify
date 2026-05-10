@@ -5,10 +5,11 @@ import MainLayout from "../components/layout/MainLayout";
 import FoodCafeCard from "../components/marketplace/FoodCafeCard";
 import postService from "../services/postService";
 import { formatTimeAgo } from "../utils/formatters";
+import { getCurrentUser } from "../services/authService";
 
 const ServicesOwnerMarketplace = () => {
     const navigate = useNavigate();
-    const user = { name: "Alex Johnson", role: "services_owner", displayRole: "Business & Organization" };
+    const user = getCurrentUser();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -34,7 +35,7 @@ const ServicesOwnerMarketplace = () => {
     }, []);
 
     const headerRight = (
-        <button 
+        <button
             onClick={() => navigate("/services-owner/create-post")}
             className="bg-primary-blue text-white px-6 py-2 rounded-full font-inter font-bold text-body-medium hover:brightness-110 transition-all shadow-custom"
         >

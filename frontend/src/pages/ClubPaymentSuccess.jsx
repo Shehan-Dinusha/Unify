@@ -6,11 +6,12 @@ import Button from "../components/common/Button";
 import { CheckCircle, Mail, MapPin, ClipboardList, ArrowRight, Loader2 } from "lucide-react";
 import { getImageUrl } from "../utils/formatters";
 import orderService from "../services/orderService";
+import { getCurrentUser } from "../services/authService";
 
 const ClubPaymentSuccess = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
+    const user = getCurrentUser();
 
     const [order, setOrder] = useState(location.state?.order || null);
     const [product, setProduct] = useState(location.state?.product || null);
@@ -174,7 +175,7 @@ const ClubPaymentSuccess = () => {
                             size="medium"
                             className="w-full md:flex-1 justify-center py-md"
                             icon={ClipboardList}
-                            onClick={() => navigate("/order-history")}
+                            onClick={() => navigate("/student/orders")}
                         >
                             View My Orders
                         </Button>
