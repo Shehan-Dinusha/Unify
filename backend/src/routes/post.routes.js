@@ -115,16 +115,16 @@ router.get("/saved", getSavedPosts);
 router.get("/:type/:id", postParamsValidator, validate, getPost);
 
 // Delete specific post dynamically
-router.delete("/:type/:id", postParamsValidator, validate, deletePost);
+router.delete("/:type/:id", protect, postParamsValidator, validate, deletePost);
 
 // Toggle Like
-router.post("/:type/:id/like", postParamsValidator, validate, toggleLike);
+router.post("/:type/:id/like", protect, postParamsValidator, validate, toggleLike);
 
 // Comments
-router.get("/:type/:id/comments", postParamsValidator, validate, getComments);
-router.post("/:type/:id/comments", postParamsValidator, commentValidator, validate, addComment);
+router.get("/:type/:id/comments", protect, postParamsValidator, validate, getComments);
+router.post("/:type/:id/comments", protect, postParamsValidator, commentValidator, validate, addComment);
 
 // Toggle Save
-router.post("/:type/:id/save", postParamsValidator, validate, toggleSave);
+router.post("/:type/:id/save", protect, postParamsValidator, validate, toggleSave);
 
 export default router;

@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import LogoutModal from "../profile/modals/LogoutModal";
 import { getCurrentUser, logout } from "../../services/authService";
+import { useNotifications } from "../../context/NotificationContext";
+import { useChat } from "../../context/ChatContext";
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({
@@ -89,6 +91,8 @@ const UnifiedSidebar = ({
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  const { unreadCount } = useNotifications();
+  const { unreadMessageCount } = useChat();
 
   // Get user from auth or fallback to prop
   const authUser = getCurrentUser();
@@ -100,8 +104,8 @@ const UnifiedSidebar = ({
       title: "Student Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
+        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
         { icon: GraduationCap, label: "Learning", path: "/student-learning" },
@@ -111,8 +115,8 @@ const UnifiedSidebar = ({
       title: "Batch Rep Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
+        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
         { icon: GraduationCap, label: "Learning", path: "/learning" },

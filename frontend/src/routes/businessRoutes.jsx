@@ -18,6 +18,11 @@ import CreateProductPage from "../pages/CreateProductPage";
 import CreateEventPage from "../pages/CreateEventPage";
 import CreateNormalPostPage from "../pages/CreateNormalPostPage";
 import MyPosts from "../pages/MyPosts";
+import ChatPage from "../pages/chat/ChatPage";
+import OwnProfilePage from "../pages/profile/OwnProfilePage";
+import EditProfilePage from "../pages/profile/EditProfilePage";
+import SecurityPage from "../pages/profile/SecurityPage";
+import PublicProfilePage from "../pages/profile/PublicProfilePage";
 
 import Boarding from "../pages/Boarding";
 import BoardingOwnerMarketplace from "../pages/BoardingOwnerMarketplace";
@@ -65,6 +70,11 @@ export const businessSharedRoutes = [
   { path: "/business/boost-post/confirm", element: <BoostConfirmOrder /> },
   { path: "/business/boost-post/success", element: <BoostPostSuccess /> },
   { path: "/my-posts", element: <MyPosts /> },
+  { path: "/messages", element: <ChatPage /> },
+  { path: "/profile", element: <OwnProfilePage /> },
+  { path: "/profile/edit", element: <EditProfilePage /> },
+  { path: "/profile/security", element: <SecurityPage /> },
+  { path: "/profile/:userId", element: <PublicProfilePage /> },
   {
     path: "/order-dashboard",
     element: (

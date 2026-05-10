@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import { useBoostPackages } from '../context/BoostPackageContext';
-import { mockBoostCampaigns } from '../data/mockBoostPostData';
 import {
   CheckCircle2,
   Circle,
@@ -11,35 +10,46 @@ import {
   Zap,
   Heart,
   ArrowRight,
+  Loader2,
+  Gauge,
+  Repeat2,
+  Palette,
+  Globe,
+  BarChart3,
+  Clock,
 } from 'lucide-react';
 
 const BoostSelectPackage = () => {
   const navigate = useNavigate();
-  const { packages } = useBoostPackages();
-  const [selectedPkgId, setSelectedPkgId] = useState('pkg-002');
+  const { packages, loading, error } = useBoostPackages();
+  const [selectedPkgId, setSelectedPkgId] = useState(null);
 
-  const selectedPkg = packages.find((p) => p.id === selectedPkgId) || packages[0];
+  // Auto-select first package if none selected and packages loaded
+  const effectiveSelectedId = selectedPkgId || (packages.length > 0 ? packages[0].id : null);
+  const selectedPkg = packages.find((p) => p.id === effectiveSelectedId) || packages[0];
 
   // Compute order summary from selected package
-  const durationDays =
-    selectedPkg.durationUnit === 'Hours'
+  const durationDays = selectedPkg
+    ? (selectedPkg.durationUnit === 'Hours'
       ? 1
       : selectedPkg.durationUnit === 'Days'
         ? selectedPkg.durationValue
-        : selectedPkg.durationValue * 7;
-  const subtotal = selectedPkg.price;
+        : selectedPkg.durationValue * 7)
+    : 0;
+  const subtotal = selectedPkg ? Number(selectedPkg.price) : 0;
   const taxRate = 0.008;
   const tax = Math.round(subtotal * taxRate * 100) / 100;
   const total = subtotal + tax;
-  const durationLabel =
-    selectedPkg.durationUnit === 'Hours'
+  const durationLabel = selectedPkg
+    ? (selectedPkg.durationUnit === 'Hours'
       ? '24 Hours'
-      : `${selectedPkg.durationValue} ${selectedPkg.durationUnit}`;
+      : `${selectedPkg.durationValue} ${selectedPkg.durationUnit}`)
+    : '';
 
   const handleBoostNow = () => {
     navigate('/business/boost-post/confirm', {
       state: {
-        packageId: selectedPkgId,
+        packageId: effectiveSelectedId,
         subtotal,
         tax,
         total,
@@ -48,8 +58,20 @@ const BoostSelectPackage = () => {
     });
   };
 
-  // Use mock campaign for the live preview
-  const previewCampaign = mockBoostCampaigns[1];
+  if (loading && packages.length === 0) {
+    return (
+      <MainLayout
+        user={{ name: 'Alex Johnson', role: 'business', displayRole: 'Business & Organization' }}
+        pageTitle="Boost Your Post"
+        verificationCount={0}
+      >
+        <div className="flex items-center justify-center py-xl min-h-[400px]">
+          <Loader2 size={32} className="text-primary-blue animate-spin" />
+          <span className="ml-3 text-body-small text-text-secondary font-inter">Loading packages...</span>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout
@@ -69,10 +91,27 @@ const BoostSelectPackage = () => {
           </p>
         </div>
 
+        {/* Error Banner */}
+        {error && (
+          <div className="bg-state-error/10 border border-state-error/30 rounded-2xl p-md">
+            <p className="text-body-small text-state-error font-inter">{error}</p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {packages.length === 0 && !loading && (
+          <Card variant="card" padding="p-lg" className="text-center">
+            <p className="text-body-small text-text-secondary font-inter">
+              No boost packages available at the moment. Please check back later.
+            </p>
+          </Card>
+        )}
+
         {/* ── Package Cards ── 3 columns on desktop, stacked on mobile */}
+        {packages.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
           {packages.map((pkg) => {
-            const isSelected = pkg.id === selectedPkgId;
+            const isSelected = pkg.id === effectiveSelectedId;
             const showBadge = pkg.badge === 'Premium';
 
             return (
@@ -103,7 +142,7 @@ const BoostSelectPackage = () => {
                   {/* Price */}
                   <div className="flex items-baseline gap-1 mb-1">
                     <span className="text-heading-small md:text-heading-medium text-text-primary font-inter font-bold">
-                      Rs. {pkg.price.toLocaleString()}
+                      Rs. {Number(pkg.price).toLocaleString()}
                     </span>
                     <span className="text-body-extra-small text-text-secondary font-inter">
                       / {pkg.duration}
@@ -117,7 +156,7 @@ const BoostSelectPackage = () => {
 
                   {/* Features */}
                   <div className="flex flex-col gap-sm mt-auto">
-                    {pkg.features.map((feature, idx) => (
+                    {(pkg.features || []).map((feature, idx) => (
                       <div key={idx} className="flex items-center gap-sm">
                         {isSelected ? (
                           <CheckCircle2 size={16} className="text-state-success flex-shrink-0" />
@@ -128,6 +167,39 @@ const BoostSelectPackage = () => {
                       </div>
                     ))}
                   </div>
+
+                  {/* Boost Engine Specs — from DB boostConfig */}
+                  {pkg.boostConfig && (
+                    <div className="mt-md pt-md border-t border-white/10">
+                      <p className="text-[10px] text-text-tertiary font-inter font-bold uppercase tracking-wider mb-2">Engine Specs</p>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <div className="flex items-center gap-1.5 text-[11px]">
+                          <Gauge size={12} className="text-state-success flex-shrink-0" />
+                          <span className="text-text-secondary font-inter">Priority #{pkg.boostConfig.feedPriority || 10}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[11px]">
+                          <Repeat2 size={12} className="text-primary-blue flex-shrink-0" />
+                          <span className="text-text-secondary font-inter">{pkg.boostConfig.visibilityMultiplier || 1}x Visibility</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[11px]">
+                          <Palette size={12} className="text-[#FBBF24] flex-shrink-0" />
+                          <span className="text-text-secondary font-inter capitalize">{pkg.boostConfig.highlightStyle || 'None'} Style</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[11px]">
+                          <Globe size={12} className="text-[#A78BFA] flex-shrink-0" />
+                          <span className="text-text-secondary font-inter">{pkg.boostConfig.crossCategoryReach ? 'All Categories' : 'Own Category'}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[11px]">
+                          <BarChart3 size={12} className="text-[#F472B6] flex-shrink-0" />
+                          <span className="text-text-secondary font-inter">{pkg.boostConfig.analyticsAccess ? 'Analytics On' : 'No Analytics'}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[11px]">
+                          <Clock size={12} className="text-state-warning flex-shrink-0" />
+                          <span className="text-text-secondary font-inter">{pkg.boostConfig.autoRefreshHours ? `Refresh ${pkg.boostConfig.autoRefreshHours}h` : 'No Refresh'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Select Button */}
                   <div className="mt-lg">
@@ -150,8 +222,10 @@ const BoostSelectPackage = () => {
             );
           })}
         </div>
+        )}
 
         {/* ── Bottom Row: Live Preview + Order Summary ── side by side */}
+        {selectedPkg && (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-md">
           {/* Live Preview — takes 3 columns */}
           <div className="lg:col-span-3">
@@ -166,18 +240,16 @@ const BoostSelectPackage = () => {
                 <div className="flex-1 min-w-0">
                   <div className="rounded-2xl border border-white/10 overflow-hidden bg-white/5">
                     <div className="h-28 sm:h-36 overflow-hidden bg-gradient-to-br from-white/10 to-white/5">
-                      <img
-                        src={previewCampaign.image}
-                        alt="Preview"
-                        className="w-full h-full object-cover opacity-80"
-                      />
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-body-small text-text-secondary font-inter">Ad Preview Image</span>
+                      </div>
                     </div>
                     <div className="p-md">
                       <h4 className="text-body-small-bold text-text-primary font-inter mb-1">
-                        {previewCampaign.postTitle}
+                        Your Boosted Post
                       </h4>
                       <p className="text-body-extra-small text-text-secondary font-inter leading-relaxed mb-md">
-                        {previewCampaign.description}
+                        This post will appear with priority placement across the platform.
                       </p>
                       <div className="flex items-center justify-between">
                         <span className="text-primary-blue text-body-small-bold font-inter flex items-center gap-1 cursor-pointer hover:underline">
@@ -265,6 +337,7 @@ const BoostSelectPackage = () => {
             </Card>
           </div>
         </div>
+        )}
       </div>
     </MainLayout>
   );

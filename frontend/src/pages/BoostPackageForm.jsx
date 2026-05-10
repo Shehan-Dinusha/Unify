@@ -18,13 +18,20 @@ import {
   Settings,
   Save,
   AlertTriangle,
+  Loader2,
+  Gauge,
+  Repeat2,
+  Palette,
+  Globe,
+  BarChart3,
+  Timer,
 } from "lucide-react";
 
 const BoostPackageForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = !!id;
-  const { packages, addPackage, updatePackage } = useBoostPackages();
+  const { packages, addPackage, updatePackage, loading } = useBoostPackages();
 
   // Find existing package if editing
   const existingPackage = isEditing
@@ -40,10 +47,20 @@ const BoostPackageForm = () => {
   const [description, setDescription] = useState("");
   const [features, setFeatures] = useState([""]);
 
+  // Boost Engine Config — the 6 parameters that control actual boost behavior
+  const [feedPriority, setFeedPriority] = useState(10);
+  const [visibilityMultiplier, setVisibilityMultiplier] = useState(1);
+  const [highlightStyle, setHighlightStyle] = useState("none");
+  const [crossCategoryReach, setCrossCategoryReach] = useState(false);
+  const [analyticsAccess, setAnalyticsAccess] = useState(false);
+  const [autoRefreshHours, setAutoRefreshHours] = useState(0);
+
   // Modal states
   const [showSuccess, setShowSuccess] = useState(false);
   const [successData, setSuccessData] = useState(null);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
   // Pre-fill form if editing
   useEffect(() => {
@@ -54,69 +71,112 @@ const BoostPackageForm = () => {
       setDurationUnit(existingPackage.durationUnit);
       setBadgeType(existingPackage.badge);
       setDescription(existingPackage.description);
-      setFeatures(existingPackage.features);
+      setFeatures(existingPackage.features && existingPackage.features.length > 0 ? existingPackage.features : [""]);
+      // Pre-fill boost engine config
+      if (existingPackage.boostConfig) {
+        setFeedPriority(existingPackage.boostConfig.feedPriority ?? 10);
+        setVisibilityMultiplier(existingPackage.boostConfig.visibilityMultiplier ?? 1);
+        setHighlightStyle(existingPackage.boostConfig.highlightStyle ?? "none");
+        setCrossCategoryReach(existingPackage.boostConfig.crossCategoryReach ?? false);
+        setAnalyticsAccess(existingPackage.boostConfig.analyticsAccess ?? false);
+        setAutoRefreshHours(existingPackage.boostConfig.autoRefreshHours ?? 0);
+      }
     }
   }, [existingPackage]);
 
-  const addFeature = () => {
-    setFeatures([...features, ""]);
+  // Auto-generate features text from boostConfig (mirrors backend logic)
+  const generateFeaturesPreview = () => {
+    const feats = [];
+    if (feedPriority < 10) {
+      feats.push(feedPriority === 1 ? "Always #1 in Feed" : `Priority #${feedPriority} Feed Placement`);
+    }
+    if (visibilityMultiplier > 1) {
+      feats.push(`${visibilityMultiplier}x Visibility Boost`);
+    }
+    if (highlightStyle !== "none") {
+      const labels = { subtle: "Sponsored Label on Post", blue: "Blue Highlighted Card + Badge", gold: "\u26A1 Gold Premium Card Styling" };
+      feats.push(labels[highlightStyle] || "Custom Card Styling");
+    }
+    if (crossCategoryReach) {
+      feats.push("Appears in All Category Feeds");
+    }
+    if (analyticsAccess) {
+      feats.push("Boost Analytics Dashboard");
+    }
+    if (autoRefreshHours > 0) {
+      feats.push(`Auto-Refresh Every ${autoRefreshHours} Hours`);
+    }
+    if (durationValue && durationUnit) {
+      feats.push(`${durationValue} ${durationUnit} Promotion Period`);
+    }
+    return feats;
   };
 
-  const removeFeature = (index) => {
-    setFeatures(features.filter((_, i) => i !== index));
-  };
-
-  const updateFeatureText = (index, value) => {
-    const updated = [...features];
-    updated[index] = value;
-    setFeatures(updated);
-  };
+  const autoFeatures = generateFeaturesPreview();
 
   // Show save confirmation first
   const handleSaveClick = () => {
+    setSaveError(null);
     setShowSaveConfirm(true);
   };
 
-  // Actually save after confirmation
-  const confirmSave = () => {
+  // Actually save after confirmation — calls API
+  const confirmSave = async () => {
     setShowSaveConfirm(false);
+    setIsSaving(true);
+    setSaveError(null);
 
     const pkgData = {
       name: packageName || "Untitled",
       price: Number(price) || 0,
-      duration: `${durationValue} ${durationUnit}`,
       durationValue: Number(durationValue) || 0,
       durationUnit,
       badge: badgeType,
       description: description || "No description provided.",
       features: features.filter((f) => f.trim() !== ""),
+      boostConfig: {
+        feedPriority: Number(feedPriority),
+        visibilityMultiplier: Number(visibilityMultiplier),
+        highlightStyle,
+        crossCategoryReach,
+        analyticsAccess,
+        autoRefreshHours: Number(autoRefreshHours),
+      },
     };
 
-    if (isEditing) {
-      updatePackage(id, pkgData);
-    } else {
-      addPackage(pkgData);
+    try {
+      let result;
+      if (isEditing) {
+        result = await updatePackage(id, pkgData);
+      } else {
+        result = await addPackage(pkgData);
+      }
+
+      // Use DB-generated data for the success modal
+      const operationId = result?.id || `#bst-${Math.floor(10000 + Math.random() * 90000)}-tf`;
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      const timeStr = now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      setSuccessData({
+        operationId,
+        activationDate: `${dateStr} • ${timeStr}`,
+        packageTier: packageName || "Untitled",
+        isEdit: isEditing,
+      });
+      setShowSuccess(true);
+    } catch (err) {
+      setSaveError(err.message || "Failed to save package. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
-
-    const operationId = `#bst-${Math.floor(10000 + Math.random() * 90000)}-tf`;
-    const now = new Date();
-    const dateStr = now.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    const timeStr = now.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    setSuccessData({
-      operationId,
-      activationDate: `${dateStr} • ${timeStr}`,
-      packageTier: packageName || "Untitled",
-      isEdit: isEditing,
-    });
-    setShowSuccess(true);
   };
 
   const cancelSave = () => {
@@ -146,7 +206,7 @@ const BoostPackageForm = () => {
     ? `Rs. ${Number(price).toLocaleString()}`
     : "Rs. 0";
   const previewDuration = `${durationValue} ${durationUnit}`;
-  const previewFeatures = features.filter((f) => f.trim() !== "");
+  const previewFeatures = autoFeatures;
 
   return (
       <MainLayout
@@ -186,12 +246,21 @@ const BoostPackageForm = () => {
                   size="medium"
                   onClick={handleSaveClick}
                   className="whitespace-nowrap"
+                  disabled={isSaving}
                 >
-                  Save Changes
+                  {isSaving ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </div>
           </div>
+
+          {/* Error Banner */}
+          {saveError && (
+            <div className="bg-state-error/10 border border-state-error/30 rounded-2xl p-md flex items-center gap-sm">
+              <AlertTriangle size={18} className="text-state-error flex-shrink-0" />
+              <p className="text-body-small text-state-error font-inter">{saveError}</p>
+            </div>
+          )}
 
           {/* Main Content: Form + Preview */}
           <div className="flex flex-col md:flex-row gap-lg">
@@ -318,57 +387,214 @@ const BoostPackageForm = () => {
                     </div>
                   )}
 
-                  {/* Features Section */}
+                  {/* Auto-Generated Features Preview */}
                   <div>
                     <div className="flex items-center justify-between mb-md">
                       <h4 className="text-body-medium-bold text-text-primary font-inter">
-                        {isEditing
-                          ? "Benefits & Features"
-                          : "Key Benefits & Features"}
+                        Live Features Preview
                       </h4>
-                      <button
-                        onClick={addFeature}
-                        className="flex items-center gap-xs text-primary-blue text-body-small-bold font-inter hover:underline transition-all"
-                      >
-                        <Plus size={16} />
-                        Add Feature
-                      </button>
+                      <span className="text-[10px] text-text-tertiary font-inter bg-white/5 px-2 py-1 rounded-md">
+                        Auto-generated from config below
+                      </span>
                     </div>
 
-                    <div className="flex flex-col gap-sm">
-                      {features.map((feature, index) => (
-                        <div key={index} className="flex items-center gap-sm">
-                          {isEditing && (
-                            <GripVertical
-                              size={18}
-                              className="text-text-secondary flex-shrink-0 cursor-grab"
-                            />
-                          )}
-                          {!isEditing && (
+                    {autoFeatures.length === 0 ? (
+                      <p className="text-body-extra-small text-text-tertiary font-inter italic">
+                        Configure the Boost Engine parameters below to see features appear here.
+                      </p>
+                    ) : (
+                      <div className="flex flex-col gap-sm">
+                        {autoFeatures.map((feat, idx) => (
+                          <div key={idx} className="flex items-center gap-sm">
                             <CheckCircle2
                               size={18}
-                              className="text-text-secondary flex-shrink-0"
+                              className="text-state-success flex-shrink-0"
                             />
-                          )}
-                          <div className="flex-1 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center px-4 transition-all focus-within:border-primary-blue/50 focus-within:bg-white/10">
-                            <input
-                              type="text"
-                              className="w-full bg-transparent outline-none text-sm text-text-primary placeholder:text-text-tertiary font-inter"
-                              placeholder="Add a new feature..."
-                              value={feature}
-                              onChange={(e) =>
-                                updateFeatureText(index, e.target.value)
-                              }
-                            />
+                            <span className="text-body-small text-text-primary font-inter">
+                              {feat}
+                            </span>
                           </div>
-                          <button
-                            onClick={() => removeFeature(index)}
-                            className="w-10 h-10 rounded-lg flex items-center justify-center text-state-error/70 hover:bg-state-error/10 hover:text-state-error transition-all flex-shrink-0"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Card>
+
+              {/* ═══ Boost Engine Configuration ═══ */}
+              <Card variant="card" padding="p-lg" className="mt-lg">
+                <div className="flex flex-col gap-xl">
+                  <div>
+                    <h3 className="text-body-large-bold text-text-primary font-inter mb-1">Boost Engine Configuration</h3>
+                    <p className="text-body-extra-small text-text-secondary font-inter">These 5 parameters control the actual behavior when a business activates this boost package.</p>
+                  </div>
+
+                  {/* 1. Feed Priority */}
+                  <div className="flex flex-col gap-sm">
+                    <div className="flex items-center gap-sm">
+                      <div className="w-8 h-8 rounded-lg bg-state-success/15 flex items-center justify-center flex-shrink-0">
+                        <Gauge size={16} className="text-state-success" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <label className="text-body-small-bold text-text-primary font-inter">Feed Priority Position</label>
+                          <span className="text-body-small-bold text-state-success font-inter">#{feedPriority}</span>
                         </div>
-                      ))}
+                        <p className="text-body-extra-small text-text-secondary font-inter">Lower number = higher position in the news feed. #1 always appears first.</p>
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="10"
+                      step="1"
+                      value={feedPriority}
+                      onChange={(e) => setFeedPriority(Number(e.target.value))}
+                      className="w-full h-2 rounded-full appearance-none bg-white/10 accent-state-success cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[10px] text-text-tertiary font-inter">
+                      <span>#1 — Top of feed</span>
+                      <span>#10 — Normal position</span>
+                    </div>
+                  </div>
+
+                  {/* 2. Visibility Multiplier */}
+                  <div className="flex flex-col gap-sm">
+                    <div className="flex items-center gap-sm">
+                      <div className="w-8 h-8 rounded-lg bg-primary-blue/15 flex items-center justify-center flex-shrink-0">
+                        <Repeat2 size={16} className="text-primary-blue" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <label className="text-body-small-bold text-text-primary font-inter">Visibility Multiplier</label>
+                          <span className="text-body-small-bold text-primary-blue font-inter">{visibilityMultiplier}x</span>
+                        </div>
+                        <p className="text-body-extra-small text-text-secondary font-inter">How many times the post appears in a single feed load. 2x = post shows twice.</p>
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="5"
+                      step="1"
+                      value={visibilityMultiplier}
+                      onChange={(e) => setVisibilityMultiplier(Number(e.target.value))}
+                      className="w-full h-2 rounded-full appearance-none bg-white/10 accent-primary-blue cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[10px] text-text-tertiary font-inter">
+                      <span>1x — Normal</span>
+                      <span>5x — Maximum exposure</span>
+                    </div>
+                  </div>
+
+                  {/* 3. Highlight Style */}
+                  <div className="flex items-center gap-sm">
+                    <div className="w-8 h-8 rounded-lg bg-[#FBBF24]/15 flex items-center justify-center flex-shrink-0">
+                      <Palette size={16} className="text-[#FBBF24]" />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-body-small-bold text-text-primary font-inter block mb-1">Highlight Style</label>
+                      <p className="text-body-extra-small text-text-secondary font-inter mb-2">Visual treatment of the post card in the feed.</p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-sm">
+                        {[
+                          { value: "none", label: "None", desc: "Normal card", color: "text-text-secondary" },
+                          { value: "subtle", label: "Subtle", desc: "\"Sponsored\" text", color: "text-text-secondary" },
+                          { value: "blue", label: "Blue", desc: "Blue border + badge", color: "text-[#3B82F6]" },
+                          { value: "gold", label: "Gold", desc: "Gold glow + ⚡", color: "text-[#FBBF24]" },
+                        ].map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setHighlightStyle(opt.value)}
+                            className={`rounded-xl p-3 text-center transition-all duration-200 border ${
+                              highlightStyle === opt.value
+                                ? "border-primary-blue bg-primary-blue/10"
+                                : "border-white/10 bg-white/5 hover:bg-white/10"
+                            }`}
+                          >
+                            <span className={`text-body-small-bold font-inter block ${opt.color}`}>{opt.label}</span>
+                            <span className="text-[10px] text-text-tertiary font-inter">{opt.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. Cross-Category Reach */}
+                  <div className="flex items-center gap-sm">
+                    <div className="w-8 h-8 rounded-lg bg-[#A78BFA]/15 flex items-center justify-center flex-shrink-0">
+                      <Globe size={16} className="text-[#A78BFA]" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <label className="text-body-small-bold text-text-primary font-inter block">Cross-Category Reach</label>
+                          <p className="text-body-extra-small text-text-secondary font-inter">Post appears in ALL category feeds (Club, Boarding, etc.), not just its own.</p>
+                        </div>
+                        <button
+                          onClick={() => setCrossCategoryReach(!crossCategoryReach)}
+                          className={`relative w-12 h-7 rounded-full transition-all duration-300 flex-shrink-0 ${
+                            crossCategoryReach ? "bg-state-success" : "bg-white/15"
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-300 ${
+                              crossCategoryReach ? "left-6" : "left-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 5. Analytics Access */}
+                  <div className="flex items-center gap-sm">
+                    <div className="w-8 h-8 rounded-lg bg-[#F472B6]/15 flex items-center justify-center flex-shrink-0">
+                      <BarChart3 size={16} className="text-[#F472B6]" />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-body-small-bold text-text-primary font-inter block mb-1">Analytics Access</label>
+                      <p className="text-body-extra-small text-text-secondary font-inter">Business user can view boost performance metrics.</p>
+                    </div>
+                    <button
+                      onClick={() => setAnalyticsAccess(!analyticsAccess)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 flex-shrink-0 ${
+                        analyticsAccess ? "bg-primary-blue" : "bg-white/20"
+                      }`}
+                    >
+                      <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform duration-200 ${
+                        analyticsAccess ? "translate-x-6" : "translate-x-1"
+                      }`} />
+                    </button>
+                  </div>
+
+                  {/* 6. Auto-Refresh */}
+                  <div className="flex items-center gap-sm">
+                    <div className="w-8 h-8 rounded-lg bg-[#FBBF24]/15 flex items-center justify-center flex-shrink-0">
+                      <Timer size={16} className="text-[#FBBF24]" />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-body-small-bold text-text-primary font-inter block mb-1">Auto-Refresh</label>
+                      <p className="text-body-extra-small text-text-secondary font-inter mb-2">Post gets bumped as fresh content every X hours (like OLX bump).</p>
+                      <div className="grid grid-cols-4 gap-sm">
+                        {[
+                          { value: 0, label: "Off" },
+                          { value: 6, label: "6h" },
+                          { value: 12, label: "12h" },
+                          { value: 24, label: "24h" },
+                        ].map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setAutoRefreshHours(opt.value)}
+                            className={`rounded-xl py-2 text-center transition-all duration-200 border ${
+                              autoRefreshHours === opt.value
+                                ? "border-[#FBBF24] bg-[#FBBF24]/10"
+                                : "border-white/10 bg-white/5 hover:bg-white/10"
+                            }`}
+                          >
+                            <span className="text-body-small-bold text-text-primary font-inter">{opt.label}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

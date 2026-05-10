@@ -1,4 +1,5 @@
-import { NormalPost, ClubProductPost, ClubEventPost, Boarding, PostLike } from "../../modules/index.js";
+import { NormalPost, ClubProductPost, ClubEventPost, Boarding, PostLike, User } from "../../modules/index.js";
+import { notifyLike } from "../../services/notification.service.js";
 
 const getModelConfig = (type) => {
   switch (type) {
@@ -48,6 +49,21 @@ export const toggleLike = async (req, res) => {
       await PostLike.create({ userId, postId: id, postType: type });
       post.likesCount = (post.likesCount || 0) + 1;
       await post.save();
+
+      // Send notification to the post owner (non-blocking)
+      const postOwnerId = post.authorId || post.hostId;
+      if (postOwnerId) {
+        const actor = await User.findByPk(userId, { attributes: ["name"] });
+        notifyLike({
+          postOwnerId,
+          actorId: userId,
+          actorName: actor?.name || "Someone",
+          postId: parseInt(id, 10),
+          postType: type,
+          postTitle: post.title || post.name || "your post",
+        });
+      }
+
       return res.status(200).json({ success: true, liked: true, likesCount: post.likesCount });
     }
   } catch (error) {

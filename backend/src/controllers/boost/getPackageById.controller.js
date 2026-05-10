@@ -1,27 +1,18 @@
-import BoostPackage from "../../modules/BoostPackage.model.js";
+import boostService from "../../services/boost.service.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
 /**
  * Retrieves a single boost package by ID.
- * Adds computed `duration` field for frontend compatibility.
  */
 export const getPackageById = async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    const pkg = await BoostPackage.findByPk(id);
-
-    if (!pkg) {
-      return sendResponse(res, 404, false, 'Boost package not found');
-    }
-
-    const plain = pkg.toJSON();
-    plain.price = Number(plain.price);
-    plain.duration = `${plain.durationValue} ${plain.durationUnit}`;
-
-    return sendResponse(res, 200, true, 'Boost package retrieved', plain);
+    const pkg = await boostService.getPackageById(req.params.id);
+    return sendResponse(res, 200, true, "Boost package retrieved successfully", pkg);
   } catch (error) {
+    if (error.statusCode) {
+      return sendResponse(res, error.statusCode, false, error.message);
+    }
     logger.error(`Error in getPackageById controller: ${error.message}`);
     next(error);
   }
