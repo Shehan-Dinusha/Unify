@@ -8,8 +8,6 @@ import StudentManagement from "../pages/StudentManagement";
 import StudentUserProfile from "../pages/StudentUserProfile";
 import ReportModeration from "../pages/ReportModeration";
 import ReportDetail from "../pages/ReportDetail";
-import ClubVerification from "../pages/ClubVerification";
-import BatchRepVerification from "../pages/BatchRepVerification";
 import SuspendedUsers from "../pages/SuspendedUsers";
 import SuspendedUserProfile from "../pages/SuspendedUserProfile";
 import SuspendedUserReactivation from "../pages/SuspendedUserReactivation";
@@ -37,9 +35,10 @@ export const adminRoutes = [
         path: "/suspended-users/:id/reactivate",
         element: <SuspendedUserReactivation />,
       },
-      { path: "/suspended-users/:id/success", element: <SuspendedUserSuccess /> },
-      { path: "/club-verification", element: <ClubVerification /> },
-      { path: "/batch-rep-verification", element: <BatchRepVerification /> },
+      {
+        path: "/suspended-users/:id/success",
+        element: <SuspendedUserSuccess />,
+      },
 
       // Reports panel and analytics
       { path: "/report-moderation", element: <ReportModeration /> },

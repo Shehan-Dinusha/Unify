@@ -25,6 +25,7 @@ import StudentSubmittedReports from "../pages/StudentSubmittedReports";
 import StudentReportDetail from "../pages/StudentReportDetail";
 import StudentReportWithdrawal from "../pages/StudentReportWithdrawal";
 import StudentReportWithdrawalSuccess from "../pages/StudentReportWithdrawalSuccess";
+import BatchRepVerification from "../pages/BatchRepVerification";
 import Club from "../pages/Club";
 import Services from "../pages/Services";
 import FoodCafe from "../pages/FoodCafe";
@@ -37,7 +38,9 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 export const studentRoutes = [
   // 1. SHARED ROUTES (Accessible by everyone logged in)
   {
-    element: <ProtectedRoute allowedRoles={["Student", "Business", "Club", "Admin"]} />,
+    element: (
+      <ProtectedRoute allowedRoles={["Student", "Business", "Club", "Admin"]} />
+    ),
     children: [
       { path: "/news-feed", element: <NewsFeed /> },
       { path: "/messages", element: <ChatPage /> },
@@ -45,7 +48,7 @@ export const studentRoutes = [
       { path: "/profile/edit", element: <EditProfilePage /> },
       { path: "/profile/security", element: <SecurityPage /> },
       { path: "/profile/:userId", element: <PublicProfilePage /> },
-    ]
+    ],
   },
   // 2. STUDENT-ONLY ROUTES
   {
@@ -60,7 +63,6 @@ export const studentRoutes = [
       { path: "/new-announcements", element: <NewAnnouncements /> },
       { path: "/student/followings", element: <Followings /> },
 
-
       //marketplace
       { path: "/marketplace/club", element: <Club /> },
       { path: "marketplace/services", element: <Services /> },
@@ -68,11 +70,15 @@ export const studentRoutes = [
       { path: "marketplace/boarding", element: <Boarding /> },
       { path: "/marketplace/club/product/:type/:id", element: <ClubProduct /> },
       { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
-      { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
+      {
+        path: "/marketplace/club/payment-success",
+        element: <ClubPaymentSuccess />,
+      },
 
       // Learning
       { path: "/learning", element: <BatchRepLearningDashboard /> },
       { path: "/student-learning", element: <StudentLearningDashboard /> },
+      { path: "/batch-rep-verification", element: <BatchRepVerification /> },
 
       // Saved content & Reviews
       { path: "/my-saved-posts", element: <MySavedPosts /> },
@@ -94,6 +100,6 @@ export const studentRoutes = [
         path: "/student/reports/:id/withdraw/success",
         element: <StudentReportWithdrawalSuccess />,
       },
-    ]
-  }
+    ],
+  },
 ];
