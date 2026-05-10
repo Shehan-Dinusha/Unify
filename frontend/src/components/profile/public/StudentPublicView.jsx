@@ -16,12 +16,20 @@ const StudentPublicView = ({ profile }) => {
       {/* Left — Profile Card */}
       <div className="md:row-span-1 flex flex-col gap-4">
         <ProfileHeader profile={profile} isPublic={true} />
-        
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3 md:gap-md">
           {[
-            { label: "Followers", value: profile?.followerCount || 0, type: "followers" },
-            { label: "Following", value: profile?.followingCount || 0, type: "followings" },
+            {
+              label: "Followers",
+              value: profile?.followerCount || 0,
+              type: "followers",
+            },
+            {
+              label: "Following",
+              value: profile?.followingCount || 0,
+              type: "followings",
+            },
           ].map((stat, idx) => (
             <Card
               key={idx}

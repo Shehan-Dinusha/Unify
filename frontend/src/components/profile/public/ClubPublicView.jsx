@@ -21,9 +21,11 @@ const ClubPublicView = ({ profile }) => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showReviewsList, setShowReviewsList] = useState(false);
   const [followersModalType, setFollowersModalType] = useState(null);
-  
+
   const [isFollowing, setIsFollowing] = useState(profile?.isFollowing || false);
-  const [followerCount, setFollowerCount] = useState(profile?.followerCount || 0);
+  const [followerCount, setFollowerCount] = useState(
+    profile?.followerCount || 0,
+  );
 
   const currentUser = getCurrentUser();
   const isStudent = currentUser?.role?.toLowerCase() === "student";
@@ -35,7 +37,8 @@ const ClubPublicView = ({ profile }) => {
       setFollowerCount((prev) => (isFollowing ? prev - 1 : prev + 1));
     } catch (err) {
       console.error("Failed to toggle follow status:", err);
-      const msg = err.response?.data?.message || err.message || "Failed to toggle follow";
+      const msg =
+        err.response?.data?.message || err.message || "Failed to toggle follow";
       alert(msg);
     }
   };
@@ -44,18 +47,15 @@ const ClubPublicView = ({ profile }) => {
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md items-start text-start">
       {/* Left — Profile Card */}
       <div className="md:row-span-1">
-        <ProfileHeader 
-          profile={profile} 
-          isPublic={true} 
-        />
+        <ProfileHeader profile={profile} isPublic={true} />
       </div>
 
       {/* Right — Top Sections */}
       <div className="flex flex-col gap-4 md:gap-md">
         {/* Rating */}
         <ReviewsSection
-          rating={profile?.rating || 4.2}
-          reviewCount={profile?.reviewCount || 8}
+          rating={profile?.rating ?? 0}
+          reviewCount={profile?.reviewCount ?? 0}
           onAddReview={() => setShowReviewModal(true)}
           onViewReviews={() => setShowReviewsList(true)}
         />
@@ -64,7 +64,11 @@ const ClubPublicView = ({ profile }) => {
         <div className="grid grid-cols-2 gap-3 md:gap-md">
           {[
             { label: "Followers", value: followerCount, type: "followers" },
-            { label: "Following", value: profile?.followingCount || 0, type: "followings" },
+            {
+              label: "Following",
+              value: profile?.followingCount || 0,
+              type: "followings",
+            },
           ].map((stat, idx) => (
             <Card
               key={idx}
@@ -127,7 +131,8 @@ const ClubPublicView = ({ profile }) => {
               window.location.reload();
             } catch (err) {
               console.error(err);
-              alert(err.message || "Failed to submit review");
+              const msg = err.response?.data?.message || err.message || "Failed to submit review";
+              alert(msg);
             }
           }}
         />

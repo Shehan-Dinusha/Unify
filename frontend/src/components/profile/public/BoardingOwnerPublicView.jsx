@@ -24,12 +24,20 @@ const BoardingOwnerPublicView = ({ profile }) => {
       {/* Left — Profile Card */}
       <div className="md:row-span-1 flex flex-col gap-4">
         <ProfileHeader profile={profile} isPublic={true} />
-        
+
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3 md:gap-md">
           {[
-            { label: "Followers", value: profile?.followerCount || 0, type: "followers" },
-            { label: "Following", value: profile?.followingCount || 0, type: "followings" },
+            {
+              label: "Followers",
+              value: profile?.followerCount || 0,
+              type: "followers",
+            },
+            {
+              label: "Following",
+              value: profile?.followingCount || 0,
+              type: "followings",
+            },
           ].map((stat, idx) => (
             <Card
               key={idx}
@@ -53,8 +61,8 @@ const BoardingOwnerPublicView = ({ profile }) => {
       <div className="flex flex-col gap-4 md:gap-md">
         {/* Rating */}
         <ReviewsSection
-          rating={profile?.rating || 4.5}
-          reviewCount={profile?.reviewCount || 12}
+          rating={profile?.rating ?? 0}
+          reviewCount={profile?.reviewCount ?? 0}
           onAddReview={() => setShowReviewModal(true)}
           onViewReviews={() => setShowReviewsList(true)}
         />

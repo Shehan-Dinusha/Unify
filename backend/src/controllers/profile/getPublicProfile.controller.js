@@ -8,6 +8,7 @@ import {
   Degree,
   Batch,
   UserFollower,
+  Review,
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
@@ -60,6 +61,23 @@ export const getPublicProfile = async (req, res) => {
 
     // Prepare response data based on role
     let profileData = null;
+    
+    // Calculate review stats for Clubs and Businesses
+    let reviewCount = 0;
+    let rating = 0;
+    
+    if (targetRole === "Business" || targetRole === "Club") {
+      const reviews = await Review.findAll({ 
+        where: { targetId: targetUserId },
+        attributes: ['rating']
+      });
+      
+      reviewCount = reviews.length;
+      if (reviewCount > 0) {
+        const sumRating = reviews.reduce((acc, r) => acc + r.rating, 0);
+        rating = Number((sumRating / reviewCount).toFixed(1));
+      }
+    }
     let mappedProfile = {
       id: targetUser.id,
       name: targetUser.name,
@@ -69,6 +87,8 @@ export const getPublicProfile = async (req, res) => {
       followerCount,
       followingCount,
       isFollowing,
+      reviewCount,
+      rating,
     };
 
     if (targetRole === "Student") {
