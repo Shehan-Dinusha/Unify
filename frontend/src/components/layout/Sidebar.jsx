@@ -173,7 +173,7 @@ const UnifiedSidebar = ({
       links: [
         { icon: Rss, label: "News Feed", path: "/business/news-feed" },
         { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
         { icon: Store, label: "Marketplace", path: "/club-owner/marketplace" },
         {
           icon: LayoutDashboard,

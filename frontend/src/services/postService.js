@@ -77,6 +77,19 @@ const postService = {
   },
 
   /**
+   * Fetch posts for a specific user (public profiles)
+   * @param {number|string} userId - Target user ID
+   */
+  getUserPosts: async (userId) => {
+    try {
+      const response = await api.get(`/posts/user/${userId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
    * Delete a post by type and ID
    * @param {string} type - 'normal', 'club-product', 'club-event', 'boarding'
    * @param {number|string} id - Post ID

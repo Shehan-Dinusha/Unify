@@ -13,6 +13,7 @@ import {
   getComments,
   toggleSave,
   getSavedPosts,
+  getUserPosts,
 } from "../controllers/posts/index.js";
 import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -110,6 +111,9 @@ router.get("/my-posts", protect, getFeed);
 router.get("/boarding/filter", protect, getFilteredBoardingFeed);
 // Get saved posts
 router.get("/saved", getSavedPosts);
+
+// Get specific user's posts (Publicly accessible but protected)
+router.get("/user/:userId", protect, getUserPosts);
 
 // Get specific post dynamically
 router.get("/:type/:id", postParamsValidator, validate, getPost);

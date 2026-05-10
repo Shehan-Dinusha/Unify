@@ -9,8 +9,9 @@ import { Star } from "lucide-react";
  *  rating: number (0-5)
  *  reviewCount: number
  *  onAddReview: function
+ *  onViewReviews: function
  */
-const ReviewsSection = ({ rating = 0, reviewCount = 0, onAddReview }) => {
+const ReviewsSection = ({ rating = 0, reviewCount = 0, onAddReview, onViewReviews }) => {
   const stars = Array.from({ length: 5 }, (_, i) => i + 1);
 
   return (
@@ -36,9 +37,12 @@ const ReviewsSection = ({ rating = 0, reviewCount = 0, onAddReview }) => {
             <span className="text-sm md:text-body-medium-bold text-text-primary font-bold">
               {rating.toFixed(1)}
             </span>
-            <span className="text-[11px] md:text-body-extra-small text-text-secondary">
+            <button 
+              className="text-[11px] md:text-body-extra-small text-text-secondary hover:text-primary-blue hover:underline cursor-pointer transition-colors"
+              onClick={onViewReviews}
+            >
               ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
-            </span>
+            </button>
           </div>
         </div>
 

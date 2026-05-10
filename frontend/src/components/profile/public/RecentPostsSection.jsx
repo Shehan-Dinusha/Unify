@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PostCard from "../../feed/PostCard";
+import { formatTimeAgo, getImageUrl } from "../../../utils/formatters";
 
 /**
  * RecentPostsSection — displays a feed of posts with a "Show more" toggle.
@@ -21,9 +22,31 @@ const RecentPostsSection = ({ posts = [] }) => {
 
       {/* Posts List */}
       <div className="flex flex-col gap-4 md:gap-lg">
-        {visiblePosts.map((post) => (
-          <PostCard key={post.id} {...post} />
-        ))}
+        {visiblePosts.map((post) => {
+          const displayImage = getImageUrl(
+            post.coverImage || post.image || (post.images && post.images.length > 0 ? post.images[0] : null)
+          );
+
+          return (
+            <PostCard
+              key={post.id}
+              post={post}
+              author={post.author}
+              authorAvatar={post.author?.avatar}
+              time={post.createdAt ? formatTimeAgo(post.createdAt) : "just now"}
+              title={post.title}
+              location={post.location}
+              description={post.content || post.description}
+              image={displayImage}
+              likes={post.likesCount || 0}
+              comments={post.commentsCount || 0}
+              initialIsLiked={post.isLiked}
+              initialIsSaved={post.isSaved}
+              isPromoted={post.isPromoted}
+              boostMeta={post.boostMeta}
+            />
+          );
+        })}
       </div>
 
       {/* Show More toggle */}

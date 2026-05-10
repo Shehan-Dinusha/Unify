@@ -139,10 +139,10 @@ const ClubOwnerView = ({
 
       {/* Action Buttons */}
       <div className={`flex flex-col sm:flex-row gap-3 md:gap-md transition-all duration-300 ${!isApproved ? "opacity-50 pointer-events-none" : ""}`}>
-        <Button variant="primary" fullWidth icon={Plus} className="py-2.5 md:py-3" disabled={!isApproved}>
+        <Button variant="primary" fullWidth icon={Plus} className="py-2.5 md:py-3" disabled={!isApproved} onClick={() => navigate("/club-owner/create-post")}>
           Create Post
         </Button>
-        <Button variant="outline" fullWidth icon={Zap} className="py-2.5 md:py-3" disabled={!isApproved}>
+        <Button variant="outline" fullWidth icon={Zap} className="py-2.5 md:py-3" disabled={!isApproved} onClick={() => navigate("/business/boost-post")}>
           Boost Post
         </Button>
       </div>

@@ -83,3 +83,31 @@ export const getClubFollowers = async (page = 1, limit = 14) => {
     throw error;
   }
 };
+
+/**
+ * Fetch a paginated list of public followers for a specific user.
+ */
+export const getPublicFollowers = async (userId, page = 1, limit = 20) => {
+  try {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    const response = await api.get(`/followers/${userId}/followers?${params.toString()}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching public followers:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch a paginated list of public followings for a specific user.
+ */
+export const getPublicFollowing = async (userId, page = 1, limit = 20) => {
+  try {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    const response = await api.get(`/followers/${userId}/followings?${params.toString()}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching public followings:", error);
+    throw error;
+  }
+};

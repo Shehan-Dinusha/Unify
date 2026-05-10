@@ -21,7 +21,12 @@ import postService from "../../services/postService";
 import { formatTimeAgo } from "../../utils/formatters";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
-const CommentSection = ({ postComments, onAddComment, loading, currentUser }) => {
+const CommentSection = ({
+  postComments,
+  onAddComment,
+  loading,
+  currentUser,
+}) => {
   const [text, setText] = useState("");
   const inputRef = useRef(null);
 
@@ -57,7 +62,9 @@ const CommentSection = ({ postComments, onAddComment, loading, currentUser }) =>
             <div key={c.id} className="flex gap-3 items-start">
               <img
                 src={
-                  c.avatar && !c.avatar.includes("placehold") && !c.avatar.includes("dicebear")
+                  c.avatar &&
+                  !c.avatar.includes("placehold") &&
+                  !c.avatar.includes("dicebear")
                     ? c.avatar
                     : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || c.user || "User")}&background=2666F1&color=fff`
                 }
@@ -86,7 +93,9 @@ const CommentSection = ({ postComments, onAddComment, loading, currentUser }) =>
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <img
           src={
-            currentUser?.avatar && !currentUser.avatar.includes("placehold") && !currentUser.avatar.includes("dicebear")
+            currentUser?.avatar &&
+            !currentUser.avatar.includes("placehold") &&
+            !currentUser.avatar.includes("dicebear")
               ? currentUser.avatar
               : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || "Me")}&background=2666F1&color=fff`
           }
@@ -166,6 +175,9 @@ const PostCard = ({
 
   const postType = post?.postType || "normal";
   const postId = post?.id;
+
+  // Handle case where author is passed as an object instead of a string
+  const displayAuthor = typeof author === "string" ? author : author?.name || "User";
 
   // Detect invalid/placeholder image values — show styled placeholder instead of broken icon
   const isValidImage =
@@ -268,7 +280,12 @@ const PostCard = ({
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this post? This action cannot be undone.")) return;
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this post? This action cannot be undone.",
+      )
+    )
+      return;
 
     try {
       await postService.deletePost(postType, postId);
@@ -279,8 +296,15 @@ const PostCard = ({
     }
   };
 
-  return (
-    <Card variant="card" padding="p-0" className="w-full overflow-hidden">
+  const handleAuthorClick = () => {
+    const profileId = post?.authorId || post?.author?.id || post?.userId;
+    if (profileId) {
+      reportNavigate(`/profile/${profileId}`);
+    } else {
+      console.warn("No profile ID found to navigate to.");
+    }
+  };
+
   // Determine boost visual style from boostMeta
   const highlightStyle = boostMeta?.highlightStyle || "none";
 
@@ -313,8 +337,12 @@ const PostCard = ({
   })();
 
   return (
-    <div
-      className={"w-full bg-[#1A2634] rounded-[24px] overflow-hidden font-inter text-white transition-all duration-300 " + cardBorderClass}
+    <Card
+      variant="card"
+      padding="p-0"
+      className={
+        "w-full overflow-hidden transition-all duration-300 " + cardBorderClass
+      }
       style={cardGlowStyle}
     >
       {/* Post Image */}
@@ -336,19 +364,24 @@ const PostCard = ({
       <div className="p-5 sm:p-lg flex flex-col gap-4">
         {/* Author Section */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div 
+            className="flex items-center gap-3 cursor-pointer group hover:opacity-80 transition-opacity"
+            onClick={handleAuthorClick}
+          >
             <img
               src={
-                authorAvatar && !authorAvatar.includes("placehold") && !authorAvatar.includes("dicebear")
+                authorAvatar &&
+                !authorAvatar.includes("placehold") &&
+                !authorAvatar.includes("dicebear")
                   ? authorAvatar
-                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(author || "User")}&background=2666F1&color=fff`
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayAuthor)}&background=2666F1&color=fff`
               }
-              alt={author}
+              alt={displayAuthor}
               className="w-10 h-10 rounded-full border border-white/20 object-cover"
             />
             <div>
               <p className="text-body-small-bold sm:text-body-medium-bold text-[#E2E8F0]">
-                {author}
+                {displayAuthor}
               </p>
               <p className="text-[11px] sm:text-body-extra-small text-[#94A3B8]">
                 {time}
@@ -356,7 +389,7 @@ const PostCard = ({
             </div>
           </div>
 
-          {isPromoted && (
+          {isPromoted &&
             (() => {
               const style = boostMeta?.highlightStyle || "none";
               switch (style) {
@@ -385,8 +418,7 @@ const PostCard = ({
                     </span>
                   );
               }
-            })()
-          )}
+            })()}
         </div>
 
         {/* Title */}
@@ -427,13 +459,13 @@ const PostCard = ({
         <div className="h-px bg-white/5 w-full my-2" />
 
         {/* Actions */}
-        <div className={`grid ${isManagementMode ? 'grid-cols-2' : 'grid-cols-4'} text-[#94A3B8] text-xs sm:text-body-small`}>
+        <div
+          className={`grid ${isManagementMode ? "grid-cols-2" : "grid-cols-4"} text-[#94A3B8] text-xs sm:text-body-small`}
+        >
           {isManagementMode ? (
             <>
               {/* Boost */}
-              <button
-                className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-[#FBBF24]"
-              >
+              <button className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-[#FBBF24]">
                 <div className="flex items-center gap-1.5">
                   <Zap
                     size={20}
@@ -501,7 +533,9 @@ const PostCard = ({
                     strokeWidth={isSaved ? 0 : 1.8}
                   />
                 </div>
-                <span className="text-[11px]">{isSaved ? "Saved" : "Save"}</span>
+                <span className="text-[11px]">
+                  {isSaved ? "Saved" : "Save"}
+                </span>
               </button>
 
               {/* Report */}
