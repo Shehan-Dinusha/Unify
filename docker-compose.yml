@@ -59,7 +59,6 @@ services:
       - "5173:5173"
     environment:
       - VITE_API_URL=http://localhost:5000/api/v1
-      - VITE_GOOGLE_MAPS_API_KEY=${VITE_GOOGLE_MAPS_API_KEY:-YOUR_VITE_GOOGLE_MAPS_API_KEY}
     volumes:
       - ./frontend:/app
       - /app/node_modules
