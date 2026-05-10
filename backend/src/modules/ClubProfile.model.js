@@ -47,11 +47,6 @@ const ClubProfile = sequelize.define(
       unique: true,
     },
 
-    verificationStatus: {
-      type: DataTypes.ENUM("PENDING", "VERIFIED", "REJECTED"),
-      defaultValue: "PENDING",
-    },
-
     isVerified: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
