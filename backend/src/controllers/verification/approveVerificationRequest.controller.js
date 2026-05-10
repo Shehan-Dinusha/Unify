@@ -18,7 +18,7 @@ export const approveVerificationRequest = async (req, res, next) => {
 
   try {
     const { id } = req.params; // Expecting the verification request ID in the URL params
-    const adminId = req.user?.id || 2; // Fallback to 1 for testing purposes until Auth is wired in
+    const adminId = req.user.id;
 
     // 1. Fetch the request constraints
     const request = await VerificationRequest.findByPk(id, {

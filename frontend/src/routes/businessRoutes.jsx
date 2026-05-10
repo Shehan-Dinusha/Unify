@@ -65,7 +65,7 @@ export const businessSharedRoutes = [
   { path: "/business/news-feed", element: <NewsFeed userRole="business" /> },
   { path: "/business/reviews", element: <ReceivedReviews /> },
   { path: "/marketplace", element: <Marketplace /> },
-  { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
+  { path: "/marketplace/:targetId/reviews", element: <MarketplaceReviews /> },
   { path: "/business/boost-post", element: <BoostSelectPackage /> },
   { path: "/business/boost-post/confirm", element: <BoostConfirmOrder /> },
   { path: "/business/boost-post/success", element: <BoostPostSuccess /> },

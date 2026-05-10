@@ -11,11 +11,7 @@ export const toggleReviewFeedback = async (req, res, next) => {
     const { reviewId } = req.params;
     const { action } = req.body; // should be either "helpful" or "not_helpful"
 
-    // Fallback to 1 for testing if req.user is not yet defined
-    const currentUserId = req.user?.id || 1;
-
-
-
+    const currentUserId = req.user.id;
     const review = await Review.findByPk(reviewId);
     if (!review) {
       return sendResponse(res, 404, false, "Review not found.");

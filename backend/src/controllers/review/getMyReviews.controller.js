@@ -6,8 +6,7 @@ import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getMyReviews = async (req, res, next) => {
   try {
-    // Fallback to 1 for testing if req.user is not yet defined
-    const currentUserId = req.user?.id || 1;
+    const currentUserId = req.user.id;
 
     const rawReviews = await Review.findAll({
       where: { reviewerId: currentUserId },

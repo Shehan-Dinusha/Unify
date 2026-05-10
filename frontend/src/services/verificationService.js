@@ -9,10 +9,6 @@ const verificationService = {
    * @param {FormData} formData - Contains document, userId, requestedRole
    */
   submitRequest: async (formData) => {
-    // TEMPORARY: Hardcode userId 1 for testing since auth is not connected
-    if (!formData.has("userId")) {
-      formData.append("userId", "1");
-    }
     const response = await api.post("/verifications/submit", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -25,10 +21,7 @@ const verificationService = {
    * Get verification status for the current user
    */
   getStatus: async () => {
-    // TEMPORARY: Append userId 1 for testing
-    const response = await api.get("/verifications/status", {
-      params: { userId: "1" },
-    });
+    const response = await api.get("/verifications/status");
     return response.data;
   },
 
@@ -36,10 +29,7 @@ const verificationService = {
    * Remove/Withdraw a pending/declined verification request
    */
   withdrawRequest: async () => {
-    // TEMPORARY: Append userId 1 for testing
-    const response = await api.delete("/verifications/remove", {
-      data: { userId: "1" },
-    });
+    const response = await api.delete("/verifications/remove");
     return response.data;
   },
 
@@ -48,9 +38,7 @@ const verificationService = {
    * @param {string} password - User password for security verification
    */
   revokeBatchRepStatus: async (password) => {
-    // TEMPORARY: Append userId 1 for testing
     const response = await api.post("/verifications/revoke-batch-rep", {
-      userId: "1",
       password,
     });
     return response.data;

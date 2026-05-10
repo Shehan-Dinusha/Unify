@@ -13,7 +13,7 @@ import bcrypt from "bcryptjs";
 export const revokeBatchRepStatus = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
-    const userId = req.body.userId || 1; // Hardcoded fallback for now
+    const userId = req.user.id;
     const { password } = req.body;
 
     if (!password) {

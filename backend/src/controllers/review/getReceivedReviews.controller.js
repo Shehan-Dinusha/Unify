@@ -12,7 +12,7 @@ import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getReceivedReviews = async (req, res, next) => {
   try {
-    const targetId = req.user?.id || 3; // Fallback to 3 for testing (Campus Bites & Cafe)
+    const targetId = req.user.id;
 
     const targetExists = await User.findByPk(targetId);
     if (!targetExists) {

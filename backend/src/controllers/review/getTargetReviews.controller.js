@@ -15,8 +15,7 @@ export const getTargetReviews = async (req, res, next) => {
   try {
     const { targetId } = req.params;
 
-    // Fallback to 1 for testing if req.user is not yet defined
-    const currentUserId = req.user?.id || 1;
+    const currentUserId = req.user.id;
 
     const targetExists = await User.findByPk(targetId);
     if (!targetExists) {

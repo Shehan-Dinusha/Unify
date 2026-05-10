@@ -18,6 +18,7 @@ import {
   getStudentCourseStructure,
   getBatchRepCourseStructure,
 } from "../controllers/learning/index.js";
+import { protect, authorize, isBatchRep } from "../middlewares/auth.middleware.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
 import {
@@ -42,21 +43,27 @@ import {
 
 const router = express.Router();
 
-router.post("/modules", createModuleValidator, validateRequest, createModule);
+router.post("/modules", protect, authorize("Student"), isBatchRep, createModuleValidator, validateRequest, createModule);
 router.get(
   "/modules/:id",
+  protect,
+  authorize("Student"),
   getModuleDetailsValidator,
   validateRequest,
   getModuleDetails,
 );
 router.put(
   "/modules/:id",
+  protect,
+  authorize("Student"), isBatchRep,
   editModuleDetailsValidator,
   validateRequest,
   editModuleDetails,
 );
 router.delete(
   "/modules/:id",
+  protect,
+  authorize("Student"), isBatchRep,
   deleteModuleValidator,
   validateRequest,
   deleteModule,
@@ -64,24 +71,32 @@ router.delete(
 
 router.post(
   "/modules/:moduleId/categories",
+  protect,
+  authorize("Student"), isBatchRep,
   createModuleCategoryValidator,
   validateRequest,
   createModuleCategory,
 );
 router.get(
   "/modules/:moduleId/categories",
+  protect,
+  authorize("Student"),
   getModuleCategoriesValidator,
   validateRequest,
   getModuleCategories,
 );
 router.put(
   "/categories/:categoryId",
+  protect,
+  authorize("Student"), isBatchRep,
   updateModuleCategoryValidator,
   validateRequest,
   updateModuleCategory,
 );
 router.delete(
   "/categories/:categoryId",
+  protect,
+  authorize("Student"), isBatchRep,
   deleteModuleCategoryValidator,
   validateRequest,
   deleteModuleCategory,
@@ -89,6 +104,8 @@ router.delete(
 
 router.post(
   "/modules/:moduleId/materials",
+  protect,
+  authorize("Student"), isBatchRep,
   uploadToS3({
     type: "single",
     fieldName: "materialFile",
@@ -101,6 +118,8 @@ router.post(
 
 router.put(
   "/materials/:materialId",
+  protect,
+  authorize("Student"), isBatchRep,
   editMaterialValidator,
   validateRequest,
   editMaterial,
@@ -108,6 +127,8 @@ router.put(
 
 router.delete(
   "/materials/:materialId",
+  protect,
+  authorize("Student"), isBatchRep,
   deleteMaterialValidator,
   validateRequest,
   deleteMaterial,
@@ -115,15 +136,19 @@ router.delete(
 
 router.get(
   "/modules/:moduleId/categories/:categoryId/materials",
+  protect,
+  authorize("Student"),
   getMaterialsByCategoryValidator,
   validateRequest,
   getMaterialsByCategory,
 );
 
-router.get("/batch-reps", getBatchRepsValidator, validateRequest, getBatchReps);
+router.get("/batch-reps", protect, authorize("Student"), getBatchRepsValidator, validateRequest, getBatchReps);
 
 router.get(
   "/student/course-structure",
+  protect,
+  authorize("Student"),
   getStudentCourseStructureValidator,
   validateRequest,
   getStudentCourseStructure,
@@ -131,6 +156,8 @@ router.get(
 
 router.get(
   "/batch-rep/course-structure",
+  protect,
+  authorize("Student"), isBatchRep,
   getBatchRepCourseStructureValidator,
   validateRequest,
   getBatchRepCourseStructure,
@@ -138,6 +165,8 @@ router.get(
 
 router.get(
   "/semester-visibility",
+  protect,
+  authorize("Student"), isBatchRep,
   getSemesterVisibilityValidator,
   validateRequest,
   getSemesterVisibility,
@@ -145,6 +174,8 @@ router.get(
 
 router.put(
   "/semester-visibility/:degreeId/:semesterId",
+  protect,
+  authorize("Student"), isBatchRep,
   updateSemesterVisibilityValidator,
   validateRequest,
   updateSemesterVisibility,

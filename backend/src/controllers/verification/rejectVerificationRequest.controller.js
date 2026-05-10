@@ -16,7 +16,7 @@ export const rejectVerificationRequest = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
-    const adminId = req.user?.id || 2; // Fallback to 2 for testing purposes
+    const adminId = req.user.id;
 
 
 

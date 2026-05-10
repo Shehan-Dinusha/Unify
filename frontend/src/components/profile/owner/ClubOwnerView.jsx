@@ -27,6 +27,7 @@ const ClubOwnerView = ({
         "Upload an official document that verifies your club's registration or university recognition.",
       buttonText: "Start Verification",
       iconColor: "text-primary-blue",
+      buttonClass: "border-primary-blue text-primary-blue hover:bg-primary-light active:bg-primary-blue/20",
       buttonDisabled: false,
     },
     PENDING: {
@@ -34,6 +35,7 @@ const ClubOwnerView = ({
       description: "Your verification is under review by the admin team.",
       buttonText: "See Status",
       iconColor: "text-state-warning",
+      buttonClass: "border-state-warning text-state-warning hover:bg-state-warning/10 active:bg-state-warning/20",
       buttonDisabled: false,
     },
     REJECTED: {
@@ -42,6 +44,7 @@ const ClubOwnerView = ({
         verificationReason || "Verification rejected. Please resubmit documents.",
       buttonText: "Resubmit Verification",
       iconColor: "text-state-error",
+      buttonClass: "border-state-error text-state-error hover:bg-state-error/10 active:bg-state-error/20",
       buttonDisabled: false,
     },
     APPROVED: {
@@ -49,6 +52,16 @@ const ClubOwnerView = ({
       description: "Your club is verified and all features are available.",
       buttonText: "View Status",
       iconColor: "text-state-success",
+      buttonClass: "border-state-success text-state-success hover:bg-state-success/10 active:bg-state-success/20",
+      buttonDisabled: false,
+    },
+    REMOVED: {
+      title: "Verification Removed",
+      description:
+        verificationReason || "Your verified status has been removed by the administration.",
+      buttonText: "See Details",
+      iconColor: "text-state-error",
+      buttonClass: "border-state-error text-state-error hover:bg-state-error/10 active:bg-state-error/20",
       buttonDisabled: false,
     },
   };
@@ -114,7 +127,7 @@ const ClubOwnerView = ({
             size="small"
             onClick={handleVerificationClick}
             disabled={currentStatus.buttonDisabled}
-            className="flex-1 sm:flex-initial text-[12px] md:text-body-small py-1.5 md:py-2"
+            className={`${currentStatus.buttonClass} flex-1 sm:flex-initial text-[12px] md:text-body-small py-1.5 md:py-2`}
           >
             {currentStatus.buttonText}
           </Button>

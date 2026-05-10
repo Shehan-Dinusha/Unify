@@ -1,7 +1,6 @@
-import { body, param, query } from "express-validator";
+import { body, param } from "express-validator";
 
 export const submitVerificationRequestValidator = [
-  body("userId").optional().isInt().withMessage("User ID must be an integer"),
   body("requestedRole")
     .optional()
     .isString()
@@ -29,16 +28,11 @@ export const rejectVerificationRequestValidator = [
     .withMessage("Reason must be a string"),
 ];
 
-export const getVerificationStatusValidator = [
-  query("userId").optional().isInt().withMessage("User ID must be an integer"),
-];
+export const getVerificationStatusValidator = [];
 
-export const deleteVerificationRequestValidator = [
-  body("userId").optional().isInt().withMessage("User ID must be an integer"),
-];
+export const deleteVerificationRequestValidator = [];
 
 export const revokeBatchRepStatusValidator = [
-  body("userId").optional().isInt().withMessage("User ID must be an integer"),
   body("password")
     .notEmpty()
     .withMessage("Password is required to revoke status"),

@@ -12,14 +12,10 @@ import logger from "../../utils/logger.js";
 
 export const getStudentCourseStructure = async (req, res, next) => {
   try {
-    const { userId } = req.query;
-
-    if (!userId) {
-      return sendResponse(res, 400, false, "userId is required");
-    }
+    const userId = req.user.id;
 
     const studentProfile = await StudentProfile.findOne({
-      where: { userId: parseInt(userId, 10) },
+      where: { userId },
       attributes: ["degreeId", "batchId", "facultyId"],
     });
 

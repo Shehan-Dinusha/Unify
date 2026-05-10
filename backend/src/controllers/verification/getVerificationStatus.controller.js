@@ -8,7 +8,7 @@ import { resolveVerificationUrl } from "../../utils/verificationUrl.util.js";
  */
 export const getVerificationStatus = async (req, res, next) => {
   try {
-    const userId = req.user?.id || req.query.userId || 1;
+    const userId = req.user.id;
 
     const existingRequest = await VerificationRequest.findOne({
       where: { userId },

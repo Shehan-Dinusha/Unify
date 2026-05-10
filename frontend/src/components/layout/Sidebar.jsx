@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Rss,
@@ -12,7 +12,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 import LogoutModal from "../profile/modals/LogoutModal";
-import { getCurrentUser, logout } from "../../services/authService";
+import { getCurrentUser, logout, refreshCurrentUser } from "../../services/authService";
 import { useNotifications } from "../../context/NotificationContext";
 import { useChat } from "../../context/ChatContext";
 
@@ -90,12 +90,19 @@ const UnifiedSidebar = ({
 }) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const [freshUser, setFreshUser] = React.useState(null);
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
   const { unreadCount } = useNotifications();
   const { unreadMessageCount } = useChat();
 
+  useEffect(() => {
+    refreshCurrentUser().then((updated) => {
+      if (updated) setFreshUser(updated);
+    });
+  }, []);
+
   // Get user from auth or fallback to prop
-  const authUser = getCurrentUser();
+  const authUser = freshUser || getCurrentUser();
   const user = authUser || propUser || { name: "Guest", role: "student" };
 
   // Configuration Map for different user roles

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ThumbsUp, ThumbsDown, ChevronDown, Trash2, Heart } from "lucide-react";
+import { useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
@@ -16,6 +17,7 @@ import {
 } from "../components/common/ReviewModals";
 import StarRating from "../components/common/StarRating";
 import Avatar from "../components/common/Avatar";
+import NotFound from "./NotFound";
 
 const ShieldCheckIcon = () => (
   <svg
@@ -532,14 +534,17 @@ const MarketplaceReviews = () => {
   const [visibleCount, setVisibleCount] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errorStatus, setErrorStatus] = useState(null);
 
-  const TARGET_ID = 3; // ID of existing Business user "Campus Bites & Cafe"
+  const { targetId } = useParams();
 
   const fetchReviewsData = async () => {
+    if (!targetId) return;
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getTargetReviews(TARGET_ID);
+      setErrorStatus(null);
+      const data = await getTargetReviews(targetId);
       setReviews(data.reviews || []);
       setSummary(
         data.summary || {
@@ -549,7 +554,17 @@ const MarketplaceReviews = () => {
         },
       );
     } catch (err) {
-      setError("Failed to load reviews.");
+      if (
+        err.response &&
+        (err.response.status === 400 ||
+          err.response.status === 401 ||
+          err.response.status === 403 ||
+          err.response.status === 404)
+      ) {
+        setErrorStatus(err.response.status);
+      } else {
+        setError("Failed to load reviews.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -570,19 +585,16 @@ const MarketplaceReviews = () => {
     "Lowest Rating",
   ];
 
-  // using the default user from MainLayout usage in Marketplace.jsx
-  const user = {
-    name: "Alex Johnson",
-    role: "student",
-    displayRole: "Student",
-  };
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
 
   const hasSubmitted = reviews.some((r) => r.isOwn);
 
   const handleReviewSubmit = async ({ rating, review, isAnonymous }) => {
+    if (!targetId) return;
     try {
       await submitReview({
-        targetId: TARGET_ID,
+        targetId: parseInt(targetId, 10),
         rating,
         review,
         isAnonymous,
@@ -651,6 +663,10 @@ const MarketplaceReviews = () => {
 
   const sortedReviews = getSortedReviews();
 
+  if (errorStatus) {
+    return <NotFound status={errorStatus} />;
+  }
+
   if (isLoading) {
     return (
       <MainLayout user={user} pageTitle="Marketplace" verificationCount={0}>
@@ -693,9 +709,11 @@ const MarketplaceReviews = () => {
           ) : (
             <Card
               variant="card"
-              className="w-full lg:w-96 h-[470px] flex flex-col justify-center items-center"
+              className="w-full lg:w-96 h-[470px]"
             >
-              <span className="text-gray-400">No reviews yet</span>
+              <div className="flex flex-col justify-center items-center h-full text-gray-400">
+                No reviews yet
+              </div>
             </Card>
           )}
           {hasSubmitted ? (

@@ -18,7 +18,7 @@ export const removeVerifiedAccount = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
-    const adminId = req.user?.id || 2; // Fallback for testing
+    const adminId = req.user.id;
 
 
 

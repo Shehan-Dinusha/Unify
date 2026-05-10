@@ -6,7 +6,7 @@ import StudentModuleHeader from "../components/learning/StudentModuleHeader";
 import StudentCategoryGrid from "../components/learning/StudentCategoryGrid";
 import StudentMaterialList from "../components/learning/StudentMaterialList";
 import * as learningService from "../services/learningService";
-import { mockRequests, mockCurrentUser } from "../data/mockData";
+import { getCurrentUser } from "../services/authService";
 
 const CATEGORY_SUBTITLES = {
   Notes: "Slides & PDFs",
@@ -24,8 +24,8 @@ const enrichCategories = (categories) =>
   }));
 
 const StudentLearningDashboard = () => {
-  // Temporary auth context since auth isn't connected yet
-  const currentUserId = 1;
+  const currentUser = getCurrentUser();
+  const currentUserId = currentUser?.id;
 
   const [semesters, setSemesters] = useState([]);
   const [facultyName, setFacultyName] = useState("");
@@ -124,8 +124,8 @@ const StudentLearningDashboard = () => {
 
   return (
     <MainLayout
-      user={{ ...mockCurrentUser, displayRole: "Student" }}
-      verificationCount={mockRequests.length}
+      user={{ name: currentUser?.name || "Student", role: "student", displayRole: "Student" }}
+      verificationCount={0}
       pageTitle={
         <div className="flex justify-center items-center gap-2">
           <div className="inline-flex flex-col justify-start items-start">
@@ -187,38 +187,44 @@ const StudentLearningDashboard = () => {
                   representative.
                 </p>
               </div>
-            ) : activeModuleData ? (
-              <>
-                <StudentModuleHeader
-                  moduleName={activeModuleData?.name}
-                  moduleCode={activeModuleData?.code || "N/A"}
-                  semesterName={activeSemesterInfo?.name}
-                  batchName={batchName}
-                />
-
-                <StudentCategoryGrid
-                  key={activeModuleId}
-                  categories={moduleCategories}
-                  selectedCategoryId={selectedCategory?.id}
-                  onCategoryClick={setSelectedCategory}
-                />
-
-                {moduleCategories.length > 0 ? (
-                  <StudentMaterialList
-                    categoryName={selectedCategory?.title || "Files"}
-                    files={categoryFiles}
+            ) : semesters.some(sem => sem.modules?.length > 0) ? (
+              activeModuleData ? (
+                <>
+                  <StudentModuleHeader
+                    moduleName={activeModuleData?.name}
+                    moduleCode={activeModuleData?.code || "N/A"}
+                    semesterName={activeSemesterInfo?.name}
+                    batchName={batchName}
                   />
-                ) : (
-                  <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
-                    <p>No categories available for this module yet.</p>
-                  </div>
-                )}
-              </>
+
+                  <StudentCategoryGrid
+                    key={activeModuleId}
+                    categories={moduleCategories}
+                    selectedCategoryId={selectedCategory?.id}
+                    onCategoryClick={setSelectedCategory}
+                  />
+
+                  {moduleCategories.length > 0 ? (
+                    <StudentMaterialList
+                      categoryName={selectedCategory?.title || "Files"}
+                      files={categoryFiles}
+                    />
+                  ) : (
+                    <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
+                      <p>No categories available for this module yet.</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
+                  <p>
+                    Select a module from the sidebar to view learning materials.
+                  </p>
+                </div>
+              )
             ) : (
               <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
-                <p>
-                  Select a module from the sidebar to view learning materials.
-                </p>
+                <p>No modules available yet. Contact your batch rep.</p>
               </div>
             )}
           </div>
