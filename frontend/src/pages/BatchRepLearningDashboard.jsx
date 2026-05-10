@@ -20,6 +20,7 @@ const BatchRepLearningDashboard = () => {
   const [activeModuleId, setActiveModuleId] = useState(null);
   const [degreeName, setDegreeName] = useState("");
   const [degreeId, setDegreeId] = useState(null);
+  const [facultyName, setFacultyName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   // Real data states
@@ -51,6 +52,8 @@ const BatchRepLearningDashboard = () => {
         const profileRes = await getMyProfile("student");
         const fetchedDegreeId = profileRes?.degreeId;
         const fetchedDegreeName = profileRes?.degree?.name || "";
+        const fetchedFacultyName = profileRes?.faculty?.name || "";
+        setFacultyName(fetchedFacultyName);
         if (fetchedDegreeId) {
           setDegreeId(fetchedDegreeId);
           setDegreeName(fetchedDegreeName);
@@ -385,10 +388,21 @@ const BatchRepLearningDashboard = () => {
     setActiveModuleId(null);
   };
 
+  const sidebarUser = (() => {
+    try {
+      const raw = localStorage.getItem("user");
+      const role = localStorage.getItem("role");
+      if (raw) {
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+        return { name: parsed.name || "Batch Rep", role: role || "admin", displayRole: parsed.displayRole || role || "Batch Rep" };
+      }
+    } catch {}
+    return { name: currentUser?.name || "Batch Rep", role: "admin", displayRole: "Batch Rep" };
+  })();
+
   return (
     <MainLayout
-      user={{ name: currentUser?.name || "Batch Rep", role: "admin", displayRole: "Batch Rep" }}
-      verificationCount={0}
+      user={sidebarUser}
       pageTitle={
         <div className="flex items-center gap-2">
           <span>Learning</span>
@@ -418,7 +432,7 @@ const BatchRepLearningDashboard = () => {
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
           </svg>
-          <span>Faculty of Information Technology</span>
+          <span>{facultyName}</span>
           <span className="font-normal mx-0.5">/</span>
           <span>{degreeName}</span>
         </div>
