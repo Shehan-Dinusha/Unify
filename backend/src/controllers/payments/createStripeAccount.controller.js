@@ -36,6 +36,7 @@ export const createStripeAccount = async (req, res) => {
       const account = await stripe.accounts.create({
         type: "express",
         country: "AU", // Changed to AU as requested by user
+        business_type: "individual",
         email: req.user.email,
         capabilities: {
           card_payments: { requested: true },
