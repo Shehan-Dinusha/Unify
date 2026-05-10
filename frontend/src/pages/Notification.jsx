@@ -6,13 +6,14 @@ import Card from "../components/common/Card";
 import notificationService from "../services/notificationService";
 import { getCurrentUser } from "../services/authService";
 import { useNotifications } from "../context/NotificationContext";
+import { getImageUrl } from "../utils/formatters";
 
 /**
  * Returns a valid avatar URL.
  * If the user has a real avatar, use it. Otherwise generate a ui-avatar matching the profile page.
  */
 const getAvatarUrl = (avatar, name) => {
-  if (avatar) return avatar;
+  if (avatar && !avatar.includes("placehold") && !avatar.includes("dicebear")) return avatar;
   const seed = encodeURIComponent(name || "User");
   return `https://ui-avatars.com/api/?name=${seed}&background=2666F1&color=fff`;
 };
@@ -179,7 +180,7 @@ const Notification = () => {
       content: n.content,
       time: n.time,
       isUnread: n.isUnread,
-      image: n.image || null,
+      image: n.image ? getImageUrl(n.image) : null,
       // Post reference — used for navigation on click
       referenceId: n.referenceId || null,
       referenceType: n.referenceType || null,
@@ -229,12 +230,16 @@ const Notification = () => {
   };
 
   const handleNavigateToPost = (referenceId, referenceType) => {
-    navigate("/news-feed", {
-      state: {
-        targetPostId: referenceId,
-        targetPostType: referenceType,
-      },
-    });
+    if (referenceType === "LostAndFound") {
+      navigate(`/lost-and-found?view=detail&id=${referenceId}`);
+    } else {
+      navigate("/news-feed", {
+        state: {
+          targetPostId: referenceId,
+          targetPostType: referenceType,
+        },
+      });
+    }
   };
 
   const unreadCount = notifications.filter((n) => n.isUnread).length;

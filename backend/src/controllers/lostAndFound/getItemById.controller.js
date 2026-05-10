@@ -15,7 +15,6 @@ export const getItemById = catchAsync(async (req, res, next) => {
       include: [{
         model: StudentProfile,
         as: "studentProfile",
-        attributes: [],
         include: [{
           model: Degree,
           as: "degree",

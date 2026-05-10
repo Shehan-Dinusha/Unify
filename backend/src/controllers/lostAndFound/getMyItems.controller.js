@@ -4,15 +4,9 @@ import s3Service from "../../services/s3.service.js";
 import { formatRelativeDate } from "../../utils/date.js";
 
 export const getMyItems = catchAsync(async (req, res, next) => {
-  //if (!req.user) return sendResponse(res, 401, false, "Unauthorized");
-
-  // Assume a middleware provides req.user; fallback to 1 as default for testing
-  const userId = req.user?.id || 1; 
+  const userId = req.user.id; 
 
   const items = await LostAndFound.findAll({
-    //where: { userId: req.user.id }, // Security filter!
-
-    //For Testing
     where: { userId },
     include: [{
       model: User,
@@ -21,7 +15,6 @@ export const getMyItems = catchAsync(async (req, res, next) => {
       include: [{
         model: StudentProfile,
         as: "studentProfile",
-        attributes: [],
         include: [{ model: Degree, as: "degree", attributes: ["name"] }]
       }]
     }],

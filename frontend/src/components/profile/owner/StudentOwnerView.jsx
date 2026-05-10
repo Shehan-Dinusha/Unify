@@ -56,7 +56,7 @@ const StudentOwnerView = ({ repStatus = "NOT_SUBMITTED", repReason }) => {
       iconBg: "bg-purple-500/20",
       title: "Saved Posts",
       description: "Access your bookmarked announcements and events.",
-      path: "/news-feed",
+      path: "/my-saved-posts",
     },
     {
       icon: "🛒",
@@ -70,7 +70,7 @@ const StudentOwnerView = ({ repStatus = "NOT_SUBMITTED", repReason }) => {
       iconBg: "bg-orange-500/20",
       title: "Lost & Found",
       description: "Manage items you've posted as lost or found.",
-      path: "/lost-and-found",
+      path: "/my-lost-and-found",
     },
     {
       icon: "👥",

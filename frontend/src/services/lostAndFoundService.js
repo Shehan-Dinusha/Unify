@@ -103,3 +103,19 @@ export const deleteItem = async (id) => {
     throw error;
   }
 };
+
+/**
+ * Fetch All matches for an item.
+ *
+ * @param {number|string} id - The ID of the item
+ */
+export const getItemMatches = async (id) => {
+  try {
+    const response = await api.get(`/lost-and-found/${id}/matches`);
+    return response.data.data;
+  } catch (error) {
+    if (error.response?.status === 403) return null; // Not the owner
+    console.error("Error fetching item matches:", error);
+    throw error;
+  }
+};

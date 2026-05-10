@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../services/authService";
 import { MapPin, CheckCircle, Pencil, Trash2, ChevronDown, AlertTriangle, X } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
@@ -117,10 +118,19 @@ const MyItemCard = ({ item, onResolve, onEdit, onDelete, isResolved }) => {
 
 /* ─── Page ───────────────────────────────────────────────────── */
 const MyLostAndFound = () => {
+  const navigate = useNavigate();
+  const currentUser = getCurrentUser();
+
   const [activeFilter, setActiveFilter] = useState("All");
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(6);
+
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/login");
+    }
+  }, [currentUser, navigate]);
 
   // Delete modal state: null | { id, step: 'confirm' | 'success' }
   const [deleteModal, setDeleteModal] = useState(null);
@@ -159,7 +169,11 @@ const MyLostAndFound = () => {
     );
   }, [setSearchParams]);
 
-  const user = { name: "Alex Johnson", role: "student" };
+  const user = {
+    name: currentUser?.name || "Unknown User",
+    role: currentUser?.role?.toLowerCase() || "student",
+    avatar: currentUser?.avatar,
+  };
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -263,6 +277,8 @@ const MyLostAndFound = () => {
       Create Post
     </button>
   ) : null;
+
+  if (!currentUser) return null;
 
   return (
     <MainLayout

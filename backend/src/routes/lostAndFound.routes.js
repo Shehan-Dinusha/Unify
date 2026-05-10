@@ -14,10 +14,15 @@ import {
   getItemById,
   getMyItems,
   editItem,
-  deleteItem
+  deleteItem,
+  getMatches
 } from "../controllers/lostAndFound/index.js";
+import { protect } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
+
+// Apply auth middleware to all routes in this file
+router.use(protect);
 
 // 1. Create a new Item (uses multipart/form-data for image)
 router.post(
@@ -48,6 +53,14 @@ router.get(
   getLostFoundItemDetailsValidator,
   validateRequest,
   getItemById
+);
+
+// 4.5. Fetch matches for a specific item
+router.get(
+  "/:id/matches",
+  getLostFoundItemDetailsValidator,
+  validateRequest,
+  getMatches
 );
 
 // 5. Edit an item
