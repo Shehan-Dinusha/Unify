@@ -6,7 +6,7 @@ import StudentModuleHeader from "../components/learning/StudentModuleHeader";
 import StudentCategoryGrid from "../components/learning/StudentCategoryGrid";
 import StudentMaterialList from "../components/learning/StudentMaterialList";
 import * as learningService from "../services/learningService";
-import { mockRequests, mockCurrentUser } from "../data/mockData";
+import { getCurrentUser } from "../services/authService";
 
 const CATEGORY_SUBTITLES = {
   Notes: "Slides & PDFs",
@@ -24,8 +24,8 @@ const enrichCategories = (categories) =>
   }));
 
 const StudentLearningDashboard = () => {
-  // Temporary auth context since auth isn't connected yet
-  const currentUserId = 1;
+  const currentUser = getCurrentUser();
+  const currentUserId = currentUser?.id;
 
   const [semesters, setSemesters] = useState([]);
   const [facultyName, setFacultyName] = useState("");
@@ -124,8 +124,8 @@ const StudentLearningDashboard = () => {
 
   return (
     <MainLayout
-      user={{ ...mockCurrentUser, displayRole: "Student" }}
-      verificationCount={mockRequests.length}
+      user={{ name: currentUser?.name || "Student", role: "student", displayRole: "Student" }}
+      verificationCount={0}
       pageTitle={
         <div className="flex justify-center items-center gap-2">
           <div className="inline-flex flex-col justify-start items-start">

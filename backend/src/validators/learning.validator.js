@@ -183,11 +183,7 @@ export const updateSemesterVisibilityValidator = [
 ];
 
 export const getStudentCourseStructureValidator = [
-  query("userId")
-    .notEmpty()
-    .withMessage("User ID is required")
-    .isInt()
-    .withMessage("User ID must be an integer"),
+  // userId now sourced from auth token (req.user.id)
 ];
 
 export const getBatchRepCourseStructureValidator = [

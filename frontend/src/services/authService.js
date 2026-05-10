@@ -1,4 +1,5 @@
 import api from "./api";
+import { getMyProfile } from "./profileService";
 
 /**
  * Standardized error handling for all services.
@@ -85,6 +86,39 @@ export const resetPassword = async (data) => {
     return response.data.data;
   } catch (error) {
     handleError(error);
+  }
+};
+
+export const refreshCurrentUser = async () => {
+  try {
+    const currentUser = getCurrentUser();
+    if (!currentUser) return null;
+
+    const role = currentUser.role?.toLowerCase();
+    const profile = await getMyProfile(role);
+
+    const updatedUser = {
+      id: currentUser.id,
+      email: profile.user?.email || currentUser.email,
+      phone: currentUser.phone,
+      name: profile.user?.name || currentUser.name,
+      role: profile.user?.role || currentUser.role,
+      avatar: profile.user?.avatar || currentUser.avatar,
+    };
+
+    if (role === "student") {
+      updatedUser.isBatchRep = profile.isBatchRep || false;
+      updatedUser.repVerificationStatus = profile.repVerificationStatus || "NOT_SUBMITTED";
+    }
+
+    if (role === "business" || role === "club") {
+      updatedUser.category = profile.category;
+    }
+
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    return updatedUser;
+  } catch {
+    return getCurrentUser();
   }
 };
 

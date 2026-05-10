@@ -10,7 +10,7 @@ import FoodCafeOwnerView from "../../components/profile/owner/FoodCafeOwnerView"
 import SelfEmployedOwnerView from "../../components/profile/owner/SelfEmployedOwnerView";
 import DeleteAccountModal from "../../components/profile/modals/DeleteAccountModal";
 import { getMyProfile, deleteAccount } from "../../services/profileService";
-import { getCurrentUser, logout } from "../../services/authService";
+import { getCurrentUser, logout, refreshCurrentUser } from "../../services/authService";
 import { useToast } from "../../components/common/Toast";
 import Button from "../../components/common/Button";
 import { Loader2 } from "lucide-react";
@@ -185,6 +185,7 @@ const OwnProfilePage = () => {
       }
 
       setProfile(mappedProfile);
+      refreshCurrentUser();
     } catch (error) {
       console.error("Error fetching profile:", error);
       toast.error("Error", error.message || "Failed to load profile");
