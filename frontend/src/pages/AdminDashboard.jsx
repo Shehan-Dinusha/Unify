@@ -5,175 +5,31 @@ import Card from "../components/common/Card";
 import StatsCard from "../components/common/StatsCard";
 import { BarChart, DonutChart, ProgressBar } from "../components/chart";
 import { mockRequests } from "../data/mockData";
+import {
+  getDashboardStats,
+  getPlatformGrowth,
+  getContentModeration,
+  getBusinessEngagement,
+} from "../services/adminDashboardService";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
-
-// ─── Carousel Chart Data (per range) ─────────────────────────────────────────
 
 const fmtK = (v) => (v >= 1000 ? `${(v / 1000).toFixed(1)}K` : v);
 const fmtNum = (v) => v.toLocaleString();
 const fmtRs = (v) => `Rs. ${v.toLocaleString()}`;
 
-const chartDataByRange = {
-  "This Month": {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    slides: [
-      {
-        title: "Platform Growth",
-        description: "Weekly new user registrations this month",
-        legend: "Registrations",
-        data: [320, 410, 385, 305],
-        maxVal: 500,
-        peakIdx: 1,
-        yLabels: ["500", "400", "300", "200", "0"],
-        yVals: [500, 400, 300, 200, 0],
-        statLabel: "Total Users",
-        formatValue: fmtNum,
-        formatStat: fmtNum,
-      },
-      {
-        title: "Revenue Growth",
-        description: "Weekly platform revenue this month",
-        legend: "Weekly Revenue",
-        data: [2800, 3400, 3100, 3600],
-        maxVal: 4500,
-        peakIdx: 3,
-        yLabels: ["4.5K", "3K", "1.5K", "0"],
-        yVals: [4500, 3000, 1500, 0],
-        statLabel: "Total Revenue",
-        formatValue: fmtK,
-        formatStat: fmtRs,
-      },
-      {
-        title: "Business Growth",
-        description: "Weekly new business registrations this month",
-        legend: "New Businesses",
-        data: [12, 18, 15, 21],
-        maxVal: 30,
-        peakIdx: 3,
-        yLabels: ["30", "20", "10", "0"],
-        yVals: [30, 20, 10, 0],
-        statLabel: "Total Businesses",
-        formatValue: fmtNum,
-        formatStat: fmtNum,
-      },
-    ],
-  },
-  "Last 30 Days": {
-    labels: ["W1", "W2", "W3", "W4", "W5"],
-    slides: [
-      {
-        title: "Platform Growth",
-        description: "Weekly new user registrations over the last 30 days",
-        legend: "Registrations",
-        data: [280, 350, 420, 390, 310],
-        maxVal: 500,
-        peakIdx: 2,
-        yLabels: ["500", "400", "300", "200", "0"],
-        yVals: [500, 400, 300, 200, 0],
-        statLabel: "Total Users",
-        formatValue: fmtNum,
-        formatStat: fmtNum,
-      },
-      {
-        title: "Revenue Growth",
-        description: "Weekly platform revenue over the last 30 days",
-        legend: "Weekly Revenue",
-        data: [2500, 3100, 3800, 3200, 2900],
-        maxVal: 4500,
-        peakIdx: 2,
-        yLabels: ["4.5K", "3K", "1.5K", "0"],
-        yVals: [4500, 3000, 1500, 0],
-        statLabel: "Total Revenue",
-        formatValue: fmtK,
-        formatStat: fmtRs,
-      },
-      {
-        title: "Business Growth",
-        description: "Weekly new business registrations over the last 30 days",
-        legend: "New Businesses",
-        data: [10, 14, 22, 17, 13],
-        maxVal: 30,
-        peakIdx: 2,
-        yLabels: ["30", "20", "10", "0"],
-        yVals: [30, 20, 10, 0],
-        statLabel: "Total Businesses",
-        formatValue: fmtNum,
-        formatStat: fmtNum,
-      },
-    ],
-  },
-  Yearly: {
-    labels: [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ],
-    slides: [
-      {
-        title: "Platform Growth",
-        description: "Monthly new user registrations across the platform",
-        legend: "Total Registrations",
-        data: [365, 1010, 495, 340, 425, 515, 930, 1130, 1420, 845, 500, 380],
-        maxVal: 1600,
-        peakIdx: 8,
-        yLabels: ["1.6K", "1.2K", "800", "400", "0"],
-        yVals: [1600, 1200, 800, 400, 0],
-        statLabel: "Total Users",
-        formatValue: fmtK,
-        formatStat: fmtNum,
-      },
-      {
-        title: "Revenue Growth",
-        description: "Monthly platform revenue for the fiscal year",
-        legend: "Monthly Revenue",
-        data: [
-          2100, 3200, 4800, 5500, 7200, 8800, 9500, 9400, 10500, 11800, 12500,
-          12800,
-        ],
-        maxVal: 15000,
-        peakIdx: 11,
-        yLabels: ["15K", "12K", "9K", "6K", "3K", "0"],
-        yVals: [15000, 12000, 9000, 6000, 3000, 0],
-        statLabel: "Total Revenue",
-        formatValue: fmtK,
-        formatStat: fmtRs,
-      },
-      {
-        title: "Business Growth",
-        description: "Monthly new business registrations on the platform",
-        legend: "New Businesses",
-        data: [45, 120, 85, 60, 75, 95, 150, 180, 220, 165, 110, 70],
-        maxVal: 260,
-        peakIdx: 8,
-        yLabels: ["260", "200", "140", "80", "0"],
-        yVals: [260, 200, 140, 80, 0],
-        statLabel: "Total Businesses",
-        formatValue: fmtNum,
-        formatStat: fmtNum,
-      },
-    ],
-  },
+// Range key → API param mapping
+const rangeApiMap = {
+  "This Month": "month",
+  "Last 30 Days": "30days",
+  Yearly: "yearly",
 };
 
-const moderationData = { resolved: 115, reviewing: 30, pending: 12 };
-const engagementData = [
-  { label: "Food & Cafe", value: 85, color: "#2B8CEE" },
-  { label: "Boarding", value: 62, color: "#FF6366" },
-  { label: "Self Employed", value: 45, color: "#4ADE80" },
-  { label: "Clubs & Society", value: 28, color: "#9CA3AF" },
-];
-
-// Local Chart components moved to src/components/chart/
+// Build format functions based on backend formatType
+const formatFnMap = {
+  number: { formatValue: fmtNum, formatStat: fmtNum },
+  currency: { formatValue: fmtK, formatStat: fmtRs },
+};
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -184,20 +40,75 @@ const AdminDashboard = () => {
   const [isTransitioning, setIsTransitioning] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const autoPlayRef = useRef(null);
-  const moderationTotal =
-    moderationData.resolved + moderationData.reviewing + moderationData.pending;
 
-  // Derive slides and labels from active range
-  const { slides: chartSlides, labels: xLabels } =
-    chartDataByRange[activeRange];
-  const slideCount = chartSlides.length;
+  // ─── API State ──────────────────────────────────────────────────────────
+  const [stats, setStats] = useState(null);
+  const [chartData, setChartData] = useState(null);
+  const [moderationData, setModerationData] = useState(null);
+  const [engagementData, setEngagementData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [chartLoading, setChartLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // ─── Fetch dashboard stats, moderation, engagement (once) ───────────
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setLoading(true);
+        const [statsRes, moderationRes, engagementRes] = await Promise.all([
+          getDashboardStats(),
+          getContentModeration(),
+          getBusinessEngagement(),
+        ]);
+        setStats(statsRes.data);
+        setModerationData(moderationRes.data);
+        setEngagementData(engagementRes.data?.engagement || []);
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInitialData();
+  }, []);
+
+  // ─── Fetch chart data whenever range changes ────────────────────────
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        setChartLoading(true);
+        const res = await getPlatformGrowth(rangeApiMap[activeRange]);
+        setChartData(res.data);
+      } catch (err) {
+        console.error("Chart fetch error:", err);
+      } finally {
+        setChartLoading(false);
+      }
+    };
+    fetchChartData();
+  }, [activeRange]);
+
+  // ─── Derived values ──────────────────────────────────────────────────
+  const moderationTotal = moderationData
+    ? moderationData.resolved + moderationData.reviewing + moderationData.pending
+    : 0;
+
+  // Build chart slides from API data, attaching JS format functions
+  const chartSlides = chartData?.slides?.map((slide) => ({
+    ...slide,
+    formatValue: formatFnMap[slide.formatType]?.formatValue || fmtNum,
+    formatStat: formatFnMap[slide.formatType]?.formatStat || fmtNum,
+  })) || [];
+
+  const xLabels = chartData?.labels || [];
+  const slideCount = chartSlides.length || 1;
   const realIdx = chartIdx % slideCount;
 
-  // Auto-play: advance chart every 5 seconds
+  // ─── Auto-play carousel ─────────────────────────────────────────────
   const resetAutoPlay = useCallback(() => {
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-    if (isHovered) return; // Don't start interval if hovering
-
+    if (isHovered) return;
     autoPlayRef.current = setInterval(() => {
       setIsTransitioning(true);
       setChartIdx((prev) => prev + 1);
@@ -209,7 +120,6 @@ const AdminDashboard = () => {
     return () => clearInterval(autoPlayRef.current);
   }, [resetAutoPlay]);
 
-  // When we land on the ghost slide (index === slideCount), snap back to 0 instantly
   const handleTransitionEnd = useCallback(() => {
     if (chartIdx >= slideCount) {
       setIsTransitioning(false);
@@ -235,40 +145,85 @@ const AdminDashboard = () => {
     resetAutoPlay();
   };
 
-  const statsTiles = [
-    {
-      iconSrc: "/icon_verified_clubs.svg",
-      iconAlt: "Students",
-      iconBgClass: "bg-primary-blue/20",
-      title: "Total Student Users",
-      value: "1,500",
-      subValue: "↗ +12% vs last semester",
-      subValueClass: "text-state-success",
-      path: "/student-management",
-    },
-    {
-      iconSrc: "/icon_boost_controller.svg",
-      iconAlt: "Revenue",
-      iconBgClass: "bg-state-warning/20",
-      title: "Business Boost Revenue",
-      value: "Rs. 2000",
-      subValue: "↑ +4% this month",
-      subValueClass: "text-state-success",
-      path: "/revenue-overview",
-    },
-    {
-      iconSrc: "/icon_dashboard.svg",
-      iconAlt: "Businesses",
-      iconBgClass: "bg-primary-accent/20",
-      title: "Active Businesses",
-      value: "50",
-      subValue: "↗ +2% this year",
-      subValueClass: "text-state-success",
-      path: "/active-businesses",
-    },
-  ];
+  // ─── Stats tiles (from API) ─────────────────────────────────────────
+  const statsTiles = stats
+    ? [
+        {
+          iconSrc: "/icon_verified_clubs.svg",
+          iconAlt: "Students",
+          iconBgClass: "bg-primary-blue/20",
+          title: "Total Student Users",
+          value: stats.totalStudentUsersFormatted,
+          subValue: stats.studentTrend,
+          subValueClass: "text-state-success",
+          path: "/student-management",
+        },
+        {
+          iconSrc: "/icon_boost_controller.svg",
+          iconAlt: "Revenue",
+          iconBgClass: "bg-state-warning/20",
+          title: "Business Boost Revenue",
+          value: stats.businessBoostRevenueFormatted,
+          subValue: stats.boostTrend,
+          subValueClass: "text-state-success",
+          path: "/revenue-overview",
+        },
+        {
+          iconSrc: "/icon_dashboard.svg",
+          iconAlt: "Businesses",
+          iconBgClass: "bg-primary-accent/20",
+          title: "Active Businesses",
+          value: stats.activeBusinessesFormatted,
+          subValue: stats.bizTrend,
+          subValueClass: "text-state-success",
+          path: "/active-businesses",
+        },
+      ]
+    : [];
 
   const rangeOptions = ["This Month", "Last 30 Days", "Yearly"];
+
+  // ─── Loading / Error States ─────────────────────────────────────────
+  if (loading) {
+    return (
+      <MainLayout
+        user={{ name: "Alex Johnson", role: "admin" }}
+        pageTitle="Admin Dashboard"
+        verificationCount={mockRequests.length}
+      >
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center gap-md">
+            <div className="w-10 h-10 border-3 border-primary-blue border-t-transparent rounded-full animate-spin" />
+            <p className="text-body-small text-text-secondary">Loading dashboard data...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout
+        user={{ name: "Alex Johnson", role: "admin" }}
+        pageTitle="Admin Dashboard"
+        verificationCount={mockRequests.length}
+      >
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center gap-md text-center">
+            <span className="text-3xl">⚠️</span>
+            <p className="text-body-large-bold text-text-primary">Failed to load dashboard</p>
+            <p className="text-body-small text-text-secondary">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-lg py-sm bg-primary-blue text-text-primary rounded-xl text-body-small-bold hover:bg-primary-blue/80 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout
@@ -338,104 +293,112 @@ const AdminDashboard = () => {
           onMouseLeave={() => setIsHovered(false)}
         >
           <Card variant="container">
-            {/* Header with arrows */}
-            <div className="flex items-start justify-between mb-md">
-              <div className="flex items-center gap-sm">
-                {/* Left arrow */}
-                <button
-                  onClick={goPrev}
-                  className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 hover:border-primary-blue/30 transition-all"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                </button>
-                <div>
-                  <h3 className="text-body-large-bold text-text-primary">
-                    {chartSlides[realIdx].title}
-                  </h3>
-                  <p className="text-body-extra-small text-text-secondary mt-xs">
-                    {chartSlides[realIdx].description}
-                  </p>
-                </div>
-                {/* Right arrow */}
-                <button
-                  onClick={goNext}
-                  className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 hover:border-primary-blue/30 transition-all"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
+            {chartLoading || chartSlides.length === 0 ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="w-8 h-8 border-3 border-primary-blue border-t-transparent rounded-full animate-spin" />
               </div>
-              <div className="flex items-center gap-md shrink-0 ml-md">
-                {/* Legend */}
-                <div className="flex items-center gap-xs">
-                  <div className="w-2.5 h-2.5 rounded-full bg-primary-blue" />
-                  <span className="text-body-extra-small text-text-secondary">
-                    {chartSlides[realIdx].legend}
-                  </span>
-                </div>
-                {/* Dot indicators */}
-                <div className="flex items-center gap-xs">
-                  {chartSlides.map((_, i) => (
+            ) : (
+              <>
+                {/* Header with arrows */}
+                <div className="flex items-start justify-between mb-md">
+                  <div className="flex items-center gap-sm">
+                    {/* Left arrow */}
                     <button
-                      key={i}
-                      onClick={() => goTo(i)}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        i === realIdx
-                          ? "bg-primary-blue scale-125"
-                          : "bg-white/20 hover:bg-white/40"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Sliding chart body — infinite forward loop */}
-            <div className="overflow-hidden">
-              <div
-                className={`flex ${isTransitioning ? "transition-transform duration-500 ease-in-out" : ""}`}
-                style={{ transform: `translateX(-${chartIdx * 100}%)` }}
-                onTransitionEnd={handleTransitionEnd}
-              >
-                {/* Real slides + ghost clone of first slide at end */}
-                {[...chartSlides, chartSlides[0]].map((slide, i) => (
-                  <div key={i} className="w-full shrink-0">
-                    <BarChart
-                      data={slide.data}
-                      maxVal={slide.maxVal}
-                      peakIdx={slide.peakIdx}
-                      labels={xLabels}
-                      yLabels={slide.yLabels}
-                      yVals={slide.yVals}
-                      formatValue={slide.formatValue}
-                      formatStat={slide.formatStat}
-                      statLabel={slide.statLabel}
-                    />
+                      onClick={goPrev}
+                      className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 hover:border-primary-blue/30 transition-all"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
+                    </button>
+                    <div>
+                      <h3 className="text-body-large-bold text-text-primary">
+                        {chartSlides[realIdx].title}
+                      </h3>
+                      <p className="text-body-extra-small text-text-secondary mt-xs">
+                        {chartSlides[realIdx].description}
+                      </p>
+                    </div>
+                    {/* Right arrow */}
+                    <button
+                      onClick={goNext}
+                      className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/10 hover:border-primary-blue/30 transition-all"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </button>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="flex items-center gap-md shrink-0 ml-md">
+                    {/* Legend */}
+                    <div className="flex items-center gap-xs">
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary-blue" />
+                      <span className="text-body-extra-small text-text-secondary">
+                        {chartSlides[realIdx].legend}
+                      </span>
+                    </div>
+                    {/* Dot indicators */}
+                    <div className="flex items-center gap-xs">
+                      {chartSlides.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => goTo(i)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            i === realIdx
+                              ? "bg-primary-blue scale-125"
+                              : "bg-white/20 hover:bg-white/40"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sliding chart body — infinite forward loop */}
+                <div className="overflow-hidden">
+                  <div
+                    className={`flex ${isTransitioning ? "transition-transform duration-500 ease-in-out" : ""}`}
+                    style={{ transform: `translateX(-${chartIdx * 100}%)` }}
+                    onTransitionEnd={handleTransitionEnd}
+                  >
+                    {/* Real slides + ghost clone of first slide at end */}
+                    {[...chartSlides, chartSlides[0]].map((slide, i) => (
+                      <div key={i} className="w-full shrink-0">
+                        <BarChart
+                          data={slide.data}
+                          maxVal={slide.maxVal}
+                          peakIdx={slide.peakIdx}
+                          labels={xLabels}
+                          yLabels={slide.yLabels}
+                          yVals={slide.yVals}
+                          formatValue={slide.formatValue}
+                          formatStat={slide.formatStat}
+                          statLabel={slide.statLabel}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </Card>
         </div>
 
@@ -450,9 +413,9 @@ const AdminDashboard = () => {
               <div className="relative" style={{ width: 140, height: 140 }}>
                 <DonutChart
                   segments={[
-                    { value: moderationData.resolved, color: "#4ADE80" },
-                    { value: moderationData.reviewing, color: "#FBBF24" },
-                    { value: moderationData.pending, color: "#FF6366" },
+                    { value: moderationData?.resolved || 0, color: "#4ADE80" },
+                    { value: moderationData?.reviewing || 0, color: "#FBBF24" },
+                    { value: moderationData?.pending || 0, color: "#FF6366" },
                   ]}
                 />
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -469,17 +432,17 @@ const AdminDashboard = () => {
                 {[
                   {
                     label: "Resolved",
-                    value: moderationData.resolved,
+                    value: moderationData?.resolved || 0,
                     color: "bg-state-success",
                   },
                   {
                     label: "Reviewing",
-                    value: moderationData.reviewing,
+                    value: moderationData?.reviewing || 0,
                     color: "bg-state-warning",
                   },
                   {
                     label: "Pending",
-                    value: moderationData.pending,
+                    value: moderationData?.pending || 0,
                     color: "bg-state-error",
                   },
                 ].map((item) => (
@@ -521,7 +484,7 @@ const AdminDashboard = () => {
             </div>
 
             <div className="flex flex-col gap-md mt-md">
-              {engagementData.map((item) => (
+              {(engagementData || []).map((item) => (
                 <div key={item.label} className="flex flex-col gap-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-body-small text-text-secondary">
@@ -536,7 +499,7 @@ const AdminDashboard = () => {
                   </div>
                   <ProgressBar
                     value={item.value}
-                    max={100}
+                    max={Math.max(...(engagementData || []).map((e) => e.value), 100)}
                     color={item.color}
                   />
                 </div>

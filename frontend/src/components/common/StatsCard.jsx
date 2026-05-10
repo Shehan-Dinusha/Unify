@@ -21,16 +21,16 @@ const StatsCard = ({
       <div className="absolute top-[80px] left-lg">
         <p className="text-body-small-bold text-text-secondary">{title}</p>
       </div>
-      <div className="absolute top-[100px] left-lg flex items-end gap-sm">
+      <div className="absolute top-[100px] left-lg right-lg min-w-0">
         {loading ? (
           <div className="h-8 w-16 bg-white/5 animate-pulse rounded" />
         ) : (
           <>
-            <span className="text-heading-medium text-text-primary">
+            <span className="text-heading-medium text-text-primary block truncate">
               {value}
             </span>
             {subValue && (
-              <span className={`text-body-small-bold pb-xs ${subValueClass}`}>
+              <span className={`text-body-extra-small block truncate mt-xs ${subValueClass}`}>
                 {subValue}
               </span>
             )}
