@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import {
   Info,
   ArrowRight,
@@ -415,7 +415,7 @@ const ClubVerification = () => {
                         <span
                           className={`text-sm font-bold truncate ${submissionStatus === "declined" || submissionStatus === "removed" ? "text-red-400 line-through" : "text-text-primary"}`}
                         >
-                          {submittedFile?.name || "verfication_document.pdf"}
+                          {submittedFile?.name || "Document unavailable"}
                         </span>
                         <span className="text-text-secondary text-xs">
                           {submittedFile

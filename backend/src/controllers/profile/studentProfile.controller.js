@@ -1,4 +1,4 @@
-import {
+﻿import {
   StudentProfile,
   User,
   University,
@@ -152,14 +152,14 @@ export const getMyStudentProfile = async (req, res) => {
     } else if (vReq) {
       profileJson.repVerificationStatus = vReq.status === "DECLINED" ? "REJECTED" : vReq.status;
     } else {
-      const removedRequest = await VerificationRequest.findOne({
-        where: { userId: req.user.id, status: "DECLINED" },
+      const lastRequest = await VerificationRequest.findOne({
+        where: { userId: req.user.id },
         paranoid: false,
-        order: [["deletedAt", "DESC"]],
+        order: [["createdAt", "DESC"]],
       });
-      if (removedRequest?.deletedAt) {
+      if (lastRequest?.deletedAt && lastRequest.documentUrl) {
         profileJson.repVerificationStatus = "REMOVED";
-        profileJson.repVerificationReason = removedRequest.adminMessage || null;
+        profileJson.repVerificationReason = lastRequest.adminMessage || null;
       } else {
         profileJson.repVerificationStatus = "NOT_SUBMITTED";
       }
