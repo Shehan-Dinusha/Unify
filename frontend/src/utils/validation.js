@@ -24,6 +24,7 @@ export const validateNIC = (nic) => {
  * - At least one uppercase letter
  * - At least one lowercase letter
  * - At least one number
+ * - At least one special character
  * @param {string} password
  * @returns {boolean}
  */
@@ -33,7 +34,8 @@ export const validatePassword = (password) => {
   const hasUpper = /[A-Z]/.test(password);
   const hasLower = /[a-z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
-  return hasMinLength && hasUpper && hasLower && hasNumber;
+  const hasSpecial = /[\W_]/.test(password);
+  return hasMinLength && hasUpper && hasLower && hasNumber && hasSpecial;
 };
 
 /**

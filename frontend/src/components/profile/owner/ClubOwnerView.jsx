@@ -27,7 +27,8 @@ const ClubOwnerView = ({
         "Upload an official document that verifies your club's registration or university recognition.",
       buttonText: "Start Verification",
       iconColor: "text-primary-blue",
-      buttonClass: "border-primary-blue text-primary-blue hover:bg-primary-light active:bg-primary-blue/20",
+      buttonClass:
+        "border-primary-blue text-primary-blue hover:bg-primary-light active:bg-primary-blue/20",
       buttonDisabled: false,
     },
     PENDING: {
@@ -35,16 +36,19 @@ const ClubOwnerView = ({
       description: "Your verification is under review by the admin team.",
       buttonText: "See Status",
       iconColor: "text-state-warning",
-      buttonClass: "border-state-warning text-state-warning hover:bg-state-warning/10 active:bg-state-warning/20",
+      buttonClass:
+        "border-state-warning text-state-warning hover:bg-state-warning/10 active:bg-state-warning/20",
       buttonDisabled: false,
     },
     REJECTED: {
       title: "Verification Rejected",
       description:
-        verificationReason || "Verification rejected. Please resubmit documents.",
+        verificationReason ||
+        "Verification rejected. Please resubmit documents.",
       buttonText: "Resubmit Verification",
       iconColor: "text-state-error",
-      buttonClass: "border-state-error text-state-error hover:bg-state-error/10 active:bg-state-error/20",
+      buttonClass:
+        "border-state-error text-state-error hover:bg-state-error/10 active:bg-state-error/20",
       buttonDisabled: false,
     },
     APPROVED: {
@@ -52,16 +56,19 @@ const ClubOwnerView = ({
       description: "Your club is verified and all features are available.",
       buttonText: "View Status",
       iconColor: "text-state-success",
-      buttonClass: "border-state-success text-state-success hover:bg-state-success/10 active:bg-state-success/20",
+      buttonClass:
+        "border-state-success text-state-success hover:bg-state-success/10 active:bg-state-success/20",
       buttonDisabled: false,
     },
     REMOVED: {
       title: "Verification Removed",
       description:
-        verificationReason || "Your verified status has been removed by the administration.",
+        verificationReason ||
+        "Your verified status has been removed by the administration.",
       buttonText: "See Details",
       iconColor: "text-state-error",
-      buttonClass: "border-state-error text-state-error hover:bg-state-error/10 active:bg-state-error/20",
+      buttonClass:
+        "border-state-error text-state-error hover:bg-state-error/10 active:bg-state-error/20",
       buttonDisabled: false,
     },
   };
@@ -94,6 +101,14 @@ const ClubOwnerView = ({
       disabled: !isApproved,
     },
     {
+      icon: "⭐",
+      iconBg: "bg-yellow-500/20",
+      title: "My Reviews",
+      description: "Manage your submitted reviews.",
+      path: "/profile/reviews",
+      disabled: !isApproved,
+    },
+    {
       icon: "🚀",
       iconBg: "bg-violet-500/20",
       title: "View Boosted Posts",
@@ -105,14 +120,18 @@ const ClubOwnerView = ({
   return (
     <div className="flex flex-col gap-4 md:gap-lg text-start">
       {/* Dashboard Cards Grid */}
-      <div className={`grid grid-cols-2 sm:grid-cols-2 gap-3 md:gap-md items-stretch transition-all duration-300 ${!isApproved ? "opacity-50 pointer-events-none" : ""}`}>
+      <div
+        className={`grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-md items-stretch transition-all duration-300 ${!isApproved ? "opacity-50 pointer-events-none" : ""}`}
+      >
         {cards.map((card, idx) => (
           <ProfileDashboardCard key={idx} {...card} />
         ))}
       </div>
 
       {/* Verification Banner */}
-      <div className={`w-full rounded-2xl border border-white/10 bg-white/5 p-4 md:p-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-md transition-all duration-300 ${!isApproved && verificationStatus !== "APPROVED" ? "border-primary-blue/30 bg-primary-blue/5 shadow-lg shadow-primary-blue/5" : ""}`}>
+      <div
+        className={`w-full rounded-2xl border border-white/10 bg-white/5 p-4 md:p-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-md transition-all duration-300 ${!isApproved && verificationStatus !== "APPROVED" ? "border-primary-blue/30 bg-primary-blue/5 shadow-lg shadow-primary-blue/5" : ""}`}
+      >
         <div className="flex flex-col gap-xs">
           <h3 className="text-base md:text-body-large-bold text-text-primary">
             {currentStatus.title}
@@ -138,11 +157,26 @@ const ClubOwnerView = ({
       </div>
 
       {/* Action Buttons */}
-      <div className={`flex flex-col sm:flex-row gap-3 md:gap-md transition-all duration-300 ${!isApproved ? "opacity-50 pointer-events-none" : ""}`}>
-        <Button variant="primary" fullWidth icon={Plus} className="py-2.5 md:py-3" disabled={!isApproved}>
+      <div
+        className={`flex flex-col sm:flex-row gap-3 md:gap-md transition-all duration-300 ${!isApproved ? "opacity-50 pointer-events-none" : ""}`}
+      >
+        <Button
+          variant="primary"
+          fullWidth
+          icon={Plus}
+          className="py-2.5 md:py-3"
+          disabled={!isApproved}
+          onClick={() => navigate("/club-owner/create-post")}
+        >
           Create Post
         </Button>
-        <Button variant="outline" fullWidth icon={Zap} className="py-2.5 md:py-3" disabled={!isApproved}>
+        <Button
+          variant="outline"
+          fullWidth
+          icon={Zap}
+          className="py-2.5 md:py-3"
+          disabled={!isApproved}
+        >
           Boost Post
         </Button>
       </div>

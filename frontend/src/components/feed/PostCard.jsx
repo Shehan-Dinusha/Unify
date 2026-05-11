@@ -154,6 +154,7 @@ const PostCard = ({
   showBoost = false,
   isManagementMode = false,
   onPostUpdate,
+  imageStyle = "contain",
 }) => {
   const { toggleSavePost, isPostSaved } = useSavedPosts();
   // const isSavedLocal = post ? isPostSaved(post.id) : false; // Use initialIsSaved from props instead
@@ -175,6 +176,10 @@ const PostCard = ({
 
   const postType = post?.postType || "normal";
   const postId = post?.id;
+
+  // Handle case where author is passed as an object instead of a string
+  const displayAuthor =
+    typeof author === "string" ? author : author?.name || "User";
 
   // Detect invalid/placeholder image values — show styled placeholder instead of broken icon
   const isValidImage =
@@ -293,6 +298,15 @@ const PostCard = ({
     }
   };
 
+  const handleAuthorClick = () => {
+    const profileId = post?.authorId || post?.author?.id || post?.userId;
+    if (profileId) {
+      reportNavigate(`/profile/${profileId}`);
+    } else {
+      console.warn("No profile ID found to navigate to.");
+    }
+  };
+
   // Determine boost visual style from boostMeta
   const highlightStyle = boostMeta?.highlightStyle || "none";
 
@@ -339,7 +353,7 @@ const PostCard = ({
           <img
             src={image}
             alt="post"
-            className="w-full h-auto object-contain max-h-[500px]"
+            className={`w-full h-auto max-h-[500px] ${imageStyle === "cover" ? "h-full object-cover" : "object-contain"}`}
             loading="lazy"
             onError={() => {
               setImgFailed(true);
@@ -352,21 +366,24 @@ const PostCard = ({
       <div className="p-5 sm:p-lg flex flex-col gap-4">
         {/* Author Section */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-3 cursor-pointer group hover:opacity-80 transition-opacity"
+            onClick={handleAuthorClick}
+          >
             <img
               src={
                 authorAvatar &&
                 !authorAvatar.includes("placehold") &&
                 !authorAvatar.includes("dicebear")
                   ? authorAvatar
-                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(author || "User")}&background=2666F1&color=fff`
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayAuthor)}&background=2666F1&color=fff`
               }
-              alt={author}
+              alt={displayAuthor}
               className="w-10 h-10 rounded-full border border-white/20 object-cover"
             />
             <div>
               <p className="text-body-small-bold sm:text-body-medium-bold text-[#E2E8F0]">
-                {author}
+                {displayAuthor}
               </p>
               <p className="text-[11px] sm:text-body-extra-small text-[#94A3B8]">
                 {time}

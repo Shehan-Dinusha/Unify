@@ -39,6 +39,7 @@ import CreateServicePostPage from "../pages/CreateServicePostPage";
 
 import MarketplaceReviews from "../pages/MarketplaceReviews";
 import ReceivedReviews from "../pages/ReceivedReviews";
+import MyReviewHistory from "../pages/MyReviewHistory";
 import BoostSelectPackage from "../pages/BoostSelectPackage";
 import BoostConfirmOrder from "../pages/BoostConfirmOrder";
 import BoostPostSuccess from "../pages/BoostPostSuccess";
@@ -115,10 +116,8 @@ export const clubRoutes = [
       { path: "/club-owner/wallet", element: <ClubWalletPage /> },
       { path: "/marketplace/club/product/:type/:id", element: <ClubProduct /> },
       { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
-      {
-        path: "/marketplace/club/payment-success",
-        element: <ClubPaymentSuccess />,
-      },
+      { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
+      { path: "/profile/reviews", element: <MyReviewHistory /> },
       { path: "/club/followers", element: <FollowersDirectory /> },
     ],
   },

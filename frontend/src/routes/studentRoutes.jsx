@@ -16,6 +16,7 @@ import EditProfilePage from "../pages/profile/EditProfilePage";
 import SecurityPage from "../pages/profile/SecurityPage";
 import MySavedPosts from "../pages/MySavedPosts";
 import MyReviewHistory from "../pages/MyReviewHistory";
+import MarketplaceReviews from "../pages/MarketplaceReviews";
 import MyOrders from "../pages/MyOrders";
 import OrderDetails from "../pages/OrderDetails";
 import BookingDetails from "../pages/BookingDetails";
@@ -48,6 +49,8 @@ export const studentRoutes = [
       { path: "/profile/edit", element: <EditProfilePage /> },
       { path: "/profile/security", element: <SecurityPage /> },
       { path: "/profile/:userId", element: <PublicProfilePage /> },
+      { path: "/profile/reviews", element: <MyReviewHistory /> },
+      { path: "/marketplace/:targetId/reviews", element: <MarketplaceReviews /> },
     ],
   },
   // 2. STUDENT-ONLY ROUTES
@@ -82,7 +85,6 @@ export const studentRoutes = [
 
       // Saved content & Reviews
       { path: "/my-saved-posts", element: <MySavedPosts /> },
-      { path: "/profile/reviews", element: <MyReviewHistory /> },
 
       // Orders & reports
       { path: "/order-history", element: <MyOrders /> },

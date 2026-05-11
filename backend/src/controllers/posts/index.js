@@ -9,3 +9,4 @@ export * from "./deletePost.controller.js";
 export * from "./likePost.controller.js";
 export * from "./commentPost.controller.js";
 export * from "./savePost.controller.js";
+export * from "./getUserPosts.controller.js";
