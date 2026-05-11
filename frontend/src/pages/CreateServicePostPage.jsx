@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
     ImagePlus, MapPin,
     ArrowRight, Loader2, Edit3
@@ -8,12 +8,24 @@ import Card from "../components/common/Card";
 import FoodCafeCard from "../components/marketplace/FoodCafeCard";
 import { useNavigate } from "react-router-dom";
 import postService from "../services/postService";
+import { getCurrentUser } from "../services/authService";
 
 const CreateServicePostPage = () => {
     const navigate = useNavigate();
+    const currentUser = getCurrentUser();
+
+    useEffect(() => {
+        if (!currentUser) {
+            navigate("/login");
+        }
+    }, [currentUser, navigate]);
+
+    if (!currentUser) return null;
+
     const user = {
-        name: "Alex Johnson",
-        role: "services_owner",
+        name: currentUser.name || "Unknown User",
+        role: currentUser.role?.toLowerCase() || "self_employed",
+        avatar: currentUser.avatar,
         displayRole: "Business & Organization"
     };
 
@@ -60,8 +72,7 @@ const CreateServicePostPage = () => {
                 }
             });
 
-            // Mock userId and set postType for category inference
-            data.append("userId", 1);
+            // postType for category inference on the backend
             data.append("postType", "service");
 
             await postService.createPost("service", data);

@@ -10,7 +10,10 @@ export const createNormalPost = async (req, res) => {
     const { description, postType, category: bodyCategory } = req.body;
 
     let category = bodyCategory || "CLUB";
-    const userId = req.user ? req.user.id : (req.body.userId || 1);
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
     if (postType === "food-cafe") {
       category = "FOOD";

@@ -7,7 +7,10 @@ const getUploadedFileUrls = (files) => {
 
 export const createClubProductPost = async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : (req.body.userId || 1);
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
     // FOR DEVELOPMENT: Skip club profile check when using a dummy setup
     // In production this would validate against the authenticated user's club profile
