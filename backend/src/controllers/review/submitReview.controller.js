@@ -14,12 +14,13 @@ export const submitReview = async (req, res, next) => {
       return sendResponse(res, 404, false, "Reviewer not found.");
     }
 
-    if (reviewerExists.role !== "Student") {
+    const allowedRoles = ["Student", "Club"];
+    if (!allowedRoles.includes(reviewerExists.role)) {
       return sendResponse(
         res,
         403,
         false,
-        "Only Students can submit reviews.",
+        "Only Students and Clubs can submit reviews.",
       );
     }
 

@@ -101,6 +101,14 @@ const ClubOwnerView = ({
       disabled: !isApproved,
     },
     {
+      icon: "⭐",
+      iconBg: "bg-yellow-500/20",
+      title: "My Reviews",
+      description: "Manage your submitted reviews.",
+      path: "/profile/reviews",
+      disabled: !isApproved,
+    },
+    {
       icon: "🚀",
       iconBg: "bg-violet-500/20",
       title: "View Boosted Posts",
@@ -113,7 +121,7 @@ const ClubOwnerView = ({
     <div className="flex flex-col gap-4 md:gap-lg text-start">
       {/* Dashboard Cards Grid */}
       <div
-        className={`grid grid-cols-2 sm:grid-cols-2 gap-3 md:gap-md items-stretch transition-all duration-300 ${!isApproved ? "opacity-50 pointer-events-none" : ""}`}
+        className={`grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-md items-stretch transition-all duration-300 ${!isApproved ? "opacity-50 pointer-events-none" : ""}`}
       >
         {cards.map((card, idx) => (
           <ProfileDashboardCard key={idx} {...card} />

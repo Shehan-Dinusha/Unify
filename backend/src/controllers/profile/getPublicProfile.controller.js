@@ -55,13 +55,13 @@ export const getPublicProfile = async (req, res) => {
         );
       }
 
-      // 4. Clubs can only view Clubs
-      if (viewerRole === "Club" && targetRole !== "Club") {
+      // 4. Clubs can view Clubs and Businesses
+      if (viewerRole === "Club" && targetRole !== "Club" && targetRole !== "Business") {
         return sendResponse(
           res,
           403,
           false,
-          "Club accounts can only view other club profiles.",
+          "Club accounts can only view club and business profiles.",
         );
       }
     }

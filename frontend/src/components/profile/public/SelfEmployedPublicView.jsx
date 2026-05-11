@@ -1,21 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import ProfileHeader from "../ProfileHeader";
 import FacilitiesCard from "../FacilitiesCard";
 import AboutSection from "../AboutSection";
 import ReviewsSection from "../ReviewsSection";
 import RecentPostsSection from "./RecentPostsSection";
-import ReviewsListModal from "../modals/ReviewsListModal";
-
-import { AddReviewModal } from "../../common/ReviewModals";
-import { submitReview } from "../../../services/reviewService";
 
 /**
  * SelfEmployedPublicView — public-facing view for self_employed profiles.
  * Note: Business accounts do not have follower/following features.
  */
 const SelfEmployedPublicView = ({ profile }) => {
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [showReviewsList, setShowReviewsList] = useState(false);
+  const navigate = useNavigate();
+
+  const handleReviewNavigation = () => {
+    navigate(`/marketplace/${profile.id}/reviews`);
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md items-start text-start">
@@ -30,8 +30,7 @@ const SelfEmployedPublicView = ({ profile }) => {
         <ReviewsSection
           rating={profile?.rating ?? 0}
           reviewCount={profile?.reviewCount ?? 0}
-          onAddReview={() => setShowReviewModal(true)}
-          onViewReviews={() => setShowReviewsList(true)}
+          onAddReview={handleReviewNavigation}
         />
 
         {/* About Section replaced Services Offered */}
@@ -48,36 +47,6 @@ const SelfEmployedPublicView = ({ profile }) => {
         {/* Recent Post Feed */}
         <RecentPostsSection posts={profile?.posts} />
       </div>
-
-      {/* Modal */}
-      {showReviewModal && (
-        <AddReviewModal
-          onClose={() => setShowReviewModal(false)}
-          onConfirm={async (data) => {
-            try {
-              await submitReview({
-                targetId: profile.id,
-                rating: data.rating,
-                review: data.comment,
-                isAnonymous: false,
-              });
-              window.location.reload();
-            } catch (err) {
-              console.error(err);
-              alert(err.message || "Failed to submit review");
-            }
-          }}
-        />
-      )}
-
-      {showReviewsList && (
-        <ReviewsListModal
-          targetId={profile?.id}
-          onClose={() => setShowReviewsList(false)}
-        />
-      )}
-
-
     </div>
   );
 };

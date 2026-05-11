@@ -2,7 +2,7 @@ import express from "express";
 import { toggleFollowClub } from "../controllers/follower/toggleFollow.controller.js";
 import { getClubFollowers } from "../controllers/follower/getFollowers.controller.js";
 import { getStudentFollowings } from "../controllers/follower/getFollowing.controller.js";
-import { getPublicFollowers, getPublicFollowing } from "../controllers/follower/getPublicFollowers.controller.js";
+import { getPublicFollowers } from "../controllers/follower/getPublicFollowers.controller.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
 import {
@@ -38,8 +38,7 @@ router.post(
   toggleFollowClub,
 );
 
-// Publicly viewable follower/following endpoints
+// Publicly viewable follower endpoint
 router.get("/:userId/followers", protect, getPublicFollowers);
-router.get("/:userId/followings", protect, getPublicFollowing);
 
 export default router;
