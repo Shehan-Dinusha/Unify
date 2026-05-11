@@ -52,3 +52,29 @@ export const getImageUrl = (path) => {
   const baseURL = import.meta.env.VITE_API_URL?.replace("/api/v1", "") || "http://localhost:5000";
   return `${baseURL}${path.startsWith("/") ? "" : "/"}${path}`;
 };
+
+/**
+ * Resolves avatar URLs for display.
+ * Since the backend now uses resolveAvatarUrl to provide signed S3 URLs or ui-avatars.com fallbacks,
+ * this function primarily ensures that if a raw path is received, it's correctly prefixed,
+ * and provides a final fallback if everything else fails.
+ * 
+ * @param {string} avatar - The avatar URL or path from the backend.
+ * @param {string} name - The user's name for fallback generation.
+ * @returns {string} The final displayable URL.
+ */
+export const getAvatarUrl = (avatar, name = 'User') => {
+    // If we have no avatar at all, generate a professional UI-Avatar
+    if (!avatar) {
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2666F1&color=fff&bold=true`;
+    }
+
+    // If it's already a full URL (signed S3 URL, external URL, or ui-avatar from backend), return it
+    if (avatar.startsWith('http')) {
+        return avatar;
+    }
+
+    // Handle legacy relative paths (though backend should resolve these now)
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    return `${apiUrl}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
+};

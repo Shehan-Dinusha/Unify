@@ -8,6 +8,7 @@ import { fetchAllReports, getReportStats } from '../services/reportService';
 import {
     RotateCcw, TrendingUp, ShieldAlert, ShieldCheck, AlertTriangle,
 } from 'lucide-react';
+import { getAvatarUrl } from '../utils/formatters';
 
 /* ─── HELPERS ────────────────────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
@@ -118,7 +119,6 @@ const ReportModeration = () => {
         { value:'Withdrawn', label:'● Withdrawn' },
     ];
 
-    const avatar = (name) => `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(/\s/g,'')}`;
 
     // Navigate to the report detail page — real route, browser back works perfectly
     const viewDetails = (r) => navigate(`/report-moderation/${r.id}`);
@@ -201,7 +201,7 @@ const ReportModeration = () => {
                             <span className="text-body-small-bold text-text-primary">#{r.id}</span>
                             <TypeBadge type={r.type} />
                             <div className="flex items-center gap-md min-w-0">
-                                <img src={avatar(r.reportedUser.name)} alt={r.reportedUser.name} className="w-8 h-8 rounded-full object-cover border border-white/20 shrink-0" />
+                                <img src={getAvatarUrl(r.reportedUser.avatar, r.reportedUser.name)} alt={r.reportedUser.name} className="w-8 h-8 rounded-full object-cover border border-white/20 shrink-0" />
                                 <span className="text-body-small text-text-primary truncate">{r.reportedUser.handle}</span>
                             </div>
                             <span className="text-body-small text-text-secondary">{r.date}</span>
@@ -224,7 +224,7 @@ const ReportModeration = () => {
                         <Card key={r.id} variant="container" className="hover:bg-white/5 transition-colors">
                             <div className="flex flex-col gap-md">
                                 <div className="flex items-center gap-md">
-                                    <img src={avatar(r.reportedUser.name)} alt={r.reportedUser.name} className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0" />
+                                    <img src={getAvatarUrl(r.reportedUser.avatar, r.reportedUser.name)} alt={r.reportedUser.name} className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0" />
                                     <div className="min-w-0 flex-1">
                                         <p className="text-body-medium-bold text-text-primary truncate">{r.reportedUser.name}</p>
                                         <p className="text-body-extra-small text-text-secondary truncate">{r.reportedUser.handle} • #{r.id}</p>

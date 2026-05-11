@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   RotateCcw,
 } from 'lucide-react';
+import { getAvatarUrl } from '../utils/formatters';
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -128,7 +129,7 @@ const BusinessProfile = () => {
               </div>
               <div className="bg-white/5 rounded-xl border border-white/10 p-md flex items-center gap-3 mb-5">
                 <div className="w-11 h-11 rounded-xl bg-dark-2 border border-white/20 overflow-hidden flex items-center justify-center shrink-0">
-                  <img src={biz.logo} alt="" className="w-full h-full object-cover" />
+                  <img src={getAvatarUrl(biz.logo, biz.name)} alt="" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0"><p className="text-body-small-bold text-text-primary">{biz.name}</p><p className="text-body-extra-small text-text-secondary">{biz.businessId}</p></div>
                 <span className="inline-flex items-center gap-xs text-body-extra-small-bold px-sm py-xs rounded-lg bg-state-success/10 text-state-success border border-state-success/30"><span className="w-1.5 h-1.5 rounded-full bg-state-success" />ACTIVE</span>
@@ -223,7 +224,7 @@ const BusinessProfile = () => {
               {success === 'suspend' && (
                 <div className="w-full bg-white/5 rounded-xl border border-white/10 p-md flex items-center gap-3 text-left">
                   <div className="w-11 h-11 rounded-xl bg-dark-2 border border-white/20 overflow-hidden flex items-center justify-center shrink-0">
-                    <img src={biz.logo} alt="" className="w-full h-full object-cover" />
+                    <img src={getAvatarUrl(biz.logo, biz.name)} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0"><p className="text-body-small-bold text-text-primary">{biz.name}</p><p className="text-body-extra-small text-text-secondary">{biz.businessId}</p></div>
                   <span className="px-2.5 py-1 bg-state-error/20 text-state-error text-xs font-bold rounded-md border border-state-error/30">Suspended</span>
@@ -292,7 +293,7 @@ const BusinessProfile = () => {
           {/* Logo with verified badge - Large size, Minimal padding */}
           <div className="relative shrink-0">
             <div className="w-20 h-20 rounded-2xl bg-dark-2 border border-white/20 overflow-hidden flex items-center justify-center">
-              <img src={biz.logo} alt={biz.name} className="w-full h-full object-cover" />
+              <img src={getAvatarUrl(biz.logo, biz.name)} alt={biz.name} className="w-full h-full object-cover" />
             </div>
             {biz.isVerified && (
               <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-state-success flex items-center justify-center border-2 border-dark-1 shadow-lg shadow-state-success/40">

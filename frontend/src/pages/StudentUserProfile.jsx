@@ -35,6 +35,7 @@ import {
   MessageSquare,
   ShieldAlert,
 } from 'lucide-react';
+import { getAvatarUrl } from '../utils/formatters';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -163,7 +164,6 @@ const StudentUserProfile = () => {
     else navigate('/student-management');
   };
 
-  const avatar = (name) => `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(/\s/g, '')}`;
 
   const filteredLog = user && tabTypeMap[activeTab]
     ? user.activityLog.filter((e) => e.type === tabTypeMap[activeTab])
@@ -201,7 +201,7 @@ const StudentUserProfile = () => {
                 </button>
               </div>
               <div className="bg-white/5 rounded-xl border border-white/10 p-md flex items-center gap-3 mb-6">
-                <img src={avatar(user.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
+                <img src={getAvatarUrl(user.avatar, user.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
                 <div className="flex-1 min-w-0">
                   <p className="text-body-small-bold text-text-primary font-inter">{user.name}</p>
                   <p className="text-body-extra-small text-text-secondary font-inter">ID: #{user.studentCode || user.userId} • {user.faculty || 'Faculty of Engineering'}</p>
@@ -285,7 +285,7 @@ const StudentUserProfile = () => {
               <h2 className="text-xl font-bold text-white font-inter mb-3">Confirm Force Logout</h2>
               <p className="text-body-small text-text-secondary font-inter leading-relaxed mb-6 max-w-[360px]">This action is irreversible. The user will be instantly disconnected. Any unsaved data on their active screens may be lost.</p>
               <div className="w-full bg-white/5 rounded-xl border border-white/10 p-md flex items-center gap-3 mb-6">
-                <img src={avatar(user.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
+                <img src={getAvatarUrl(user.avatar, user.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
                 <div className="flex-1 min-w-0 text-left">
                   <p className="text-body-small-bold text-text-primary font-inter">{user.name}</p>
                   <p className="text-body-extra-small text-text-secondary font-inter">{user.faculty || 'Faculty of Engineering'}</p>
@@ -335,7 +335,7 @@ const StudentUserProfile = () => {
                 <button onClick={closeModal} className="p-2 text-text-secondary hover:text-text-primary transition-colors"><X size={20} /></button>
               </div>
               <div className="bg-white/5 rounded-xl border border-white/10 p-md flex items-center gap-3 mb-5">
-                <img src={avatar(user.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
+                <img src={getAvatarUrl(user.avatar, user.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
                 <div className="flex-1 min-w-0"><p className="text-body-small-bold text-text-primary">{user.name}</p><p className="text-body-extra-small text-text-secondary">{user.email}</p></div>
                 <span className="inline-flex items-center gap-xs text-body-extra-small-bold px-sm py-xs rounded-lg bg-state-success/10 text-state-success border border-state-success/30"><span className="w-1.5 h-1.5 rounded-full bg-state-success" />ACTIVE</span>
               </div>
@@ -397,7 +397,7 @@ const StudentUserProfile = () => {
                 <h2 className="text-xl font-bold text-white font-inter mb-3">Warning Issued Successfully</h2>
                 <p className="text-text-secondary text-sm font-inter leading-relaxed mb-6 max-w-[340px]">The official warning has been issued and logged in the student's disciplinary record.</p>
                 <div className="w-full bg-white/5 rounded-xl border border-white/10 p-md flex items-center gap-3 text-left mb-2">
-                  <img src={avatar(user.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
+                  <img src={getAvatarUrl(user.avatar, user.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
                   <div className="flex-1 min-w-0"><p className="text-body-small-bold text-text-primary font-inter">{user.name}</p><p className="text-body-extra-small text-text-secondary font-inter">ID: {user.studentCode || user.userId}</p></div>
                   <span className="px-2.5 py-1 bg-state-error/20 text-state-error text-xs font-bold rounded-md border border-state-error/30 whitespace-nowrap uppercase tracking-wide">
                     {warningLevel.includes('Level 1') ? 'Level 1 Warning' : warningLevel.includes('Level 2') ? 'Level 2 Warning' : warningLevel.includes('Level 3') ? 'Level 3 Warning' : 'Level 4 Warning'}
@@ -430,7 +430,7 @@ const StudentUserProfile = () => {
                 <p className="text-text-secondary text-sm font-inter leading-relaxed mb-6 max-w-[380px]">Student <span className="text-primary-blue bg-primary-blue/10 px-1.5 py-0.5 rounded font-mono text-xs font-bold">{user.studentCode || 'ENG-22-045'}</span> has been successfully disconnected.</p>
                 <div className="w-full bg-white/5 rounded-xl border border-white/10 overflow-hidden text-left mb-2">
                   <div className="grid grid-cols-2">
-                    <div className="px-4 py-3 border-b border-r border-white/5"><p className="text-body-extra-small text-text-secondary mb-1.5 uppercase tracking-wider">Target User</p><div className="flex items-center gap-2"><img src={avatar(user.name)} alt="" className="w-6 h-6 rounded-full object-cover border border-white/20" /><span className="text-body-small text-text-primary truncate">{user.name.split(' ')[0].charAt(0)}. {user.name.split(' ').slice(1).join(' ')}</span></div></div>
+                    <div className="px-4 py-3 border-b border-r border-white/5"><p className="text-body-extra-small text-text-secondary mb-1.5 uppercase tracking-wider">Target User</p><div className="flex items-center gap-2"><img src={getAvatarUrl(user.avatar, user.name)} alt="" className="w-6 h-6 rounded-full object-cover border border-white/20" /><span className="text-body-small text-text-primary truncate">{user.name.split(' ')[0].charAt(0)}. {user.name.split(' ').slice(1).join(' ')}</span></div></div>
                     <div className="px-4 py-3 border-b border-white/5"><p className="text-body-extra-small text-text-secondary mb-1.5 uppercase tracking-wider">Session ID</p><p className="text-body-small text-text-primary font-mono">#SESS-8922-LK-UNI</p></div>
                     <div className="px-4 py-3 border-r border-white/5"><p className="text-body-extra-small text-text-secondary mb-1.5 uppercase tracking-wider">Action Time</p><p className="text-body-small text-text-primary">{timeStr} LKT</p></div>
                     <div className="px-4 py-3"><p className="text-body-extra-small text-text-secondary mb-1.5 uppercase tracking-wider">Admin</p><p className="text-body-small text-text-primary">SysAdmin_01</p></div>
@@ -457,7 +457,7 @@ const StudentUserProfile = () => {
                 <h2 className="text-xl font-bold text-white font-inter mb-3">Suspension Applied Successfully</h2>
                 <p className="text-text-secondary text-sm font-inter leading-relaxed mb-6 max-w-[340px]">The user has been suspended from the platform. Access has been revoked immediately.</p>
                 <div className="w-full bg-white/5 rounded-xl border border-white/10 p-md flex items-center gap-3 text-left mb-2">
-                  <img src={avatar(user.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
+                  <img src={getAvatarUrl(user.avatar, user.name)} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
                   <div className="flex-1 min-w-0"><p className="text-body-small-bold text-text-primary font-inter">{user.name}</p><p className="text-body-extra-small text-text-secondary font-inter">ID: {user.studentCode || user.userId}</p></div>
                   <span className="px-2.5 py-1 bg-state-error/20 text-state-error text-xs font-bold rounded-md border border-state-error/30 whitespace-nowrap uppercase tracking-wide">Suspended</span>
                 </div>
@@ -529,7 +529,7 @@ const StudentUserProfile = () => {
         <div className="lg:col-span-2 flex flex-col gap-lg">
           <Card variant="container">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-lg">
-              <div className="relative shrink-0"><div className="w-[88px] h-[88px] rounded-full p-[3px] bg-gradient-to-br from-primary-blue via-primary-accent to-primary-blue"><img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover border-2 border-dark-1" /></div>{user.isOnline && <span className="absolute bottom-1 left-2 w-3.5 h-3.5 rounded-full bg-state-success border-2 border-dark-1" />}</div>
+              <div className="relative shrink-0"><div className="w-[88px] h-[88px] rounded-full p-[3px] bg-gradient-to-br from-primary-blue via-primary-accent to-primary-blue"><img src={getAvatarUrl(user.avatar, user.name)} alt={user.name} className="w-full h-full rounded-full object-cover border-2 border-dark-1" /></div>{user.isOnline && <span className="absolute bottom-1 left-2 w-3.5 h-3.5 rounded-full bg-state-success border-2 border-dark-1" />}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-sm mb-xs">
                   <h2 className="text-heading-small text-text-primary font-inter">{user.name}</h2>

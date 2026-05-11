@@ -8,6 +8,7 @@ import Button from '../components/common/Button';
 import { useToast } from '../components/common/Toast';
 import { Search, RotateCcw, TrendingUp, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { getStudentDirectory, getStudentStats } from '../services/studentService';
+import { getAvatarUrl } from '../utils/formatters';
 
 // ─── Static Options ─────────────────────────────────────────────────────────
 
@@ -221,7 +222,7 @@ const StudentManagement = () => {
                     >
                         <div className="flex items-center gap-md min-w-0">
                             <img
-                                src={student.avatar}
+                                src={getAvatarUrl(student.avatar, student.name)}
                                 alt={student.name}
                                 className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0"
                             />
@@ -274,7 +275,7 @@ const StudentManagement = () => {
                         <div className="flex flex-col gap-md">
                             <div className="flex items-center gap-md">
                                 <img
-                                    src={student.avatar}
+                                    src={getAvatarUrl(student.avatar, student.name)}
                                     alt={student.name}
                                     className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0"
                                 />

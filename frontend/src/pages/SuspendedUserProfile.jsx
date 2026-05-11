@@ -7,6 +7,7 @@ import { AlertTriangle, Calendar, Mail, Phone, MapPin, ShieldAlert, Loader2 } fr
 import { mockRequests } from '../data/mockData';
 import { severityColors } from '../data/mockSuspendedUsers';
 import { getSuspendedUserById } from '../services/suspensionService';
+import { getAvatarUrl } from '../utils/formatters';
 
 // ─── Date Formatting ────────────────────────────────────────────────────────
 
@@ -180,7 +181,7 @@ const SuspendedUserProfile = () => {
                                 <div className="flex flex-col items-center text-center mb-lg">
                                     <div className="relative mb-md">
                                         <img
-                                            src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name || 'user'}`}
+                                            src={getAvatarUrl(user.avatar, user.name)}
                                             alt={user.name}
                                             className="w-20 h-20 rounded-full object-cover border-2 border-white/20"
                                         />
