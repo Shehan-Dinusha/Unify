@@ -38,12 +38,32 @@ export const getPublicProfile = async (req, res) => {
     const targetRole = targetUser.role;
 
     // --- Visibility Rules ---
-    // Students can view Students, Clubs, Businesses
-    // Clubs can view Students, Clubs, Businesses
-    // Businesses can only view Clubs and Businesses
-    // Businesses MUST NOT view Student profiles
-    if (viewerRole === "Business" && targetRole === "Student") {
-      return sendResponse(res, 403, false, "This profile is not accessible.");
+    // 1. Admin bypass
+    if (viewerRole !== "Admin") {
+      // 2. Student profiles are always private
+      if (targetRole === "Student") {
+        return sendResponse(res, 403, false, "This profile is not accessible.");
+      }
+
+      // 3. Businesses can only view Businesses
+      if (viewerRole === "Business" && targetRole !== "Business") {
+        return sendResponse(
+          res,
+          403,
+          false,
+          "Business accounts can only view other business profiles.",
+        );
+      }
+
+      // 4. Clubs can only view Clubs
+      if (viewerRole === "Club" && targetRole !== "Club") {
+        return sendResponse(
+          res,
+          403,
+          false,
+          "Club accounts can only view other club profiles.",
+        );
+      }
     }
 
     // Get counts
