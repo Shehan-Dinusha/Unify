@@ -274,16 +274,19 @@ export const getFeed = async (req, res) => {
     // ═══════ STEP 4: FEATURE — visibilityMultiplier ═══════
     // If a boosted post has visibilityMultiplier > 1, insert duplicate
     // entries at calculated positions deeper in the feed.
+    // NOTE: This feature is disabled for "My Posts" view to avoid confusion.
     const boostDuplicates = [];
-    for (const post of boostedPosts) {
-      const multiplier = post._boostMeta.visibilityMultiplier || 1;
-      if (multiplier > 1) {
-        // Insert extra copies spaced evenly through the regular feed
-        for (let i = 1; i < multiplier; i++) {
-          boostDuplicates.push({
-            ...post,
-            _duplicateSlot: i, // Which duplicate this is (for position calc)
-          });
+    if (type !== "my-posts") {
+      for (const post of boostedPosts) {
+        const multiplier = post._boostMeta.visibilityMultiplier || 1;
+        if (multiplier > 1) {
+          // Insert extra copies spaced evenly through the regular feed
+          for (let i = 1; i < multiplier; i++) {
+            boostDuplicates.push({
+              ...post,
+              _duplicateSlot: i, // Which duplicate this is (for position calc)
+            });
+          }
         }
       }
     }

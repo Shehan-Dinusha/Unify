@@ -49,7 +49,7 @@ export const studentRoutes = [
   },
   // 2. STUDENT-ONLY ROUTES
   {
-    element: <ProtectedRoute allowedRoles={["Student", "Admin"]} />,
+    element: <ProtectedRoute allowedRoles={["Student", "Admin", "Business"]} />,
     children: [
       { path: "/notifications", element: <Notification /> },
       { path: "/lost-and-found", element: <LostAndFound /> },

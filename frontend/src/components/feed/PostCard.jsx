@@ -282,31 +282,34 @@ const PostCard = ({
   // Determine boost visual style from boostMeta
   const highlightStyle = boostMeta?.highlightStyle || "none";
 
-  // Build card border classes based on highlightStyle
-  const cardBorderClass = (() => {
-    if (!isPromoted || !boostMeta) return "border border-white/5";
-    switch (highlightStyle) {
-      case "gold":
-        return "border-2 border-yellow-400/60";
-      case "blue":
-        return "border-2 border-blue-500/50";
-      case "subtle":
-        return "border border-white/15";
-      default:
-        return "border border-white/5";
-    }
-  })();
+  // Build card border classes and styles based on highlightStyle
+  const boostStyles = (() => {
+    if (!isPromoted || !boostMeta) return { 
+      borderClass: "border border-white/5", 
+      glowStyle: {} 
+    };
 
-  // Glow shadow for premium tiers (applied via inline style to avoid Babel parse issues)
-  const cardGlowStyle = (() => {
-    if (!isPromoted || !boostMeta) return {};
     switch (highlightStyle) {
       case "gold":
-        return { boxShadow: "0 0 20px rgba(251, 191, 36, 0.15)" };
+        return {
+          borderClass: "border-2 border-[#FBBF24] animate-pulse-slow",
+          glowStyle: { boxShadow: "0 0 30px rgba(251, 191, 36, 0.4)" }
+        };
       case "blue":
-        return { boxShadow: "0 0 16px rgba(59, 130, 246, 0.12)" };
+        return {
+          borderClass: "border-2 border-[#3B82F6]",
+          glowStyle: { boxShadow: "0 0 25px rgba(59, 130, 246, 0.3)" }
+        };
+      case "subtle":
+        return {
+          borderClass: "border-2 border-white/30",
+          glowStyle: { boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)" }
+        };
       default:
-        return {};
+        return { 
+          borderClass: "border border-white/5", 
+          glowStyle: {} 
+        };
     }
   })();
 
@@ -314,8 +317,8 @@ const PostCard = ({
     <Card
       variant="card"
       padding="p-0"
-      className={"w-full overflow-hidden transition-all duration-300 " + cardBorderClass}
-      style={cardGlowStyle}
+      className={"w-full overflow-hidden transition-all duration-300 !border-0 " + boostStyles.borderClass}
+      style={boostStyles.glowStyle}
     >
       {/* Post Image */}
       {showImage && (
@@ -432,16 +435,26 @@ const PostCard = ({
             <>
               {/* Boost */}
               <button
-                className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-[#FBBF24]"
+                onClick={() =>
+                  !isPromoted && reportNavigate("/business/boost-post", {
+                    state: { postId: postId, postType: postType },
+                  })
+                }
+                disabled={isPromoted}
+                className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
+                  isPromoted 
+                    ? "opacity-40 cursor-not-allowed" 
+                    : "hover:bg-white/5 hover:text-[#FBBF24]"
+                }`}
               >
                 <div className="flex items-center gap-1.5">
                   <Zap
                     size={20}
-                    className="group-hover:fill-[#FBBF24]/20"
+                    className={!isPromoted ? "group-hover:fill-[#FBBF24]/20" : ""}
                     strokeWidth={1.8}
                   />
                 </div>
-                <span className="text-[11px]">Boost</span>
+                <span className="text-[11px]">{isPromoted ? "Active Boost" : "Boost"}</span>
               </button>
 
               {/* Delete */}

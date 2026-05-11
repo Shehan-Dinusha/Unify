@@ -28,12 +28,14 @@ const SelfEmployedOwnerView = () => {
       iconBg: "bg-blue-500/20",
       title: "View Boost Packages",
       description: "Explore packages to promote your services.",
+      path: "/business/boost-post",
     },
     {
       icon: "🚀",
       iconBg: "bg-violet-500/20",
       title: "View Boosted Posts",
       description: "Track boosted posts and their performance.",
+      path: "/my-posts?filter=boosted",
     },
   ];
 

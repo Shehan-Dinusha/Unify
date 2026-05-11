@@ -51,9 +51,25 @@ router.delete(
   BoostController.deletePackage
 );
 
-// ── Purchase (User) ─────────────────────────────────────────────────────────
+// ── Stripe Boost Payment (One-to-One Platform Payment) ──────────────────────
 
-// POST /api/v1/boosts/purchase - Purchase a boost package
+// POST /api/v1/boosts/create-checkout-session - Create Stripe Checkout for boost purchase
+router.post(
+  '/create-checkout-session',
+  // protect,  // TODO: Re-enable after auth testing
+  BoostController.createBoostCheckoutSession
+);
+
+// POST /api/v1/boosts/confirm-payment - Confirm payment after Stripe redirect
+router.post(
+  '/confirm-payment',
+  // protect,  // TODO: Re-enable after auth testing
+  BoostController.confirmBoostPayment
+);
+
+// ── Purchase (User) — Direct Purchase (no Stripe) ───────────────────────────
+
+// POST /api/v1/boosts/purchase - Purchase a boost package (direct, no Stripe)
 router.post(
   '/purchase',
   // protect,  // TODO: Re-enable after auth testing

@@ -5,7 +5,7 @@ import logger from "../utils/logger.js";
  * CORE SMS SERVICE (Twilio Integration)
  *
  * Design mirrors email.service.js for consistency:
- *   - `twilioClient` is initialized once at module load (not per-call)
+ *   - `twilioClient` is lazily initialized on first use (not at module load)
  *   - `send()` is an internal helper that contains all Twilio-specific logic
  *   - `sendSMSOTP()` is the public API — provider-agnostic signature
  *
@@ -13,10 +13,28 @@ import logger from "../utils/logger.js";
  *   Replace only the body of send(). Everything above it stays the same.
  */
 
-const twilioClient = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+let twilioClient = null;
+
+/**
+ * Lazily initializes the Twilio client on first use.
+ * This prevents the server from crashing at startup when
+ * Twilio credentials are not yet configured.
+ */
+const getTwilioClient = () => {
+  if (twilioClient) return twilioClient;
+
+  const sid = process.env.TWILIO_ACCOUNT_SID;
+  const token = process.env.TWILIO_AUTH_TOKEN;
+
+  if (!sid || !token || !sid.startsWith("AC")) {
+    throw new Error(
+      "Twilio is not configured. Set valid TWILIO_ACCOUNT_SID (must start with AC) and TWILIO_AUTH_TOKEN in your .env file."
+    );
+  }
+
+  twilioClient = twilio(sid, token);
+  return twilioClient;
+};
 
 /**
  * Internal provider-specific send helper.
@@ -28,7 +46,8 @@ const twilioClient = twilio(
  */
 const send = async (to, body) => {
   try {
-    const message = await twilioClient.messages.create({
+    const client = getTwilioClient();
+    const message = await client.messages.create({
       body,
       from: process.env.TWILIO_PHONE_NUMBER,
       to,

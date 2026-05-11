@@ -24,7 +24,7 @@ export const authRateLimiter = rateLimit({
  */
 export const apiRateLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 60, // Limit each IP to 60 requests per minute
+  max: process.env.NODE_ENV === "development" ? 1000 : 60, // Limit each IP to 1000 requests per minute in dev
   handler: (req, res, _next, options) => {
     return sendResponse(res, 429, false, "Too many requests, please slow down.");
   },
