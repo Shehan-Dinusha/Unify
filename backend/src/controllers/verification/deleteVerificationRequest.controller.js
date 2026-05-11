@@ -1,4 +1,4 @@
-import VerificationRequest from "../../modules/VerificationRequest.model.js";
+﻿import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import User from "../../modules/User.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
@@ -22,7 +22,7 @@ export const deleteVerificationRequest = async (req, res, next) => {
     }
 
     if (existingRequest.documentUrl) {
-      // 🔥 Physically delete from S3!
+      // ðŸ”¥ Physically delete from S3!
       await deleteVerificationFile(existingRequest.documentUrl);
     }
 
@@ -31,7 +31,7 @@ export const deleteVerificationRequest = async (req, res, next) => {
     await existingRequest.save();
 
     // Soft delete the row
-    await existingRequest.destroy();
+    await existingRequest.destroy({ force: true });
 
     return sendResponse(
       res,

@@ -1,4 +1,4 @@
-import VerificationRequest from "../../modules/VerificationRequest.model.js";
+﻿import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { resolveVerificationUrl } from "../../utils/verificationUrl.util.js";
@@ -15,15 +15,15 @@ export const getVerificationStatus = async (req, res, next) => {
     });
 
     if (!existingRequest) {
-      const removedRequest = await VerificationRequest.findOne({
-        where: { userId, status: "DECLINED" },
+      const lastRequest = await VerificationRequest.findOne({
+        where: { userId },
         paranoid: false,
-        order: [["deletedAt", "DESC"]],
+        order: [["createdAt", "DESC"]],
       });
 
-      if (removedRequest && removedRequest.deletedAt) {
+      if (lastRequest?.deletedAt && lastRequest.documentUrl) {
         const resolvedDocUrl = await resolveVerificationUrl(
-          removedRequest.documentUrl,
+          lastRequest.documentUrl,
         );
 
         return sendResponse(
@@ -34,11 +34,11 @@ export const getVerificationStatus = async (req, res, next) => {
           {
             hasRequest: true,
             status: "removed",
-            requestedRole: removedRequest.requestedRole,
-            declineReason: removedRequest.adminMessage,
+            requestedRole: lastRequest.requestedRole,
+            declineReason: lastRequest.adminMessage,
             document: {
-              name: removedRequest.documentMetadata?.originalName || "Document",
-              size: removedRequest.documentMetadata?.size || 0,
+              name: lastRequest.documentMetadata?.originalName || "Document",
+              size: lastRequest.documentMetadata?.size || 0,
               url: resolvedDocUrl,
             },
           },
