@@ -279,8 +279,6 @@ const PostCard = ({
     }
   };
 
-  return (
-    <Card variant="card" padding="p-0" className="w-full overflow-hidden">
   // Determine boost visual style from boostMeta
   const highlightStyle = boostMeta?.highlightStyle || "none";
 
@@ -313,7 +311,8 @@ const PostCard = ({
   })();
 
   return (
-    <div
+    <Card variant="card" padding="p-0" className="w-full overflow-hidden">
+      <div
       className={"w-full bg-[#1A2634] rounded-[24px] overflow-hidden font-inter text-white transition-all duration-300 " + cardBorderClass}
       style={cardGlowStyle}
     >
@@ -536,7 +535,8 @@ const PostCard = ({
           />
         )}
       </div>
-    </Card>
+    </div>
+  </Card>
   );
 };
 

@@ -121,7 +121,7 @@ export const boardingOwnerRoutes = [
   {
     element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["BOARDING"]} />,
     children: [
-      { path: "/marketplace/boarding", element: <Boarding /> },
+      //{ path: "/marketplace/boarding", element: <Boarding /> },
       { path: "/boarding-owner/marketplace", element: <BoardingOwnerMarketplace /> },
       { path: "/boarding-owner/create-post", element: <CreateBoardingPostPage /> },
     ]
@@ -133,7 +133,7 @@ export const foodCafeRoutes = [
   {
     element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["FOOD"]} />,
     children: [
-      { path: "/marketplace/food-cafe", element: <FoodCafe /> },
+      //{ path: "/marketplace/food-cafe", element: <FoodCafe /> },
       { path: "/food-cafe-owner/marketplace", element: <FoodCafeOwnerMarketplace /> },
       { path: "/food-cafe-owner/create-post", element: <CreateFoodCafePostPage /> },
     ]
@@ -145,7 +145,7 @@ export const selfEmployedRoutes = [
   {
     element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["SELF_EMPLOYED"]} />,
     children: [
-      { path: "/marketplace/services", element: <Services /> },
+      //{ path: "/marketplace/services", element: <Services /> },
       { path: "/services-owner/marketplace", element: <ServicesOwnerMarketplace /> },
       { path: "/services-owner/create-post", element: <CreateServicePostPage /> },
     ]

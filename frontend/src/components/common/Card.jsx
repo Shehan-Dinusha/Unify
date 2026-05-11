@@ -25,7 +25,7 @@ const Card = ({
       {...props}
     >
       {/* Content wrapper to ensure padding is consistent */}
-      <div className={`${padding} h-full w-full`}>{children}</div>
+      <div className={`${padding} ${overflow} h-full w-full`}>{children}</div>
     </div>
   );
 };

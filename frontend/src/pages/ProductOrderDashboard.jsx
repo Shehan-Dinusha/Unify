@@ -29,15 +29,15 @@ const ALL_EVENT_STATUSES = ["PENDING", "CONFIRMED", "ATTENDED", "CANCELLED"];
 
 const statusStyle = {
     // Product statuses
-    "Order Placed":      { dot: "bg-primary-blue",   badge: "bg-primary-blue/15 text-primary-blue border border-primary-blue/20" },
-    "Seller Confirmed":  { dot: "bg-purple-400",     badge: "bg-purple-400/15 text-purple-400 border border-purple-400/20" },
-    "Ready for Pickup":  { dot: "bg-state-success",  badge: "bg-state-success/15 text-state-success border border-state-success/20" },
-    "Order Completed":   { dot: "bg-white/30",       badge: "bg-white/8 text-text-secondary border border-white/10" },
+    "Order Placed": { dot: "bg-primary-blue", badge: "bg-primary-blue/15 text-primary-blue border border-primary-blue/20" },
+    "Seller Confirmed": { dot: "bg-purple-400", badge: "bg-purple-400/15 text-purple-400 border border-purple-400/20" },
+    "Ready for Pickup": { dot: "bg-state-success", badge: "bg-state-success/15 text-state-success border border-state-success/20" },
+    "Order Completed": { dot: "bg-white/30", badge: "bg-white/8 text-text-secondary border border-white/10" },
     // Event booking statuses
-    "PENDING":           { dot: "bg-yellow-400",     badge: "bg-yellow-400/15 text-yellow-400 border border-yellow-400/20" },
-    "CONFIRMED":         { dot: "bg-primary-blue",   badge: "bg-primary-blue/15 text-primary-blue border border-primary-blue/20" },
-    "ATTENDED":          { dot: "bg-state-success",  badge: "bg-state-success/15 text-state-success border border-state-success/20" },
-    "CANCELLED":         { dot: "bg-state-error",    badge: "bg-state-error/15 text-state-error border border-state-error/20" },
+    "PENDING": { dot: "bg-yellow-400", badge: "bg-yellow-400/15 text-yellow-400 border border-yellow-400/20" },
+    "CONFIRMED": { dot: "bg-primary-blue", badge: "bg-primary-blue/15 text-primary-blue border border-primary-blue/20" },
+    "ATTENDED": { dot: "bg-state-success", badge: "bg-state-success/15 text-state-success border border-state-success/20" },
+    "CANCELLED": { dot: "bg-state-error", badge: "bg-state-error/15 text-state-error border border-state-error/20" },
 };
 
 /* ─── Status dropdown per order ─────────────────────────────── */
@@ -80,20 +80,15 @@ const ProductOrderDashboard = () => {
     const [orders, setOrders] = useState([]);
     const [itemInfo, setItemInfo] = useState(null);
     const [loading, setLoading] = useState(true);
-    
+
     const [bulkFrom, setBulkFrom] = useState("Order Placed");
-    const [bulkTo, setBulkTo]   = useState("Seller Confirmed");
+    const [bulkTo, setBulkTo] = useState("Seller Confirmed");
     const [filterStatus, setFilterStatus] = useState("All Statuses");
     const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const [messageText, setMessageText] = useState("");
 
-    const user = getCurrentUser() || {
-        id: 0,
-        name: "Guest",
-        role: "club",
-        displayRole: "Clubs & Societies Dashboard",
-    };
+    const user = getCurrentUser()
 
     const fetchData = async () => {
         setLoading(true);
@@ -193,8 +188,8 @@ const ProductOrderDashboard = () => {
 
     /* Derived stats */
     const ALL_STATUSES = type === "club-event" ? ALL_EVENT_STATUSES : ALL_PRODUCT_STATUSES;
-    const displayedOrders = filterStatus === "All Statuses" 
-        ? orders 
+    const displayedOrders = filterStatus === "All Statuses"
+        ? orders
         : orders.filter((o) => o.status === filterStatus);
 
     const total = orders.length;
@@ -228,10 +223,10 @@ const ProductOrderDashboard = () => {
     }
 
     const statusBarSegments = [
-        { status: "Order Placed",     color: "bg-yellow-400", flex: counts["Order Placed"] || 0 },
-        { status: "Seller Confirmed", color: "bg-primary-blue", flex: counts["Seller Confirmed"] || 0 },
+        { status: "Order Placed", color: "bg-yellow-400", flex: counts["Order Placed"] || 0 },
+        { status: "Seller Confirmed", color: "bg-purple-400", flex: counts["Seller Confirmed"] || 0 },
         { status: "Ready for Pickup", color: "bg-state-success", flex: counts["Ready for Pickup"] || 0 },
-        { status: "Order Completed",  color: "bg-white/30", flex: counts["Order Completed"] || 0 },
+        { status: "Order Completed", color: "bg-white/30", flex: counts["Order Completed"] || 0 },
     ].filter((s) => s.flex > 0);
 
     const sizeDistEntries = Object.entries(sizeDist).sort((a, b) => b[1] - a[1]);
@@ -287,11 +282,11 @@ const ProductOrderDashboard = () => {
                             <span className="text-text-secondary text-xs font-medium uppercase tracking-wider">Status Breakdown</span>
                         </div>
                         {/* Stacked bar */}
-                        <div className="flex h-2.5 rounded-full overflow-hidden mb-3 gap-0.5">
+                        <div className="flex h-2.5 rounded-sm overflow-hidden mb-3 gap-0">
                             {statusBarSegments.map((seg) => (
                                 <div
                                     key={seg.status}
-                                    className={`${seg.color} rounded-full transition-all`}
+                                    className={`${seg.color} rounded-sm transition-all`}
                                     style={{ flex: seg.flex }}
                                 />
                             ))}
@@ -346,14 +341,14 @@ const ProductOrderDashboard = () => {
 
                     {/* Select Status Filter */}
                     <div className="relative">
-                        <button 
+                        <button
                             onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
                             className="flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-all"
                         >
                             {filterStatus === "All Statuses" ? "Select Status" : filterStatus}
                             <ChevronDown className={`w-4 h-4 transition-transform ${isStatusDropdownOpen ? "rotate-180" : ""}`} />
                         </button>
-                        
+
                         {isStatusDropdownOpen && (
                             <div className="absolute left-0 top-full mt-2 w-52 z-50 bg-[#1A2F45]/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl">
                                 {["All Statuses", ...ALL_STATUSES].map(s => (
@@ -374,8 +369,8 @@ const ProductOrderDashboard = () => {
                     <div className="flex-1" />
 
                     {/* Bulk Status */}
-                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-[#1A2F45]/80 border border-white/8 rounded-xl px-3 sm:px-4 py-3 sm:py-2 text-sm w-full xl:w-auto">
-                        
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 bg-[#1A2F45]/80 rounded-xl px-3 sm:px-4 py-3 sm:py-2 text-sm w-full xl:w-auto">
+
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <span className="text-text-secondary text-[11px] font-medium shrink-0">Bulk Status:</span>
                             {/* From */}
@@ -484,23 +479,23 @@ const ProductOrderDashboard = () => {
             {isMessageModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     {/* Backdrop */}
-                    <div 
+                    <div
                         className="absolute inset-0 bg-[#0B1220]/80 backdrop-blur-md transition-opacity"
                         onClick={() => setIsMessageModalOpen(false)}
                     />
-                    
+
                     {/* Modal */}
                     <div className="relative w-full max-w-[480px] bg-[#0F1C2E] border border-white/10 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between">
                             <h3 className="text-lg font-bold">Send Message</h3>
-                            <button 
+                            <button
                                 onClick={() => setIsMessageModalOpen(false)}
                                 className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-white/10 text-text-secondary hover:text-white transition-colors"
                             >
                                 ✕
                             </button>
                         </div>
-                        
+
                         <div className="p-6">
                             <div className="bg-primary-blue/10 border border-primary-blue/20 rounded-xl p-3 mb-5 flex gap-3 text-sm text-primary-blue">
                                 <div className="mt-0.5">
@@ -510,7 +505,7 @@ const ProductOrderDashboard = () => {
                                     Your message will be broadcast to <strong className="font-extrabold">{displayedOrders.length}</strong> {displayedOrders.length === 1 ? "buyer" : "buyers"} currently matching your selected status filter.
                                 </p>
                             </div>
-                            
+
                             <textarea
                                 value={messageText}
                                 onChange={(e) => setMessageText(e.target.value)}
@@ -518,7 +513,7 @@ const ProductOrderDashboard = () => {
                                 className="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white placeholder-text-tertiary focus:outline-none focus:border-primary-blue focus:ring-1 focus:ring-primary-blue resize-none"
                             />
                         </div>
-                        
+
                         <div className="px-6 py-4 bg-white/[0.02] border-t border-white/5 flex items-center justify-end gap-3">
                             <button
                                 onClick={() => setIsMessageModalOpen(false)}
