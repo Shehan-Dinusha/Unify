@@ -5,11 +5,11 @@ import { ChevronRight, Server } from "lucide-react";
  * Renders the top header for the selected module showing details and access
  */
 const StudentModuleHeader = ({
-  moduleName = "Programming Fundamentals",
-  moduleCode = "CS302",
-  semesterName = "Semester 3",
-  batchName = "Batch 2024",
-  description = "Access all learning materials for this course module",
+  moduleName,
+  moduleCode,
+  semesterName,
+  batchName,
+  description,
 }) => {
   return (
     <div className="self-stretch flex flex-col justify-start items-start gap-2.5 w-full">

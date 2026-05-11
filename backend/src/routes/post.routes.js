@@ -110,7 +110,7 @@ router.get("/my-posts", protect, getFeed);
 // Get filtered boarding feed
 router.get("/boarding/filter", protect, getFilteredBoardingFeed);
 // Get saved posts
-router.get("/saved", getSavedPosts);
+router.get("/saved", protect, getSavedPosts);
 
 // Get specific user's posts (Publicly accessible but protected)
 router.get("/user/:userId", protect, getUserPosts);

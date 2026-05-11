@@ -13,7 +13,7 @@ const EditModuleModal = ({
   onDelete,
   initialData,
   availableDegrees = [],
-  primaryDegree = "Bsc.(Hons) IT",
+  primaryDegree,
   semesters = [],
 }) => {
   const [title, setTitle] = useState("");

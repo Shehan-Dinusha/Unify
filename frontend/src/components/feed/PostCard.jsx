@@ -177,7 +177,8 @@ const PostCard = ({
   const postId = post?.id;
 
   // Handle case where author is passed as an object instead of a string
-  const displayAuthor = typeof author === "string" ? author : author?.name || "User";
+  const displayAuthor =
+    typeof author === "string" ? author : author?.name || "User";
 
   // Detect invalid/placeholder image values — show styled placeholder instead of broken icon
   const isValidImage =
@@ -364,7 +365,7 @@ const PostCard = ({
       <div className="p-5 sm:p-lg flex flex-col gap-4">
         {/* Author Section */}
         <div className="flex items-center justify-between">
-          <div 
+          <div
             className="flex items-center gap-3 cursor-pointer group hover:opacity-80 transition-opacity"
             onClick={handleAuthorClick}
           >
