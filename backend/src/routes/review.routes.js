@@ -25,7 +25,7 @@ const router = express.Router();
 router.post(
   "/submit",
   protect,
-  authorize("Student", "Club"),
+  authorize("Student"),
   submitReviewValidator,
   validateRequest,
   submitReview,
@@ -33,7 +33,7 @@ router.post(
 router.delete(
   "/:id",
   protect,
-  authorize("Student", "Club"),
+  authorize("Student"),
   deleteReviewValidator,
   validateRequest,
   deleteReview,
@@ -46,7 +46,7 @@ router.get(
   getTargetReviews,
 );
 router.get("/received", protect, authorize("Business"), getReceivedReviews);
-router.get("/me", protect, authorize("Student", "Club"), getMyReviews);
+router.get("/me", protect, authorize("Student"), getMyReviews);
 router.post(
   "/:reviewId/feedback",
   protect,

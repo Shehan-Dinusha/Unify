@@ -19,12 +19,12 @@ export const getReceivedReviews = async (req, res, next) => {
       return sendResponse(res, 404, false, "Target user not found.");
     }
 
-    if (targetExists.role !== "Business" && targetExists.role !== "Club") {
+    if (targetExists.role !== "Business") {
       return sendResponse(
         res,
         400,
         false,
-        "Only Business and Club accounts can view received reviews from this endpoint.",
+        "Only Business accounts can view received reviews from this endpoint.",
       );
     }
 
