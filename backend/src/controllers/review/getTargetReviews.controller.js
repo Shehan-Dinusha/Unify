@@ -22,8 +22,8 @@ export const getTargetReviews = async (req, res, next) => {
       return sendResponse(res, 404, false, "Target user not found.");
     }
 
-    if (targetExists.role !== "Business" && targetExists.role !== "Club") {
-      return sendResponse(res, 400, false, "Target is not a Business or Club account.");
+    if (targetExists.role !== "Business") {
+      return sendResponse(res, 400, false, "Target is not a Business account.");
     }
 
     const targetUserId = targetExists.id;

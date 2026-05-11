@@ -1,31 +1,24 @@
 import React, { useState } from "react";
 import ProfileHeader from "../ProfileHeader";
 import AboutSection from "../AboutSection";
-import ReviewsSection from "../ReviewsSection";
 import Card from "../../common/Card";
 import Button from "../../common/Button";
 import { UserCheck, UserPlus } from "lucide-react";
 import RecentPostsSection from "./RecentPostsSection";
 import FollowersListModal from "../modals/FollowersListModal";
-import ReviewsListModal from "../modals/ReviewsListModal";
-
-import { AddReviewModal } from "../../common/ReviewModals";
-import { submitReview } from "../../../services/reviewService";
 import { unfollowOrganization } from "../../../services/followerService";
 import { getCurrentUser } from "../../../services/authService";
 
 /**
  * ClubPublicView — public-facing view for club_society profiles.
+ * Note: Reviews and Following stat are not shown for clubs.
+ *   - Clubs cannot receive reviews.
+ *   - Clubs do not follow other accounts.
  */
 const ClubPublicView = ({ profile }) => {
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [showReviewsList, setShowReviewsList] = useState(false);
   const [followersModalType, setFollowersModalType] = useState(null);
-
   const [isFollowing, setIsFollowing] = useState(profile?.isFollowing || false);
-  const [followerCount, setFollowerCount] = useState(
-    profile?.followerCount || 0,
-  );
+  const [followerCount, setFollowerCount] = useState(profile?.followerCount || 0);
 
   const currentUser = getCurrentUser();
   const isStudent = currentUser?.role?.toLowerCase() === "student";
@@ -52,39 +45,29 @@ const ClubPublicView = ({ profile }) => {
 
       {/* Right — Top Sections */}
       <div className="flex flex-col gap-4 md:gap-md">
-        {/* Rating */}
-        <ReviewsSection
-          rating={profile?.rating ?? 0}
-          reviewCount={profile?.reviewCount ?? 0}
-          onAddReview={() => setShowReviewModal(true)}
-          onViewReviews={() => setShowReviewsList(true)}
+        {/* About */}
+        <AboutSection
+          description={
+            profile?.description ||
+            "A community for book lovers and writers. Join us for monthly readings and discussions."
+          }
         />
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3 md:gap-md">
-          {[
-            { label: "Followers", value: followerCount, type: "followers" },
-            {
-              label: "Following",
-              value: profile?.followingCount || 0,
-              type: "followings",
-            },
-          ].map((stat, idx) => (
-            <Card
-              key={idx}
-              variant="container"
-              padding="p-4 md:p-md"
-              className="flex flex-col items-center justify-center text-center gap-1 md:gap-xs cursor-pointer hover:bg-white/5 transition-colors"
-              onClick={() => setFollowersModalType(stat.type)}
-            >
-              <span className="text-xl md:text-heading-small text-text-primary font-bold block leading-none">
-                {stat.value}
-              </span>
-              <span className="text-[10px] md:text-body-extra-small text-text-secondary uppercase tracking-wider font-medium">
-                {stat.label}
-              </span>
-            </Card>
-          ))}
+        {/* Followers Stat Card */}
+        <div className="grid grid-cols-1 gap-3 md:gap-md">
+          <Card
+            variant="container"
+            padding="p-4 md:p-md"
+            className="flex flex-col items-center justify-center text-center gap-1 md:gap-xs cursor-pointer hover:bg-white/5 transition-colors"
+            onClick={() => setFollowersModalType("followers")}
+          >
+            <span className="text-xl md:text-heading-small text-text-primary font-bold block leading-none">
+              {followerCount}
+            </span>
+            <span className="text-[10px] md:text-body-extra-small text-text-secondary uppercase tracking-wider font-medium">
+              Followers
+            </span>
+          </Card>
         </div>
 
         {/* Follow Button */}
@@ -104,47 +87,11 @@ const ClubPublicView = ({ profile }) => {
 
       {/* Bottom Row — Full Width Sections */}
       <div className="md:col-span-2 mt-4 md:mt-lg flex flex-col gap-4 md:gap-md">
-        {/* About */}
-        <AboutSection
-          description={
-            profile?.description ||
-            "A community for book lovers and writers. Join us for monthly readings and discussions."
-          }
-        />
-
         {/* Recent Post Feed */}
         <RecentPostsSection posts={profile?.posts} />
       </div>
 
-      {/* Modal */}
-      {showReviewModal && (
-        <AddReviewModal
-          onClose={() => setShowReviewModal(false)}
-          onConfirm={async (data) => {
-            try {
-              await submitReview({
-                targetId: profile.id,
-                rating: data.rating,
-                review: data.comment,
-                isAnonymous: false,
-              });
-              window.location.reload();
-            } catch (err) {
-              console.error(err);
-              const msg = err.response?.data?.message || err.message || "Failed to submit review";
-              alert(msg);
-            }
-          }}
-        />
-      )}
-
-      {showReviewsList && (
-        <ReviewsListModal
-          targetId={profile?.id}
-          onClose={() => setShowReviewsList(false)}
-        />
-      )}
-
+      {/* Followers / Following List Modal */}
       {followersModalType && (
         <FollowersListModal
           userId={profile?.id}

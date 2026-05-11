@@ -4,57 +4,24 @@ import FacilitiesCard from "../FacilitiesCard";
 import AboutSection from "../AboutSection";
 import ReviewsSection from "../ReviewsSection";
 import RecentPostsSection from "./RecentPostsSection";
-import FollowersListModal from "../modals/FollowersListModal";
 import ReviewsListModal from "../modals/ReviewsListModal";
-import Card from "../../common/Card";
 
 import { AddReviewModal } from "../../common/ReviewModals";
 import { submitReview } from "../../../services/reviewService";
 
 /**
  * BoardingOwnerPublicView — public-facing view for boarding_owner profiles.
+ * Note: Business accounts do not have follower/following features.
  */
 const BoardingOwnerPublicView = ({ profile }) => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showReviewsList, setShowReviewsList] = useState(false);
-  const [followersModalType, setFollowersModalType] = useState(null);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md items-start text-start">
       {/* Left — Profile Card */}
       <div className="md:row-span-1 flex flex-col gap-4">
         <ProfileHeader profile={profile} isPublic={true} />
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3 md:gap-md">
-          {[
-            {
-              label: "Followers",
-              value: profile?.followerCount || 0,
-              type: "followers",
-            },
-            {
-              label: "Following",
-              value: profile?.followingCount || 0,
-              type: "followings",
-            },
-          ].map((stat, idx) => (
-            <Card
-              key={idx}
-              variant="container"
-              padding="p-4 md:p-md"
-              className="flex flex-col items-center justify-center text-center gap-1 md:gap-xs cursor-pointer hover:bg-white/5 transition-colors"
-              onClick={() => setFollowersModalType(stat.type)}
-            >
-              <span className="text-xl md:text-heading-small text-text-primary font-bold block leading-none">
-                {stat.value}
-              </span>
-              <span className="text-[11px] md:text-body-small text-text-secondary">
-                {stat.label}
-              </span>
-            </Card>
-          ))}
-        </div>
       </div>
 
       {/* Right — Top Sections */}
@@ -125,13 +92,7 @@ const BoardingOwnerPublicView = ({ profile }) => {
         />
       )}
 
-      {followersModalType && (
-        <FollowersListModal
-          userId={profile?.id}
-          type={followersModalType}
-          onClose={() => setFollowersModalType(null)}
-        />
-      )}
+
     </div>
   );
 };

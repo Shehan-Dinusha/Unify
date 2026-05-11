@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../../components/layout/MainLayout";
-import StudentPublicView from "../../components/profile/public/StudentPublicView";
 import BoardingOwnerPublicView from "../../components/profile/public/BoardingOwnerPublicView";
 import ClubPublicView from "../../components/profile/public/ClubPublicView";
 import FoodCafePublicView from "../../components/profile/public/FoodCafePublicView";
@@ -28,7 +27,8 @@ const PublicViewSwitch = ({ profile }) => {
       return <SelfEmployedPublicView profile={profile} />;
     case "student":
     default:
-      return <StudentPublicView profile={profile} />;
+      // Student profiles are not publicly viewable
+      return null;
   }
 };
 
@@ -101,6 +101,26 @@ const PublicProfilePage = () => {
           <h2 className="text-heading-medium text-white">Access Denied</h2>
           <p className="text-text-secondary max-w-md">
             This profile is not accessible. You do not have the required permissions to view this user's information.
+          </p>
+          <Button variant="primary" onClick={() => navigate(-1)} className="mt-4">
+            Go Back
+          </Button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Student profiles are not publicly viewable
+  if (profile?.role === "student") {
+    return (
+      <MainLayout user={sidebarUser} pageTitle="Profile" verificationCount={0}>
+        <div className="w-full max-w-5xl mx-auto px-1 md:px-0 flex flex-col items-center justify-center h-[60vh] text-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-state-error/10 flex items-center justify-center mb-2">
+            <Lock className="w-8 h-8 text-state-error" />
+          </div>
+          <h2 className="text-heading-medium text-white">Profile Not Available</h2>
+          <p className="text-text-secondary max-w-md">
+            Student profiles are not publicly viewable.
           </p>
           <Button variant="primary" onClick={() => navigate(-1)} className="mt-4">
             Go Back

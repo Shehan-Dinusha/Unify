@@ -19,6 +19,11 @@ export const getPublicFollowers = catchAsync(async (req, res) => {
     return sendResponse(res, 404, false, "User not found.");
   }
 
+  // Only clubs can have followers
+  if (targetUser.role?.toLowerCase() !== "club") {
+    return sendResponse(res, 403, false, "Only clubs can have followers.");
+  }
+
   const totalFollowers = await targetUser.countFollowers();
 
   const followers = await targetUser.getFollowers({
@@ -64,6 +69,11 @@ export const getPublicFollowing = catchAsync(async (req, res) => {
 
   if (!targetUser) {
     return sendResponse(res, 404, false, "User not found.");
+  }
+
+  // Only students can follow other accounts.
+  if (targetUser.role?.toLowerCase() !== "student") {
+    return sendResponse(res, 403, false, "Only students can follow other accounts.");
   }
 
   const totalFollowing = await targetUser.countFollowing();

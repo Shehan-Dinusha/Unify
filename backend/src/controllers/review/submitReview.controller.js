@@ -43,12 +43,12 @@ export const submitReview = async (req, res, next) => {
       return sendResponse(res, 404, false, "Target user not found.");
     }
 
-    if (targetExists.role !== "Business" && targetExists.role !== "Club") {
+    if (targetExists.role !== "Business") {
       return sendResponse(
         res,
         400,
         false,
-        "Reviews can only be given to Business and Club accounts.",
+        "Reviews can only be given to Business accounts.",
       );
     }
 
