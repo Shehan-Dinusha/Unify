@@ -53,36 +53,33 @@ const ClubPublicView = ({ profile }) => {
           }
         />
 
-        {/* Followers Stat Card */}
-        <div className="grid grid-cols-1 gap-3 md:gap-md">
+        {/* Followers Stat Card & Follow Button */}
+        <div className="flex items-stretch gap-2.5 md:gap-4 max-w-[420px]">
           <Card
             variant="container"
-            padding="p-4 md:p-md"
-            className="flex flex-col items-center justify-center text-center gap-1 md:gap-xs cursor-pointer hover:bg-white/5 transition-colors"
+            padding="p-2 md:p-3"
+            className="flex-1 flex flex-col items-center justify-center text-center gap-0.5 md:gap-1 cursor-pointer hover:bg-white/5 transition-colors"
             onClick={() => setFollowersModalType("followers")}
           >
-            <span className="text-xl md:text-heading-small text-text-primary font-bold block leading-none">
+            <span className="text-lg md:text-xl text-text-primary font-bold block leading-none">
               {followerCount}
             </span>
-            <span className="text-[10px] md:text-body-extra-small text-text-secondary uppercase tracking-wider font-medium">
+            <span className="text-[9px] md:text-[10px] text-text-secondary uppercase tracking-widest font-semibold">
               Followers
             </span>
           </Card>
-        </div>
 
-        {/* Follow Button */}
-        {isStudent && (
-          <div className="w-full flex justify-end">
+          {isStudent && (
             <Button
               onClick={handleToggleFollow}
               variant={isFollowing ? "outline" : "primary"}
-              className="py-2.5 rounded-xl text-[14px] font-bold md:w-auto w-full"
+              className="flex-1 rounded-xl text-[13px] md:text-[14px] font-bold h-auto self-stretch whitespace-nowrap px-3 md:px-5"
               icon={isFollowing ? UserCheck : UserPlus}
             >
               {isFollowing ? "Following" : "Follow Club"}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Bottom Row — Full Width Sections */}

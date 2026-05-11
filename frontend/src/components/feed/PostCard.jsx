@@ -154,6 +154,7 @@ const PostCard = ({
   showBoost = false,
   isManagementMode = false,
   onPostUpdate,
+  imageStyle = "contain",
 }) => {
   const { toggleSavePost, isPostSaved } = useSavedPosts();
   // const isSavedLocal = post ? isPostSaved(post.id) : false; // Use initialIsSaved from props instead
@@ -352,7 +353,7 @@ const PostCard = ({
           <img
             src={image}
             alt="post"
-            className="w-full h-auto object-contain max-h-[500px]"
+            className={`w-full h-auto max-h-[500px] ${imageStyle === "cover" ? "h-full object-cover" : "object-contain"}`}
             loading="lazy"
             onError={() => {
               setImgFailed(true);
