@@ -10,6 +10,9 @@ export const SavedPostsProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) { setLoading(false); return; }
+
     const fetchSavedPosts = async () => {
       try {
         const { savedItems } = await newsfeedService.getSavedPosts();
