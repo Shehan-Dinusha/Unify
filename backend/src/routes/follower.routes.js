@@ -5,6 +5,7 @@ import { getStudentFollowings } from "../controllers/follower/getFollowing.contr
 import { getPublicFollowers } from "../controllers/follower/getPublicFollowers.controller.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
+import { requireClubVerification } from "../middlewares/verifyClub.middleware.js";
 import {
   toggleFollowValidator,
   getFollowersValidator,
@@ -17,6 +18,7 @@ router.get(
   "/my-followers",
   protect,
   authorize("Club"),
+  requireClubVerification,
   getFollowersValidator,
   validateRequest,
   getClubFollowers,

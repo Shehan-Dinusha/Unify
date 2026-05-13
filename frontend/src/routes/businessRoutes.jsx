@@ -99,11 +99,17 @@ export const businessSharedRoutes = [
 
 // Clubs & societies
 export const clubRoutes = [
+  // Club verification — accessible without being verified
   {
     element: <ProtectedRoute allowedRoles={["Club", "Admin"]} />,
     children: [
-      //{ path: "/marketplace/club", element: <Club /> },
       { path: "/club-verification", element: <ClubVerification /> },
+    ],
+  },
+  // All other club routes require verification
+  {
+    element: <ProtectedRoute allowedRoles={["Club", "Admin"]} requireVerified />,
+    children: [
       { path: "/club-owner/marketplace", element: <ClubOwnerMarketplace /> },
       { path: "/club-owner/create-product", element: <CreateProductPage /> },
       { path: "/club-owner/create-event", element: <CreateEventPage /> },
@@ -194,7 +200,7 @@ export const selfEmployedRoutes = [
 
 export const businessRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["Business", "Club", "Admin"]} />,
+    element: <ProtectedRoute allowedRoles={["Business", "Club", "Admin"]} requireVerified />,
     children: businessSharedRoutes,
   },
   ...clubRoutes,
