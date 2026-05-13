@@ -42,6 +42,23 @@ export const createStripeAccount = async (req, res) => {
           card_payments: { requested: true },
           transfers: { requested: true },
         },
+        business_profile: {
+          url: 'https://unify-test.com',
+          mcc: '5734', // Software
+        },
+        individual: {
+          email: req.user.email,
+          phone: req.user.phone || '+61412345678',
+          first_name: req.user.name ? req.user.name.split(' ')[0] : 'Test',
+          last_name: req.user.name ? req.user.name.split(' ').slice(1).join(' ') || 'User' : 'User',
+          address: {
+            line1: '123 Test Street',
+            city: 'Sydney',
+            state: 'NSW',
+            postal_code: '2000',
+            country: 'AU'
+          }
+        },
         metadata: {
            userId: userId.toString(),
            clubName: clubProfile.clubName

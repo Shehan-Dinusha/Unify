@@ -15,28 +15,31 @@ export const getClubBuyerDemographics = async (req, res) => {
         {
           model: User,
           as: "buyer",
-          attributes: ["id"],
+          attributes: [],
+          required: false,
           include: [
             {
               model: StudentProfile,
               as: "studentProfile",
-              attributes: ["facultyId"],
+              attributes: [],
+              required: false,
               include: [
                 {
                   model: Faculty,
                   as: "faculty",
-                  attributes: ["name"],
-                }
-              ]
-            }
-          ]
-        }
+                  attributes: [],
+                  required: false,
+                },
+              ],
+            },
+          ],
+        },
       ],
       attributes: [
-        [sequelize.col("buyer->studentProfile->faculty.name"), "facultyName"],
-        [sequelize.fn("COUNT", sequelize.col("Order.id")), "count"]
+        [sequelize.col("buyer.studentProfile.faculty.name"), "facultyName"],
+        [sequelize.fn("COUNT", sequelize.col("Order.id")), "count"],
       ],
-      group: [sequelize.col("buyer->studentProfile->faculty.name")],
+      group: ["buyer.studentProfile.faculty.name"],
       raw: true,
     });
 

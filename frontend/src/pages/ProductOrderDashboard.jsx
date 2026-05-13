@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
@@ -41,12 +41,24 @@ const statusStyle = {
 };
 
 /* ─── Status dropdown per order ─────────────────────────────── */
-const StatusDropdown = ({ value, onChange, type }) => {
+const StatusDropdown = ({ value, onChange, type, options: customOptions, align = "right" }) => {
     const [open, setOpen] = useState(false);
+    const containerRef = useRef(null);
     const style = statusStyle[value] || { badge: "bg-white/8 text-text-secondary border border-white/10" };
-    const options = type === "club-event" ? EVENT_STATUSES : PRODUCT_STATUSES;
+    const options = customOptions || (type === "club-event" ? EVENT_STATUSES : PRODUCT_STATUSES);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
     return (
-        <div className="relative inline-block text-left">
+        <div className="relative inline-block text-left" ref={containerRef}>
             <button
                 onClick={() => setOpen((o) => !o)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${style.badge}`}
@@ -55,7 +67,7 @@ const StatusDropdown = ({ value, onChange, type }) => {
                 <ChevronDown className={`w-3 h-3 transition-transform ${open ? "rotate-180" : ""}`} />
             </button>
             {open && (
-                <div className="absolute right-0 top-full mt-1 z-50 bg-[#1A2F45] border border-white/10 rounded-xl overflow-hidden shadow-xl w-44">
+                <div className={`absolute ${align === "right" ? "right-0" : "left-0"} top-full mt-1 z-50 bg-[#1A2F45] border border-white/10 rounded-xl overflow-hidden shadow-xl w-44`}>
                     {options.map((s) => (
                         <button
                             key={s}
@@ -373,26 +385,22 @@ const ProductOrderDashboard = () => {
 
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                             <span className="text-text-secondary text-[11px] font-medium shrink-0">Bulk Status:</span>
-                            {/* From */}
-                            <select
+                            <StatusDropdown
                                 value={bulkFrom}
-                                onChange={(e) => setBulkFrom(e.target.value)}
-                                className="flex-1 sm:flex-none bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-medium appearance-none cursor-pointer focus:outline-none min-w-0"
-                            >
-                                {ALL_STATUSES.map((s) => <option key={s} value={s} className="bg-[#0D1A26]">{s}</option>)}
-                            </select>
+                                onChange={setBulkFrom}
+                                options={ALL_STATUSES}
+                                align="left"
+                            />
                         </div>
 
                         <div className="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
                             <span className="text-text-secondary text-[11px] shrink-0">To:</span>
-                            {/* To */}
-                            <select
+                            <StatusDropdown
                                 value={bulkTo}
-                                onChange={(e) => setBulkTo(e.target.value)}
-                                className="flex-1 sm:flex-none bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-medium appearance-none cursor-pointer focus:outline-none min-w-0"
-                            >
-                                {bulkStatuses.map((s) => <option key={s} value={s} className="bg-[#0D1A26]">{s}</option>)}
-                            </select>
+                                onChange={setBulkTo}
+                                options={bulkStatuses}
+                                align="left"
+                            />
 
                             <button
                                 onClick={applyBulk}

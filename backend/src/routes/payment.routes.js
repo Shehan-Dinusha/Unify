@@ -1,6 +1,8 @@
 import express from "express";
 import { handleWebhook, createCheckoutSession, createStripeAccount, createStripeLoginLink } from "../controllers/payments/index.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import { checkoutSessionValidator } from "../validators/payment.validator.js";
 
 const router = express.Router();
 
@@ -11,7 +13,13 @@ router.post("/onboard-club", protect, authorize("Club"), createStripeAccount);
 router.post("/login-link", protect, authorize("Club"), createStripeLoginLink);
 
 // Route to create a Stripe Checkout Session
-router.post("/create-checkout-session", createCheckoutSession);
+router.post(
+  "/create-checkout-session",
+  protect,
+  checkoutSessionValidator,
+  validate,
+  createCheckoutSession
+);
 
 // Stripe Webhook endpoint (Requires raw body for signature verification)
 // We already configured app.js to provide req.rawBody for this specific path
