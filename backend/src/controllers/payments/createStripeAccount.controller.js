@@ -13,7 +13,7 @@ export const createStripeAccount = async (req, res) => {
 
   try {
     const userId = req.user.id;
-    
+
     // Check if club profile exists
     let clubProfile = await ClubProfile.findOne({ where: { userId } });
     if (!clubProfile) {
@@ -27,7 +27,7 @@ export const createStripeAccount = async (req, res) => {
       const account = await stripe.accounts.retrieve(stripeAccountId);
       // Ensure details are submitted AND transfers capability is active
       if (account.details_submitted && account.capabilities?.transfers === "active") {
-         return res.status(200).json({ success: true, alreadyConnected: true });
+        return res.status(200).json({ success: true, alreadyConnected: true });
       }
     }
 
@@ -53,6 +53,7 @@ export const createStripeAccount = async (req, res) => {
           last_name: req.user.name ? req.user.name.split(' ').slice(1).join(' ') || 'User' : 'User',
           address: {
             line1: '123 Test Street',
+            line2: 'Apt 1',
             city: 'Sydney',
             state: 'NSW',
             postal_code: '2000',
@@ -60,13 +61,13 @@ export const createStripeAccount = async (req, res) => {
           }
         },
         metadata: {
-           userId: userId.toString(),
-           clubName: clubProfile.clubName
+          userId: userId.toString(),
+          clubName: clubProfile.clubName
         }
       });
 
       stripeAccountId = account.id;
-      
+
       // Save to database
       await clubProfile.update({ stripeAccountId });
     }
