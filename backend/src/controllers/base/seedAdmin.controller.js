@@ -10,6 +10,7 @@ export const seedAdmin = async (req, res) => {
       defaults: {
         name: "Super Admin",
         email: "admin@unify.lk",
+        phone: "+94 76 377 5350",
         passwordHash,
         role: "Admin",
         isVerified: true,

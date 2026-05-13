@@ -55,6 +55,7 @@ export const BoostPackageProvider = ({ children }) => {
 
     // ── Load all data on mount ─────────────────────────────────────────
     useEffect(() => {
+        if (!localStorage.getItem("token")) return;
         fetchPackages();
         fetchLogs();
         fetchStats();

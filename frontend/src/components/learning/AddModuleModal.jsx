@@ -11,7 +11,7 @@ const AddModuleModal = ({
   onClose, 
   onSave,
   availableDegrees = [],
-  primaryDegree = "Bsc.(Hons) IT",
+  primaryDegree,
   semesters = [],
 }) => {
   const [title, setTitle] = useState("");

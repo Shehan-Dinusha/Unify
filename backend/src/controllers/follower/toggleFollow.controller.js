@@ -12,7 +12,7 @@ export const toggleFollowClub = catchAsync(async (req, res) => {
   }
 
   // Rule: Only students can follow clubs
-  if (follower.role !== "Student") {
+  if (follower.role?.toLowerCase() !== "student") {
     return sendResponse(res, 403, false, "Only students can follow clubs.");
   }
 
@@ -23,7 +23,7 @@ export const toggleFollowClub = catchAsync(async (req, res) => {
   }
 
   // Rule: Only clubs can be followed
-  if (targetUser.role !== "Club") {
+  if (targetUser.role?.toLowerCase() !== "club") {
     return sendResponse(res, 403, false, "You can only follow clubs.");
   }
 

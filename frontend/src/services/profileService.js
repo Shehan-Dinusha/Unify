@@ -84,3 +84,14 @@ export const deleteAccount = async (password) => {
     handleError(error);
   }
 };
+
+export const getPublicProfile = async (userId) => {
+  try {
+    const response = await api.get(`/profiles/public/${userId}`);
+    return response.data.data;
+  } catch (error) {
+    // If it's a 403, we might want to handle it specifically in the UI, 
+    // but throwing the error allows the component to catch it and display the forbidden UI.
+    throw error.response?.data?.message || "Failed to fetch public profile";
+  }
+};

@@ -59,7 +59,7 @@ const FollowersDirectory = () => {
     } catch (err) {
       if (
         err.response &&
-        (err.response.status === 401 || err.response.status === 403)
+        err.response.status === 403
       ) {
         setErrorStatus(err.response.status);
       } else {
@@ -93,15 +93,22 @@ const FollowersDirectory = () => {
     return <NotFound status={errorStatus} />;
   }
 
+  const sidebarUser = (() => {
+    try {
+      const raw = localStorage.getItem("user");
+      const role = localStorage.getItem("role");
+      if (raw) {
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+        return { name: parsed.name || "User", role: role || "club", displayRole: parsed.displayRole || role || "Club" };
+      }
+    } catch {}
+    return { name: "User", role: "club", displayRole: "Club" };
+  })();
+
   return (
     <MainLayout
-      user={{
-        name: "Alex Johnson",
-        role: "club",
-        displayRole: "Clubs & Societies",
-      }}
+      user={sidebarUser}
       pageTitle="Profile"
-      verificationCount={3}
     >
       <div className="flex flex-col h-full">
         {/* Header Section */}
