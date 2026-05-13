@@ -3,6 +3,7 @@ import StudentReport from "../../modules/StudentReport.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import moment from "moment";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 /**
  * Retrieves reports for a specific student with filters and pagination.
@@ -60,26 +61,29 @@ export const getStudentReports = async (req, res, next) => {
       other: 'Other',
     };
 
-    const formattedReports = rows.map(r => ({
-      id: r.id, // Integer PK for URL routing
-      reportId: r.reportId, // Display string like #RPT-20260421-XXXX
-      title: r.title,
-      category: categoryDisplayMap[r.category] || r.category,
-      categoryIcon: categoryIconMap[r.category] || '🔧',
-      dateSubmitted: moment(r.createdAt).format("MMM DD, YYYY"),
-      dateSubmittedFull: moment(r.createdAt).format("MMM DD, YYYY • hh:mm A"),
-      status: r.status,
-      reportType: r.reportType,
-      reason: r.category,
-      reportedEntity: {
-        name: r.reportType === 'user' ? "Reported User" : "Reported Content",
-        faculty: "N/A",
-        entityId: r.reportedEntityId,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${r.reportedEntityId}`,
-        categoryBadge: categoryDisplayMap[r.category] || r.category
-      },
-      description: r.additionalDetails || "No additional description provided.",
-      statusLabel: r.status
+    const formattedReports = await Promise.all(rows.map(async r => {
+      const entityName = r.reportType === 'user' ? "Reported User" : "Reported Content";
+      return {
+        id: r.id, // Integer PK for URL routing
+        reportId: r.reportId, // Display string like #RPT-20260421-XXXX
+        title: r.title,
+        category: categoryDisplayMap[r.category] || r.category,
+        categoryIcon: categoryIconMap[r.category] || '🔧',
+        dateSubmitted: moment(r.createdAt).format("MMM DD, YYYY"),
+        dateSubmittedFull: moment(r.createdAt).format("MMM DD, YYYY • hh:mm A"),
+        status: r.status,
+        reportType: r.reportType,
+        reason: r.category,
+        reportedEntity: {
+          name: entityName,
+          faculty: "N/A",
+          entityId: r.reportedEntityId,
+          avatar: await resolveAvatarUrl(null, entityName), // No avatar key available in r directly here, but using fallback
+          categoryBadge: categoryDisplayMap[r.category] || r.category
+        },
+        description: r.additionalDetails || "No additional description provided.",
+        statusLabel: r.status
+      };
     }));
 
     return sendResponse(res, 200, true, 'Reports retrieved successfully', {

@@ -13,6 +13,7 @@ import { sendResponse } from '../../utils/response.js';
 import logger from '../../utils/logger.js';
 import moment from 'moment';
 import UserSuspensionService from '../../services/userSuspension.service.js';
+import { resolveAvatarUrl } from '../../utils/avatarUrl.util.js';
 
 /**
  * GET /api/v1/admin/students
@@ -64,15 +65,15 @@ export const getStudentDirectory = async (req, res, next) => {
       order: [['lastActive', 'DESC']]
     });
 
-    const formattedStudents = students.map(s => ({
+    const formattedStudents = await Promise.all(students.map(async s => ({
       id: s.id,
       name: s.name,
       email: s.email,
-      avatar: s.avatar || s.name.substring(0, 2).toUpperCase(),
+      avatar: await resolveAvatarUrl(s.avatar, s.name),
       faculty: s.studentProfile?.faculty?.name || 'Unknown',
       status: s.status,
       lastActive: s.lastActive ? moment(s.lastActive).fromNow() : 'Never'
-    }));
+    })));
 
     return sendResponse(res, 200, true, 'Student directory retrieved', {
       total: count,
@@ -185,7 +186,7 @@ export const getStudentProfile = async (req, res, next) => {
       tier: user.studentProfile?.tier || 'Standard',
       isOnline: user.isOnline || false,
       activeSessions: 1,
-      avatar: user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name.replace(/ /g, '')}`,
+      avatar: await resolveAvatarUrl(user.avatar, user.name),
       stats: {
         totalPosts: { 
           value: totalPosts.toLocaleString(), 

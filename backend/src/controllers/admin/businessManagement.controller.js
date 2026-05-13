@@ -15,6 +15,7 @@ import { sendResponse } from '../../utils/response.js';
 import UserSuspensionService from '../../services/userSuspension.service.js';
 import logger from '../../utils/logger.js';
 import moment from 'moment';
+import { resolveAvatarUrl } from '../../utils/avatarUrl.util.js';
 
 /**
  * GET /api/v1/admin/businesses
@@ -75,7 +76,7 @@ export const getBusinessDirectory = async (req, res, next) => {
       order: [['createdAt', 'DESC']]
     });
 
-    const formattedEntities = entities.map(e => {
+    const formattedEntities = await Promise.all(entities.map(async e => {
       let categoryLabel = 'General';
       let name = e.name;
 
@@ -94,12 +95,12 @@ export const getBusinessDirectory = async (req, res, next) => {
         id: e.id,
         name: name,
         email: e.email,
-        avatar: e.avatar || name.substring(0, 2).toUpperCase(),
+        avatar: await resolveAvatarUrl(e.avatar, name),
         category: categoryLabel,
         registrationDate: moment(e.createdAt).format('MMM DD, YYYY'),
         status: e.status
       };
-    });
+    }));
 
     return sendResponse(res, 200, true, 'Directory retrieved', {
       total: count,
@@ -287,7 +288,7 @@ export const getBusinessProfile = async (req, res, next) => {
       businessId: isClub ? `#CLUB-${String(user.id).padStart(4, '0')}` : `#BIZ-${String(user.id).padStart(4, '0')}`,
       location: user.businessProfile?.addresses?.[0]?.city || 'Katubedda',
       isVerified: user.status === 'Active',
-      logo: user.avatar || `https://api.dicebear.com/7.x/shapes/svg?seed=${user.name.replace(/ /g, '')}`,
+      logo: await resolveAvatarUrl(user.avatar, profileName),
       category: categoryLabel,
       registrationDate: moment(user.createdAt).format('MMM DD, YYYY'),
       status: user.status,

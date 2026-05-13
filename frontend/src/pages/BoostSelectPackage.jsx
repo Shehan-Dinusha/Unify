@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import { useBoostPackages } from '../context/BoostPackageContext';
@@ -21,8 +21,12 @@ import {
 
 const BoostSelectPackage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { packages, loading, error } = useBoostPackages();
   const [selectedPkgId, setSelectedPkgId] = useState(null);
+
+  // Get the postId/postType passed from the Boost button on PostCard
+  const { postId, postType } = location.state || {};
 
   // Auto-select first package if none selected and packages loaded
   const effectiveSelectedId = selectedPkgId || (packages.length > 0 ? packages[0].id : null);
@@ -50,6 +54,8 @@ const BoostSelectPackage = () => {
     navigate('/business/boost-post/confirm', {
       state: {
         packageId: effectiveSelectedId,
+        postId,
+        postType,
         subtotal,
         tax,
         total,
@@ -83,11 +89,12 @@ const BoostSelectPackage = () => {
         {/* Page Title */}
         <div>
           <h1 className="text-heading-small md:text-heading-medium text-text-primary font-inter">
-            Supercharge your Ad Reach
+            {postId ? 'Supercharge your Ad Reach' : 'Available Boost Packages'}
           </h1>
           <p className="text-body-small text-text-secondary font-inter mt-1 max-w-2xl">
-            Select a boosting package to extend visibility and get up to 5x more views on
-            your campaign.
+            {postId 
+              ? 'Select a boosting package to extend visibility and get up to 5x more views on your campaign.'
+              : 'Explore our premium boosting packages designed to increase your visibility across the Unify network.'}
           </p>
         </div>
 
@@ -225,7 +232,7 @@ const BoostSelectPackage = () => {
         )}
 
         {/* ── Bottom Row: Live Preview + Order Summary ── side by side */}
-        {selectedPkg && (
+        {selectedPkg && postId && (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-md">
           {/* Live Preview — takes 3 columns */}
           <div className="lg:col-span-3">
@@ -337,6 +344,25 @@ const BoostSelectPackage = () => {
             </Card>
           </div>
         </div>
+        )}
+
+        {/* ── View-Only Action Button (when no postId) ── */}
+        {!postId && (
+          <div className="flex flex-col items-center justify-center py-10 gap-6">
+            <div className="h-px bg-white/10 w-full max-w-md" />
+            <div className="text-center">
+              <p className="text-body-small text-text-secondary font-inter mb-4">
+                You are currently viewing all available boost packages.
+              </p>
+              <button
+                onClick={() => navigate('/my-posts')}
+                className="h-12 px-10 rounded-2xl bg-white/5 border-2 border-white/10 text-text-primary font-inter font-bold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/20 transition-all duration-200 active:scale-[0.95]"
+              >
+                <ArrowRight size={18} />
+                Select a Post to Boost
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </MainLayout>

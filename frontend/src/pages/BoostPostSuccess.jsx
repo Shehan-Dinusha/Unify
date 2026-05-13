@@ -1,23 +1,66 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
-import { CheckCircle2, ArrowRight, LayoutDashboard, CalendarDays } from 'lucide-react';
+import { CheckCircle2, ArrowRight, CalendarDays, Loader2, AlertTriangle } from 'lucide-react';
+import api from '../services/api';
 
 const BoostPostSuccess = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
-  // All data comes from the DB purchase response passed via location.state
-  const {
-    packageName = 'Boost Package',
-    budget = 0,
-    durationDays = 0,
-    transactionId,
-    purchaseDate,
-    expiryDate,
-    purchaseId,
-  } = location.state || {};
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [boostData, setBoostData] = useState(null);
+
+  // Stripe redirects back with ?session_id=... in the URL
+  const sessionId = searchParams.get('session_id');
+
+  // Data may also come from location.state (fallback for non-Stripe flow)
+  const locationState = location.state || {};
+
+  useEffect(() => {
+    const confirmPayment = async () => {
+      try {
+        setLoading(true);
+
+        if (sessionId) {
+          // Import the service method
+          const { confirmBoostPayment } = await import('../services/boostService');
+
+          // Verify the Stripe session and finalize the boost purchase
+          const response = await confirmBoostPayment(sessionId);
+
+          if (response?.success && response?.data) {
+            setBoostData(response.data);
+          } else {
+            throw new Error('Failed to confirm boost payment.');
+          }
+        } else if (locationState.packageName) {
+          // Fallback: data was passed via location.state (non-Stripe flow)
+          setBoostData({
+            packageName: locationState.packageName,
+            budget: locationState.budget,
+            durationDays: locationState.durationDays,
+            transactionId: locationState.transactionId,
+            purchaseDate: locationState.purchaseDate,
+            expiryDate: locationState.expiryDate,
+            purchaseId: locationState.purchaseId,
+          });
+        } else {
+          throw new Error('No payment session found. Please try boosting again.');
+        }
+      } catch (err) {
+        console.error('Boost confirmation error:', err);
+        setError(err.response?.data?.message || err.message || 'Failed to confirm payment.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    confirmPayment();
+  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Format dates from DB response
   const formatDateTime = (isoString) => {
@@ -31,6 +74,72 @@ const BoostPostSuccess = () => {
       minute: '2-digit',
     });
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <MainLayout
+        user={{ name: 'Alex Johnson', role: 'business', displayRole: 'Business & Organization' }}
+        pageTitle="Boost Your Post"
+        verificationCount={0}
+      >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl">
+          <Card variant="card" padding="p-lg" className="text-center max-w-sm">
+            <Loader2 size={40} className="text-primary-blue animate-spin mx-auto mb-4" />
+            <h2 className="text-lg font-bold text-white mb-2">Processing Payment...</h2>
+            <p className="text-text-secondary text-sm">
+              Confirming your boost purchase with the payment provider.
+            </p>
+          </Card>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <MainLayout
+        user={{ name: 'Alex Johnson', role: 'business', displayRole: 'Business & Organization' }}
+        pageTitle="Boost Your Post"
+        verificationCount={0}
+      >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl px-4">
+          <Card variant="card" padding="p-lg" className="text-center max-w-md">
+            <div className="w-14 h-14 bg-state-error/10 rounded-full flex items-center justify-center mx-auto mb-4 ring-4 ring-state-error/5">
+              <AlertTriangle size={28} className="text-state-error" />
+            </div>
+            <h2 className="text-lg font-bold text-white mb-2">Payment Issue</h2>
+            <p className="text-text-secondary text-sm mb-6">{error}</p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => navigate('/business/boost-post')}
+                className="w-full h-11 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary-blue/30 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => navigate('/my-posts')}
+                className="w-full h-11 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center hover:bg-white/10 active:scale-[0.98] transition-all duration-200"
+              >
+                Back to My Posts
+              </button>
+            </div>
+          </Card>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Success state
+  const {
+    packageName = 'Boost Package',
+    budget = 0,
+    durationDays = 0,
+    transactionId,
+    purchaseDate,
+    expiryDate,
+  } = boostData || {};
 
   const displayTransactionId = transactionId || `#TXN-${Date.now()}`;
   const activationTimestamp = formatDateTime(purchaseDate);
@@ -125,10 +234,10 @@ const BoostPostSuccess = () => {
               View Boosted Listing <ArrowRight size={18} />
             </button>
             <button
-              onClick={() => navigate('/news-feed')}
+              onClick={() => navigate('/my-posts')}
               className="w-full h-11 sm:h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
             >
-              Return to Dashboard
+              Return to My Posts
             </button>
           </div>
         </Card>

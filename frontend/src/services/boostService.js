@@ -127,10 +127,37 @@ export const getAdminStats = async () => {
  * Purchase a boost for a post.
  * @param {string} packageId
  * @param {number|null} postId
+ * @param {string} postType
  */
-export const purchaseBoost = async (packageId, postId = null) => {
+export const purchaseBoost = async (packageId, postId = null, postType = 'normal') => {
   try {
-    const response = await api.post('/boosts/purchase', { packageId, postId });
+    const response = await api.post('/boosts/purchase', { packageId, postId, postType });
+    return response.data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+};
+
+/**
+ * Create a Stripe checkout session for a boost purchase.
+ * @param {object} data - { packageId, postId, postType, amount, packageName, durationDays }
+ */
+export const createBoostCheckoutSession = async (data) => {
+  try {
+    const response = await api.post('/boosts/create-checkout-session', data);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+};
+
+/**
+ * Confirm a boost payment after Stripe redirect.
+ * @param {string} sessionId
+ */
+export const confirmBoostPayment = async (sessionId) => {
+  try {
+    const response = await api.post('/boosts/confirm-payment', { sessionId });
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));

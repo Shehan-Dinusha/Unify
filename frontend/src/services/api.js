@@ -70,6 +70,7 @@ api.interceptors.response.use(
       if (!refreshToken) {
         isRefreshing = false;
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         if (window.location.pathname !== '/login') {
           window.location.href = '/login';
