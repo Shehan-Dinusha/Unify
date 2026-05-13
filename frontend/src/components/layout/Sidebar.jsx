@@ -202,6 +202,7 @@ const UnifiedSidebar = ({
           label: "Notification",
           badge: unreadCount > 0 ? unreadCount : null,
           path: "/notifications",
+          alwaysEnabled: true,
         },
         {
           icon: MessageSquare,
@@ -217,48 +218,13 @@ const UnifiedSidebar = ({
         },
       ],
     },
-    boarding_owner: {
-      title: "Boarding Dashboard",
-      links: [
-        { icon: Rss, label: "News Feed", path: "/boarding-owner/marketplace" },
-        {
-          icon: Bell,
-          label: "Notification",
-          badge: unreadCount > 0 ? unreadCount : null,
-          path: "/notifications",
-        },
-      ],
-    },
-    food_cafe_owner: {
-      title: "Food & Cafe Dashboard",
-      links: [
-        { icon: Rss, label: "News Feed", path: "/food-cafe-owner/marketplace" },
-        {
-          icon: Bell,
-          label: "Notification",
-          badge: unreadCount > 0 ? unreadCount : null,
-          path: "/notifications",
-        },
-      ],
-    },
-    self_employed: {
-      title: "Services Dashboard",
-      links: [
-        { icon: Rss, label: "News Feed", path: "/services-owner/marketplace" },
-        {
-          icon: Bell,
-          label: "Notification",
-          badge: unreadCount > 0 ? unreadCount : null,
-          path: "/notifications",
-        },
-      ],
-    },
   };
 
   const isClub =
     user.role?.toLowerCase() === "club_society" ||
     user.role?.toLowerCase() === "club";
-  const shouldDisableNav = sidebarDisabled && isClub;
+  const isUnverifiedClub = isClub && freshUser?.isVerified === false;
+  const shouldDisableNav = sidebarDisabled || isUnverifiedClub;
 
   let configKey = user.role?.toLowerCase();
   if (configKey === "student" && user.isBatchRep) {
@@ -325,7 +291,7 @@ const UnifiedSidebar = ({
               <SidebarItem
                 key={index}
                 {...link}
-                disabled={shouldDisableNav}
+                disabled={shouldDisableNav && !link.alwaysEnabled}
                 active={
                   pathname === link.path ||
                   (link.childPaths &&

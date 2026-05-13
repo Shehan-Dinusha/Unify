@@ -37,27 +37,43 @@ import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 export const studentRoutes = [
-  // 1. SHARED ROUTES (Accessible by everyone logged in)
+  // 1. PROFILE ROUTES (Accessible by everyone logged in, including unverified clubs)
   {
     element: (
       <ProtectedRoute allowedRoles={["Student", "Business", "Club", "Admin"]} />
     ),
     children: [
-      { path: "/news-feed", element: <NewsFeed /> },
-      { path: "/messages", element: <ChatPage /> },
       { path: "/profile", element: <OwnProfilePage /> },
       { path: "/profile/edit", element: <EditProfilePage /> },
       { path: "/profile/security", element: <SecurityPage /> },
       { path: "/profile/:userId", element: <PublicProfilePage /> },
+    ],
+  },
+  // 2. SHARED ROUTES (Require club verification for Club users)
+  {
+    element: (
+      <ProtectedRoute allowedRoles={["Student", "Business", "Club", "Admin"]} requireVerified />
+    ),
+    children: [
+      { path: "/news-feed", element: <NewsFeed /> },
+      { path: "/messages", element: <ChatPage /> },
       { path: "/profile/reviews", element: <MyReviewHistory /> },
       { path: "/marketplace/:targetId/reviews", element: <MarketplaceReviews /> },
     ],
   },
-  // 2. STUDENT-ONLY ROUTES
+  // 3. NOTIFICATIONS (Accessible to all, including unverified clubs)
+  {
+    element: (
+      <ProtectedRoute allowedRoles={["Student", "Business", "Club", "Admin"]} />
+    ),
+    children: [
+      { path: "/notifications", element: <Notification /> },
+    ],
+  },
+  // 4. STUDENT-ONLY ROUTES
   {
     element: <ProtectedRoute allowedRoles={["Student", "Admin", "Business"]} />,
     children: [
-      { path: "/notifications", element: <Notification /> },
       { path: "/lost-and-found", element: <LostAndFound /> },
       { path: "/my-lost-and-found", element: <MyLostAndFound /> },
       { path: "/marketplace", element: <Marketplace /> },

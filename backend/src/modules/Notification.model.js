@@ -18,7 +18,7 @@ const Notification = sequelize.define(
       allowNull: true, // The user who triggered the notification (liker, commenter, etc.)
     },
     type: {
-      type: DataTypes.ENUM("Reply", "Like", "Match", "General"),
+      type: DataTypes.ENUM("Reply", "Like", "Match", "Verification", "General"),
       allowNull: false,
       defaultValue: "General",
     },
