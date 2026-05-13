@@ -3,10 +3,10 @@ import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import User from "../../modules/User.model.js";
 import ClubProfile from "../../modules/ClubProfile.model.js";
 import StudentProfile from "../../modules/StudentProfile.model.js";
-import Notification from "../../modules/Notification.model.js";
 import AdminLog from "../../modules/AdminLog.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { notifyUser } from "../../services/notification.service.js";
 
 /**
  * Handle admin removal of an already Verified Account.
@@ -80,18 +80,7 @@ export const removeVerifiedAccount = async (req, res, next) => {
     // Soft delete the row (paranoid mode)
     await request.destroy({ transaction });
 
-    // 4. Dispatch In-App Notification alerting the user of the removal
-    await Notification.create(
-      {
-        userId: user.id,
-        type: "General",
-        title: "Verified Account Status Removed",
-        content: `Your verified status as a ${requestedRole} has been revoked. Reason: ${reason.trim()}`,
-      },
-      { transaction },
-    );
-
-    // 5. Generate Admin Security Audit Log
+    // 4. Generate Admin Security Audit Log
     await AdminLog.create(
       {
         adminId,
@@ -107,6 +96,18 @@ export const removeVerifiedAccount = async (req, res, next) => {
 
     // Commit all database mutations atomically
     await transaction.commit();
+
+    // Fire-and-forget notification (never blocks the response)
+    notifyUser({
+      userId: user.id,
+      actorId: adminId,
+      type: "Verification",
+      title: "Verified Account Status Removed",
+      content: `Your verified status as a ${requestedRole} has been revoked. Reason: ${reason.trim()}`,
+      referenceId: request.id,
+      referenceType: "Verification",
+      dedupeKey: `verification:removed:${request.id}`,
+    }).catch(() => {});
 
     return sendResponse(
       res,
