@@ -29,7 +29,7 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
       tempErrors.password = "Password is required";
     } else if (!validatePassword(password)) {
       tempErrors.password =
-        "Password must be at least 8 characters and include uppercase, lowercase, and a number";
+        "Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character";
     }
 
     if (!confirmPassword) {

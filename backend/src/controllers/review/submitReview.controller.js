@@ -14,28 +14,14 @@ export const submitReview = async (req, res, next) => {
       return sendResponse(res, 404, false, "Reviewer not found.");
     }
 
-    if (reviewerExists.role !== "Student" && reviewerExists.role !== "Club") {
+    const allowedRoles = ["Student", "Club"];
+    if (!allowedRoles.includes(reviewerExists.role)) {
       return sendResponse(
         res,
         403,
         false,
         "Only Students and Clubs can submit reviews.",
       );
-    }
-
-    // If the reviewer is a Club, they must be verified first
-    if (reviewerExists.role === "Club") {
-      const clubProfile = await ClubProfile.findOne({
-        where: { userId: reviewerId },
-      });
-      if (!clubProfile || !clubProfile.isVerified) {
-        return sendResponse(
-          res,
-          403,
-          false,
-          "Only verified Clubs can submit reviews.",
-        );
-      }
     }
 
     const targetExists = await User.findByPk(targetId);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, CornerUpLeft, Loader2, Heart, X } from "lucide-react";
+import { Search, CornerUpLeft, Loader2, Heart, ShieldCheck, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
@@ -47,6 +47,13 @@ const MatchIcon = () => (
   </div>
 );
 
+// Verification Icon
+const VerificationIcon = () => (
+  <div className="w-10 h-10 shrink-0 rounded-full bg-[#162743] flex items-center justify-center">
+    <ShieldCheck size={18} className="text-primary-blue" />
+  </div>
+);
+
 /* --- Main Notification Card --- */
 const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
   const { type, title, content, time, isUnread, avatar, avatars, image } = notification;
@@ -60,6 +67,8 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
         return <LikeAvatar avatar={avatar} />;
       case "match":
         return <MatchIcon />;
+      case "verification":
+        return <VerificationIcon />;
       default:
         return <div className="w-10 h-10 bg-white/10 rounded-full" />;
     }

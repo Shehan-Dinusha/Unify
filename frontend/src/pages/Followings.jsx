@@ -127,7 +127,7 @@ const Followings = () => {
     } catch (err) {
       if (
         err.response &&
-        (err.response.status === 401 || err.response.status === 403)
+        err.response.status === 403
       ) {
         setErrorStatus(err.response.status);
       } else {
@@ -227,15 +227,22 @@ const Followings = () => {
     return <NotFound status={errorStatus} />;
   }
 
+  const sidebarUser = (() => {
+    try {
+      const raw = localStorage.getItem("user");
+      const role = localStorage.getItem("role");
+      if (raw) {
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+        return { name: parsed.name || "User", role: role || "student", displayRole: parsed.displayRole || role || "Student" };
+      }
+    } catch {}
+    return { name: "User", role: "student", displayRole: "Student" };
+  })();
+
   return (
     <MainLayout
-      user={{
-        name: "Alex Johnson",
-        role: "student",
-        displayRole: "Student",
-      }}
+      user={sidebarUser}
       pageTitle="Profile"
-      verificationCount={3}
     >
       <div className="flex flex-col h-full mx-auto w-full relative max-w-[1000px] px-4 md:px-0">
         {/* Background glow effect as per design */}

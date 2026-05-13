@@ -36,13 +36,15 @@ export const submitVerificationRequest = async (req, res, next) => {
 
     const existingRequest = await VerificationRequest.findOne({
       where: { userId },
+      paranoid: false,
+      order: [["createdAt", "DESC"]],
     });
     if (existingRequest) {
-      if (existingRequest.status === "DECLINED") {
-        if (existingRequest.documentUrl) {
+      if (existingRequest.status === "DECLINED" || existingRequest.deletedAt) {
+        if (existingRequest.documentUrl && !existingRequest.documentUrl.startsWith("http")) {
           await deleteVerificationFile(existingRequest.documentUrl);
         }
-        await existingRequest.destroy();
+        await existingRequest.destroy({ force: true });
       } else {
         return sendResponse(
           res,

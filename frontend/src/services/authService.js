@@ -115,6 +115,10 @@ export const refreshCurrentUser = async () => {
       updatedUser.category = profile.category;
     }
 
+    if (role === "club") {
+      updatedUser.isVerified = profile.isVerified || false;
+    }
+
     localStorage.setItem("user", JSON.stringify(updatedUser));
     return updatedUser;
   } catch {

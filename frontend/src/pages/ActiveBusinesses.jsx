@@ -7,6 +7,7 @@ import { Search, RotateCcw, AlertTriangle } from 'lucide-react';
 import Input from '../components/common/Input';
 import { useToast } from '../components/common/Toast';
 import { getBusinessDirectory, getBusinessStats } from '../services/businessService';
+import { getAvatarUrl } from '../utils/formatters';
 
 // ─── Stat Definitions ───────────────────────────────────────────────────────
 
@@ -314,7 +315,7 @@ const ActiveBusinesses = () => {
                         {/* Business info */}
                         <div className="flex items-center gap-md min-w-0">
                             <img
-                                src={biz.avatar}
+                                src={getAvatarUrl(biz.avatar, biz.name)}
                                 alt={biz.name}
                                 className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0"
                             />
@@ -371,7 +372,7 @@ const ActiveBusinesses = () => {
                             {/* Top: Avatar + Name */}
                             <div className="flex items-center gap-md">
                                 <img
-                                    src={biz.avatar}
+                                    src={getAvatarUrl(biz.avatar, biz.name)}
                                     alt={biz.name}
                                     className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0"
                                 />

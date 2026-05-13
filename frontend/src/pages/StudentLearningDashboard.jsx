@@ -122,10 +122,21 @@ const StudentLearningDashboard = () => {
     (mod) => String(mod.id) === String(activeModuleId),
   );
 
+  const sidebarUser = (() => {
+    try {
+      const raw = localStorage.getItem("user");
+      const role = localStorage.getItem("role");
+      if (raw) {
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+        return { name: parsed.name || "Student", role: role || "student", displayRole: parsed.displayRole || role || "Student" };
+      }
+    } catch {}
+    return { name: currentUser?.name || "Student", role: "student", displayRole: "Student" };
+  })();
+
   return (
     <MainLayout
-      user={{ name: currentUser?.name || "Student", role: "student", displayRole: "Student" }}
-      verificationCount={0}
+      user={sidebarUser}
       pageTitle={
         <div className="flex justify-center items-center gap-2">
           <div className="inline-flex flex-col justify-start items-start">

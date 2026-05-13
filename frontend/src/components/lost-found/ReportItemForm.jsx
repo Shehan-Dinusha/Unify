@@ -13,6 +13,8 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
   const [timeOfDay, setTimeOfDay] = useState("");
   const [location, setLocation] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [attempted, setAttempted] = useState(false);
 
   const handleImageChange = (e) => {
     const selectedFiles = Array.from(e.target.files || []);
@@ -39,11 +41,19 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const validate = () => {
+    const newErrors = {};
+    if (!title.trim()) newErrors.title = "Item name is required";
+    if (!description.trim()) newErrors.description = "Description is required";
+    if (!location.trim()) newErrors.location = "Location is required";
+    return newErrors;
+  };
+
   const handleSubmit = async () => {
-    if (!title || !description || !location) {
-      alert("Please fill out required fields (Title, Description, Location).");
-      return;
-    }
+    setAttempted(true);
+    const fieldErrors = validate();
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
 
     setIsSubmitting(true);
     try {
@@ -190,16 +200,20 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
 
           {/* What did you... */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-body-small-bold text-text-primary">
+            <label className="text-body-small-bold text-text-primary flex items-center gap-1">
               {isLost ? "What did you lose" : "What did you find?"}
+              <span className="text-state-error text-xs">*</span>
             </label>
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => { setTitle(e.target.value); if (attempted) setErrors((prev) => ({ ...prev, title: e.target.value.trim() ? undefined : prev.title })); }}
               placeholder="e.g. Student Id"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-body-small text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary-blue/50 transition-colors"
+              className={`w-full bg-white/5 border rounded-xl px-4 py-2.5 text-body-small text-text-primary placeholder:text-text-tertiary outline-none transition-colors ${
+                errors.title ? "border-state-error/60 focus:border-state-error" : "border-white/10 focus:border-primary-blue/50"
+              }`}
             />
+            {errors.title && <span className="text-[11px] text-state-error animate-in fade-in slide-in-from-top-1 duration-200">{errors.title}</span>}
           </div>
 
           {/* Date + Time */}
@@ -235,33 +249,44 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
 
           {/* Description */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-body-small-bold text-text-primary">
+            <label className="text-body-small-bold text-text-primary flex items-center gap-1">
               Description
+              <span className="text-state-error text-xs">*</span>
             </label>
             <textarea
               rows={4}
               maxLength={500}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-body-small text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary-blue/50 transition-colors resize-none"
+              onChange={(e) => { setDescription(e.target.value); if (attempted) setErrors((prev) => ({ ...prev, description: e.target.value.trim() ? undefined : prev.description })); }}
+              placeholder="Describe any distinguishing features, stickers, scratches, or contents..."
+              className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-body-small text-text-primary placeholder:text-text-tertiary outline-none transition-colors resize-none ${
+                errors.description ? "border-state-error/60 focus:border-state-error" : "border-white/10 focus:border-primary-blue/50"
+              }`}
             />
-            <span className="text-[11px] text-text-tertiary text-right">
-              ({description.length}/500 characters)
-            </span>
+            <div className="flex items-center justify-between">
+              {errors.description ? <span className="text-[11px] text-state-error animate-in fade-in slide-in-from-top-1 duration-200">{errors.description}</span> : <span />}
+              <span className="text-[11px] text-text-tertiary">
+                ({description.length}/500 characters)
+              </span>
+            </div>
           </div>
 
           {/* Location */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-body-small-bold text-text-primary">
+            <label className="text-body-small-bold text-text-primary flex items-center gap-1">
               {isLost ? "Last known location" : "Found location"}
+              <span className="text-state-error text-xs">*</span>
             </label>
             <input
               type="text"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={(e) => { setLocation(e.target.value); if (attempted) setErrors((prev) => ({ ...prev, location: e.target.value.trim() ? undefined : prev.location })); }}
               placeholder="e.g. Library, 1st Floor"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-body-small text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary-blue/50 transition-colors"
+              className={`w-full bg-white/5 border rounded-xl px-4 py-2.5 text-body-small text-text-primary placeholder:text-text-tertiary outline-none transition-colors ${
+                errors.location ? "border-state-error/60 focus:border-state-error" : "border-white/10 focus:border-primary-blue/50"
+              }`}
             />
+            {errors.location && <span className="text-[11px] text-state-error animate-in fade-in slide-in-from-top-1 duration-200">{errors.location}</span>}
           </div>
 
           {/* Upload Post */}

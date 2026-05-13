@@ -1,0 +1,100 @@
+import Stripe from "stripe";
+import { BoostPackage } from "../../modules/index.js";
+import { sendResponse } from "../../utils/response.js";
+import logger from "../../utils/logger.js";
+
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
+
+/**
+ * Create a Stripe Checkout Session for a Boost purchase.
+ *
+ * This is a ONE-TO-ONE (platform direct) payment — NOT multi-vendor.
+ * The payment goes directly to the platform's Stripe account.
+ * No transfer_data or destination is used.
+ *
+ * Body: { packageId, postId, postType, amount, packageName, durationDays }
+ */
+export const createBoostCheckoutSession = async (req, res) => {
+  if (!stripe) {
+    return sendResponse(
+      res,
+      503,
+      false,
+      "Payment service not configured. Please set STRIPE_SECRET_KEY in your environment."
+    );
+  }
+
+  try {
+    const userId = req.user?.id || null;
+    const { packageId, postId, postType, amount, packageName, durationDays } =
+      req.body;
+
+    // ── Validation ─────────────────────────────────────────────────────
+    if (!packageId) {
+      return sendResponse(res, 400, false, "Package ID is required.");
+    }
+    if (!amount || amount <= 0) {
+      return sendResponse(res, 400, false, "A valid amount is required.");
+    }
+
+    // Validate the package exists and is live
+    const pkg = await BoostPackage.findByPk(packageId);
+    if (!pkg) {
+      return sendResponse(res, 404, false, "Boost package not found.");
+    }
+    if (pkg.status !== "live") {
+      return sendResponse(
+        res,
+        400,
+        false,
+        "This boost package is no longer available."
+      );
+    }
+
+    const frontendUrl =
+      process.env.CORS_ORIGIN || "http://localhost:5173";
+
+    // ── Create Stripe Checkout Session (one-to-one: platform receives all) ──
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "lkr",
+            product_data: {
+              name: `${packageName || pkg.name} — Boost Package`,
+              description: `Boost your post for ${durationDays || pkg.durationValue} ${pkg.durationUnit}. Priority feed placement and enhanced visibility.`,
+            },
+            unit_amount: Math.round(amount * 100), // amount in cents
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${frontendUrl}/business/boost-post/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${frontendUrl}/business/boost-post/confirm`,
+      metadata: {
+        type: "boost_purchase",
+        packageId: packageId,
+        postId: postId ? String(postId) : "",
+        postType: postType || "",
+        userId: userId ? String(userId) : "",
+        durationDays: String(durationDays || 0),
+        amount: String(amount),
+      },
+    });
+
+    logger.info(
+      `Stripe Boost Checkout Session created: ${session.id} for package ${packageId}, post ${postId || "none"}`
+    );
+
+    return res
+      .status(200)
+      .json({ success: true, url: session.url, sessionId: session.id });
+  } catch (error) {
+    logger.error(`Stripe Boost Checkout Error: ${error.message}`);
+    return sendResponse(res, 500, false, error.message);
+  }
+};

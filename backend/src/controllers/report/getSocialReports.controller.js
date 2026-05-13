@@ -4,6 +4,7 @@ import logger from "../../utils/logger.js";
 import moment from "moment";
 import { Op } from "sequelize";
 import s3Service from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 /**
  * Builds an activity log from the adminNotes field.
@@ -102,20 +103,20 @@ export const getSocialReportQueue = async (req, res, next) => {
       limit: 50
     });
 
-    const formatted = reports.map(r => ({
+    const formatted = await Promise.all(reports.map(async r => ({
       id: `SR-${r.id}`,
       source: 'Student Portal',
       type: categoryDisplayMap[r.category] || r.category,
       reportedUser: {
         name: r.student?.name || `Student ID: ${r.studentId}`,
         handle: r.student?.name ? `@${r.student.name.toLowerCase().replace(/\s+/g, '_')}` : `@student_${r.studentId}`,
-        avatar: r.student?.avatar || null
+        avatar: await resolveAvatarUrl(r.student?.avatar, r.student?.name || "Student")
       },
       date: moment(r.createdAt).format('MMM DD, YYYY'),
       status: uiStatusMap[r.status] || r.status,
       priority: r.priority || 'Medium',
       submittedAgo: moment(r.createdAt).fromNow(),
-    }));
+    })));
 
     return sendResponse(res, 200, true, 'Moderation queue retrieved', formatted);
   } catch (error) {
@@ -186,7 +187,7 @@ export const getSocialReportById = async (req, res, next) => {
         if (!post) {
           const item = await MarketplaceItem.findByPk(entityId, { include: [{ model: User, as: 'seller' }], paranoid: false });
           if (item) {
-            offender = { id: String(item.sellerId), name: item.seller?.name || 'Deleted Business', avatar: item.seller?.avatar, status: item.seller?.status || 'Inactive' };
+            offender = { id: String(item.sellerId), name: item.seller?.name || 'Deleted Business', avatar: await resolveAvatarUrl(item.seller?.avatar, item.seller?.name || 'Deleted Business'), status: item.seller?.status || 'Inactive' };
             reportedContent = { 
               id: `item_${item.id}`, 
               text: `${item.title}: ${item.description}${item.deletedAt ? ' [DELETED]' : ''}`, 
@@ -198,26 +199,27 @@ export const getSocialReportById = async (req, res, next) => {
             };
           }
         } else {
-          offender = { id: String(post.authorId), name: post.author?.name || 'Deleted User', avatar: post.author?.avatar, status: post.author?.status || 'Inactive' };
+          offender = { id: String(post.authorId), name: post.author?.name || 'Deleted User', avatar: await resolveAvatarUrl(post.author?.avatar, post.author?.name || 'Deleted User'), status: post.author?.status || 'Inactive' };
           reportedContent = { id: String(post.id), text: `${post.description || post.title || 'Post Content'}${post.deletedAt ? ' [DELETED]' : ''}`, author: offender.name, avatar: offender.avatar, date: moment(post.createdAt).format('MMM DD, YYYY'), hasImage: !!post.images, imageLabel: post.deletedAt ? 'DELETED CONTENT' : 'POST IMAGE' };
         }
       } else if (r.reportType === 'comment' && isNumericId) {
         const comment = await Comment.findByPk(entityId, { include: [{ model: User, as: 'user' }], paranoid: false });
         if (comment) {
-          offender = { id: String(comment.userId), name: comment.user?.name || 'Deleted User', avatar: comment.user?.avatar, status: comment.user?.status || 'Inactive' };
+          offender = { id: String(comment.userId), name: comment.user?.name || 'Deleted User', avatar: await resolveAvatarUrl(comment.user?.avatar, comment.user?.name || 'Deleted User'), status: comment.user?.status || 'Inactive' };
           reportedContent = { id: `comment_${comment.id}`, text: `${comment.content}${comment.deletedAt ? ' [DELETED]' : ''}`, author: offender.name, avatar: offender.avatar, date: moment(comment.createdAt).format('MMM DD, YYYY') };
         }
       } else if (r.reportType === 'user' && isNumericId) {
         const user = await User.findByPk(entityId, { paranoid: false });
         if (user) {
-          offender = { id: String(user.id), name: user.name, avatar: user.avatar, status: user.status };
-          reportedContent = { id: String(user.id), text: `User Profile: ${user.name}${user.deletedAt ? ' [DELETED]' : ''}`, author: user.name, avatar: user.avatar, date: moment(user.createdAt).format('MMM DD, YYYY') };
+          offender = { id: String(user.id), name: user.name, avatar: await resolveAvatarUrl(user.avatar, user.name), status: user.status };
+          reportedContent = { id: String(user.id), text: `User Profile: ${user.name}${user.deletedAt ? ' [DELETED]' : ''}`, author: user.name, avatar: offender.avatar, date: moment(user.createdAt).format('MMM DD, YYYY') };
         }
       }
-    } else {
-      if (r.offender) offender = { id: String(r.offender.id), name: r.offender.name, avatar: r.offender.avatar, status: r.offender.status };
-      if (r.post) reportedContent = { id: String(r.post.id), text: r.post.description || r.post.title, author: offender.name, date: moment(r.post.createdAt).format('MMM DD, YYYY'), hasImage: !!r.post.images };
-      else if (r.comment) reportedContent = { id: `comment_${r.comment.id}`, text: r.comment.content, author: offender.name, date: moment(r.comment.createdAt).format('MMM DD, YYYY') };
+    }
+    if (!isStudentReport) {
+      if (r.offender) offender = { id: String(r.offender.id), name: r.offender.name, avatar: await resolveAvatarUrl(r.offender.avatar, r.offender.name), status: r.offender.status };
+      if (r.post) reportedContent = { id: String(r.post.id), text: r.post.description || r.post.title, author: offender.name, avatar: offender.avatar, date: moment(r.post.createdAt).format('MMM DD, YYYY'), hasImage: !!r.post.images };
+      else if (r.comment) reportedContent = { id: `comment_${r.comment.id}`, text: r.comment.content, author: offender.name, avatar: offender.avatar, date: moment(r.comment.createdAt).format('MMM DD, YYYY') };
       else reportedContent.text = r.description || 'No description';
     }
 
@@ -283,7 +285,7 @@ export const getSocialReportById = async (req, res, next) => {
       reportedBy: {
         name: isStudentReport ? (r.student?.name || 'Student') : (r.reporter?.name || 'User'),
         handle: isStudentReport ? (r.student?.name ? `@${r.student.name.toLowerCase().replace(/\s+/g, '_')}` : '@student') : (r.reporter?.name ? `@${r.reporter.name.toLowerCase().replace(/\s+/g, '_')}` : '@user'),
-        avatar: isStudentReport ? r.student?.avatar : r.reporter?.avatar,
+        avatar: isStudentReport ? await resolveAvatarUrl(r.student?.avatar, r.student?.name || 'Student') : await resolveAvatarUrl(r.reporter?.avatar, r.reporter?.name || 'User'),
         note: isStudentReport ? r.additionalDetails : r.description,
         badge: 'Verified Student',
         source: isStudentReport ? 'Mobile App' : 'Web Portal',

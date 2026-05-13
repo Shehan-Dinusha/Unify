@@ -17,7 +17,7 @@ import {
 const BoostConfirmOrder = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { packages, purchaseBoost } = useBoostPackages();
+  const { packages } = useBoostPackages();
 
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState(null);
@@ -25,6 +25,8 @@ const BoostConfirmOrder = () => {
   // Get data passed from select page
   const {
     packageId,
+    postId,
+    postType,
     subtotal: passedSubtotal,
     tax: passedTax,
     total: passedTotal,
@@ -103,24 +105,28 @@ const BoostConfirmOrder = () => {
     setPurchaseError(null);
 
     try {
-      // Call the purchase API endpoint
-      const result = await purchaseBoost(packageId, null);
+      // Import the service method
+      const { createBoostCheckoutSession } = await import('../services/boostService');
 
-      // Navigate to success page with DB response data
-      navigate('/business/boost-post/success', {
-        state: {
-          packageId,
-          packageName: selectedPkg.name,
-          budget: total,
-          durationDays,
-          transactionId: result?.transactionId,
-          purchaseDate: result?.purchaseDate,
-          expiryDate: result?.expiryDate,
-          purchaseId: result?.purchaseId,
-        },
+      // Create a Stripe Checkout Session for this boost purchase
+      const response = await createBoostCheckoutSession({
+        packageId,
+        postId: postId || null,
+        postType: postType || null,
+        amount: total,
+        packageName: selectedPkg.name,
+        durationDays,
       });
+
+      if (response?.success && response?.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = response.url;
+      } else {
+        throw new Error('Failed to create checkout session.');
+      }
     } catch (err) {
-      setPurchaseError(err.message || 'Failed to process payment. Please try again.');
+      const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to process payment. Please try again.';
+      setPurchaseError(msg);
       setIsPurchasing(false);
     }
   };

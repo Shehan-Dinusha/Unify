@@ -2,8 +2,10 @@ import express from "express";
 import { toggleFollowClub } from "../controllers/follower/toggleFollow.controller.js";
 import { getClubFollowers } from "../controllers/follower/getFollowers.controller.js";
 import { getStudentFollowings } from "../controllers/follower/getFollowing.controller.js";
+import { getPublicFollowers } from "../controllers/follower/getPublicFollowers.controller.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
+import { requireClubVerification } from "../middlewares/verifyClub.middleware.js";
 import {
   toggleFollowValidator,
   getFollowersValidator,
@@ -16,6 +18,7 @@ router.get(
   "/my-followers",
   protect,
   authorize("Club"),
+  requireClubVerification,
   getFollowersValidator,
   validateRequest,
   getClubFollowers,
@@ -36,5 +39,8 @@ router.post(
   validateRequest,
   toggleFollowClub,
 );
+
+// Publicly viewable follower endpoint
+router.get("/:userId/followers", protect, getPublicFollowers);
 
 export default router;

@@ -1,13 +1,30 @@
-import React, { createContext, useContext, useState } from "react";
-import mockPosts from "../data/mockData";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import newsfeedService from "../services/newsfeedService";
 
 const SavedPostsContext = createContext();
 
 export const useSavedPosts = () => useContext(SavedPostsContext);
 
 export const SavedPostsProvider = ({ children }) => {
-  // Initialize with 3 posts for preview purposes
-  const [savedPosts, setSavedPosts] = useState(mockPosts.slice(0, 3));
+  const [savedPosts, setSavedPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) { setLoading(false); return; }
+
+    const fetchSavedPosts = async () => {
+      try {
+        const { savedItems } = await newsfeedService.getSavedPosts();
+        setSavedPosts(savedItems || []);
+      } catch (error) {
+        console.error("Failed to fetch saved posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSavedPosts();
+  }, []);
 
   const toggleSavePost = (post) => {
     setSavedPosts((prev) => {

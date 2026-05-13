@@ -1,4 +1,35 @@
-import { NormalPost, ClubProductPost, ClubEventPost, Boarding, SavedItem } from "../../modules/index.js";
+import { NormalPost, ClubProductPost, ClubEventPost, Boarding, SavedItem, User, Comment, PostLike } from "../../modules/index.js";
+import { getFileUrl } from "../../services/s3.service.js";
+
+const resolveImageUrl = async (img) => {
+  if (!img) return img;
+  let imgPath = img;
+  if (typeof img === "object" && img !== null) {
+    if (img.url) imgPath = img.url;
+    else return imgPath;
+  }
+  if (typeof imgPath !== "string") return imgPath;
+  if (imgPath.includes("X-Amz-Signature")) return imgPath;
+  const s3UrlMatch = imgPath.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
+  if (s3UrlMatch) {
+    try { return await getFileUrl(s3UrlMatch[1]); } catch { return imgPath; }
+  }
+  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
+    try { return await getFileUrl(imgPath); } catch { return imgPath; }
+  }
+  return imgPath;
+};
+
+const resolvePostImages = async (post) => {
+  const resolved = { ...post };
+  if (Array.isArray(resolved.images) && resolved.images.length > 0) {
+    resolved.images = await Promise.all(resolved.images.map(resolveImageUrl));
+  }
+  if (resolved.coverImage) {
+    resolved.coverImage = await resolveImageUrl(resolved.coverImage);
+  }
+  return resolved;
+};
 
 const getModelConfig = (type) => {
   switch (type) {
@@ -21,7 +52,8 @@ const getModelConfig = (type) => {
 export const toggleSave = async (req, res) => {
   try {
     const { type, id } = req.params;
-    const userId = req.user?.id || 1; // Default to 1 for development
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
 
     const Model = getModelConfig(type);
     if (!Model) {
@@ -53,15 +85,64 @@ export const toggleSave = async (req, res) => {
 
 export const getSavedPosts = async (req, res) => {
   try {
-    const userId = req.user?.id || 1;
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
     const savedItems = await SavedItem.findAll({
       where: { userId },
       order: [["createdAt", "DESC"]],
     });
 
-    return res.status(200).json({ success: true, savedItems });
+    const populatedPosts = [];
+    for (const item of savedItems) {
+      const Model = getModelConfig(item.postType);
+      if (!Model) continue;
+
+      const authorKey = item.postType === "boarding" ? "host" : "author";
+      const post = await Model.findByPk(item.postId, {
+        include: [
+          {
+            model: User,
+            as: authorKey,
+            attributes: ["id", "name", "email", "avatar", "role"],
+          },
+        ],
+        raw: true,
+        nest: true,
+      });
+
+      if (post) {
+        populatedPosts.push({
+          ...post,
+          postType: item.postType,
+          author: post[authorKey],
+        });
+      }
+    }
+
+    const resolvedFeed = await Promise.all(populatedPosts.map(resolvePostImages));
+
+    const feedWithInteractions = await Promise.all(
+      resolvedFeed.map(async (post) => {
+        const [commentsCount, likeRecord] = await Promise.all([
+          Comment.count({ where: { postId: post.id, postType: post.postType } }),
+          PostLike.findOne({ where: { userId, postId: post.id, postType: post.postType } }),
+        ]);
+
+        return {
+          ...post,
+          commentsCount,
+          isLiked: !!likeRecord,
+          isSaved: true,
+        };
+      })
+    );
+
+    return res.status(200).json({ success: true, savedItems: feedWithInteractions });
   } catch (error) {
+    console.error("Error fetching saved posts:", error);
     res.status(500).json({ error: error.message });
   }
 };

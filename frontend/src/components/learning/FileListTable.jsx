@@ -88,7 +88,7 @@ const getFileIconConfig = (fileName = "", type = "file") => {
  * Represents the table view showing files inside a specific category (e.g., Video Files)
  */
 const FileListTable = ({
-  categoryName = "Programming Fundamentals",
+  categoryName,
   categories = [],
   files: initialFiles = [],
   onRefresh,

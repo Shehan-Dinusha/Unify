@@ -1,10 +1,11 @@
-import { sequelize } from "../../modules/index.js";
+﻿import { sequelize } from "../../modules/index.js";
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import StudentProfile from "../../modules/StudentProfile.model.js";
 import User from "../../modules/User.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import bcrypt from "bcryptjs";
+import { deleteVerificationFile } from "../../utils/verificationUrl.util.js";
 
 /**
  * Handle Batch Rep resigning / revoking their own verified status.
@@ -70,10 +71,19 @@ export const revokeBatchRepStatus = async (req, res, next) => {
       await studentProfile.save({ transaction: t });
     }
 
+    const docUrl = existingRequest.documentUrl;
+
     // 5. Cleanup Verification Request (Soft Delete)
-    await existingRequest.destroy({ transaction: t });
+    await existingRequest.destroy({ force: true, transaction: t });
 
     await t.commit();
+
+    // 6. Delete the verification document from S3
+    if (docUrl && !docUrl.startsWith("http")) {
+      deleteVerificationFile(docUrl).catch((err) =>
+        logger.error("Failed to delete S3 file on rep revoke", err),
+      );
+    }
 
     return sendResponse(
       res,

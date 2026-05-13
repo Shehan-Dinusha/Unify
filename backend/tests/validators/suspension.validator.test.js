@@ -8,7 +8,7 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { createSuspensionSchema, reactivateUserSchema } from '../src/validators/suspension.validator.js';
+import { createSuspensionSchema, reactivateUserSchema } from '../../src/validators/suspension.validator.js';
 import { validationResult } from 'express-validator';
 
 // Helper to extract error message

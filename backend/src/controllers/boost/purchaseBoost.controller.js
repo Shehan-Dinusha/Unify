@@ -10,13 +10,13 @@ import logger from "../../utils/logger.js";
 export const purchaseBoost = async (req, res, next) => {
   try {
     const userId = req.user?.id || 1; // TODO: remove fallback after auth is enforced
-    const { packageId, postId } = req.body;
+    const { packageId, postId, postType } = req.body;
 
     if (!packageId) {
       return sendResponse(res, 400, false, "Package ID is required.");
     }
 
-    const result = await boostService.purchaseBoost(userId, packageId, postId);
+    const result = await boostService.purchaseBoost(userId, packageId, postId, postType);
 
     return sendResponse(res, 201, true, "Boost purchased successfully", result);
   } catch (error) {

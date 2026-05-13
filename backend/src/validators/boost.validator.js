@@ -1,85 +1,120 @@
-import Joi from "joi";
+import { body, query } from "express-validator";
 
-/**
- * Boost Package & Purchase validators.
- * Following the same Joi validation pattern as suspension.validator.js.
- */
-
-export const createPackageSchema = Joi.object({
-  name: Joi.string().trim().max(100).required().messages({
-    "string.empty": "Package name is required.",
-    "string.max": "Package name cannot exceed 100 characters.",
-    "any.required": "Package name is required.",
-  }),
-  price: Joi.number().positive().required().messages({
-    "number.base": "Price must be a number.",
-    "number.positive": "Price must be a positive number.",
-    "any.required": "Price is required.",
-  }),
-  durationValue: Joi.number().integer().positive().required().messages({
-    "number.base": "Duration value must be a number.",
-    "number.integer": "Duration value must be an integer.",
-    "number.positive": "Duration value must be positive.",
-    "any.required": "Duration value is required.",
-  }),
-  durationUnit: Joi.string()
-    .valid("Hours", "Days", "Weeks")
-    .required()
-    .messages({
-      "any.only": "Duration unit must be one of: Hours, Days, Weeks.",
-      "any.required": "Duration unit is required.",
+export const createPackageValidator = [
+  body("name")
+    .trim()
+    .notEmpty().withMessage("Package name is required.")
+    .isLength({ max: 100 }).withMessage("Package name cannot exceed 100 characters."),
+  body("price")
+    .notEmpty().withMessage("Price is required.")
+    .isFloat({ gt: 0 }).withMessage("Price must be a positive number."),
+  body("durationValue")
+    .notEmpty().withMessage("Duration value is required.")
+    .isInt({ min: 1 }).withMessage("Duration value must be a positive integer."),
+  body("durationUnit")
+    .notEmpty().withMessage("Duration unit is required.")
+    .isIn(["Hours", "Days", "Weeks"]).withMessage("Duration unit must be one of: Hours, Days, Weeks."),
+  body("description")
+    .optional({ values: "null" })
+    .trim()
+    .isLength({ max: 500 }).withMessage("Description cannot exceed 500 characters."),
+  body("badge")
+    .optional({ values: "null" })
+    .trim()
+    .isIn(["No Badge", "Most Popular", "Premium", "Best Value"]).withMessage("Invalid badge."),
+  body("features")
+    .optional({ values: "null" })
+    .custom((value) => {
+      if (!Array.isArray(value)) throw new Error("Features must be an array.");
+      for (const item of value) {
+        if (typeof item !== "string") throw new Error("Each feature must be a string.");
+      }
+      return true;
     }),
-  description: Joi.string().max(500).allow("", null).optional(),
-  badge: Joi.string()
-    .valid("No Badge", "Most Popular", "Premium", "Best Value")
-    .allow("", null)
-    .optional(),
-  features: Joi.array().items(Joi.string()).allow(null).optional(),
-  boostConfig: Joi.object({
-    feedPriority: Joi.number().integer().min(1).max(10).optional(),
-    visibilityMultiplier: Joi.number().integer().min(1).max(5).optional(),
-    highlightStyle: Joi.string().valid("none", "subtle", "blue", "gold").optional(),
-    crossCategoryReach: Joi.boolean().optional(),
-    analyticsAccess: Joi.boolean().optional(),
-    autoRefreshHours: Joi.number().integer().valid(0, 6, 12, 24).optional(),
-  }).allow(null).optional(),
-});
+  body("boostConfig")
+    .optional({ values: "null" })
+    .isObject().withMessage("Boost config must be an object."),
+  body("boostConfig.feedPriority")
+    .optional().isInt({ min: 1, max: 10 }).toInt(),
+  body("boostConfig.visibilityMultiplier")
+    .optional().isInt({ min: 1, max: 5 }).toInt(),
+  body("boostConfig.highlightStyle")
+    .optional().trim()
+    .isIn(["none", "subtle", "blue", "gold"]).withMessage("Invalid highlight style."),
+  body("boostConfig.crossCategoryReach")
+    .optional().isBoolean().toBoolean(),
+  body("boostConfig.analyticsAccess")
+    .optional().isBoolean().toBoolean(),
+  body("boostConfig.autoRefreshHours")
+    .optional().isIn([0, 6, 12, 24]).withMessage("Auto-refresh hours must be 0, 6, 12, or 24."),
+];
 
-export const updatePackageSchema = Joi.object({
-  name: Joi.string().trim().max(100).optional(),
-  price: Joi.number().positive().optional(),
-  durationValue: Joi.number().integer().positive().optional(),
-  durationUnit: Joi.string().valid("Hours", "Days", "Weeks").optional(),
-  description: Joi.string().max(500).allow("", null).optional(),
-  badge: Joi.string()
-    .valid("No Badge", "Most Popular", "Premium", "Best Value")
-    .allow("", null)
-    .optional(),
-  features: Joi.array().items(Joi.string()).allow(null).optional(),
-  boostConfig: Joi.object({
-    feedPriority: Joi.number().integer().min(1).max(10).optional(),
-    visibilityMultiplier: Joi.number().integer().min(1).max(5).optional(),
-    highlightStyle: Joi.string().valid("none", "subtle", "blue", "gold").optional(),
-    crossCategoryReach: Joi.boolean().optional(),
-    analyticsAccess: Joi.boolean().optional(),
-    autoRefreshHours: Joi.number().integer().valid(0, 6, 12, 24).optional(),
-  }).allow(null).optional(),
-});
+export const updatePackageValidator = [
+  body("name")
+    .optional().trim()
+    .isLength({ max: 100 }).withMessage("Package name cannot exceed 100 characters."),
+  body("price")
+    .optional()
+    .isFloat({ gt: 0 }).withMessage("Price must be a positive number."),
+  body("durationValue")
+    .optional()
+    .isInt({ min: 1 }).withMessage("Duration value must be a positive integer."),
+  body("durationUnit")
+    .optional()
+    .isIn(["Hours", "Days", "Weeks"]).withMessage("Duration unit must be one of: Hours, Days, Weeks."),
+  body("description")
+    .optional({ values: "null" })
+    .trim()
+    .isLength({ max: 500 }).withMessage("Description cannot exceed 500 characters."),
+  body("badge")
+    .optional({ values: "null" })
+    .trim()
+    .isIn(["No Badge", "Most Popular", "Premium", "Best Value"]).withMessage("Invalid badge."),
+  body("features")
+    .optional({ values: "null" })
+    .custom((value) => {
+      if (!Array.isArray(value)) throw new Error("Features must be an array.");
+      for (const item of value) {
+        if (typeof item !== "string") throw new Error("Each feature must be a string.");
+      }
+      return true;
+    }),
+  body("boostConfig")
+    .optional({ values: "null" })
+    .isObject().withMessage("Boost config must be an object."),
+  body("boostConfig.feedPriority")
+    .optional().isInt({ min: 1, max: 10 }).toInt(),
+  body("boostConfig.visibilityMultiplier")
+    .optional().isInt({ min: 1, max: 5 }).toInt(),
+  body("boostConfig.highlightStyle")
+    .optional().trim()
+    .isIn(["none", "subtle", "blue", "gold"]).withMessage("Invalid highlight style."),
+  body("boostConfig.crossCategoryReach")
+    .optional().isBoolean().toBoolean(),
+  body("boostConfig.analyticsAccess")
+    .optional().isBoolean().toBoolean(),
+  body("boostConfig.autoRefreshHours")
+    .optional().isIn([0, 6, 12, 24]).withMessage("Auto-refresh hours must be 0, 6, 12, or 24."),
+];
 
-export const purchaseBoostSchema = Joi.object({
-  packageId: Joi.string().required().messages({
-    "string.empty": "Package ID is required.",
-    "any.required": "Package ID is required.",
-  }),
-  postId: Joi.number().integer().allow(null).optional().messages({
-    "number.base": "Post ID must be a number.",
-  }),
-});
+export const purchaseBoostValidator = [
+  body("packageId")
+    .notEmpty().withMessage("Package ID is required."),
+  body("postId")
+    .optional({ values: "null" })
+    .isInt({ min: 1 }).withMessage("Post ID must be a positive integer."),
+];
 
-export const logsQuerySchema = Joi.object({
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(50),
-  type: Joi.string()
-    .valid("package_added", "package_updated", "package_deleted")
-    .optional(),
-});
+export const logsQueryValidator = [
+  query("page")
+    .optional()
+    .isInt({ min: 1 }).withMessage("Page must be a positive integer."),
+  query("limit")
+    .optional()
+    .isInt({ min: 1, max: 100 }).withMessage("Limit must be between 1 and 100."),
+  query("type")
+    .optional()
+    .trim()
+    .isIn(["package_added", "package_updated", "package_deleted"])
+    .withMessage("Invalid log type."),
+];

@@ -6,6 +6,7 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 import NewsFeed from "../pages/NewsFeed";
 import Marketplace from "../pages/Marketplace";
 import Club from "../pages/Club";
+import ClubVerification from "../pages/ClubVerification";
 import ClubOwnerMarketplace from "../pages/ClubOwnerMarketplace";
 import ClubProduct from "../pages/ClubProduct";
 import ClubCheckout from "../pages/ClubCheckout";
@@ -38,6 +39,7 @@ import CreateServicePostPage from "../pages/CreateServicePostPage";
 
 import MarketplaceReviews from "../pages/MarketplaceReviews";
 import ReceivedReviews from "../pages/ReceivedReviews";
+import MyReviewHistory from "../pages/MyReviewHistory";
 import BoostSelectPackage from "../pages/BoostSelectPackage";
 import BoostConfirmOrder from "../pages/BoostConfirmOrder";
 import BoostPostSuccess from "../pages/BoostPostSuccess";
@@ -97,29 +99,45 @@ export const businessSharedRoutes = [
 
 // Clubs & societies
 export const clubRoutes = [
+  // Club verification — accessible without being verified
   {
     element: <ProtectedRoute allowedRoles={["Club", "Admin"]} />,
     children: [
-      //{ path: "/marketplace/club", element: <Club /> },
+      { path: "/club-verification", element: <ClubVerification /> },
+    ],
+  },
+  // All other club routes require verification
+  {
+    element: <ProtectedRoute allowedRoles={["Club", "Admin"]} requireVerified />,
+    children: [
       { path: "/club-owner/marketplace", element: <ClubOwnerMarketplace /> },
       { path: "/club-owner/create-product", element: <CreateProductPage /> },
       { path: "/club-owner/create-event", element: <CreateEventPage /> },
       { path: "/club-owner/create-post", element: <CreateNormalPostPage /> },
       { path: "/club-owner/dashboard", element: <ClubOwnerDashboard /> },
-      { path: "/club-owner/product-orders/:type/:id", element: <ProductOrderDashboard /> },
+      {
+        path: "/club-owner/product-orders/:type/:id",
+        element: <ProductOrderDashboard />,
+      },
       { path: "/club-owner/wallet", element: <ClubWalletPage /> },
       { path: "/marketplace/club/product/:type/:id", element: <ClubProduct /> },
       { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
       { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
+      { path: "/profile/reviews", element: <MyReviewHistory /> },
       { path: "/club/followers", element: <FollowersDirectory /> },
-    ]
-  }
+    ],
+  },
 ];
 
 // Boarding owners
 export const boardingOwnerRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["BOARDING"]} />,
+    element: (
+      <ProtectedRoute
+        allowedRoles={["Business", "Admin"]}
+        allowedCategories={["BOARDING"]}
+      />
+    ),
     children: [
       //{ path: "/marketplace/boarding", element: <Boarding /> },
       { path: "/boarding-owner/marketplace", element: <BoardingOwnerMarketplace /> },
@@ -131,7 +149,12 @@ export const boardingOwnerRoutes = [
 // Food & café
 export const foodCafeRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["FOOD"]} />,
+    element: (
+      <ProtectedRoute
+        allowedRoles={["Business", "Admin"]}
+        allowedCategories={["FOOD"]}
+      />
+    ),
     children: [
       //{ path: "/marketplace/food-cafe", element: <FoodCafe /> },
       { path: "/food-cafe-owner/marketplace", element: <FoodCafeOwnerMarketplace /> },
@@ -143,7 +166,12 @@ export const foodCafeRoutes = [
 // Self-employed services
 export const selfEmployedRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["SELF_EMPLOYED"]} />,
+    element: (
+      <ProtectedRoute
+        allowedRoles={["Business", "Admin"]}
+        allowedCategories={["SELF_EMPLOYED"]}
+      />
+    ),
     children: [
       //{ path: "/marketplace/services", element: <Services /> },
       { path: "/services-owner/marketplace", element: <ServicesOwnerMarketplace /> },
@@ -153,7 +181,10 @@ export const selfEmployedRoutes = [
 ];
 
 export const businessRoutes = [
-  ...businessSharedRoutes,
+  {
+    element: <ProtectedRoute allowedRoles={["Business", "Club", "Admin"]} requireVerified />,
+    children: businessSharedRoutes,
+  },
   ...clubRoutes,
   ...boardingOwnerRoutes,
   ...foodCafeRoutes,
