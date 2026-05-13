@@ -41,12 +41,12 @@ const ImageCarousel = ({ images, title }) => {
     const next = (e) => { e.stopPropagation(); setIdx(i => (i + 1) % imgList.length); };
 
     return (
-        <div className="relative w-full h-[320px] bg-white/5 overflow-hidden">
+        <div className="relative w-full bg-white/5 flex justify-center items-center min-h-[200px] max-h-[600px] overflow-hidden">
             <img
                 key={idx}
                 src={getImageUrl(imgList[idx])}
                 alt={title}
-                className="w-full h-full object-cover transition-opacity duration-300"
+                className="w-full h-auto min-h-[200px] object-cover sm:object-contain max-h-[600px] transition-opacity duration-300"
             />
 
             {/* Nav arrows */}

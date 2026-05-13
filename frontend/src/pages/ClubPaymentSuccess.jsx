@@ -20,11 +20,11 @@ const ClubPaymentSuccess = () => {
     useEffect(() => {
         const fetchOrder = async () => {
             if (order) return;
-            
+
             const params = new URLSearchParams(location.search);
             const orderId = params.get("order_id");
             const bookingId = params.get("booking_id");
-            
+
             if (orderId) {
                 try {
                     const result = await orderService.getOrderDetails(orderId);
@@ -60,7 +60,7 @@ const ClubPaymentSuccess = () => {
                 navigate("/marketplace/club");
             }
         };
-        
+
         fetchOrder();
     }, [order, location.search, navigate]);
 
@@ -175,7 +175,7 @@ const ClubPaymentSuccess = () => {
                             size="medium"
                             className="w-full md:flex-1 justify-center py-md"
                             icon={ClipboardList}
-                            onClick={() => navigate("/student/orders")}
+                            onClick={() => navigate("/order-history")}
                         >
                             View My Orders
                         </Button>

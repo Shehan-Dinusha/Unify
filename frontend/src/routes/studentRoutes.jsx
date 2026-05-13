@@ -34,6 +34,7 @@ import Boarding from "../pages/Boarding";
 import ClubProduct from "../pages/ClubProduct";
 import ClubCheckout from "../pages/ClubCheckout";
 import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
+import ClubPaymentCancel from "../pages/ClubPaymentCancel";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 export const studentRoutes = [
@@ -89,10 +90,8 @@ export const studentRoutes = [
       { path: "marketplace/boarding", element: <Boarding /> },
       { path: "/marketplace/club/product/:type/:id", element: <ClubProduct /> },
       { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
-      {
-        path: "/marketplace/club/payment-success",
-        element: <ClubPaymentSuccess />,
-      },
+      { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
+      { path: "/marketplace/club/payment-cancel", element: <ClubPaymentCancel /> },
 
       // Learning
       { path: "/learning", element: <BatchRepLearningDashboard /> },

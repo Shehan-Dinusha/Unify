@@ -29,8 +29,8 @@ const ClubCheckout = () => {
             const subtotal = parseFloat(product.price) * (quantity || 1);
 
             if (product.postType === "club-event") {
-                // Extract tierId (default to first tier if available)
-                const tierId = product.tiers && product.tiers.length > 0 ? product.tiers[0].name : "Standard";
+                // Use selectedSize which carries the selected tier name for events
+                const tierId = selectedSize || (product.tiers && product.tiers.length > 0 ? product.tiers[0].name : "Standard");
 
                 const bookingData = {
                     userId: user.id,
@@ -52,7 +52,7 @@ const ClubCheckout = () => {
                     amount: subtotal,
                     productName: product.name,
                     successUrl: `${window.location.origin}/marketplace/club/payment-success?booking_id=${result.booking.id}`,
-                    cancelUrl: window.location.href,
+                    cancelUrl: `${window.location.origin}/marketplace/club/payment-cancel`,
                 });
             } else {
                 const orderData = {
@@ -78,7 +78,7 @@ const ClubCheckout = () => {
                     amount: subtotal,
                     productName: product.name,
                     successUrl: `${window.location.origin}/marketplace/club/payment-success?order_id=${result.order.id}`,
-                    cancelUrl: window.location.href,
+                    cancelUrl: `${window.location.origin}/marketplace/club/payment-cancel`,
                 });
             }
 
@@ -147,7 +147,9 @@ const ClubCheckout = () => {
                                     <div className="mt-md md:mt-lg flex flex-wrap gap-xs md:gap-sm">
                                         {selectedSize && (
                                             <div className="px-sm md:px-md py-xs rounded-full bg-white/5 border border-white/10 flex items-center gap-xs">
-                                                <span className="text-[10px] md:text-body-extra-small text-text-tertiary">Size:</span>
+                                                <span className="text-[10px] md:text-body-extra-small text-text-tertiary">
+                                                    {product.postType === "club-event" ? "Ticket:" : "Size:"}
+                                                </span>
                                                 <span className="text-[10px] md:text-body-extra-small-bold text-text-primary uppercase">{selectedSize}</span>
                                             </div>
                                         )}
