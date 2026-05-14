@@ -3,7 +3,7 @@
  *
  * Central registry: imports all models, defines all associations,
  * and re-exports everything. Import this file once in server.js so
- * Sequelize registers all models before sync() is called.
+ * all models and associations are registered before the app starts.
  */
 
 import sequelize from "../config/database.js";

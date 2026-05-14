@@ -22,8 +22,6 @@ export const seedDummyData = async (req, res, next) => {
     await sequelize.authenticate();
     logger.info("Database connected successfully.");
 
-    await sequelize.sync({ alter: true });
-
     // Fix PostgreSQL sequence if it is out of sync
     try {
       await sequelize.query(

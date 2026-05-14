@@ -19,29 +19,28 @@ export const seedLearningData = async (req, res, next) => {
 
   try {
     await sequelize.authenticate();
-    await sequelize.sync({ alter: true });
 
     const passwordHash = await bcrypt.hash("password123", 10);
 
-    // ── 1. Fetch required academic data (must exist from seedAcademicStructure) ──
+    // ── 1. Fetch required academic data (must exist from seeder) ──
     const itFaculty = await Faculty.findOne({
       where: { name: "Information Technology" },
     });
     if (!itFaculty) {
-      return sendResponse(res, 400, false, "Run seedAcademicStructure first — IT Faculty not found");
+      return sendResponse(res, 400, false, "Run `npm run seed` first — IT Faculty not found");
     }
 
     const itDegree = await Degree.findOne({
       where: { name: "BSc (Hons) in Information Technology" },
     });
     if (!itDegree) {
-      return sendResponse(res, 400, false, "Run seedAcademicStructure first — IT Degree not found");
+      return sendResponse(res, 400, false, "Run `npm run seed` first — IT Degree not found");
     }
 
     const batch21 = await Batch.findOne({ where: { name: "Batch 21" } });
     const batch22 = await Batch.findOne({ where: { name: "Batch 22" } });
     if (!batch21 || !batch22) {
-      return sendResponse(res, 400, false, "Run seedAcademicStructure first — Batches not found");
+      return sendResponse(res, 400, false, "Run `npm run seed` first — Batches not found");
     }
 
     const semesters = await Semester.findAll({
@@ -49,7 +48,7 @@ export const seedLearningData = async (req, res, next) => {
       order: [["name", "ASC"]],
     });
     if (semesters.length < 3) {
-      return sendResponse(res, 400, false, "Run seedAcademicStructure first — Semesters not found");
+      return sendResponse(res, 400, false, "Run `npm run seed` first — Semesters not found");
     }
 
     const [sem1, sem2, sem3] = semesters;

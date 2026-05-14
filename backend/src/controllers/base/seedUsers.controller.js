@@ -586,7 +586,7 @@ export const seedUsers = async (req, res) => {
         res,
         400,
         false,
-        "Academic structure not found. Run /api/v1/base/seed-academic-structure first.",
+        "Academic structure not found. Run `npm run seed` first.",
       );
     }
 

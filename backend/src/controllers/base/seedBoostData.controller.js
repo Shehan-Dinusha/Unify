@@ -30,8 +30,6 @@ export const seedBoostData = async (req, res, next) => {
     await sequelize.authenticate();
     logger.info("Database connected successfully for boost seeding.");
 
-    await sequelize.sync({ alter: true });
-
     // Fix sequences if needed
     try {
       await sequelize.query(
