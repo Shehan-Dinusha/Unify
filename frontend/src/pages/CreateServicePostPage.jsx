@@ -57,8 +57,7 @@ const CreateServicePostPage = () => {
                 }
             });
 
-            // Mock userId and set postType for category inference
-            data.append("userId", 1);
+            // postType for category inference on the backend
             data.append("postType", "service");
 
             await postService.createPost("service", data);
