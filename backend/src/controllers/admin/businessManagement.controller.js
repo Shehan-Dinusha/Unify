@@ -61,7 +61,7 @@ export const getBusinessDirectory = async (req, res, next) => {
         {
           model: BusinessProfile,
           as: 'businessProfile',
-          required: false, // Must be false for role='Club' rows to appear when NOT filtering
+          required: false,
         },
         {
           model: ClubProfile,
@@ -70,6 +70,7 @@ export const getBusinessDirectory = async (req, res, next) => {
         }
       ],
       subQuery: false,
+      distinct: true, // Prevents inflated count from LEFT JOINs
       attributes: ['id', 'name', 'email', 'avatar', 'status', 'createdAt', 'role'],
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -128,7 +129,14 @@ export const getBusinessStats = async (req, res, next) => {
       businessesLastMonth,
       pendingApprovals,
       totalRevenue,
-      businessCountWithRevenue
+      businessCountWithRevenue,
+      // Retention: all businesses registered before this month
+      totalRegisteredBeforeThisMonth,
+      // Retention: of those, how many are still Active
+      activeRegisteredBeforeThisMonth,
+      // Avg subscription trend: revenue last month
+      revenueLastMonth,
+      businessCountWithRevenueLastMonth
     ] = await Promise.all([
       User.count({ where: { role: { [Op.in]: ['Business', 'Club'] }, status: 'Active' } }),
       User.count({ where: { role: { [Op.in]: ['Business', 'Club'] }, status: 'Active', createdAt: { [Op.lt]: startOfThisMonth } } }),
@@ -138,6 +146,36 @@ export const getBusinessStats = async (req, res, next) => {
         distinct: true,
         col: 'walletId',
         where: { type: 'CREDIT', status: 'COMPLETED' }
+      }),
+      // Total businesses registered before this month (regardless of current status)
+      User.count({
+        where: {
+          role: { [Op.in]: ['Business', 'Club'] },
+          createdAt: { [Op.lt]: startOfThisMonth }
+        }
+      }),
+      // Of those, how many are still Active (not Suspended/Deactivated)
+      User.count({
+        where: {
+          role: { [Op.in]: ['Business', 'Club'] },
+          status: 'Active',
+          createdAt: { [Op.lt]: startOfThisMonth }
+        }
+      }),
+      // Revenue from last month for avg subscription trend
+      Transaction.sum('amount', {
+        where: {
+          type: 'CREDIT', status: 'COMPLETED',
+          createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth }
+        }
+      }),
+      Transaction.count({
+        distinct: true,
+        col: 'walletId',
+        where: {
+          type: 'CREDIT', status: 'COMPLETED',
+          createdAt: { [Op.gte]: startOfLastMonth, [Op.lt]: startOfThisMonth }
+        }
       })
     ]);
 
@@ -148,19 +186,34 @@ export const getBusinessStats = async (req, res, next) => {
       return `${diff > 0 ? '+' : ''}${diff.toFixed(0)}%`;
     };
 
+    // Avg subscription value (all time)
     const avgSubscriptionValue = businessCountWithRevenue > 0 ? (totalRevenue || 0) / businessCountWithRevenue : 0;
-    
-    // For "Avg Subscription" trend, we'll mock a small growth or stability based on data
-    const avgSubTrend = totalRevenue > 100000 ? '↑ +4% per user' : 'Stable';
+
+    // Avg subscription trend: compare current avg vs last month's avg
+    const lastMonthAvg = businessCountWithRevenueLastMonth > 0 ? (revenueLastMonth || 0) / businessCountWithRevenueLastMonth : 0;
+    const avgSubTrend = lastMonthAvg > 0
+      ? `${getTrend(Math.round(avgSubscriptionValue), Math.round(lastMonthAvg))} per user`
+      : avgSubscriptionValue > 0 ? '↑ New activity' : 'Stable';
+
+    // Retention rate: percentage of businesses registered before this month that are still Active
+    const retentionRateValue = totalRegisteredBeforeThisMonth > 0
+      ? ((activeRegisteredBeforeThisMonth / totalRegisteredBeforeThisMonth) * 100).toFixed(1)
+      : 100; // If no businesses existed before, default to 100%
+
+    const retentionNum = parseFloat(retentionRateValue);
+    const retentionLabel = retentionNum >= 90 ? 'High Loyalty'
+      : retentionNum >= 70 ? 'Good Retention'
+      : retentionNum >= 50 ? 'Moderate'
+      : 'Needs Attention';
 
     return sendResponse(res, 200, true, 'Business stats retrieved', {
       verifiedBusinesses: verifiedBusinesses > 1000 ? `${(verifiedBusinesses / 1000).toFixed(1)}k` : verifiedBusinesses,
       verifiedTrend: `${getTrend(verifiedBusinesses, businessesLastMonth)} this month`,
       pendingApprovals,
-      avgSubscription: `Rs. ${avgSubscriptionValue.toLocaleString()}`,
+      avgSubscription: `Rs. ${Math.round(avgSubscriptionValue).toLocaleString()}`,
       avgSubscriptionTrend: avgSubTrend,
-      retentionRate: '98.2%', // Harder to calculate precisely without churn data, keeping as high-quality mock
-      retentionLabel: 'High Loyalty'
+      retentionRate: `${retentionRateValue}%`,
+      retentionLabel
     });
   } catch (error) {
     logger.error(`Error in getBusinessStats: ${error.message}`);

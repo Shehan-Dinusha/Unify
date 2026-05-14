@@ -4,12 +4,19 @@ import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import { useBoostPackages } from '../context/BoostPackageContext';
-import { mockRequests } from '../data/mockData';
+import { getCurrentUser } from '../services/authService';
 import { Plus, Pencil, CheckCircle2, DollarSign, Clock, Trash2, AlertTriangle, ChevronLeft, ChevronRight, RefreshCw, Loader2 } from 'lucide-react';
 
 const BoostController = () => {
     const navigate = useNavigate();
-    const { packages, logs, stats, loading, error, deletePackage } = useBoostPackages();
+    const { packages, logs, stats, loading, error, deletePackage, fetchPackages, fetchLogs, fetchStats } = useBoostPackages();
+
+    // Fetch data on mount to ensure fresh data even if accessed via client-side navigation
+    React.useEffect(() => {
+        fetchPackages();
+        fetchLogs();
+        fetchStats();
+    }, [fetchPackages, fetchLogs, fetchStats]);
 
     // Delete modal state
     const [deleteTarget, setDeleteTarget] = useState(null);
@@ -86,9 +93,9 @@ const BoostController = () => {
 
     return (
             <MainLayout
-                user={{ name: 'Alex Johnson', role: 'admin' }}
+                user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
                 pageTitle="Boost Moderation"
-                verificationCount={mockRequests.length}
+                verificationCount={0}
             >
                 <div className="flex flex-col gap-lg">
                     {/* Title + Add Button */}

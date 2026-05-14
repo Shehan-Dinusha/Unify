@@ -21,7 +21,7 @@ const router = express.Router();
 // POST /api/v1/boosts/packages - Create a new boost package
 router.post(
   '/packages',
-  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
+  protect, authorize('Admin'),
   BoostController.createPackage
 );
 
@@ -40,14 +40,14 @@ router.get(
 // PUT /api/v1/boosts/packages/:id - Update package details
 router.put(
   '/packages/:id',
-  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
+  protect, authorize('Admin'),
   BoostController.updatePackage
 );
 
 // DELETE /api/v1/boosts/packages/:id - Archive (soft-delete) a package
 router.delete(
   '/packages/:id',
-  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
+  protect, authorize('Admin'),
   BoostController.deletePackage
 );
 
@@ -56,14 +56,14 @@ router.delete(
 // POST /api/v1/boosts/create-checkout-session - Create Stripe Checkout for boost purchase
 router.post(
   '/create-checkout-session',
-  // protect,  // TODO: Re-enable after auth testing
+  protect,
   BoostController.createBoostCheckoutSession
 );
 
 // POST /api/v1/boosts/confirm-payment - Confirm payment after Stripe redirect
 router.post(
   '/confirm-payment',
-  // protect,  // TODO: Re-enable after auth testing
+  protect,
   BoostController.confirmBoostPayment
 );
 
@@ -72,14 +72,14 @@ router.post(
 // POST /api/v1/boosts/purchase - Purchase a boost package (direct, no Stripe)
 router.post(
   '/purchase',
-  // protect,  // TODO: Re-enable after auth testing
+  protect,
   BoostController.purchaseBoost
 );
 
 // GET /api/v1/boosts/my-boosts - Get user's active boosts where expiryDate > NOW
 router.get(
   '/my-boosts',
-  // protect,  // TODO: Re-enable after auth testing
+  protect,
   BoostController.getMyBoosts
 );
 
@@ -88,21 +88,21 @@ router.get(
 // GET /api/v1/boosts/admin/statistics - Admin dashboard boost stats
 router.get(
   '/admin/statistics',
-  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
+  protect, authorize('Admin'),
   BoostController.getBoostStatistics
 );
 
 // GET /api/v1/boosts/admin/logs - Admin configuration changes logs
 router.get(
   '/admin/logs',
-  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
+  protect, authorize('Admin'),
   BoostController.getLogs
 );
 
 // GET /api/v1/boosts/admin/stats - Admin dashboard stats (DB-driven tiles)
 router.get(
   '/admin/stats',
-  // protect, authorize('Admin'),  // TODO: Re-enable after auth testing
+  protect, authorize('Admin'),
   BoostController.getAdminStats
 );
 

@@ -30,6 +30,8 @@ export const getStudentDirectory = async (filters = {}) => {
     params.status = filters.status.charAt(0).toUpperCase() + filters.status.slice(1);
   }
   if (filters.faculty && filters.faculty !== 'all') params.faculty = filters.faculty;
+  if (filters.page) params.page = filters.page;
+  if (filters.limit) params.limit = filters.limit;
 
   const response = await api.get('/admin/students', { params });
   return response.data;

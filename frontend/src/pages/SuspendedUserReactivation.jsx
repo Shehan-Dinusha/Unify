@@ -4,7 +4,7 @@ import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import { useToast } from '../components/common/Toast';
 import { X, ShieldCheck, AlertTriangle, CheckSquare, Square, Loader2 } from 'lucide-react';
-import { mockRequests } from '../data/mockData';
+import { getCurrentUser } from '../services/authService';
 import { getSuspendedUserById, reactivateUser } from '../services/suspensionService';
 
 // ─── Date Formatting ────────────────────────────────────────────────────────
@@ -104,9 +104,9 @@ const SuspendedUserReactivation = () => {
 
     return (
         <MainLayout
-            user={{ name: 'Alex Johnson', role: 'admin' }}
-            pageTitle="Account Reactivation"
-            verificationCount={mockRequests.length}
+            user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
+            pageTitle="Reactivate Account"
+            verificationCount={0}
         >
             {/* ── Blur Overlay Modal ──────────────────────────── */}
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">

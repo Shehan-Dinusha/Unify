@@ -4,8 +4,8 @@ import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import { useToast } from '../components/common/Toast';
 import { AlertTriangle, Calendar, Mail, Phone, MapPin, ShieldAlert, Loader2 } from 'lucide-react';
-import { mockRequests } from '../data/mockData';
-import { severityColors } from '../data/mockSuspendedUsers';
+import { getCurrentUser } from '../services/authService';
+import Badge from '../components/common/Badge';
 import { getSuspendedUserById } from '../services/suspensionService';
 import { getAvatarUrl } from '../utils/formatters';
 
@@ -104,9 +104,9 @@ const SuspendedUserProfile = () => {
     if (!loading && error) {
         return (
             <MainLayout
-                user={{ name: 'Alex Johnson', role: 'admin' }}
-                pageTitle="Suspended Users"
-                verificationCount={mockRequests.length}
+                user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
+                pageTitle="Suspended Profile"
+                verificationCount={0}
             >
                 <div className="flex flex-col items-center justify-center py-xl text-center">
                     <div className="w-16 h-16 rounded-full bg-state-error/10 flex items-center justify-center mb-lg">
@@ -130,9 +130,9 @@ const SuspendedUserProfile = () => {
 
     return (
         <MainLayout
-            user={{ name: 'Alex Johnson', role: 'admin' }}
-            pageTitle="Suspended Users"
-            verificationCount={mockRequests.length}
+            user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
+            pageTitle="Suspended Profile"
+            verificationCount={0}
         >
             {/* ── Loading Skeleton ────────────────────────────── */}
             {loading && <ProfileSkeleton />}
@@ -251,14 +251,12 @@ const SuspendedUserProfile = () => {
                         <Card variant="card" padding="p-0">
                             <div className="p-lg">
                                 {/* Header */}
-                                <div className="flex items-start justify-between mb-lg">
+                <div className="flex items-start justify-between mb-lg">
                                     <div className="flex items-center gap-sm">
                                         <AlertTriangle size={20} className="text-state-warning" />
                                         <h3 className="text-body-large-bold text-text-primary font-inter">Suspension Details</h3>
                                     </div>
-                                    <span className={`text-body-extra-small-bold px-sm py-xs rounded-lg ${severityColors[suspension.severity] || 'bg-white/10 text-text-secondary'}`}>
-                                        Severity: {suspension.severity || '—'}
-                                    </span>
+                                    <Badge type="severity" value={suspension.severity} />
                                 </div>
 
                                 {/* Case Reference */}

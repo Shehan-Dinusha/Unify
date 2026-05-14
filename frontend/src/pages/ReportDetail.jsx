@@ -14,6 +14,7 @@ import {
     CheckCircle2, FileText, Trash2, UserX, Clock, Info,
     ArrowLeft, RotateCcw,
 } from 'lucide-react';
+import { getCurrentUser } from '../services/authService';
 
 /* ─── HELPERS ────────────────────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
@@ -177,14 +178,14 @@ const ReportDetail = () => {
     /* ── Loading / Error states ─────────────────────────── */
     if (loading) {
         return (
-            <MainLayout user={{ name: 'Alex Johnson', role: 'admin' }} pageTitle="Report Moderation">
+            <MainLayout user={getCurrentUser() || { name: 'Admin', role: 'Admin' }} pageTitle="Report Moderation">
                 <div className="flex items-center justify-center h-64 text-text-secondary text-body-small">Loading report details...</div>
             </MainLayout>
         );
     }
     if (error || !report) {
         return (
-            <MainLayout user={{ name: 'Alex Johnson', role: 'admin' }} pageTitle="Report Moderation">
+            <MainLayout user={getCurrentUser() || { name: 'Admin', role: 'Admin' }} pageTitle="Report Moderation">
                 <Card variant="container" className="border-state-error/30 bg-state-error/5">
                     <div className="flex items-center gap-md">
                         <AlertTriangle size={24} className="text-state-error shrink-0" />
@@ -470,7 +471,7 @@ const ReportDetail = () => {
        ═══════════════════════════════════════════════════════ */
     return (
         <MainLayout
-            user={{ name: 'Alex Johnson', role: 'admin' }}
+            user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
             pageTitle="Report Moderation"
         >
             <div className="flex flex-col gap-lg">
@@ -622,7 +623,7 @@ const ReportDetail = () => {
                             <h3 className="text-body-large-bold text-text-primary mt-3">{r.offender.name}</h3>
                             <p className="text-body-small text-text-secondary">{r.offender.handle} • ID: {r.offender.id}</p>
                             <div className="flex items-center gap-3 mt-4">
-                                <Button variant="outline" size="small" onClick={() => navigate(`/student-management/${r.offender.id}`)}>View Profile</Button>
+                                <Button variant="outline" size="small" onClick={() => navigate(r.offender.role === "Business" ? `/active-businesses/${r.offender.id}` : `/student-management/${r.offender.id}`)}>View Profile</Button>
                                 <Button variant="outline" size="small" onClick={() => navigate('/messages')}>Message</Button>
                             </div>
                         </div>

@@ -40,10 +40,23 @@ export const getStudentDirectory = async (req, res, next) => {
     }
 
     if (faculty && faculty !== 'all') {
-      const facultyMap = { 'eng': 1, 'sci': 2, 'mgmt': 3, 'it': 4 };
-      const fId = facultyMap[faculty.toLowerCase()];
-      if (fId) {
-        profileWhere.facultyId = fId;
+      // Dynamic lookup: map short codes to partial names, then use ILIKE
+      // to match DB values like 'Faculty of Engineering', 'Information Technology', etc.
+      const facultyNameMap = {
+        'it': 'Information Technology',
+        'eng': 'Engineering',
+        'arch': 'Architecture',
+        'bus': 'Business',
+        'med': 'Medicine',
+        'sci': 'Science',
+        'mgmt': 'Management',
+      };
+      const searchTerm = facultyNameMap[faculty.toLowerCase()] || faculty;
+      const facultyRecord = await Faculty.findOne({
+        where: { name: { [Op.iLike]: `%${searchTerm}%` } }
+      });
+      if (facultyRecord) {
+        profileWhere.facultyId = facultyRecord.id;
       }
     }
 
@@ -59,6 +72,7 @@ export const getStudentDirectory = async (req, res, next) => {
         include: [{ model: Faculty, as: 'faculty', attributes: ['name'] }]
       }],
       subQuery: false,
+      distinct: true, // Prevents inflated count from LEFT JOINs
       attributes: ['id', 'name', 'email', 'avatar', 'status', 'lastActive'],
       limit: parseInt(limit),
       offset: parseInt(offset),
@@ -94,7 +108,7 @@ export const getStudentDirectory = async (req, res, next) => {
 export const getStudentStats = async (req, res, next) => {
   try {
     const totalStudents = await User.count({ where: { role: 'Student' } });
-    const verifiedIdentities = await User.count({ where: { role: 'Student', status: 'Active' } }); // Mock logic for "Verified"
+    const verifiedIdentities = await User.count({ where: { role: 'Student', status: 'Active' } });
     const flaggedSessions = await StudentReport.count({ where: { status: { [Op.ne]: 'Resolved' } } });
 
     // Activity Rate calculation (active in last 30 days / total)
@@ -335,7 +349,7 @@ export const addStudentNote = async (req, res, next) => {
 
 /**
  * POST /api/v1/admin/students/:id/force-logout
- * MOCK: Forces a user logout.
+ * Forces a user logout.
  */
 export const forceLogout = async (req, res, next) => {
   try {
@@ -371,7 +385,7 @@ export const forceLogout = async (req, res, next) => {
 
 /**
  * POST /api/v1/admin/students/:id/warning
- * MOCK: Sends a warning to a student.
+ * Sends a warning to a student.
  */
 export const sendStudentWarning = async (req, res, next) => {
   try {

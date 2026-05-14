@@ -4,6 +4,7 @@ import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import { CheckCircle2, ArrowRight, CalendarDays, Loader2, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
+import { getCurrentUser } from '../services/authService';
 
 const BoostPostSuccess = () => {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ const BoostPostSuccess = () => {
   if (loading) {
     return (
       <MainLayout
-        user={{ name: 'Alex Johnson', role: 'business', displayRole: 'Business & Organization' }}
+        user={getCurrentUser() || { name: 'Business User', role: 'business', displayRole: 'Business & Organization' }}
         pageTitle="Boost Your Post"
         verificationCount={0}
       >
@@ -100,7 +101,7 @@ const BoostPostSuccess = () => {
   if (error) {
     return (
       <MainLayout
-        user={{ name: 'Alex Johnson', role: 'business', displayRole: 'Business & Organization' }}
+        user={getCurrentUser() || { name: 'Business User', role: 'business', displayRole: 'Business & Organization' }}
         pageTitle="Boost Your Post"
         verificationCount={0}
       >
@@ -147,7 +148,7 @@ const BoostPostSuccess = () => {
 
   return (
     <MainLayout
-      user={{ name: 'Alex Johnson', role: 'business', displayRole: 'Business & Organization' }}
+      user={getCurrentUser() || { name: 'Business User', role: 'business', displayRole: 'Business & Organization' }}
       pageTitle="Boost Your Post"
       verificationCount={0}
     >

@@ -4,6 +4,7 @@ import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import { useToast } from "../components/common/Toast";
 import { getMyReportById, withdrawMyReport } from "../services/reportService";
+import { getCurrentUser } from "../services/authService";
 import { X, Info, AlertTriangle } from "lucide-react";
 
 const StudentReportWithdrawal = () => {
@@ -15,7 +16,7 @@ const StudentReportWithdrawal = () => {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const user = { name: "Alex Johnson", role: "student" };
+  const user = getCurrentUser() || { name: "Student", role: "student" };
 
   // ── Load report to get display ID and internal ID ──────────────────
   useEffect(() => {

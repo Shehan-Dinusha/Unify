@@ -7,6 +7,7 @@ import Select from "../components/common/Select";
 import Button from "../components/common/Button";
 import { useToast } from "../components/common/Toast";
 import { getMyReports } from "../services/reportService";
+import { getCurrentUser } from "../services/authService";
 import {
   Plus,
   Search,
@@ -64,7 +65,7 @@ const StudentSubmittedReports = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const user = { name: "Alex Johnson", role: "student" };
+  const user = getCurrentUser() || { name: "Student", role: "student" };
 
   // ── Fetch Reports from API ─────────────────────────────────────────
   useEffect(() => {

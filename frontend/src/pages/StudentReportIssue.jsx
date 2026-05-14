@@ -4,6 +4,7 @@ import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import { useToast } from "../components/common/Toast";
 import { submitReport } from "../services/reportService";
+import { getCurrentUser } from "../services/authService";
 import {
   FileText,
   MessageSquare,
@@ -83,7 +84,7 @@ const StudentReportIssue = () => {
     }
   }, [postData]);
 
-  const user = { name: "Alex Johnson", role: "student" };
+  const user = getCurrentUser() || { name: "Student", role: "student" };
 
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);

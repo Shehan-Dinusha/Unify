@@ -35,6 +35,8 @@ export const getBusinessDirectory = async (filters = {}) => {
     else if (filters.category === 'Boarding') params.category = 'BOARDING';
     else params.category = filters.category;
   }
+  if (filters.page) params.page = filters.page;
+  if (filters.limit) params.limit = filters.limit;
 
   const response = await api.get('/admin/businesses', { params });
   return response.data;
