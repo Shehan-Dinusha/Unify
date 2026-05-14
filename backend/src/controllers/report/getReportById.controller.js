@@ -189,9 +189,7 @@ export const getReportById = async (req, res, next) => {
         if (file.startsWith('reports/') && !file.startsWith('http')) {
           try { url = await s3Service.getFileUrl(file); } 
           catch (err) { logger.warn(`S3 Presign failed for ${file}: ${err.message}`); }
-        } else if (file.startsWith('/uploads/')) {
-          url = `${baseUrl}${file}`;
-        }
+
         
         return {
           name: file.split('/').pop() || 'Evidence',
