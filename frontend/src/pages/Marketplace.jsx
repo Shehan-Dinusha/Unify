@@ -7,9 +7,10 @@ import { mockMarketplaceCategories } from "../data/mockMarketplaceData";
 import postService from "../services/postService";
 import { getImageUrl } from "../utils/formatters";
 import { Loader2 } from "lucide-react";
+import { getCurrentUser } from "../services/authService";
 
 const Marketplace = () => {
-    const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
+    const user = getCurrentUser();
     const navigate = useNavigate();
     const [popularPosts, setPopularPosts] = useState([]);
     const [loading, setLoading] = useState(true);

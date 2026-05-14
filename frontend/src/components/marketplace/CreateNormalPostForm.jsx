@@ -114,7 +114,7 @@ const CreateNormalPostForm = ({ onCancel, onPublish }) => {
                                     onChange={(e) => setDescription(e.target.value)}
                                     placeholder="What's happening today? Share updates, thoughts, or moments with your club..."
                                     rows={6}
-                                    className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-blue transition-colors resize-none placeholder:text-text-secondary"
+                                    className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-blue transition-colors resize-y placeholder:text-text-secondary"
                                 />
                                 <div className="text-right text-[10px] text-text-secondary italic mt-1">
                                     Share updates, photos, or news with everyone.

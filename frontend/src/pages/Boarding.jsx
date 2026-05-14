@@ -6,9 +6,10 @@ import BoardingOverlay from "../components/boarding/BoardingOverlay";
 import postService from "../services/postService";
 import { formatTimeAgo } from "../utils/formatters";
 import { Loader2 } from "lucide-react";
+import { getCurrentUser } from "../services/authService";
 
 const Boarding = () => {
-    const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
+    const user = getCurrentUser();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({ minPrice: 5000, maxPrice: 30000, gender: "Any" });

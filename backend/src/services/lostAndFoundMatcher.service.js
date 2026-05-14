@@ -35,10 +35,16 @@ const MATCH_THRESHOLD = 0.65;
 /** Maximum notifications sent per matching run */
 const MAX_MATCHES = 3;
 
-/** Scoring weights — must sum to 1.0 */
-const TEXT_WEIGHT = 0.70;
+/**
+ * Scoring weights — must sum to 1.0
+ *
+ * TEXT:  0.65 — title + description are the strongest signal
+ * LOC:   0.20 — location narrows the search area significantly
+ * TIME:  0.15 — recency adds confidence but is less reliable
+ */
+const TEXT_WEIGHT = 0.65;
 const LOC_WEIGHT  = 0.20;
-const TIME_WEIGHT = 0.10;
+const TIME_WEIGHT = 0.15;
 
 // ── Sub-scorers ───────────────────────────────────────────────────────────────
 
@@ -46,9 +52,12 @@ const TIME_WEIGHT = 0.10;
  * Compute location similarity between two location strings.
  *
  * Strategy:
- *  - Tokenise both strings (reuses the same tokeniser as TF-IDF)
- *  - Compute Jaccard index over the token sets
- *  - Fallback: case-insensitive substring check when one side tokenises to nothing
+ *  1. Tokenise both strings using a 2-char minimum (shorter than text so that
+ *     common place abbreviations like "B2", "F3" still survive filtering).
+ *  2. Compute Jaccard index over the token sets for an exact-overlap score.
+ *  3. Partial overlap bonus: if any single token from one side appears as a
+ *     substring of any token in the other side, award half credit per pair.
+ *  4. Fallback: direct substring check when tokenisation yields nothing.
  *
  * @param {string|null} locA
  * @param {string|null} locB
@@ -57,25 +66,56 @@ const TIME_WEIGHT = 0.10;
 const computeLocationSimilarity = (locA, locB) => {
   if (!locA || !locB) return 0;
 
-  const tokensA = tokenize(locA);
-  const tokensB = tokenize(locB);
+  // Use a lower minimum token length (2) for locations so short labels
+  // like "B2" or "Lab" are not discarded by the standard 3-char filter.
+  const tokenizeLoc = (str) =>
+    str
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .split(/\s+/)
+      .filter((t) => t.length >= 2);
 
-  // If tokeniser strips everything (e.g. very short words), fall back to
-  // direct string comparison so "Library" still matches "library".
+  const tokensA = tokenizeLoc(locA);
+  const tokensB = tokenizeLoc(locB);
+
+  // Fallback: if tokenisation yields nothing (e.g. single-character input)
+  // fall back to direct string comparison.
   if (tokensA.length === 0 || tokensB.length === 0) {
     const a = locA.toLowerCase().trim();
     const b = locB.toLowerCase().trim();
     if (a === b) return 1.0;
-    if (a.includes(b) || b.includes(a)) return 0.5;
+    if (a.includes(b) || b.includes(a)) return 0.6;
     return 0;
   }
 
   const setA = new Set(tokensA);
   const setB = new Set(tokensB);
+
+  // ── Exact Jaccard score ─────────────────────────────────────────────────
   const intersection = [...setA].filter((t) => setB.has(t)).length;
   const union = new Set([...setA, ...setB]).size;
+  const jaccardScore = union === 0 ? 0 : intersection / union;
 
-  return union === 0 ? 0 : intersection / union;
+  // ── Partial-overlap bonus ───────────────────────────────────────────────
+  // Award partial credit when a token from A is a prefix/substring of a
+  // token in B (or vice versa). This handles cases like:
+  //   "Library, 1st Floor" ↔ "Library" → one token fully contains the other.
+  let partialMatches = 0;
+  for (const a of setA) {
+    for (const b of setB) {
+      if (a !== b && (a.includes(b) || b.includes(a))) {
+        partialMatches += 1;
+        break; // count each token in A at most once
+      }
+    }
+  }
+  // Normalise partial bonus against the larger set size so it stays in [0,1]
+  const partialBonus = partialMatches / Math.max(setA.size, setB.size);
+
+  // Blend: exact match dominates, partial adds up to 40% of the remainder
+  const blended = jaccardScore + (1 - jaccardScore) * partialBonus * 0.4;
+
+  return Math.min(1, blended);
 };
 
 /**
@@ -199,65 +239,114 @@ export const findMatches = async (item) => {
  */
 export const runMatchingEngine = async (newItem) => {
   try {
-    logger.info(
-      `[Matcher] Run started for item #${newItem.id} (${newItem.type}: "${newItem.title}")`
-    );
+    // ── Step 1: Log what item just triggered the engine ───────────────────────
+    console.log(`\n[Matcher] ========== START ==========`);
+    console.log(`[Matcher] Item #${newItem.id} | Type: ${newItem.type} | Title: "${newItem.title}" | UserId: ${newItem.userId}`);
+    console.log(`[Matcher] Location: "${newItem.location}" | Date: ${newItem.date} | THRESHOLD: ${MATCH_THRESHOLD}`);
 
-    const matches = await findMatches(newItem);
+    // ── Step 2: Show all candidates the DB returned ───────────────────────────
+    const oppositeType = newItem.type === "Lost" ? "Found" : "Lost";
+    const allCandidates = await LostAndFound.findAll({
+      where: {
+        type: oppositeType,
+        status: "Active",
+        userId: { [Op.ne]: newItem.userId },
+      },
+      attributes: ["id", "userId", "title", "location", "date"],
+    });
+    console.log(`[Matcher] DB candidates (type=${oppositeType}, status=Active, different user): ${allCandidates.length}`);
+    allCandidates.forEach((c) => {
+      console.log(`[Matcher]   Candidate #${c.id}: "${c.title}" | loc="${c.location}" | userId=${c.userId}`);
+    });
 
-    if (matches.length === 0) {
-      logger.info(`[Matcher] No matches above threshold for item #${newItem.id}`);
+    if (allCandidates.length === 0) {
+      console.log(`[Matcher] No candidates found — skipping scoring. Done.\n`);
       return;
     }
 
+    // ── Step 3: Run full scoring and log each score ───────────────────────────
+    const matches = await findMatches(newItem);
+
+    // Also log every candidate's raw scores (not just those above threshold)
+    // by computing them directly from the candidates we already fetched
+    const { computeTextSimilarities: computeScores, tokenize: tok } = await import("./tfidf.service.js");
+    const textScoresRaw = computeScores(
+      { title: newItem.title, description: newItem.description },
+      allCandidates.map((c) => ({ id: c.id, title: c.title, description: "" }))
+    );
+    const textMap = new Map(textScoresRaw.map((s) => [s.id, s.textScore]));
+
+    console.log(`[Matcher] Per-candidate scores (threshold=${MATCH_THRESHOLD}):`);
+    allCandidates.forEach((c) => {
+      const textScore = Math.round((textMap.get(c.id) || 0) * 1000) / 1000;
+      const final = Math.round((TEXT_WEIGHT * textScore) * 1000) / 1000;
+      const aboveThreshold = final >= MATCH_THRESHOLD ? "✓ ABOVE" : "✗ below";
+      console.log(`[Matcher]   #${c.id} "${c.title}": textScore=${textScore} → finalMin=${final} (${aboveThreshold} threshold)`);
+    });
+
+    console.log(`[Matcher] Matches above threshold: ${matches.length}`);
+    matches.forEach((m) => {
+      console.log(`[Matcher]   ✓ Match #${m.item.id} "${m.item.title}": score=${m.score} | text=${m.breakdown.textScore} | loc=${m.breakdown.locScore} | time=${m.breakdown.timeScore}`);
+    });
+
+    if (matches.length === 0) {
+      console.log(`[Matcher] No matches above threshold (${MATCH_THRESHOLD}). Done.\n`);
+      return;
+    }
+
+    // ── Step 4: Notify both parties, each in its own try-catch ───────────────
     const topMatches = matches.slice(0, MAX_MATCHES);
-    logger.info(
-      `[Matcher] ${topMatches.length} match(es) found for item #${newItem.id} ` +
-      `(top score: ${topMatches[0].score})`
-    );
 
-    // ── Notify both parties for every top match ──────────────────────────────
-    await Promise.all(
-      topMatches.map(async ({ item: matchedItem, score }) => {
-        // Determine which ID is the lost item and which is the found item
-        const lostItemId  = newItem.type === "Lost" ? newItem.id : matchedItem.id;
-        const foundItemId = newItem.type === "Found" ? newItem.id : matchedItem.id;
+    for (const { item: matchedItem, score } of topMatches) {
+      const lostItemId  = newItem.type === "Lost"  ? newItem.id : matchedItem.id;
+      const foundItemId = newItem.type === "Found" ? newItem.id : matchedItem.id;
+      const dedupeKey = `match:${lostItemId}:${foundItemId}`;
 
-        const matchedItemThumbnail =
-          Array.isArray(matchedItem.images) && matchedItem.images.length > 0
-            ? matchedItem.images[0]
-            : null;
+      const matchedItemThumbnail =
+        Array.isArray(matchedItem.images) && matchedItem.images.length > 0
+          ? matchedItem.images[0] : null;
+      const newItemThumbnail =
+        Array.isArray(newItem.images) && newItem.images.length > 0
+          ? newItem.images[0] : null;
 
-        const newItemThumbnail =
-          Array.isArray(newItem.images) && newItem.images.length > 0
-            ? newItem.images[0]
-            : null;
-
-        // Notify the creator of the NEW item about a potential match
-        await notifyMatch({
-          userId:      newItem.userId,
-          matchTitle:  matchedItem.title,
+      // Notify the creator of the NEW item
+      console.log(`[Matcher] Notifying userId=${newItem.userId} | dedupeKey="${dedupeKey}"`);
+      try {
+        const n1 = await notifyMatch({
+          userId:     newItem.userId,
+          matchTitle: matchedItem.title,
           lostItemId,
           foundItemId,
           score,
-          image: matchedItemThumbnail,
+          image:      matchedItemThumbnail,
         });
+        console.log(`[Matcher]   → userId=${newItem.userId}: ${n1 ? `CREATED (notifId=${n1.id})` : "SKIPPED (duplicate dedupeKey)"}`);
+      } catch (e) {
+        console.error(`[Matcher]   → userId=${newItem.userId} FAILED:`, e.message);
+      }
 
-        // Notify the owner of the EXISTING matched item about the new post
-        await notifyMatch({
-          userId:      matchedItem.userId,
-          matchTitle:  newItem.title,
+      // Notify the owner of the EXISTING matched item
+      console.log(`[Matcher] Notifying userId=${matchedItem.userId} | dedupeKey="${dedupeKey}"`);
+      try {
+        const n2 = await notifyMatch({
+          userId:     matchedItem.userId,
+          matchTitle: newItem.title,
           lostItemId,
           foundItemId,
           score,
-          image: newItemThumbnail,
+          image:      newItemThumbnail,
         });
-      })
-    );
+        console.log(`[Matcher]   → userId=${matchedItem.userId}: ${n2 ? `CREATED (notifId=${n2.id})` : "SKIPPED (duplicate dedupeKey)"}`);
+      } catch (e) {
+        console.error(`[Matcher]   → userId=${matchedItem.userId} FAILED:`, e.message);
+      }
+    }
 
+    console.log(`[Matcher] ========== DONE for item #${newItem.id} ==========\n`);
     logger.info(`[Matcher] Notifications dispatched for item #${newItem.id}`);
   } catch (err) {
-    // Matching errors must NEVER crash or delay the HTTP request lifecycle
+    console.error(`[Matcher] FATAL ERROR for item #${newItem.id}:`, err.message);
+    console.error(err.stack);
     logger.error(`[Matcher] Engine error for item #${newItem.id}: ${err.message}`);
   }
 };
