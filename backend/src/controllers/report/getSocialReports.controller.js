@@ -107,6 +107,34 @@ export const getSocialReportQueue = async (req, res, next) => {
     const { status, type } = req.query;
     const where = {};
 
+    // Apply status filter — map UI status labels back to DB enum values
+    if (status && status !== '') {
+      const statusDbMap = {
+        'Pending': 'Pending Review',
+        'In Review': 'In Progress',
+        'Resolved': 'Resolved',
+        'Dismissed': 'Dismissed',
+        'Withdrawn': 'Withdrawn',
+      };
+      const dbStatus = statusDbMap[status] || status;
+      where.status = dbStatus;
+    }
+
+    // Apply type filter — map display category names back to DB category values
+    if (type && type !== '') {
+      const reverseDisplayMap = {
+        'Inappropriate Content': 'inappropriate',
+        'Spam': 'spam',
+        'Harassment': 'harassment',
+        'Misinformation': 'misinformation',
+        'Other': 'other',
+      };
+      const dbCategory = reverseDisplayMap[type];
+      if (dbCategory) {
+        where.category = dbCategory;
+      }
+    }
+
     const reports = await StudentReport.findAll({
       where,
       include: [

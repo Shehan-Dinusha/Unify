@@ -2,7 +2,7 @@ import {
   sequelize,
   User,
   BusinessProfile,
-  NormalPost,
+  Post,
   ClubProductPost,
   BoostPackage,
   BoostPurchase,
@@ -102,45 +102,45 @@ export const seedBoostData = async (req, res, next) => {
 
     // ── 2. Business Posts (NormalPosts with FOOD/SELF_EMPLOYED category) ───
 
-    const [foodPost1] = await NormalPost.findOrCreate({
+    const [foodPost1] = await Post.findOrCreate({
       where: { authorId: foodBizUser.id, description: "🍔 SEMESTER SPECIAL! Buy 2 Burgers Get 1 Free — only this week at Eat Street Kitchen. Premium wagyu patties with our signature spicy sauce. Available for pickup 11AM-9PM!" },
       defaults: {
         authorId: foodBizUser.id,
         description: "🍔 SEMESTER SPECIAL! Buy 2 Burgers Get 1 Free — only this week at Eat Street Kitchen. Premium wagyu patties with our signature spicy sauce. Available for pickup 11AM-9PM!",
-        category: "FOOD",
+        type: "Business",
         isPromoted: false,
         likesCount: 42,
       },
     });
 
-    const [foodPost2] = await NormalPost.findOrCreate({
+    const [foodPost2] = await Post.findOrCreate({
       where: { authorId: foodBizUser.id, description: "☕ NEW: Iced Coffee Bar now open! Try our Caramel Macchiato, Matcha Latte, or Brown Sugar Boba. First 50 orders get 30% off. Student ID required." },
       defaults: {
         authorId: foodBizUser.id,
         description: "☕ NEW: Iced Coffee Bar now open! Try our Caramel Macchiato, Matcha Latte, or Brown Sugar Boba. First 50 orders get 30% off. Student ID required.",
-        category: "FOOD",
+        type: "Business",
         isPromoted: false,
         likesCount: 28,
       },
     });
 
-    const [techPost1] = await NormalPost.findOrCreate({
+    const [techPost1] = await Post.findOrCreate({
       where: { authorId: techBizUser.id, description: "💻 Laptop Acting Slow? We fix it in 30 minutes! Screen replacement, battery swap, SSD upgrades — all at student-friendly prices. DM for quick quote. Walk-ins welcome at IT Park." },
       defaults: {
         authorId: techBizUser.id,
         description: "💻 Laptop Acting Slow? We fix it in 30 minutes! Screen replacement, battery swap, SSD upgrades — all at student-friendly prices. DM for quick quote. Walk-ins welcome at IT Park.",
-        category: "SELF_EMPLOYED",
+        type: "Business",
         isPromoted: false,
         likesCount: 35,
       },
     });
 
-    const [techPost2] = await NormalPost.findOrCreate({
+    const [techPost2] = await Post.findOrCreate({
       where: { authorId: techBizUser.id, description: "📱 iPhone 15 Screen Protector + Case combo for Rs. 2,500 only! Limited stock. Tempered glass + military-grade drop protection. Also available for Samsung Galaxy S24." },
       defaults: {
         authorId: techBizUser.id,
         description: "📱 iPhone 15 Screen Protector + Case combo for Rs. 2,500 only! Limited stock. Tempered glass + military-grade drop protection. Also available for Samsung Galaxy S24.",
-        category: "SELF_EMPLOYED",
+        type: "Business",
         isPromoted: false,
         likesCount: 19,
       },
@@ -162,18 +162,18 @@ export const seedBoostData = async (req, res, next) => {
     });
 
     // A couple of regular student posts (not boosted — for contrast in feed)
-    const [regularPost1] = await NormalPost.findOrCreate({
+    const [regularPost1] = await Post.findOrCreate({
       where: { description: "Anyone knows a good place for a group study session near campus? We need wifi and AC 😅" },
       defaults: {
         authorId: foodBizUser.id, // reuse user
         description: "Anyone knows a good place for a group study session near campus? We need wifi and AC 😅",
-        category: "FOOD",
+        type: "General",
         isPromoted: false,
         likesCount: 5,
       },
     });
 
-    logger.info(`Posts created: NormalPosts ${foodPost1.id}, ${foodPost2.id}, ${techPost1.id}, ${techPost2.id} | ClubProduct ${productPost.id}`);
+    logger.info(`Posts created: Posts ${foodPost1.id}, ${foodPost2.id}, ${techPost1.id}, ${techPost2.id} | ClubProduct ${productPost.id}`);
 
     // ── 3. Boost Packages with boostConfig ────────────────────────────────
 
@@ -289,7 +289,7 @@ export const seedBoostData = async (req, res, next) => {
     });
 
     // Mark the post as promoted
-    await NormalPost.update(
+    await Post.update(
       { isPromoted: true },
       { where: { id: foodPost1.id } },
     );
@@ -311,7 +311,7 @@ export const seedBoostData = async (req, res, next) => {
       },
     });
 
-    await NormalPost.update(
+    await Post.update(
       { isPromoted: true },
       { where: { id: techPost1.id } },
     );
@@ -333,7 +333,7 @@ export const seedBoostData = async (req, res, next) => {
       },
     });
 
-    await NormalPost.update(
+    await Post.update(
       { isPromoted: true },
       { where: { id: foodPost2.id } },
     );

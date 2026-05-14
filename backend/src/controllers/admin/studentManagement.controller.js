@@ -40,10 +40,23 @@ export const getStudentDirectory = async (req, res, next) => {
     }
 
     if (faculty && faculty !== 'all') {
-      const facultyMap = { 'eng': 1, 'sci': 2, 'mgmt': 3, 'it': 4 };
-      const fId = facultyMap[faculty.toLowerCase()];
-      if (fId) {
-        profileWhere.facultyId = fId;
+      // Dynamic lookup: map short codes to partial names, then use ILIKE
+      // to match DB values like 'Faculty of Engineering', 'Information Technology', etc.
+      const facultyNameMap = {
+        'it': 'Information Technology',
+        'eng': 'Engineering',
+        'arch': 'Architecture',
+        'bus': 'Business',
+        'med': 'Medicine',
+        'sci': 'Science',
+        'mgmt': 'Management',
+      };
+      const searchTerm = facultyNameMap[faculty.toLowerCase()] || faculty;
+      const facultyRecord = await Faculty.findOne({
+        where: { name: { [Op.iLike]: `%${searchTerm}%` } }
+      });
+      if (facultyRecord) {
+        profileWhere.facultyId = facultyRecord.id;
       }
     }
 
@@ -59,6 +72,7 @@ export const getStudentDirectory = async (req, res, next) => {
         include: [{ model: Faculty, as: 'faculty', attributes: ['name'] }]
       }],
       subQuery: false,
+      distinct: true, // Prevents inflated count from LEFT JOINs
       attributes: ['id', 'name', 'email', 'avatar', 'status', 'lastActive'],
       limit: parseInt(limit),
       offset: parseInt(offset),
