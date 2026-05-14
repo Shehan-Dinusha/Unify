@@ -53,13 +53,19 @@ export const studentRoutes = [
   // 2. SHARED ROUTES (Require club verification for Club users)
   {
     element: (
-      <ProtectedRoute allowedRoles={["Student", "Business", "Club", "Admin"]} requireVerified />
+      <ProtectedRoute
+        allowedRoles={["Student", "Business", "Club", "Admin"]}
+        requireVerified
+      />
     ),
     children: [
       { path: "/news-feed", element: <NewsFeed /> },
       { path: "/messages", element: <ChatPage /> },
       { path: "/profile/reviews", element: <MyReviewHistory /> },
-      { path: "/marketplace/:targetId/reviews", element: <MarketplaceReviews /> },
+      {
+        path: "/marketplace/:targetId/reviews",
+        element: <MarketplaceReviews />,
+      },
     ],
   },
   // 3. NOTIFICATIONS (Accessible to all, including unverified clubs)
@@ -67,13 +73,11 @@ export const studentRoutes = [
     element: (
       <ProtectedRoute allowedRoles={["Student", "Business", "Club", "Admin"]} />
     ),
-    children: [
-      { path: "/notifications", element: <Notification /> },
-    ],
+    children: [{ path: "/notifications", element: <Notification /> }],
   },
   // 4. STUDENT-ONLY ROUTES
   {
-    element: <ProtectedRoute allowedRoles={["Student", "Admin", "Business"]} />,
+    element: <ProtectedRoute allowedRoles={["Student", "Admin"]} />,
     children: [
       { path: "/lost-and-found", element: <LostAndFound /> },
       { path: "/my-lost-and-found", element: <MyLostAndFound /> },
@@ -90,8 +94,14 @@ export const studentRoutes = [
       { path: "marketplace/boarding", element: <Boarding /> },
       { path: "/marketplace/club/product/:type/:id", element: <ClubProduct /> },
       { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
-      { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
-      { path: "/marketplace/club/payment-cancel", element: <ClubPaymentCancel /> },
+      {
+        path: "/marketplace/club/payment-success",
+        element: <ClubPaymentSuccess />,
+      },
+      {
+        path: "/marketplace/club/payment-cancel",
+        element: <ClubPaymentCancel />,
+      },
 
       // Learning
       { path: "/learning", element: <BatchRepLearningDashboard /> },
