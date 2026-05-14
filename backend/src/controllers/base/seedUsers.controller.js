@@ -106,11 +106,12 @@ const SRI_LANKAN_CITIES = [
 
 function studentAddress() {
   const city = SRI_LANKAN_CITIES[randomInt(0, SRI_LANKAN_CITIES.length - 1)];
+  const streets = ["Main Street", "Galle Road", "Temple Road", "Station Road", "Lake Road"];
   return [
     {
-      type: "Home",
-      fullAddress: `${randomInt(1, 300)}, ${["Main Street", "Galle Road", "Temple Road", "Station Road", "Lake Road"][randomInt(0, 4)]}, ${city}`,
+      street: `${randomInt(1, 300)} ${streets[randomInt(0, 4)]}`,
       city,
+      postalCode: `${randomInt(10000, 99999)}`,
     },
   ];
 }
@@ -822,9 +823,9 @@ export const seedUsers = async (req, res) => {
           phone,
           addresses: [
             {
-              type: "Main",
-              fullAddress: "Katubedda, Moratuwa, Sri Lanka",
+              street: "Katubedda, Moratuwa, Sri Lanka",
               city: "Moratuwa",
+              postalCode: "10400",
             },
           ],
           serviceType: serviceType("FOOD", bizIdx),
@@ -889,9 +890,9 @@ export const seedUsers = async (req, res) => {
           phone,
           addresses: [
             {
-              type: "Main",
-              fullAddress: "Katubedda, Moratuwa, Sri Lanka",
+              street: "Katubedda, Moratuwa, Sri Lanka",
               city: "Moratuwa",
+              postalCode: "10400",
             },
           ],
           serviceType: serviceType("BOARDING", bizIdx),
@@ -954,9 +955,9 @@ export const seedUsers = async (req, res) => {
           phone,
           addresses: [
             {
-              type: "Main",
-              fullAddress: "Moratuwa, Sri Lanka",
+              street: "Moratuwa, Sri Lanka",
               city: "Moratuwa",
+              postalCode: "10400",
             },
           ],
           serviceType: serviceType("SELF_EMPLOYED", bizIdx),
