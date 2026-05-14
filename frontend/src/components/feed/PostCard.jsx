@@ -442,7 +442,7 @@ const PostCard = ({
         {/* Description */}
         {description && (
           <div className="text-sm sm:text-body-medium text-[#94A3B8] leading-relaxed">
-            <p className="inline">
+            <p className="inline whitespace-pre-wrap">
               {isLongDescription && !isExpanded
                 ? `${description.slice(0, DESCRIPTION_LIMIT).trimEnd()}...`
                 : description}
@@ -585,8 +585,7 @@ const PostCard = ({
           />
         )}
       </div>
-    </div>
-  </Card>
+    </Card>
   );
 };
 

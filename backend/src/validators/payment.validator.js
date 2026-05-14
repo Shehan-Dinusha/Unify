@@ -15,8 +15,8 @@ export const checkoutSessionValidator = [
     .isString().withMessage("Product name must be a string"),
   body("successUrl")
     .optional()
-    .isURL().withMessage("Invalid success URL"),
+    .isURL({ require_tld: false }).withMessage("Invalid success URL"),
   body("cancelUrl")
     .optional()
-    .isURL().withMessage("Invalid cancel URL"),
+    .isURL({ require_tld: false }).withMessage("Invalid cancel URL"),
 ];

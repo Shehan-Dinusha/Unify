@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { 
+import {
     ImagePlus, MapPin,
     ArrowRight, Loader2, Edit3
 } from "lucide-react";
@@ -8,14 +8,11 @@ import Card from "../components/common/Card";
 import FoodCafeCard from "../components/marketplace/FoodCafeCard";
 import { useNavigate } from "react-router-dom";
 import postService from "../services/postService";
+import { getCurrentUser } from "../services/authService";
 
 const CreateServicePostPage = () => {
     const navigate = useNavigate();
-    const user = {
-        name: "Alex Johnson",
-        role: "services_owner",
-        displayRole: "Business & Organization"
-    };
+    const user = getCurrentUser();
 
     const [description, setDescription] = useState("");
 
@@ -42,7 +39,7 @@ const CreateServicePostPage = () => {
     };
 
     const handleCancel = () => navigate("/services-owner/marketplace");
-    
+
     const handlePublish = async () => {
         if (!description) {
             alert("Please fill in all required fields.");
@@ -53,7 +50,7 @@ const CreateServicePostPage = () => {
             setLoading(true);
             const data = new FormData();
             data.append("description", description);
-            
+
             images.forEach(img => {
                 if (img.file) {
                     data.append("images", img.file);
@@ -102,15 +99,15 @@ const CreateServicePostPage = () => {
                                             Photos
                                         </label>
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                            <input 
-                                                type="file" 
-                                                ref={fileInputRef} 
-                                                className="hidden" 
-                                                multiple 
-                                                accept="image/*" 
-                                                onChange={(e) => handleFiles(e.target.files)} 
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                className="hidden"
+                                                multiple
+                                                accept="image/*"
+                                                onChange={(e) => handleFiles(e.target.files)}
                                             />
-                                            <div 
+                                            <div
                                                 onClick={() => fileInputRef.current?.click()}
                                                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                                                 onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
@@ -148,8 +145,8 @@ const CreateServicePostPage = () => {
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
                                             placeholder="Describe your services in detail..."
-                                            rows={4}
-                                            className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors resize-none placeholder:text-text-secondary"
+                                            rows={6}
+                                            className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors resize-y placeholder:text-text-secondary"
                                         />
                                     </div>
                                 </div>
@@ -165,7 +162,7 @@ const CreateServicePostPage = () => {
                             </div>
 
                             <div className="pointer-events-none">
-                                <FoodCafeCard 
+                                <FoodCafeCard
                                     post={{
                                         id: "preview",
                                         author: { name: user.name },
