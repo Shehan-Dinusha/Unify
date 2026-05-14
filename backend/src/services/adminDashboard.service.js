@@ -115,7 +115,7 @@ export const getDashboardStats = async () => {
     studentTrend: `↗ ${studentTrendVal}% vs last semester`,
     businessBoostRevenue: currentBoostRevenue,
     businessBoostRevenueFormatted: fmtCompact(currentBoostRevenue),
-    boostTrend: `↑ ${boostTrendVal}% this month`,
+    boostTrend: `↗ ${boostTrendVal}% this month`,
     activeBusinesses,
     activeBusinessesFormatted: String(activeBusinesses),
     bizTrend: `↗ ${bizTrendVal}% this year`,

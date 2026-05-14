@@ -17,10 +17,7 @@ import logger from '../../utils/logger.js';
 import moment from 'moment';
 import { resolveAvatarUrl } from '../../utils/avatarUrl.util.js';
 
-/**
- * GET /api/v1/admin/businesses
- * Retrieves the business directory with filtering and search.
- */
+//Get Retrieves the business directory with filtering and search.
 export const getBusinessDirectory = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, search, category, status } = req.query;
@@ -114,10 +111,7 @@ export const getBusinessDirectory = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/v1/admin/businesses/stats
- * Dashboard statistics for Business Management.
- */
+// Get Dashboard statistics for Business Management.
 export const getBusinessStats = async (req, res, next) => {
   try {
     const startOfThisMonth = moment().startOf('month').toDate();
@@ -168,10 +162,7 @@ export const getBusinessStats = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/v1/admin/businesses/:id
- * Detailed business profile for Admin view.
- */
+//Get Detailed business profile for Admin view.
 export const getBusinessProfile = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -346,9 +337,6 @@ export const getBusinessProfile = async (req, res, next) => {
   }
 };
 
-/**
- * PUT /api/v1/admin/businesses/:id/status
- */
 export const updateBusinessStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -397,9 +385,7 @@ export const updateBusinessStatus = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/v1/admin/businesses/:id/notes
- */
+//Send Admin Notes
 export const addBusinessNote = async (req, res, next) => {
   try {
     const { id } = req.params;
