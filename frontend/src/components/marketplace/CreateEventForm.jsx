@@ -235,8 +235,8 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                     value={formData.description}
                                     onChange={handleChange}
                                     placeholder="Describe your event... What can attendees expect?"
-                                    rows={4}
-                                    className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-blue transition-colors resize-none placeholder:text-text-secondary"
+                                    rows={6}
+                                    className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-blue transition-colors resize-y placeholder:text-text-secondary"
                                 />
                             </div>
 
@@ -441,6 +441,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                 price: tiers.find(t => t.enabled)?.isFree ? "Free" : tiers.find(t => t.enabled)?.price ? `Rs.${tiers.find(t => t.enabled).price}` : "Free",
                                 text: `${formData.name ? `Event: ${formData.name}\n` : ""}${formData.date ? `Date: ${formData.date}${formData.time ? ` @ ${formData.time}` : ''}\n` : ""}${formData.location ? `Location: ${formData.location}\n` : ""}\n${formData.description || "Your event description will appear here..."}`,
                                 postType: "club-event",
+                                whitespacePre: true,
                                 stats: { likes: 0 },
                                 comments: []
                             }}

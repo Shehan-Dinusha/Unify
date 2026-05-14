@@ -191,8 +191,8 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                                     value={formData.description}
                                     onChange={handleInputChange}
                                     placeholder="Describe your product..."
-                                    rows={4}
-                                    className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-blue transition-colors resize-none mb-2"
+                                    rows={6}
+                                    className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-blue transition-colors resize-y mb-2"
                                 />
                                 <div className="text-right text-[10px] text-text-secondary italic">
                                     Highlight key features, materials, and club relevance.
