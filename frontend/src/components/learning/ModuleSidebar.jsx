@@ -192,7 +192,7 @@ const ModuleSidebar = ({
           try {
             await learningService.updateSemesterVisibility(degreeId, visibilitySemester.id, {
               visibleBatchIds: data.visibleBatchIds,
-              notifyReps: data.notifyReps,
+              notifyStudents: data.notifyStudents,
             });
             setVisibilitySemester(null);
             if (onRefreshSemesters) {

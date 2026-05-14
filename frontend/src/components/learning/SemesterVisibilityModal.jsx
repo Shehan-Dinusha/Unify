@@ -14,7 +14,7 @@ const SemesterVisibilityModal = ({
 }) => {
   const [mounted, setMounted] = useState(false);
   const [batches, setBatches] = useState([]);
-  const [notifyReps, setNotifyReps] = useState(false);
+  const [notifyStudents, setNotifyStudents] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -30,7 +30,7 @@ const SemesterVisibilityModal = ({
         visible: currentVisibility.includes(batch.id),
       }));
       setBatches(initializedBatches);
-      setNotifyReps(false);
+      setNotifyStudents(false);
     }
   }, [isOpen, availableBatches, currentVisibility]);
 
@@ -50,7 +50,7 @@ const SemesterVisibilityModal = ({
     if (onSaveVisibility) {
       onSaveVisibility({
         visibleBatchIds,
-        notifyReps,
+        notifyStudents,
       });
     }
     onClose();
@@ -127,27 +127,27 @@ const SemesterVisibilityModal = ({
               )}
             </div>
 
-            {/* Notify Batch Reps checkbox */}
+            {/* Notify Students checkbox */}
             <div
               className="w-full relative border-t border-primary-blue/20 pt-4 flex gap-2 items-start cursor-pointer group shrink-0"
-              onClick={() => setNotifyReps(!notifyReps)}
+              onClick={() => setNotifyStudents(!notifyStudents)}
             >
               <div className="h-5 flex items-center justify-center shrink-0 pt-0.5">
                 <div
-                  className={`w-4 h-4 rounded outline outline-1 outline-offset-[-1px] flex items-center justify-center transition-colors ${notifyReps ? "bg-slate-700 outline-gray-600" : "bg-slate-700 outline-gray-600 group-hover:bg-slate-600"}`}
+                  className={`w-4 h-4 rounded outline outline-1 outline-offset-[-1px] flex items-center justify-center transition-colors ${notifyStudents ? "bg-slate-700 outline-gray-600" : "bg-slate-700 outline-gray-600 group-hover:bg-slate-600"}`}
                 >
-                  {notifyReps && (
+                  {notifyStudents && (
                     <Check size={12} className="text-white" strokeWidth={3} />
                   )}
                 </div>
               </div>
               <div className="flex flex-col">
                 <span className="text-gray-300 text-sm font-bold font-inter leading-5 transition-colors group-hover:text-white">
-                  Notify Batch Representatives
+                  Notify Students
                 </span>
                 <span className="text-gray-400 text-xs font-normal font-inter leading-5 transition-colors group-hover:text-gray-300">
-                  Sends a notification to reps of affected batches about this
-                  change.
+                  Sends a notification to all students enrolled in the affected
+                  batches.
                 </span>
               </div>
             </div>
