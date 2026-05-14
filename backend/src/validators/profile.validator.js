@@ -10,7 +10,7 @@ export const studentProfileValidator = [
     req.body.registrationNumber = regNum; // Sync for controller
     return true;
   }),
-  
+
   body("universityId")
     .notEmpty()
     .withMessage("University is required")
@@ -68,7 +68,7 @@ export const studentProfileValidator = [
       const dob = new Date(value);
       const today = new Date();
       if (dob > today) throw new Error("Date of birth cannot be in the future");
-      
+
       const age = today.getFullYear() - dob.getFullYear();
       if (age < 16) throw new Error("User must be at least 16 years old");
       if (age > 100) throw new Error("Please enter a valid date of birth");
@@ -82,18 +82,18 @@ export const businessProfileValidator = [
   body("category").custom((value, { req }) => {
     // Multer populates req.body. Check if it exists
     const category = req.body.category || value;
-    
+
     if (!category) {
       throw new Error("Category is required");
     }
 
     const normalizedCategory = category.trim().toUpperCase();
     const validCategories = ["BOARDING", "FOOD", "SELF_EMPLOYED"];
-    
+
     if (!validCategories.includes(normalizedCategory)) {
       throw new Error("Invalid business category");
     }
-    
+
     // Update the body with the normalized value so the controller gets it clean
     req.body.category = normalizedCategory;
     return true;
@@ -106,7 +106,7 @@ export const businessProfileValidator = [
     if (category === "BOARDING") {
       if (!req.body.ownerFirstName && !req.body.firstName) throw new Error("Owner first name is required for boarding");
       if (!req.body.ownerLastName && !req.body.lastName) throw new Error("Owner last name is required for boarding");
-      
+
       // NIC Validation (Sri Lanka formats: 9 digits + V/X OR 12 digits)
       const nic = req.body.nic;
       const nicRegex = /^([0-9]{9}[xXvV]|[0-9]{12})$/;
@@ -114,7 +114,7 @@ export const businessProfileValidator = [
       if (!nicRegex.test(nic)) throw new Error("Invalid NIC format");
 
       if (!req.body.gender) throw new Error("Gender is required for boarding");
-      
+
       // DOB Validation for Owner
       if (!req.body.dob) throw new Error("Date of birth is required for boarding");
       const dob = new Date(req.body.dob);

@@ -585,7 +585,8 @@ const PostCard = ({
           />
         )}
       </div>
-    </Card>
+    </div>
+  </Card>
   );
 };
 

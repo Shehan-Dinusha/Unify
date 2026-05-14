@@ -75,7 +75,6 @@ const StatCard = ({
 /* ─── Main Page ──────────────────────────────────────────────── */
 const ClubOwnerDashboard = () => {
   const navigate = useNavigate();
-  const [chartFilter, setChartFilter] = useState("Month");
 
   // API Data States
   const [stats, setStats] = useState({
@@ -115,10 +114,7 @@ const ClubOwnerDashboard = () => {
           postsRes,
         ] = await Promise.allSettled([
           orderService.getClubOrderStats(user.id),
-          orderService.getClubOrderTrends(
-            user.id,
-            chartFilter === "Month" ? 30 : 365,
-          ),
+          orderService.getClubOrderTrends(user.id, 30),
           orderService.getClubTopProducts(user.id),
           orderService.getClubBuyerDemographics(user.id),
           orderService.getClubRevenueBreakdown(user.id),
@@ -140,16 +136,13 @@ const ClubOwnerDashboard = () => {
         if (val(postsRes)?.success) {
           const normalized = val(postsRes).posts.map((p) => ({
             ...p,
-            image:
+            image: getImageUrl(
               p.postType === "club-event"
-                ? typeof p.coverImage === "string"
-                  ? p.coverImage
-                  : p.coverImage?.url || ""
+                ? p.coverImage
                 : Array.isArray(p.images) && p.images.length > 0
-                  ? typeof p.images[0] === "string"
-                    ? p.images[0]
-                    : p.images[0]?.url || ""
+                  ? p.images[0]
                   : "",
+            ),
             clubName: p.name,
             clubSeed: p.name,
             text: p.description,
@@ -168,7 +161,7 @@ const ClubOwnerDashboard = () => {
     };
 
     fetchDashboardData();
-  }, [user.id, chartFilter]);
+  }, [user.id]);
 
   const handleWalletClick = async () => {
     try {
@@ -256,26 +249,13 @@ const ClubOwnerDashboard = () => {
           <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-base">Order Trends</h3>
-              <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1">
-                {["Month", "Year"].map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setChartFilter(f)}
-                    className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${chartFilter === f ? "bg-primary-blue text-white" : "text-text-secondary hover:text-white"}`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
+              <span className="text-text-secondary text-xs">Last 30 days</span>
             </div>
             {(() => {
               const values = trends.map((t) => parseInt(t.count));
-              const labels = trends.map((t, i) => {
-                if (chartFilter === "Month") {
-                  return (i + 1) % 5 === 0 ? t.date.split("-")[2] : "";
-                }
-                return i % 2 === 0 ? t.date.split("-")[1] : "";
-              });
+              const labels = trends.map((t, i) =>
+                (i + 1) % 5 === 0 ? t.date.split("-")[2] : ""
+              );
               const maxVal = Math.max(...values, 10) * 1.2;
               const todayIdx = trends.length - 1;
 
@@ -302,14 +282,11 @@ const ClubOwnerDashboard = () => {
             <div className="flex flex-col gap-4">
               {topProducts.length > 0 ? (
                 topProducts.map((p, i) => (
-                  <div key={p.itemId} className="flex items-center gap-3">
+                  <div key={p.id} className="flex items-center gap-3">
                     <div className="relative">
                       <img
-                        src={
-                          p.clubProduct?.images?.[0]?.src ||
-                          "https://via.placeholder.com/40"
-                        }
-                        alt={p.clubProduct?.title}
+                        src={p.image || "https://via.placeholder.com/40"}
+                        alt={p.title}
                         className="w-10 h-10 rounded-xl object-cover"
                       />
                       <span className="absolute -top-1 -left-1 w-4 h-4 bg-primary-blue text-white text-[8px] font-bold rounded-full flex items-center justify-center">
@@ -318,14 +295,14 @@ const ClubOwnerDashboard = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">
-                        {p.clubProduct?.title || "Unknown Product"}
+                        {p.title || "Unknown Product"}
                       </p>
                       <p className="text-text-secondary text-[11px]">
                         {p.salesCount} sold
                       </p>
                     </div>
                     <span className="text-primary-blue text-sm font-bold shrink-0">
-                      Rs.{parseFloat(p.totalRevenue).toLocaleString()}
+                      Rs.{p.totalRevenue.toLocaleString()}
                     </span>
                   </div>
                 ))
@@ -438,9 +415,12 @@ const ClubOwnerDashboard = () => {
 
         {/* ── Recent Orders ── */}
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 px-1">
             <h3 className="font-bold text-base">Recent Orders</h3>
-            <span className="text-primary-blue text-xs font-medium cursor-pointer hover:underline">
+            <span
+              onClick={() => navigate("/club-owner/product-orders")}
+              className="text-primary-blue text-xs font-medium cursor-pointer hover:underline"
+            >
               View all
             </span>
           </div>
@@ -464,15 +444,17 @@ const ClubOwnerDashboard = () => {
                     recentOrders.map((order, i) => {
                       const statusStyle =
                         order.status === "Order Completed" ||
-                        order.status === "COMPLETED"
+                          order.status === "COMPLETED"
                           ? "bg-state-success/15 text-state-success"
-                          : [
-                                "Order Placed",
-                                "Seller Confirmed",
-                                "IN PROGRESS",
-                              ].includes(order.status)
-                            ? "bg-primary-blue/15 text-primary-blue"
-                            : "bg-state-warning/15 text-state-warning";
+                          : order.status === "CANCELLED"
+                            ? "bg-state-error/15 text-state-error"
+                            : [
+                              "Order Placed",
+                              "Seller Confirmed",
+                              "IN PROGRESS",
+                            ].includes(order.status)
+                              ? "bg-primary-blue/15 text-primary-blue"
+                              : "bg-state-warning/15 text-state-warning";
                       return (
                         <tr
                           key={order.id}
@@ -485,10 +467,10 @@ const ClubOwnerDashboard = () => {
                             <div className="flex items-center gap-3">
                               <img
                                 src={
-                                  order.clubProduct?.images?.[0]?.src ||
+                                  getImageUrl(order.clubProduct?.images?.[0]) ||
                                   "https://via.placeholder.com/32"
                                 }
-                                alt={order.clubProduct?.name}
+                                alt={order.clubProduct?.name || "Product"}
                                 className="w-8 h-8 rounded-lg object-cover shrink-0"
                               />
                               <span className="font-medium text-xs truncate max-w-[180px]">
@@ -548,11 +530,10 @@ const ClubOwnerDashboard = () => {
                 return (
                   <div key={post.id} className="relative group">
                     <div
-                      className={`transition-all duration-300 ${
-                        isInFeed
+                      className={`transition-all duration-300 ${isInFeed
                           ? "opacity-100"
                           : "opacity-40 grayscale-[30%] pointer-events-none"
-                      }`}
+                        }`}
                     >
                       <ClubPostCard
                         post={post}
@@ -594,7 +575,7 @@ const ClubOwnerDashboard = () => {
                                 setClubPosts((prev) =>
                                   prev.map((p) =>
                                     p.id === post.id &&
-                                    p.postType === post.postType
+                                      p.postType === post.postType
                                       ? { ...p, isVisible: res.isVisible }
                                       : p,
                                   ),

@@ -139,17 +139,11 @@ export const boardingOwnerRoutes = [
       />
     ),
     children: [
-      { path: "/marketplace/boarding", element: <Boarding /> },
-      {
-        path: "/boarding-owner/marketplace",
-        element: <BoardingOwnerMarketplace />,
-      },
-      {
-        path: "/boarding-owner/create-post",
-        element: <CreateBoardingPostPage />,
-      },
-    ],
-  },
+      //{ path: "/marketplace/boarding", element: <Boarding /> },
+      { path: "/boarding-owner/marketplace", element: <BoardingOwnerMarketplace /> },
+      { path: "/boarding-owner/create-post", element: <CreateBoardingPostPage /> },
+    ]
+  }
 ];
 
 // Food & café
@@ -162,17 +156,11 @@ export const foodCafeRoutes = [
       />
     ),
     children: [
-      { path: "/marketplace/food-cafe", element: <FoodCafe /> },
-      {
-        path: "/food-cafe-owner/marketplace",
-        element: <FoodCafeOwnerMarketplace />,
-      },
-      {
-        path: "/food-cafe-owner/create-post",
-        element: <CreateFoodCafePostPage />,
-      },
-    ],
-  },
+      //{ path: "/marketplace/food-cafe", element: <FoodCafe /> },
+      { path: "/food-cafe-owner/marketplace", element: <FoodCafeOwnerMarketplace /> },
+      { path: "/food-cafe-owner/create-post", element: <CreateFoodCafePostPage /> },
+    ]
+  }
 ];
 
 // Self-employed services
@@ -185,17 +173,11 @@ export const selfEmployedRoutes = [
       />
     ),
     children: [
-      { path: "/marketplace/services", element: <Services /> },
-      {
-        path: "/services-owner/marketplace",
-        element: <ServicesOwnerMarketplace />,
-      },
-      {
-        path: "/services-owner/create-post",
-        element: <CreateServicePostPage />,
-      },
-    ],
-  },
+      //{ path: "/marketplace/services", element: <Services /> },
+      { path: "/services-owner/marketplace", element: <ServicesOwnerMarketplace /> },
+      { path: "/services-owner/create-post", element: <CreateServicePostPage /> },
+    ]
+  }
 ];
 
 export const businessRoutes = [
