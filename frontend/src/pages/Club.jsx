@@ -5,9 +5,10 @@ import TrendingNow from "../components/club/TrendingNow";
 import postService from "../services/postService";
 import { getImageUrl, formatTimeAgo } from "../utils/formatters";
 import { Loader2 } from "lucide-react";
+import { getCurrentUser } from "../services/authService";
 
 const Club = () => {
-    const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
+    const user = { getCurrentUser };
     const [posts, setPosts] = useState([]);
     const [trendingItems, setTrendingItems] = useState([]);
     const [loading, setLoading] = useState(true);

@@ -175,7 +175,7 @@ export const notifyMatch = async ({
     content: `A new item "${matchTitle}" has been posted that matches your item report${matchText}.`,
     referenceId: foundItemId,
     referenceType: "LostAndFound",
-    dedupeKey: `match:${lostItemId}:${foundItemId}`,
+    dedupeKey: `match:${userId}:${lostItemId}:${foundItemId}`,
     image,
   });
 };

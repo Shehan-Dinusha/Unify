@@ -4,9 +4,10 @@ import MainLayout from "../components/layout/MainLayout";
 import FoodCafeCard from "../components/marketplace/FoodCafeCard";
 import postService from "../services/postService";
 import { formatTimeAgo } from "../utils/formatters";
+import { getCurrentUser } from "../services/authService";
 
 const FoodCafe = () => {
-    const user = { name: "Alex Johnson", role: "student", displayRole: "Student" };
+    const user = getCurrentUser();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
 

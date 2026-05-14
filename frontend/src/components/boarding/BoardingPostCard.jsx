@@ -118,7 +118,7 @@ const CommentSection = ({ postComments, onAddComment }) => {
                                     <span className="text-[13px] font-semibold text-text-primary">{c.user}</span>
                                     <span className="text-[11px] text-text-tertiary">{c.time}</span>
                                 </div>
-                                <p className="text-[13px] text-text-secondary leading-relaxed">{c.text}</p>
+                                <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-wrap">{c.text}</p>
                             </div>
                         </div>
                     ))}
@@ -201,7 +201,7 @@ const BoardingPostCard = ({ post, onClick }) => {
                 </div>
 
                 {/* Description */}
-                <p className="text-body-medium text-text-secondary leading-6 mb-1 line-clamp-2">
+                <p className="text-body-medium text-text-secondary leading-6 mb-1 line-clamp-2 whitespace-pre-wrap">
                     {post.description}
                 </p>
 

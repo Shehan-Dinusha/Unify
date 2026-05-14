@@ -172,11 +172,11 @@ const ClubProduct = () => {
                             </div>
 
                             {/* Description */}
-                            <p className="hidden md:block mt-md text-body-medium text-text-secondary leading-6 max-w-[640px]">
+                            <p className="hidden md:block mt-md text-body-medium text-text-secondary leading-6 max-w-[640px] whitespace-pre-wrap">
                                 {post.description}
                             </p>
                             <div className="md:hidden mt-md text-body-medium text-text-secondary leading-6 max-w-[640px]">
-                                <p className={!isDescExpanded ? "line-clamp-3" : ""}>
+                                <p className={`${!isDescExpanded ? "line-clamp-3" : ""} whitespace-pre-wrap`}>
                                     {post.description}
                                 </p>
                                 {post.description && post.description.length > 100 && (

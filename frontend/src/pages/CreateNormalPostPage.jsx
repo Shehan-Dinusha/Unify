@@ -3,20 +3,17 @@ import MainLayout from "../components/layout/MainLayout";
 import CreateNormalPostForm from "../components/marketplace/CreateNormalPostForm";
 import { useNavigate } from "react-router-dom";
 import postService from "../services/postService";
+import { getCurrentUser } from "../services/authService";
 
 const CreateNormalPostPage = () => {
     const navigate = useNavigate();
-    const user = {
-        name: "Alex Johnson",
-        role: "club", // This would be dynamic in real app
-        displayRole: "Clubs & Societies"
-    };
+    const user = getCurrentUser();
 
     const handlePublish = async (postData, images) => {
         try {
             const data = new FormData();
             data.append("description", postData.description);
-            
+
             // Map user role to postType
             // roles: club, food_cafe_owner, services_owner, boarding_owner
             // postTypes: club, food-cafe, service, boarding
@@ -24,9 +21,9 @@ const CreateNormalPostPage = () => {
             if (user.role === "food_cafe_owner") postType = "food-cafe";
             else if (user.role === "services_owner") postType = "service";
             else if (user.role === "boarding_owner") postType = "boarding";
-            
+
             data.append("postType", postType);
-            
+
             images.forEach(img => {
                 if (img.file) {
                     data.append("images", img.file);
@@ -34,7 +31,7 @@ const CreateNormalPostPage = () => {
             });
 
             await postService.createPost("normal", data);
-            
+
             // Navigate back based on role
             if (user.role === "club") navigate("/club-owner/marketplace");
             else if (user.role === "boarding_owner") navigate("/boarding-owner/marketplace");
