@@ -7,8 +7,10 @@ const getUploadedFileUrls = (files) => {
 
 export const createBoardingPost = async (req, res) => {
   try {
-    // Use logged in user, or hardcode userId to 2 (Boarding Owner) for development fallback
-    const userId = req.user ? req.user.id : (req.body.userId || 2);
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
 
     const images = getUploadedFileUrls(req.files);
 

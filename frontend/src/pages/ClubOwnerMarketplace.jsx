@@ -6,6 +6,7 @@ import CreatePostModal from "../components/marketplace/CreatePostModal";
 import postService from "../services/postService";
 import { getImageUrl, formatTimeAgo } from "../utils/formatters";
 import { Loader2 } from "lucide-react";
+import { getCurrentUser } from "../services/authService";
 
 const ClubOwnerMarketplace = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,11 +15,7 @@ const ClubOwnerMarketplace = () => {
     const [loading, setLoading] = useState(true);
     const [trendingLoading, setTrendingLoading] = useState(true);
 
-    const user = {
-        name: "Alex Johnson",
-        role: "club",
-        displayRole: "Clubs & Societies"
-    };
+    const user = getCurrentUser();
 
     const fetchFeed = async () => {
         try {

@@ -220,6 +220,42 @@ const UnifiedSidebar = ({
         },
       ],
     },
+    boarding_owner: {
+      title: "Boarding Dashboard",
+      links: [
+        { icon: Rss, label: "News Feed", path: "/boarding-owner/marketplace" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
+      ],
+    },
+    food_cafe_owner: {
+      title: "Food & Cafe Dashboard",
+      links: [
+        { icon: Rss, label: "News Feed", path: "/food-cafe-owner/marketplace" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
+      ],
+    },
+    self_employed: {
+      title: "Services Dashboard",
+      links: [
+        { icon: Rss, label: "News Feed", path: "/services-owner/marketplace" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
+      ],
+    },
   };
 
   const isClub =

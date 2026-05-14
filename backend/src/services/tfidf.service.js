@@ -181,20 +181,29 @@ export const cosineSimilarity = (vecA, vecB) => {
  * candidate items.  Builds a corpus-level IDF so rare domain-specific terms
  * (e.g. "calculus", "lanyard", "macbook") get appropriately boosted.
  *
+ * Title is repeated 2× before tokenization to give it stronger influence
+ * over the description.  This is the simplest approach that avoids
+ * architectural complexity while being easy to tune.
+ *
  * @param {{ title: string, description: string }} query
  * @param {{ id: number, title: string, description: string }[]} candidates
  * @returns {{ id: number, textScore: number }[]} Parallel array to `candidates`
  */
 export const computeTextSimilarities = (query, candidates) => {
-  const queryText = `${query.title || ""} ${query.description || ""}`;
-  const queryTokens = tokenize(queryText);
+  // Repeat title twice so its tokens appear 2× more frequently than description
+  // tokens — this biases the TF score towards the title without changing the
+  // underlying math of TF-IDF or cosine similarity.
+  const buildText = (title, description) =>
+    `${title || ""} ${title || ""} ${description || ""}`;
+
+  const queryTokens = tokenize(buildText(query.title, query.description));
 
   if (queryTokens.length === 0) {
     return candidates.map((c) => ({ id: c.id, textScore: 0 }));
   }
 
   const candidateTokensList = candidates.map((c) =>
-    tokenize(`${c.title || ""} ${c.description || ""}`)
+    tokenize(buildText(c.title, c.description))
   );
 
   // Build a unified corpus so IDF is computed across all documents together

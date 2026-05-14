@@ -128,7 +128,7 @@ const BoardingOverlay = ({ post, onClose }) => {
                     {/* About Section */}
                     <div>
                         <h3 className="text-body-large-bold text-text-primary mb-3">About this place</h3>
-                        <p className="text-body-medium text-text-secondary leading-relaxed">
+                        <p className="text-body-medium text-text-secondary leading-relaxed whitespace-pre-wrap">
                             {post.description}
                         </p>
                     </div>
