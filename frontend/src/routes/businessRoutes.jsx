@@ -1,6 +1,5 @@
 import React from "react";
 import MainLayout from "../components/layout/MainLayout";
-import { mockRequests } from "../data/mockData";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 import NewsFeed from "../pages/NewsFeed";
@@ -44,11 +43,9 @@ import BoostSelectPackage from "../pages/BoostSelectPackage";
 import BoostConfirmOrder from "../pages/BoostConfirmOrder";
 import BoostPostSuccess from "../pages/BoostPostSuccess";
 
-const PlaceholderPage = ({ title, verificationCount }) => (
+const PlaceholderPage = ({ title }) => (
   <MainLayout
-    user={{ name: "Alex Johnson", role: "admin" }}
     pageTitle={title}
-    verificationCount={verificationCount}
   >
     <div className="flex flex-col items-center justify-center h-full text-center p-lg">
       <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-lg">
@@ -82,7 +79,6 @@ export const businessSharedRoutes = [
     element: (
       <PlaceholderPage
         title="Order Dashboard"
-        verificationCount={mockRequests.length}
       />
     ),
   },
@@ -91,7 +87,6 @@ export const businessSharedRoutes = [
     element: (
       <PlaceholderPage
         title="My Products"
-        verificationCount={mockRequests.length}
       />
     ),
   },
@@ -139,7 +134,7 @@ export const boardingOwnerRoutes = [
       />
     ),
     children: [
-      //{ path: "/marketplace/boarding", element: <Boarding /> },
+
       { path: "/boarding-owner/marketplace", element: <BoardingOwnerMarketplace /> },
       { path: "/boarding-owner/create-post", element: <CreateBoardingPostPage /> },
     ]
@@ -156,7 +151,7 @@ export const foodCafeRoutes = [
       />
     ),
     children: [
-      //{ path: "/marketplace/food-cafe", element: <FoodCafe /> },
+
       { path: "/food-cafe-owner/marketplace", element: <FoodCafeOwnerMarketplace /> },
       { path: "/food-cafe-owner/create-post", element: <CreateFoodCafePostPage /> },
     ]
@@ -173,7 +168,7 @@ export const selfEmployedRoutes = [
       />
     ),
     children: [
-      //{ path: "/marketplace/services", element: <Services /> },
+
       { path: "/services-owner/marketplace", element: <ServicesOwnerMarketplace /> },
       { path: "/services-owner/create-post", element: <CreateServicePostPage /> },
     ]

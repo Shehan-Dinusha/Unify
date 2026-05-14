@@ -26,8 +26,6 @@ export const getTargetReviews = async (req, res, next) => {
       return sendResponse(res, 400, false, "Target is not a Business account.");
     }
 
-    const targetUserId = targetExists.id;
-
     const rawReviews = await Review.findAll({
       where: { targetId },
       include: [

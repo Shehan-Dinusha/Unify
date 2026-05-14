@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Card from "../../common/Card";
-import { getPublicFollowers, getPublicFollowing } from "../../../services/followerService";
+import { getPublicFollowers } from "../../../services/followerService";
 
 const FollowersListModal = ({ userId, type = "followers", onClose }) => {
   const navigate = useNavigate();
@@ -17,14 +17,8 @@ const FollowersListModal = ({ userId, type = "followers", onClose }) => {
       try {
         setLoading(true);
         setError(null);
-        let data;
-        if (type === "followers") {
-          data = await getPublicFollowers(userId);
-          setUsers(data.followers || []);
-        } else {
-          data = await getPublicFollowing(userId);
-          setUsers(data.following || []);
-        }
+        const data = await getPublicFollowers(userId);
+        setUsers(data.followers || []);
       } catch (err) {
         setError(err.message || "Failed to load users.");
       } finally {

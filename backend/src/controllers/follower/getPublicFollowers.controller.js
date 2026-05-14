@@ -52,10 +52,5 @@ export const getPublicFollowers = catchAsync(async (req, res) => {
     total: totalFollowers,
     hasMore,
   });
-  return sendResponse(res, 200, true, "Followers retrieved successfully.", {
-    followers: mappedFollowers,
-    total: totalFollowers,
-    hasMore,
-  });
 });
 

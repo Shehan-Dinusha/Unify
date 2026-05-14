@@ -1,4 +1,4 @@
-import { FolderOpen, Upload, Edit2, Plus } from "lucide-react";
+import { FolderOpen, Upload, Edit2 } from "lucide-react";
 import Button from "../common/Button";
 import { useState } from "react";
 import UploadMaterialModal from "./UploadMaterialModal";
