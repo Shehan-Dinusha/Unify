@@ -1,4 +1,9 @@
-import { AcademicModule, Semester, Degree, Material } from "../../modules/index.js";
+import {
+  AcademicModule,
+  Semester,
+  Degree,
+  Material,
+} from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import { formatRelativeDate } from "../../utils/date.js";
 import logger from "../../utils/logger.js";
@@ -10,7 +15,9 @@ export const getModuleDetails = async (req, res, next) => {
 
     let facultyId = null;
     if (degreeId) {
-      const currentDegree = await Degree.findByPk(degreeId, { attributes: ["facultyId"] });
+      const currentDegree = await Degree.findByPk(degreeId, {
+        attributes: ["facultyId"],
+      });
       if (currentDegree) {
         facultyId = currentDegree.facultyId;
       }
@@ -20,7 +27,7 @@ export const getModuleDetails = async (req, res, next) => {
 
     const [moduleDetails, allDegrees, latestMaterial] = await Promise.all([
       AcademicModule.findByPk(id, {
-        attributes: ["id", "name", "code", "updatedAt"],
+        attributes: ["id", "name", "code", "updatedAt", "creatorDegreeId"],
         include: [
           {
             model: Degree,
@@ -55,7 +62,12 @@ export const getModuleDetails = async (req, res, next) => {
 
     const moduleJson = moduleDetails.toJSON();
     const mostRecentDate = latestMaterial
-      ? new Date(Math.max(new Date(latestMaterial.updatedAt), new Date(moduleDetails.updatedAt)))
+      ? new Date(
+          Math.max(
+            new Date(latestMaterial.updatedAt),
+            new Date(moduleDetails.updatedAt),
+          ),
+        )
       : moduleDetails.updatedAt;
     moduleJson.lastUpdated = formatRelativeDate(mostRecentDate);
 
@@ -67,8 +79,8 @@ export const getModuleDetails = async (req, res, next) => {
       "Module details fetched successfully.",
       {
         module: moduleJson,
-        availableDegrees: allDegrees
-      }
+        availableDegrees: allDegrees,
+      },
     );
   } catch (error) {
     logger.error(`Get Module Details Error: ${error.message}`);

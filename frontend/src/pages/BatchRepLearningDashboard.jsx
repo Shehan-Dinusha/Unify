@@ -39,6 +39,10 @@ const BatchRepLearningDashboard = () => {
       if (res?.data?.semesters) {
         setSemesters(res.data.semesters);
         setDegreeName(res.data.degreeName || degreeName);
+        if (res.data.availableDegrees) {
+          setAvailableDegreesObjs(res.data.availableDegrees);
+          setAvailableDegrees(res.data.availableDegrees.map((d) => d.name));
+        }
       }
     } catch (err) {
       console.error("Failed to refresh course structure", err);
@@ -58,10 +62,16 @@ const BatchRepLearningDashboard = () => {
           setDegreeId(fetchedDegreeId);
           setDegreeName(fetchedDegreeName);
 
-          const res = await learningService.getBatchRepCourseStructure(fetchedDegreeId);
+          const res =
+            await learningService.getBatchRepCourseStructure(fetchedDegreeId);
           if (res?.data?.semesters) {
             setSemesters(res.data.semesters);
-            if (!degreeName) setDegreeName(res.data.degreeName || fetchedDegreeName);
+            if (!degreeName)
+              setDegreeName(res.data.degreeName || fetchedDegreeName);
+            if (res.data.availableDegrees) {
+              setAvailableDegreesObjs(res.data.availableDegrees);
+              setAvailableDegrees(res.data.availableDegrees.map((d) => d.name));
+            }
 
             if (res.data.semesters.length > 0) {
               const firstSem = res.data.semesters[0];
@@ -394,10 +404,18 @@ const BatchRepLearningDashboard = () => {
       const role = localStorage.getItem("role");
       if (raw) {
         const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-        return { name: parsed.name || "Batch Rep", role: role || "admin", displayRole: parsed.displayRole || role || "Batch Rep" };
+        return {
+          name: parsed.name || "Batch Rep",
+          role: role || "admin",
+          displayRole: parsed.displayRole || role || "Batch Rep",
+        };
       }
     } catch {}
-    return { name: currentUser?.name || "Batch Rep", role: "admin", displayRole: "Batch Rep" };
+    return {
+      name: currentUser?.name || "Batch Rep",
+      role: "admin",
+      displayRole: "Batch Rep",
+    };
   })();
 
   return (
@@ -465,6 +483,8 @@ const BatchRepLearningDashboard = () => {
                   semesterName={activeSemesterInfo?.name}
                   isPublic={activeSemesterInfo?.isPublic ?? false}
                   lastUpdated={activeModuleData?.lastUpdated}
+                  creatorDegreeId={activeModuleData?.creatorDegreeId}
+                  userDegreeId={degreeId}
                   degrees={
                     activeModuleData?.degrees?.map((d) =>
                       typeof d === "string" ? d : d.name,
@@ -499,7 +519,7 @@ const BatchRepLearningDashboard = () => {
                   onRefresh={handleMaterialChanged}
                 />
               </>
-            ) : semesters.some(sem => sem.modules?.length > 0) ? (
+            ) : semesters.some((sem) => sem.modules?.length > 0) ? (
               <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -542,10 +562,7 @@ const BatchRepLearningDashboard = () => {
         </div>
 
         {/* Full width Batch Rep Team */}
-        <BatchRepTeam
-          degreeId={degreeId}
-          currentUserId={currentUserId}
-        />
+        <BatchRepTeam degreeId={degreeId} currentUserId={currentUserId} />
 
         <ModuleActionSuccessModal
           isOpen={showSuccessModal}

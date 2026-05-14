@@ -23,6 +23,8 @@ const ModuleHeader = ({
   primaryDegree,
   semesters = [],
   categories = [],
+  creatorDegreeId,
+  userDegreeId,
 }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -156,6 +158,8 @@ const ModuleHeader = ({
         availableDegrees={availableDegrees}
         primaryDegree={primaryDegree}
         semesters={semesters}
+        creatorDegreeId={creatorDegreeId}
+        userDegreeId={userDegreeId}
       />
     </div>
   );
