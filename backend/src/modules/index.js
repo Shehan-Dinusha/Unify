@@ -379,18 +379,6 @@ User.hasMany(BoostPurchase, {
 });
 BoostPurchase.belongsTo(User, { foreignKey: "userId", as: "user" });
 
-// Post.hasMany(BoostPurchase, {
-//   foreignKey: "postId",
-//   as: "boostPurchases",
-//   onDelete: "CASCADE",
-//   constraints: false,
-// });
-// BoostPurchase.belongsTo(Post, {
-//   foreignKey: "postId",
-//   as: "post",
-//   constraints: false,
-// });
-
 // --- Boost Logs ---
 BoostLog.belongsTo(BoostPackage, {
   foreignKey: "packageId",
