@@ -95,6 +95,7 @@ export const getPendingVerifications = async (req, res, next) => {
 
         return {
           id: request.id,
+          userId: request.user?.id,
           name: request.user?.name || "Unknown User",
           type: request.requestedRole,
           time: formatRelativeDate(request.createdAt),

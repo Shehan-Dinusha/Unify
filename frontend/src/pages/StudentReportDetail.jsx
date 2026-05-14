@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
+import { getAvatarUrl } from "../utils/formatters";
 
 const StudentReportDetail = () => {
   const navigate = useNavigate();
@@ -169,7 +170,7 @@ const StudentReportDetail = () => {
                     {r.reason || "Report"}
                   </span>
                   <img
-                    src={r.reportedEntity.avatar}
+                    src={getAvatarUrl(r.reportedEntity.avatar, r.reportedEntity.name)}
                     alt={r.reportedEntity.name}
                     className="w-[100px] h-[100px] rounded-xl object-cover border-2 border-white/10"
                   />

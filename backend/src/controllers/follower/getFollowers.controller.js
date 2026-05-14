@@ -3,17 +3,7 @@ import { sendResponse, catchAsync } from "../../utils/response.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getClubFollowers = catchAsync(async (req, res) => {
-  // Use `req.user?.id` normally, but allow `req.query.clubId` for testing since auth is pending
-  const clubId = req.user?.id || req.query.clubId;
-
-  if (!clubId) {
-    return sendResponse(
-      res,
-      401,
-      false,
-      "Not authorized. No club ID provided.",
-    );
-  }
+  const clubId = req.user.id;
 
   const limit = parseInt(req.query.limit, 10) || 14;
   const page = parseInt(req.query.page, 10) || 1;

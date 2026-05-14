@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { User } from "../modules/index.js";
+import { User, StudentProfile } from "../modules/index.js";
 import { sendResponse } from "../utils/response.js";
 import logger from "../utils/logger.js";
 
@@ -59,4 +59,24 @@ export const authorize = (...roles) => {
     }
     next();
   };
+};
+
+/**
+ * @desc    Check if the authenticated user is a Batch Representative
+ * @note    Must be used AFTER `protect` and optionally after `authorize("Student")`
+ */
+export const isBatchRep = async (req, res, next) => {
+  try {
+    const profile = await StudentProfile.findOne({
+      where: { userId: req.user.id },
+      attributes: ["isBatchRep"],
+    });
+    if (!profile?.isBatchRep) {
+      return sendResponse(res, 403, false, "Batch rep access required");
+    }
+    next();
+  } catch (error) {
+    logger.error("isBatchRep Middleware Error:", error);
+    return sendResponse(res, 500, false, "Server error checking batch rep status");
+  }
 };

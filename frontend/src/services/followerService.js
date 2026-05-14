@@ -6,13 +6,11 @@ import api from "./api";
  * @param {number} page - Current page number
  * @param {number} limit - Number of items per page
  * @param {string} sortOrder - "asc", "desc", "newest", "oldest"
- * @param {number|string} studentId - Optional student ID for testing without auth
  */
 export const getFollowings = async (
   page = 1,
   limit = 14,
   sortOrder = "asc",
-  studentId = 1, // Defaulting to 1 for testing purposes
 ) => {
   try {
     const params = new URLSearchParams({
@@ -20,10 +18,6 @@ export const getFollowings = async (
       limit: limit.toString(),
       sortOrder,
     });
-
-    if (studentId) {
-      params.append("studentId", studentId.toString());
-    }
 
     const response = await api.get(
       `/followers/my-followings?${params.toString()}`,
@@ -39,13 +33,9 @@ export const getFollowings = async (
  * Fetch exactly one following item at a given offset.
  * Useful for seamless layout filling when removing items.
  */
-export const getSingleFollowing = async (
-  offset,
-  sortOrder = "asc",
-  studentId = 1,
-) => {
+export const getSingleFollowing = async (offset, sortOrder = "asc") => {
   try {
-    const data = await getFollowings(offset + 1, 1, sortOrder, studentId);
+    const data = await getFollowings(offset + 1, 1, sortOrder);
     if (data.followings && data.followings.length > 0) {
       return data.followings[0];
     }
@@ -60,13 +50,10 @@ export const getSingleFollowing = async (
  * Toggle the follow status for a club.
  *
  * @param {number|string} clubId - ID of the club
- * @param {number|string} followerId - Optional follower ID for testing without auth
  */
-export const unfollowOrganization = async (clubId, followerId = 1) => {
+export const unfollowOrganization = async (clubId) => {
   try {
-    const response = await api.post(`/followers/${clubId}/toggle`, {
-      followerId,
-    });
+    const response = await api.post(`/followers/${clubId}/toggle`, {});
     return response.data;
   } catch (error) {
     console.error("Error toggling follow status:", error);
@@ -79,22 +66,13 @@ export const unfollowOrganization = async (clubId, followerId = 1) => {
  *
  * @param {number} page - Current page number
  * @param {number} limit - Number of items per page
- * @param {number|string} clubId - Optional club ID for testing without auth
  */
-export const getClubFollowers = async (
-  page = 1,
-  limit = 14,
-  clubId = 5, // Defaulting to 2 for testing purposes (assuming ID 2 is a seeded club)
-) => {
+export const getClubFollowers = async (page = 1, limit = 14) => {
   try {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
     });
-
-    if (clubId) {
-      params.append("clubId", clubId.toString());
-    }
 
     const response = await api.get(
       `/followers/my-followers?${params.toString()}`,
@@ -105,3 +83,19 @@ export const getClubFollowers = async (
     throw error;
   }
 };
+
+/**
+ * Fetch a paginated list of public followers for a specific user.
+ */
+export const getPublicFollowers = async (userId, page = 1, limit = 20) => {
+  try {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    const response = await api.get(`/followers/${userId}/followers?${params.toString()}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching public followers:", error);
+    throw error;
+  }
+};
+
+

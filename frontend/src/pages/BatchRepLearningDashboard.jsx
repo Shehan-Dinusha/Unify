@@ -1,25 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import ModuleSidebar from "../components/learning/ModuleSidebar";
 import ModuleHeader from "../components/learning/ModuleHeader";
 import CategoryGrid from "../components/learning/CategoryGrid";
 import FileListTable from "../components/learning/FileListTable";
 import BatchRepTeam from "../components/learning/BatchRepTeam";
-import { mockRequests, mockSemesters, mockCurrentUser } from "../data/mockData";
 import { ModuleActionSuccessModal } from "../components/common/ModuleActionModals";
 import * as learningService from "../services/learningService";
+import { getCurrentUser } from "../services/authService";
+import { getMyProfile } from "../services/profileService";
 import { useToast } from "../components/common/Toast";
 
 const BatchRepLearningDashboard = () => {
-  const [semesters, setSemesters] = useState(mockSemesters);
-  const [activeSemesterId, setActiveSemesterId] = useState("sem1");
-  const [activeModuleId, setActiveModuleId] = useState("mod1");
-  const [degreeName, setDegreeName] = useState("Bsc.(Hons) IT");
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const currentUser = getCurrentUser();
+  const currentUserId = currentUser?.id;
 
-  // Temporary auth context since auth isn't connected yet
-  const currentUserId = 1;
-  const currentDegreeId = 18;
+  const [semesters, setSemesters] = useState([]);
+  const [activeSemesterId, setActiveSemesterId] = useState(null);
+  const [activeModuleId, setActiveModuleId] = useState(null);
+  const [degreeName, setDegreeName] = useState("");
+  const [degreeId, setDegreeId] = useState(null);
+  const [facultyName, setFacultyName] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   // Real data states
   const [moduleCategories, setModuleCategories] = useState([]);
@@ -31,47 +33,53 @@ const BatchRepLearningDashboard = () => {
   const toast = useToast();
 
   const refreshCourseStructure = async () => {
+    if (!degreeId) return;
     try {
-      const res = await learningService.getBatchRepCourseStructure(currentDegreeId);
+      const res = await learningService.getBatchRepCourseStructure(degreeId);
       if (res?.data?.semesters) {
         setSemesters(res.data.semesters);
-        setDegreeName(res.data.degreeName || "Bsc.(Hons) IT");
+        setDegreeName(res.data.degreeName || degreeName);
       }
     } catch (err) {
       console.error("Failed to refresh course structure", err);
     }
   };
 
-  // Fetch module details and categories when activeModuleId changes
-  React.useEffect(() => {
-    const fetchStructure = async () => {
+  // Fetch student profile to get degreeId, then fetch course structure
+  useEffect(() => {
+    const init = async () => {
       try {
-        const res =
-          await learningService.getBatchRepCourseStructure(currentDegreeId);
-        if (res?.data?.semesters) {
-          setSemesters(res.data.semesters);
-          setDegreeName(res.data.degreeName || "Bsc.(Hons) IT");
+        const profileRes = await getMyProfile("student");
+        const fetchedDegreeId = profileRes?.degreeId;
+        const fetchedDegreeName = profileRes?.degree?.name || "";
+        const fetchedFacultyName = profileRes?.faculty?.name || "";
+        setFacultyName(fetchedFacultyName);
+        if (fetchedDegreeId) {
+          setDegreeId(fetchedDegreeId);
+          setDegreeName(fetchedDegreeName);
 
-          // Set initial active semester and module if valid
-          if (res.data.semesters.length > 0) {
-            const firstSem = res.data.semesters[0];
-            setActiveSemesterId(firstSem.id);
-            if (firstSem.modules && firstSem.modules.length > 0) {
-              setActiveModuleId(firstSem.modules[0].id);
-            } else {
-              setActiveModuleId(null);
+          const res = await learningService.getBatchRepCourseStructure(fetchedDegreeId);
+          if (res?.data?.semesters) {
+            setSemesters(res.data.semesters);
+            if (!degreeName) setDegreeName(res.data.degreeName || fetchedDegreeName);
+
+            if (res.data.semesters.length > 0) {
+              const firstSem = res.data.semesters[0];
+              setActiveSemesterId(firstSem.id);
+              if (firstSem.modules && firstSem.modules.length > 0) {
+                setActiveModuleId(firstSem.modules[0].id);
+              }
             }
           }
         }
       } catch (err) {
-        console.error("Failed to fetch course structure", err);
-        // Retains mockSemesters on failure
+        console.error("Failed to initialize learning dashboard", err);
       }
     };
-    fetchStructure();
-  }, [currentDegreeId]);
+    init();
+  }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!activeModuleId) return;
 
     // Clear stale state before fetching new module details
@@ -82,13 +90,11 @@ const BatchRepLearningDashboard = () => {
     const fetchModuleData = async () => {
       setIsLoadingDetails(true);
       try {
-        // We handle the case where activeModuleId might be a mock ID.
-        // If it fails, we fall back to finding it in mockSemesters.
         let details = null;
         try {
           details = await learningService.getModuleDetails(
             activeModuleId,
-            currentDegreeId,
+            degreeId,
           );
           setActiveModuleDetails(details?.data?.module || null);
           if (details?.data?.availableDegrees) {
@@ -128,7 +134,7 @@ const BatchRepLearningDashboard = () => {
   }, [activeModuleId]);
 
   // Fetch materials when selectedCategory changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (!activeModuleId || !selectedCategory) {
       setCategoryFiles([]);
       return;
@@ -155,7 +161,7 @@ const BatchRepLearningDashboard = () => {
     try {
       const details = await learningService.getModuleDetails(
         activeModuleId,
-        currentDegreeId,
+        degreeId,
       );
       if (details?.data?.module) {
         setActiveModuleDetails(details.data.module);
@@ -228,7 +234,7 @@ const BatchRepLearningDashboard = () => {
         })
         .filter((id) => id !== null);
 
-      if (visibilityIds.length === 0) visibilityIds.push(currentDegreeId);
+      if (visibilityIds.length === 0) visibilityIds.push(degreeId);
 
       const res = await learningService.createModule({
         title: newModule.title,
@@ -288,7 +294,7 @@ const BatchRepLearningDashboard = () => {
         })
         .filter((id) => id !== null);
 
-      if (visibilityIds.length === 0) visibilityIds.push(currentDegreeId);
+      if (visibilityIds.length === 0) visibilityIds.push(degreeId);
 
       await learningService.editModuleDetails(activeModuleId, {
         title: editedData.title,
@@ -382,10 +388,21 @@ const BatchRepLearningDashboard = () => {
     setActiveModuleId(null);
   };
 
+  const sidebarUser = (() => {
+    try {
+      const raw = localStorage.getItem("user");
+      const role = localStorage.getItem("role");
+      if (raw) {
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+        return { name: parsed.name || "Batch Rep", role: role || "admin", displayRole: parsed.displayRole || role || "Batch Rep" };
+      }
+    } catch {}
+    return { name: currentUser?.name || "Batch Rep", role: "admin", displayRole: "Batch Rep" };
+  })();
+
   return (
     <MainLayout
-      user={mockCurrentUser}
-      verificationCount={mockRequests.length}
+      user={sidebarUser}
       pageTitle={
         <div className="flex items-center gap-2">
           <span>Learning</span>
@@ -415,7 +432,7 @@ const BatchRepLearningDashboard = () => {
             <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
           </svg>
-          <span>Faculty of Information Technology</span>
+          <span>{facultyName}</span>
           <span className="font-normal mx-0.5">/</span>
           <span>{degreeName}</span>
         </div>
@@ -432,7 +449,7 @@ const BatchRepLearningDashboard = () => {
               onSelectModule={setActiveModuleId}
               onAddModule={handleAddModule}
               onRefreshSemesters={refreshCourseStructure}
-              degreeId={currentDegreeId}
+              degreeId={degreeId}
               availableDegrees={availableDegrees}
               primaryDegree={degreeName}
             />
@@ -482,7 +499,7 @@ const BatchRepLearningDashboard = () => {
                   onRefresh={handleMaterialChanged}
                 />
               </>
-            ) : (
+            ) : semesters.some(sem => sem.modules?.length > 0) ? (
               <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -501,13 +518,32 @@ const BatchRepLearningDashboard = () => {
                 </svg>
                 <p>Select a module from the sidebar to view details</p>
               </div>
+            ) : (
+              <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="48"
+                  height="48"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mb-4 opacity-50"
+                >
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+                <p>Create a module first to start uploading materials</p>
+              </div>
             )}
           </div>
         </div>
 
         {/* Full width Batch Rep Team */}
         <BatchRepTeam
-          degreeId={currentDegreeId}
+          degreeId={degreeId}
           currentUserId={currentUserId}
         />
 

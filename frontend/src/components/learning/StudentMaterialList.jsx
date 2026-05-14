@@ -24,9 +24,7 @@ const formatFileSize = (bytes) => {
   return parseFloat((size / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
-/**
- * Helper to get styling and icon based on file type/name (mocking logic)
- */
+/** Helper to get styling and icon based on file type/name */
 const getFileIconConfig = (fileName = "", type = "file") => {
   const lowerName = fileName.toLowerCase();
   const lowerType = type ? type.toLowerCase() : "";
@@ -141,7 +139,6 @@ const StudentFileRecord = ({ file, onClick, onShare }) => {
   const handleDownload = (e) => {
     e.stopPropagation();
     setShowMenu(false);
-    // Mock download logic
     if (file.url) {
       window.open(file.url, "_blank");
     }

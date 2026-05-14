@@ -9,6 +9,7 @@ import { Search, RotateCcw, AlertTriangle, ShieldAlert, CheckCircle2, Filter, Lo
 import { mockRequests } from '../data/mockData';
 import { reasonTagColors } from '../data/mockSuspendedUsers';
 import { getDashboardStatistics, getAllSuspendedUsers } from '../services/suspensionService';
+import { getAvatarUrl } from '../utils/formatters';
 
 // ─── Filter Options ─────────────────────────────────────────────────────────
 
@@ -354,7 +355,7 @@ const SuspendedUsers = () => {
                         {/* User Details */}
                         <div className="flex items-center gap-md min-w-0">
                             <img
-                                src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name || 'user'}`}
+                                src={getAvatarUrl(user.avatar, user.name)}
                                 alt={user.name}
                                 className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0"
                             />
@@ -415,7 +416,7 @@ const SuspendedUsers = () => {
                             {/* Top: Avatar + Name + Reason */}
                             <div className="flex items-center gap-md">
                                 <img
-                                    src={user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name || 'user'}`}
+                                    src={getAvatarUrl(user.avatar, user.name)}
                                     alt={user.name}
                                     className="w-10 h-10 rounded-full object-cover border border-white/20 shrink-0"
                                 />

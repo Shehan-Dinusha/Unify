@@ -8,11 +8,11 @@ import postService from "../services/postService";
 import { getImageUrl } from "../utils/formatters";
 import { getCurrentUser } from "../services/authService";
 
-const Pill = ({ children }) => (
-    <span className="px-sm py-xs rounded-full bg-white/5 border border-white/10 text-body-extra-small-bold text-text-tertiary">
-        {children}
-    </span>
-);
+//const Pill = ({ children }) => (
+//    <span className="px-sm py-xs rounded-full bg-white/5 border border-white/10 text-body-extra-small-bold text-text-tertiary">
+//        {children}
+//    </span>
+//);
 
 const ClubProduct = () => {
     const { type, id } = useParams();
@@ -36,13 +36,13 @@ const ClubProduct = () => {
                 setLoading(true);
                 const data = await postService.getPost(type, id);
                 setPost(data.post);
-                
+
                 // Initialize selections
                 if (data.post.images?.length > 0) setActiveImg(0);
                 if (data.post.colors?.length > 0) setActiveColor(data.post.colors[0].id);
                 if (data.post.sizes?.length > 0) setActiveSize(data.post.sizes[0]);
                 if (data.post.tiers?.length > 0) setActiveTier(data.post.tiers[0].name);
-                
+
             } catch (err) {
                 console.error("Failed to fetch product:", err);
                 setError("Product not found or has been removed.");
@@ -115,10 +115,10 @@ const ClubProduct = () => {
                         {/* LEFT: Gallery */}
                         <div>
                             <div className="w-full aspect-square rounded-3xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center">
-                                <img 
-                                    src={currentImg?.src || "/placeholder-post.jpg"} 
-                                    alt={currentImg?.alt || "Product"} 
-                                    className="w-full h-full object-cover" 
+                                <img
+                                    src={currentImg?.src || "/placeholder-post.jpg"}
+                                    alt={currentImg?.alt || "Product"}
+                                    className="w-full h-full object-cover"
                                     onError={(e) => {
                                         e.target.src = "/placeholder-post.jpg";
                                         e.target.className = "w-1/2 h-1/2 object-contain opacity-20";
@@ -172,11 +172,11 @@ const ClubProduct = () => {
                             </div>
 
                             {/* Description */}
-                            <p className="hidden md:block mt-md text-body-medium text-text-secondary leading-6 max-w-[640px]">
+                            <p className="hidden md:block mt-md text-body-medium text-text-secondary leading-6 max-w-[640px] whitespace-pre-wrap">
                                 {post.description}
                             </p>
                             <div className="md:hidden mt-md text-body-medium text-text-secondary leading-6 max-w-[640px]">
-                                <p className={!isDescExpanded ? "line-clamp-3" : ""}>
+                                <p className={`${!isDescExpanded ? "line-clamp-3" : ""} whitespace-pre-wrap`}>
                                     {post.description}
                                 </p>
                                 {post.description && post.description.length > 100 && (

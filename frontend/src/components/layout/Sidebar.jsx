@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Rss,
@@ -12,7 +12,11 @@ import {
   ClipboardList,
 } from "lucide-react";
 import LogoutModal from "../profile/modals/LogoutModal";
-import { getCurrentUser, logout } from "../../services/authService";
+import {
+  getCurrentUser,
+  logout,
+  refreshCurrentUser,
+} from "../../services/authService";
 import { useNotifications } from "../../context/NotificationContext";
 import { useChat } from "../../context/ChatContext";
 
@@ -30,10 +34,11 @@ const SidebarItem = ({
 }) => {
   const navigate = useNavigate();
 
-  const baseStyles = `w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 ${disabled
-    ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
-    : "cursor-pointer group"
-    }`;
+  const baseStyles = `w-full px-md py-sm rounded-xl inline-flex justify-between items-center transition-all duration-200 ${
+    disabled
+      ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
+      : "cursor-pointer group"
+  }`;
 
   const activeStyles = active
     ? "bg-primary-blue shadow-custom text-text-primary"
@@ -90,12 +95,19 @@ const UnifiedSidebar = ({
 }) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const [freshUser, setFreshUser] = React.useState(null);
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
   const { unreadCount } = useNotifications();
   const { unreadMessageCount } = useChat();
 
+  useEffect(() => {
+    refreshCurrentUser().then((updated) => {
+      if (updated) setFreshUser(updated);
+    });
+  }, []);
+
   // Get user from auth or fallback to prop
-  const authUser = getCurrentUser();
+  const authUser = freshUser || getCurrentUser();
   const user = authUser || propUser || { name: "Guest", role: "student" };
 
   // Configuration Map for different user roles
@@ -104,8 +116,18 @@ const UnifiedSidebar = ({
       title: "Student Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
+        {
+          icon: MessageSquare,
+          label: "Message",
+          badge: unreadMessageCount > 0 ? unreadMessageCount : null,
+          path: "/messages",
+        },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
         { icon: GraduationCap, label: "Learning", path: "/student-learning" },
@@ -115,8 +137,18 @@ const UnifiedSidebar = ({
       title: "Batch Rep Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
+        {
+          icon: MessageSquare,
+          label: "Message",
+          badge: unreadMessageCount > 0 ? unreadMessageCount : null,
+          path: "/messages",
+        },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
         { icon: GraduationCap, label: "Learning", path: "/learning" },
@@ -165,8 +197,19 @@ const UnifiedSidebar = ({
       title: "Clubs & Societies Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/business/news-feed" },
-        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: unreadMessageCount > 0 ? unreadMessageCount : null, path: "/messages" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+          alwaysEnabled: true,
+        },
+        {
+          icon: MessageSquare,
+          label: "Message",
+          badge: unreadMessageCount > 0 ? unreadMessageCount : null,
+          path: "/messages",
+        },
         { icon: Store, label: "Marketplace", path: "/club-owner/marketplace" },
         {
           icon: LayoutDashboard,
@@ -179,21 +222,36 @@ const UnifiedSidebar = ({
       title: "Boarding Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/boarding-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
       ],
     },
     food_cafe_owner: {
       title: "Food & Cafe Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/food-cafe-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
       ],
     },
     self_employed: {
       title: "Services Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/services-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: unreadCount > 0 ? unreadCount : null, path: "/notifications" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
       ],
     },
   };
@@ -201,7 +259,8 @@ const UnifiedSidebar = ({
   const isClub =
     user.role?.toLowerCase() === "club_society" ||
     user.role?.toLowerCase() === "club";
-  const shouldDisableNav = sidebarDisabled && isClub;
+  const isUnverifiedClub = isClub && freshUser?.isVerified === false;
+  const shouldDisableNav = sidebarDisabled || isUnverifiedClub;
 
   let configKey = user.role?.toLowerCase();
   if (configKey === "student" && user.isBatchRep) {
@@ -220,8 +279,7 @@ const UnifiedSidebar = ({
     else if (category === "SELF_EMPLOYED") configKey = "self_employed";
   }
 
-  const currentConfig =
-    roleConfigs[configKey] || roleConfigs.student;
+  const currentConfig = roleConfigs[configKey] || roleConfigs.student;
 
   const handleNavClick = (path) => {
     if (onClose) onClose();
@@ -269,7 +327,7 @@ const UnifiedSidebar = ({
               <SidebarItem
                 key={index}
                 {...link}
-                disabled={shouldDisableNav}
+                disabled={shouldDisableNav && !link.alwaysEnabled}
                 active={
                   pathname === link.path ||
                   (link.childPaths &&

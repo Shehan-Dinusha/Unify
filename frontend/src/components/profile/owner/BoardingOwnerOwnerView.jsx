@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import ProfileHeader from "../ProfileHeader";
 import ProfileDashboardCard from "../ProfileDashboardCard";
 import Button from "../../common/Button";
@@ -28,14 +29,18 @@ const BoardingOwnerOwnerView = () => {
       iconBg: "bg-blue-500/20",
       title: "View Boost Packages",
       description: "Explore packages to promote your boarding listings.",
+      path: "/business/boost-post",
     },
     {
       icon: "🚀",
       iconBg: "bg-violet-500/20",
       title: "View Boosted Posts",
       description: "Track boosted posts and their performance.",
+      path: "/my-posts?filter=boosted",
     },
   ];
+
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col gap-4 md:gap-lg text-start">
@@ -48,10 +53,21 @@ const BoardingOwnerOwnerView = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3 md:gap-md">
-        <Button variant="primary" fullWidth icon={Plus} className="py-2.5 md:py-3">
+        <Button
+          variant="primary"
+          fullWidth
+          icon={Plus}
+          className="py-2.5 md:py-3"
+          onClick={() => navigate("/boarding-owner/create-post")}
+        >
           Create Post
         </Button>
-        <Button variant="outline" fullWidth icon={Zap} className="py-2.5 md:py-3">
+        <Button
+          variant="outline"
+          fullWidth
+          icon={Zap}
+          className="py-2.5 md:py-3"
+        >
           Boost Post
         </Button>
       </div>

@@ -19,9 +19,9 @@ const ModuleSidebar = ({
   readOnly = false,
   title,
   className = "",
-  degreeId = 18,
+  degreeId,
   availableDegrees = [],
-  primaryDegree = "Bsc.(Hons) IT",
+  primaryDegree,
 }) => {
   const [expandedSemesters, setExpandedSemesters] = useState([
     activeSemesterId,

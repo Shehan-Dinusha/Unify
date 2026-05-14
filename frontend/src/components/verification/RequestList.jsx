@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import StatsCard from "../common/StatsCard";
@@ -6,9 +7,18 @@ import Avatar from "../common/Avatar";
 import DocumentPreviewModal from "../common/DocumentPreviewModal";
 
 const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [previewDoc, setPreviewDoc] = useState(null);
+
+  const handleProfileClick = (req, e) => {
+    e.stopPropagation();
+    const path = req.type === "Club"
+      ? `/active-businesses/${req.userId}`
+      : `/student-management/${req.userId}`;
+    navigate(path);
+  };
 
   const filteredRequests = (Array.isArray(requests) ? requests : []).filter(
     (req) => {
@@ -117,13 +127,15 @@ const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
           <Card
             key={req.id}
             variant="container"
-            className="h-full hover:bg-white/5 transition-colors cursor-pointer group"
-            onClick={() => handleViewDocument(req)}
+            className="h-full hover:bg-white/5 transition-colors group"
           >
             <div className="flex flex-col gap-lg h-full">
               {/* Header Section */}
               <div className="flex justify-between items-start">
-                <div className="flex gap-sm">
+                <div
+                  className="flex gap-sm cursor-pointer"
+                  onClick={(e) => handleProfileClick(req, e)}
+                >
                   <Avatar
                     src={req.avatar}
                     name={req.name}
@@ -159,7 +171,10 @@ const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
               </div>
 
               {/* File Preview */}
-              <div className="p-sm bg-dark-4 rounded-lg border border-white/10 flex items-center justify-between">
+              <div
+                className="p-sm bg-dark-4 rounded-lg border border-white/10 flex items-center justify-between cursor-pointer"
+                onClick={() => handleViewDocument(req)}
+              >
                 <div className="flex items-center gap-sm overflow-hidden">
                   <div
                     className={`w-10 h-10 rounded flex-shrink-0 flex items-center justify-center ${

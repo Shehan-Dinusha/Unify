@@ -1,10 +1,10 @@
 import { sequelize } from "../../modules/index.js";
 import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import User from "../../modules/User.model.js";
-import Notification from "../../modules/Notification.model.js";
 import AdminLog from "../../modules/AdminLog.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { notifyUser } from "../../services/notification.service.js";
 
 /**
  * Handle admin rejection of a Verification Request.
@@ -16,7 +16,7 @@ export const rejectVerificationRequest = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { reason } = req.body;
-    const adminId = req.user?.id || 2; // Fallback to 2 for testing purposes
+    const adminId = req.user.id;
 
 
 
@@ -42,18 +42,7 @@ export const rejectVerificationRequest = async (req, res, next) => {
     request.adminMessage = reason.trim();
     await request.save({ transaction });
 
-    // 3. Dispatch In-App Notification alerting the user of rejection
-    await Notification.create(
-      {
-        userId: user.id,
-        type: "General",
-        title: "Verification Request Declined",
-        content: `Your request to be verified as a ${requestedRole} has been declined. Reason: ${reason.trim()}`,
-      },
-      { transaction },
-    );
-
-    // 4. Generate Admin Security Audit Log
+    // 3. Generate Admin Security Audit Log
     await AdminLog.create(
       {
         adminId,
@@ -69,6 +58,18 @@ export const rejectVerificationRequest = async (req, res, next) => {
 
     // Commit all database mutations atomically
     await transaction.commit();
+
+    // Fire-and-forget notification (never blocks the response)
+    notifyUser({
+      userId: user.id,
+      actorId: adminId,
+      type: "Verification",
+      title: "Verification Request Declined",
+      content: `Your request to be verified as a ${requestedRole} has been declined. Reason: ${reason.trim()}`,
+      referenceId: request.id,
+      referenceType: "Verification",
+      dedupeKey: `verification:rejected:${request.id}`,
+    }).catch(() => {});
 
     return sendResponse(
       res,

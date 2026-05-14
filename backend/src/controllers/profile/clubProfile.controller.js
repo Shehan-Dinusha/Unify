@@ -1,8 +1,9 @@
-import { ClubProfile, User, VerificationRequest } from "../../modules/index.js";
+﻿import { ClubProfile, User, VerificationRequest } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { getFileUrl } from "../../services/s3.service.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import { deleteVerificationFile } from "../../utils/verificationUrl.util.js";
 
 /**
  * @desc    Create or Update club profile
@@ -49,6 +50,19 @@ export const upsertClubProfile = async (req, res) => {
         size: clubDoc.size,
       };
 
+      // Check for any soft-deleted record first (e.g., from admin removal)
+      const softDeleted = await VerificationRequest.findOne({
+        where: { userId },
+        paranoid: false,
+        order: [["deletedAt", "DESC"]],
+      });
+      if (softDeleted?.deletedAt) {
+        if (softDeleted.documentUrl && !softDeleted.documentUrl.startsWith("http")) {
+          await deleteVerificationFile(softDeleted.documentUrl);
+        }
+        await softDeleted.destroy({ force: true });
+      }
+
       // Create VerificationRequest if it doesn't already exist for this user
       const [verification, created] = await VerificationRequest.findOrCreate({
         where: { userId },
@@ -63,7 +77,12 @@ export const upsertClubProfile = async (req, res) => {
       if (created) {
         logger.info(`VerificationRequest automatically created for club ${userId}`);
       } else {
-        // If one exists, we just update the document (Optional design choice)
+        // Delete old S3 file before overwriting
+        if (verification.documentUrl && !verification.documentUrl.startsWith("http")) {
+          deleteVerificationFile(verification.documentUrl).catch((err) =>
+            logger.error("Failed to delete old club verification file", err),
+          );
+        }
         await verification.update({ documentUrl, documentMetadata, status: "PENDING" });
         logger.info(`VerificationRequest updated with new document for club ${userId}`);
       }
@@ -130,9 +149,21 @@ export const getMyClubProfile = async (req, res) => {
     } else if (vReq) {
       profileJson.verificationStatus = vReq.status === "DECLINED" ? "REJECTED" : vReq.status;
     } else {
-      profileJson.verificationStatus = "NOT_SUBMITTED";
+      const lastRequest = await VerificationRequest.findOne({
+        where: { userId: req.user.id },
+        paranoid: false,
+        order: [["createdAt", "DESC"]],
+      });
+      if (lastRequest?.deletedAt && lastRequest.documentUrl) {
+        profileJson.verificationStatus = "REMOVED";
+        profileJson.verificationReason = lastRequest.adminMessage || null;
+      } else {
+        profileJson.verificationStatus = "NOT_SUBMITTED";
+      }
     }
-    profileJson.verificationReason = vReq?.adminMessage || null;
+    if (!profileJson.verificationReason) {
+      profileJson.verificationReason = vReq?.adminMessage || null;
+    }
 
     return sendResponse(res, 200, true, "Club profile fetched successfully", profileJson);
   } catch (error) {

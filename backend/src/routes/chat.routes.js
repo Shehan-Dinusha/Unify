@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
+import { requireClubVerification } from "../middlewares/verifyClub.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { createConversationValidator } from "../validators/chat.validator.js";
 import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";

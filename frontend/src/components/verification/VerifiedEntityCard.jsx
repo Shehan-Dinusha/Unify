@@ -1,9 +1,19 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import Avatar from "../common/Avatar";
 
 const VerifiedEntityCard = ({ entity, onRemoveVerification, onViewDocument }) => {
+  const navigate = useNavigate();
+
+  const handleProfileClick = () => {
+    const path = entity.type === "Club"
+      ? `/active-businesses/${entity.userId}`
+      : `/student-management/${entity.userId}`;
+    navigate(path);
+  };
+
   return (
     <Card
       variant="container"
@@ -11,7 +21,10 @@ const VerifiedEntityCard = ({ entity, onRemoveVerification, onViewDocument }) =>
     >
       <div className="flex flex-col gap-lg h-full">
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div
+          className="flex justify-between items-start cursor-pointer"
+          onClick={handleProfileClick}
+        >
           <div className="flex gap-sm items-center">
             <Avatar
               src={entity.avatar}

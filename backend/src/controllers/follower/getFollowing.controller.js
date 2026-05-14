@@ -3,17 +3,7 @@ import { sendResponse, catchAsync } from "../../utils/response.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 export const getStudentFollowings = catchAsync(async (req, res) => {
-  // Use `req.user?.id` normally, but allow `req.query.studentId` for testing since auth is pending
-  const studentId = req.user?.id || req.query.studentId;
-
-  if (!studentId) {
-    return sendResponse(
-      res,
-      401,
-      false,
-      "Not authorized. No student ID provided.",
-    );
-  }
+  const studentId = req.user.id;
 
   const limit = parseInt(req.query.limit, 10) || 10;
   const page = parseInt(req.query.page, 10) || 1;

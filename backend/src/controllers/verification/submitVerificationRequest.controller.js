@@ -8,6 +8,23 @@ export const submitVerificationRequest = async (req, res, next) => {
     const userId = req.user.id;
     const requestedRole = req.body.requestedRole || "Batch Rep";
 
+    if (requestedRole === "Club" && req.user.role !== "Club") {
+      return sendResponse(
+        res,
+        403,
+        false,
+        "Only Club accounts can submit club verification requests.",
+      );
+    }
+    if (requestedRole === "Batch Rep" && req.user.role !== "Student") {
+      return sendResponse(
+        res,
+        403,
+        false,
+        "Only Students can submit batch rep verification requests.",
+      );
+    }
+
     if (!req.file) {
       return sendResponse(
         res,
@@ -19,13 +36,15 @@ export const submitVerificationRequest = async (req, res, next) => {
 
     const existingRequest = await VerificationRequest.findOne({
       where: { userId },
+      paranoid: false,
+      order: [["createdAt", "DESC"]],
     });
     if (existingRequest) {
-      if (existingRequest.status === "DECLINED") {
-        if (existingRequest.documentUrl) {
+      if (existingRequest.status === "DECLINED" || existingRequest.deletedAt) {
+        if (existingRequest.documentUrl && !existingRequest.documentUrl.startsWith("http")) {
           await deleteVerificationFile(existingRequest.documentUrl);
         }
-        await existingRequest.destroy();
+        await existingRequest.destroy({ force: true });
       } else {
         return sendResponse(
           res,

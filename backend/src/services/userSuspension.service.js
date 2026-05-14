@@ -11,6 +11,7 @@ import {
   Batch,
   sequelize 
 } from "../modules/index.js";
+import { resolveAvatarUrl } from "../utils/avatarUrl.util.js";
 
 class UserSuspensionService {
   async generateCaseReference() {
@@ -394,7 +395,7 @@ class UserSuspensionService {
       ]
     });
 
-    const formattedUsers = rows.map(suspension => {
+    const formattedUsers = await Promise.all(rows.map(async suspension => {
       const user = suspension.user;
       const studentProfile = user?.studentProfile;
       const businessProfile = user?.businessProfile;
@@ -434,7 +435,7 @@ class UserSuspensionService {
         userId: suspension.userId || user?.id,
         name: displayName,
         email: user?.email,
-        avatar: user?.avatar,
+        avatar: await resolveAvatarUrl(user?.avatar, displayName),
         role: user?.role,
         studentId: studentProfile?.registrationNumber || 
                   (businessProfile ? `BUS-${businessProfile.id}` : 
@@ -457,7 +458,7 @@ class UserSuspensionService {
         suspendedDaysAgo: suspension.suspendedDaysAgo,
         status: suspension.status
       };
-    });
+    }));
 
     const stats = await this.getDashboardStatistics();
 
@@ -559,15 +560,15 @@ class UserSuspensionService {
         error.statusCode = 404;
         throw error;
       }
-      return this._formatUserDetails(reactivatedSuspension);
+      return await this._formatUserDetails(reactivatedSuspension);
       }
       return null;
     }
 
-    return this._formatUserDetails(suspension);
+    return await this._formatUserDetails(suspension);
   }
 
-  _formatUserDetails(suspension) {
+  async _formatUserDetails(suspension) {
     const user = suspension.user;
     const studentProfile = user?.studentProfile;
     const businessProfile = user?.businessProfile;
@@ -608,7 +609,7 @@ class UserSuspensionService {
         id: user.id,
         name: displayName,
         email: user.email,
-        avatar: user.avatar,
+        avatar: await resolveAvatarUrl(user.avatar, displayName),
         role: user.role,
         studentId: studentProfile?.registrationNumber || 
                   (businessProfile ? `BUS-${businessProfile.id}` : 

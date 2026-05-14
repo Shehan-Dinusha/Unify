@@ -1,23 +1,26 @@
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import ProfileHeader from "../ProfileHeader";
 import FacilitiesCard from "../FacilitiesCard";
 import AboutSection from "../AboutSection";
 import ReviewsSection from "../ReviewsSection";
-import Card from "../../common/Card";
 import RecentPostsSection from "./RecentPostsSection";
-
-import { AddReviewModal } from "../../common/ReviewModals";
 
 /**
  * SelfEmployedPublicView — public-facing view for self_employed profiles.
+ * Note: Business accounts do not have follower/following features.
  */
 const SelfEmployedPublicView = ({ profile }) => {
-  const [showReviewModal, setShowReviewModal] = useState(false);
+  const navigate = useNavigate();
+
+  const handleReviewNavigation = () => {
+    navigate(`/marketplace/${profile.id}/reviews`);
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4 md:gap-x-lg md:gap-y-md items-start text-start">
-      {/* Left — Profile Card (aligned with first 2 sections on right) */}
-      <div className="md:row-span-1">
+      {/* Left — Profile Card */}
+      <div className="md:row-span-1 flex flex-col gap-4">
         <ProfileHeader profile={profile} isPublic={true} />
       </div>
 
@@ -25,9 +28,9 @@ const SelfEmployedPublicView = ({ profile }) => {
       <div className="flex flex-col gap-4 md:gap-md">
         {/* Rating */}
         <ReviewsSection
-          rating={profile?.rating || 4.7}
-          reviewCount={profile?.reviewCount || 15}
-          onAddReview={() => setShowReviewModal(true)}
+          rating={profile?.rating ?? 0}
+          reviewCount={profile?.reviewCount ?? 0}
+          onAddReview={handleReviewNavigation}
         />
 
         {/* About Section replaced Services Offered */}
@@ -44,16 +47,6 @@ const SelfEmployedPublicView = ({ profile }) => {
         {/* Recent Post Feed */}
         <RecentPostsSection posts={profile?.posts} />
       </div>
-
-      {/* Modal */}
-      {showReviewModal && (
-        <AddReviewModal
-          onClose={() => setShowReviewModal(false)}
-          onConfirm={(data) => {
-            console.log("Review submitted:", data);
-          }}
-        />
-      )}
     </div>
   );
 };

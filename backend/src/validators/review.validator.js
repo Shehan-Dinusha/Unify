@@ -21,10 +21,6 @@ export const submitReviewValidator = [
     .optional()
     .isBoolean()
     .withMessage("isAnonymous must be a boolean"),
-  body("reviewerId")
-    .optional()
-    .isInt()
-    .withMessage("Reviewer ID must be an integer"),
 ];
 
 export const deleteReviewValidator = [

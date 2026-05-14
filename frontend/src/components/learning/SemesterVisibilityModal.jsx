@@ -4,12 +4,6 @@ import Button from "../common/Button";
 import Card from "../common/Card";
 import { Eye, Check } from "lucide-react";
 
-// The backend should pass the list of batches for the current degree program.
-// For example:
-// const mockBatches = [
-//   { id: "b25", short: "'25", name: "Batch 25", colorBg: "bg-orange-900/30", colorText: "text-orange-400" },
-//   ...
-// ];
 const SemesterVisibilityModal = ({
   isOpen,
   onClose,

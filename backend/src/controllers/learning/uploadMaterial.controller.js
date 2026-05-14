@@ -11,8 +11,7 @@ export const uploadMaterial = async (req, res) => {
     const { moduleId } = req.params;
     const { title, category, attachmentType, linkUrl } = req.body;
 
-    // Assume user is authenticated and uploaderId is available in req.user
-    const uploaderId = req.user ? req.user.id : 1;
+    const uploaderId = req.user.id;
 
     // Validate if module exists
     const moduleExists = await AcademicModule.findByPk(moduleId);

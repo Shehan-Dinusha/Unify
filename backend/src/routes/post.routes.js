@@ -13,6 +13,7 @@ import {
   getComments,
   toggleSave,
   getSavedPosts,
+  getUserPosts,
 } from "../controllers/posts/index.js";
 import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -25,6 +26,7 @@ import {
   commentValidator,
 } from "../validators/post.validator.js";
 import { protect, authorize } from "../middlewares/auth.middleware.js";
+import { requireClubVerification } from "../middlewares/verifyClub.middleware.js";
 
 
 const router = express.Router();
@@ -34,6 +36,7 @@ router.post(
   "/normal",
   protect,
   authorize("Club"),
+  requireClubVerification,
   uploadToS3({ type: "array", fieldName: "images", folder: "posts", maxCount: 10 }),
   createNormalPostValidator,
   validate,
@@ -45,6 +48,7 @@ router.post(
   "/club-product",
   protect,
   authorize("Club"),
+  requireClubVerification,
   uploadToS3({ type: "array", fieldName: "images", folder: "posts/products", maxCount: 10 }),
   createClubProductPostValidator,
   validate,
@@ -56,6 +60,7 @@ router.post(
   "/club-event",
   protect,
   authorize("Club"),
+  requireClubVerification,
   uploadToS3({ type: "array", fieldName: "coverImage", folder: "posts/events", maxCount: 1 }),
   createClubEventPostValidator,
   validate,
@@ -110,6 +115,9 @@ router.get("/my-posts", protect, getFeed);
 router.get("/boarding/filter", protect, getFilteredBoardingFeed);
 // Get saved posts
 router.get("/saved", protect, getSavedPosts);
+
+// Get specific user's posts (Publicly accessible but protected)
+router.get("/user/:userId", protect, getUserPosts);
 
 // Get specific post dynamically
 router.get("/:type/:id", postParamsValidator, validate, getPost);

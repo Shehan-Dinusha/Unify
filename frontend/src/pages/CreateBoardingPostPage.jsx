@@ -1,21 +1,18 @@
 import React, { useState } from "react";
-import { 
-    ImagePlus, MapPin, Wifi, DollarSign, Users, Phone, BedDouble, 
-    X, Plus, Edit3, Tag as TagIcon, Calendar, ArrowRight, Loader2 
+import {
+    ImagePlus, MapPin, Wifi, DollarSign, Users, Phone, BedDouble,
+    X, Plus, Edit3, Tag as TagIcon, Calendar, ArrowRight, Loader2
 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import { useNavigate } from "react-router-dom";
 import postService from "../services/postService";
 import LocationPicker from "../components/boarding/LocationPicker";
+import { getCurrentUser } from "../services/authService";
 
 const CreateBoardingPostPage = () => {
     const navigate = useNavigate();
-    const user = {
-        name: "Alex Johnson",
-        role: "boarding_owner",
-        displayRole: "Business & Organization"
-    };
+    const user = getCurrentUser();
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -65,7 +62,7 @@ const CreateBoardingPostPage = () => {
     };
 
     const handleCancel = () => navigate("/boarding-owner/marketplace");
-    
+
     const handleLocationChange = ({ lat, lng, address }) => {
         setLatitude(lat);
         setLongitude(lng);
@@ -97,7 +94,7 @@ const CreateBoardingPostPage = () => {
             data.append("amenities", JSON.stringify(amenities));
             data.append("latitude", latitude);
             data.append("longitude", longitude);
-            
+
             images.forEach(img => {
                 if (img.file) {
                     data.append("images", img.file);
@@ -147,15 +144,15 @@ const CreateBoardingPostPage = () => {
                                             Photos
                                         </label>
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                            <input 
-                                                type="file" 
-                                                ref={fileInputRef} 
-                                                className="hidden" 
-                                                multiple 
-                                                accept="image/*" 
-                                                onChange={(e) => handleFiles(e.target.files)} 
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                className="hidden"
+                                                multiple
+                                                accept="image/*"
+                                                onChange={(e) => handleFiles(e.target.files)}
                                             />
-                                            <div 
+                                            <div
                                                 onClick={() => fileInputRef.current?.click()}
                                                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                                                 onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
@@ -208,8 +205,8 @@ const CreateBoardingPostPage = () => {
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
                                             placeholder="Describe the boarding place, amenities, rules, and environment..."
-                                            rows={4}
-                                            className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors resize-none placeholder:text-text-secondary"
+                                            rows={6}
+                                            className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-primary-blue transition-colors resize-y placeholder:text-text-secondary"
                                         />
                                     </div>
 
@@ -307,7 +304,7 @@ const CreateBoardingPostPage = () => {
                                                     </button>
                                                 </div>
                                             ))}
-                                            <button 
+                                            <button
                                                 onClick={handleAddAmenity}
                                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-blue/10 border border-primary-blue/20 text-primary-blue rounded-full text-xs hover:bg-primary-blue/20 transition-colors"
                                             >
@@ -466,7 +463,7 @@ const CreateBoardingPostPage = () => {
                                         </span>
                                     </div>
 
-                                    <p className="text-[14px] text-text-secondary leading-6 mb-4 line-clamp-2 min-h-[48px]">
+                                    <p className="text-[14px] text-text-secondary leading-6 mb-4 line-clamp-2 min-h-[48px] whitespace-pre-wrap">
                                         {description || "Your post description will appear here..."}
                                     </p>
 

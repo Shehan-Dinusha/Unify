@@ -448,7 +448,7 @@ class BoostService {
 
   // ── Purchase ─────────────────────────────────────────────────────────────
 
-  async purchaseBoost(userId, packageId, postId = null) {
+  async purchaseBoost(userId, packageId, postId = null, postType = null) {
     const transaction = await sequelize.transaction();
     try {
       // Validate package
@@ -474,6 +474,7 @@ class BoostService {
 
       // Optional: validate post if provided
       if (postId) {
+        // Try to find the post in the base table or specific table
         const post = await Post.findByPk(postId);
         if (!post) {
           const error = new Error("Post not found.");
@@ -508,12 +509,28 @@ class BoostService {
         { transaction }
       );
 
-      // If a post was specified, mark it as promoted
+      // ── Mark the post as promoted in all relevant tables ──
       if (postId) {
-        await Post.update(
-          { isPromoted: true },
-          { where: { id: postId }, transaction }
-        );
+        const updateData = { isPromoted: true };
+        const where = { id: postId };
+        
+        // Update specific tables based on type if known, or try all if not
+        if (postType === "normal") {
+          await NormalPost.update(updateData, { where, transaction });
+        } else if (postType === "club-product") {
+          await ClubProductPost.update(updateData, { where, transaction });
+        } else if (postType === "club-event") {
+          await ClubEventPost.update(updateData, { where, transaction });
+        } else if (postType === "boarding") {
+          await Boarding.update(updateData, { where, transaction });
+        } else {
+          // If type unknown, update base and try all specific (matches expiry enforcement pattern)
+          await Post.update(updateData, { where, transaction });
+          await NormalPost.update(updateData, { where, transaction }).catch(() => {});
+          await ClubProductPost.update(updateData, { where, transaction }).catch(() => {});
+          await ClubEventPost.update(updateData, { where, transaction }).catch(() => {});
+          await Boarding.update(updateData, { where, transaction }).catch(() => {});
+        }
       }
 
       await transaction.commit();

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
 import {
     ImagePlus, MapPin, Calendar, Clock, ChevronRight,
-    LayoutGrid, Edit3, Info, Loader2
+    LayoutGrid, Edit3, Info, Loader2, ChevronDown
 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
 import Card from "../common/Card";
 import ClubPostCard from "../club/ClubPostCard";
 
@@ -19,8 +19,8 @@ const Toggle = ({ value, onChange }) => (
 );
 
 /* ─── Ticketing Detail Block ─────────────────────────────────── */
-const TicketingBlock = ({ label, enabled, onToggle, price, onPriceChange, isFree, onFreeToggle }) => (
-    <div className="bg-[#0F172A]/60 border border-white/8 rounded-2xl p-5 space-y-4">
+const TicketingBlock = ({ label, enabled, onToggle, price, onPriceChange }) => (
+    <div className="bg-[#0F172A]/60 rounded-2xl p-5 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -36,34 +36,20 @@ const TicketingBlock = ({ label, enabled, onToggle, price, onPriceChange, isFree
         <div className={`space-y-4 transition-opacity ${enabled ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
             <div>
                 <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider block mb-2">
-                    Ticket Price
+                    Ticket Price (Rs.)
                 </label>
                 <div className="flex items-center bg-[#0D1A26] border border-white/10 rounded-xl px-4 py-3 gap-2">
-                    <span className="text-text-secondary text-sm">$</span>
                     <input
                         type="number"
                         min="0"
                         step="0.01"
                         value={price}
-                        disabled={isFree}
                         onChange={onPriceChange}
                         placeholder="0.00"
-                        className="flex-1 bg-transparent text-white text-sm focus:outline-none disabled:text-text-secondary placeholder:text-text-secondary"
+                        className="flex-1 bg-transparent text-white text-sm focus:outline-none disabled:text-text-secondary placeholder:text-text-secondary [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                 </div>
             </div>
-
-            <label className="flex items-center gap-3 cursor-pointer group">
-                <div
-                    onClick={onFreeToggle}
-                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 cursor-pointer ${isFree ? "border-primary-blue" : "border-white/20"}`}
-                >
-                    {isFree && <div className="w-2 h-2 bg-primary-blue rounded-full" />}
-                </div>
-                <span className="text-text-secondary text-xs group-hover:text-white transition-colors select-none">
-                    This is a free event (hides price field)
-                </span>
-            </label>
         </div>
     </div>
 );
@@ -81,7 +67,15 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
     const [loading, setLoading] = useState(false);
     const [coverImage, setCoverImage] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
-    const fileInputRef = React.useRef(null);
+    const fileInputRef = useRef(null);
+    const datePickerRef = useRef(null);
+    const timePickerRef = useRef(null);
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+    const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+    const [calendarDate, setCalendarDate] = useState(new Date());
+
+    const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+    const minutes = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"];
 
     const handleFile = (files) => {
         const file = files[0];
@@ -93,10 +87,28 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
         }
     };
 
+    const daysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
+    const startDay = (y, m) => new Date(y, m, 1).getDay();
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+                setIsDatePickerOpen(false);
+            }
+            if (timePickerRef.current && !timePickerRef.current.contains(event.target)) {
+                setIsTimePickerOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
     const [tiers, setTiers] = useState([
-        { id: 1, label: "Early Bird", enabled: false, price: "", isFree: false },
-        { id: 2, label: "Standard", enabled: false, price: "", isFree: false },
-        { id: 3, label: "VIP", enabled: false, price: "", isFree: false },
+        { id: 1, label: "Early Bird", enabled: false, price: "" },
+        { id: 2, label: "Standard", enabled: false, price: "" },
+        { id: 3, label: "VIP", enabled: false, price: "" },
     ]);
 
     const handleChange = (e) => {
@@ -119,8 +131,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                 ...formData,
                 tickets: tiers.filter(t => t.enabled).map(t => ({
                     name: t.label,
-                    price: t.isFree ? 0 : parseFloat(t.price) || 0,
-                    isFree: t.isFree
+                    price: parseFloat(t.price) || 0
                 }))
             };
 
@@ -140,7 +151,12 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                 <div className="flex flex-col gap-6 pb-8">
 
                     {/* Event Details */}
-                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6">
+                    <Card 
+                        variant="card" 
+                        overflow="overflow-visible" 
+                        className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6"
+                        style={{ zIndex: isDatePickerOpen ? 100 : 1 }}
+                    >
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-2 bg-blue-500/20 text-blue-500 rounded-lg">
                                 <Edit3 className="w-5 h-5" />
@@ -219,8 +235,8 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                     value={formData.description}
                                     onChange={handleChange}
                                     placeholder="Describe your event... What can attendees expect?"
-                                    rows={4}
-                                    className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-blue transition-colors resize-none placeholder:text-text-secondary"
+                                    rows={6}
+                                    className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-blue transition-colors resize-y placeholder:text-text-secondary"
                                 />
                             </div>
 
@@ -230,30 +246,136 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                     <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                         Date <span className="text-red-500">*</span>
                                     </label>
-                                    <div className="relative">
-                                        <input
-                                            type="date"
-                                            name="date"
-                                            value={formData.date}
-                                            onChange={handleChange}
-                                            className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-blue transition-colors appearance-none pr-10"
-                                        />
-                                        <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary pointer-events-none" />
+                                    <div className="relative" ref={datePickerRef}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                                            className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between text-sm hover:border-white/20 transition-all text-white"
+                                        >
+                                            <span className={formData.date ? "text-white" : "text-text-tertiary"}>
+                                                {formData.date ? new Date(formData.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "Select event date"}
+                                            </span>
+                                            <Calendar className="w-4 h-4 text-text-secondary" />
+                                        </button>
+
+                                        {isDatePickerOpen && (
+                                            <div className="absolute top-full left-0 mt-2 z-[100] bg-[#161F32]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 w-[280px] animate-in fade-in zoom-in-95 duration-200 origin-top">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1))}
+                                                        className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                                                    >
+                                                        <ChevronDown size={16} className="rotate-90" />
+                                                    </button>
+                                                    <div className="text-sm font-bold text-white">
+                                                        {monthNames[calendarDate.getMonth()]} {calendarDate.getFullYear()}
+                                                    </div>
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1))}
+                                                        className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                                                    >
+                                                        <ChevronDown size={16} className="-rotate-90" />
+                                                    </button>
+                                                </div>
+
+                                                <div className="grid grid-cols-7 gap-1 mb-2">
+                                                    {weekDays.map(d => (
+                                                        <div key={d} className="text-[10px] font-bold text-text-tertiary text-center uppercase">{d}</div>
+                                                    ))}
+                                                </div>
+
+                                                <div className="grid grid-cols-7 gap-1">
+                                                    {Array.from({ length: startDay(calendarDate.getFullYear(), calendarDate.getMonth()) }).map((_, i) => (
+                                                        <div key={`empty-${i}`} />
+                                                    ))}
+                                                    {Array.from({ length: daysInMonth(calendarDate.getFullYear(), calendarDate.getMonth()) }).map((_, i) => {
+                                                        const day = i + 1;
+                                                        const dateStr = `${calendarDate.getFullYear()}-${String(calendarDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                                        const isSelected = formData.date === dateStr;
+                                                        const isToday = new Date().toISOString().split('T')[0] === dateStr;
+
+                                                        return (
+                                                            <button
+                                                                key={day}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setFormData(prev => ({ ...prev, date: dateStr }));
+                                                                    setIsDatePickerOpen(false);
+                                                                }}
+                                                                className={`aspect-square rounded-lg text-xs flex items-center justify-center transition-all ${
+                                                                    isSelected 
+                                                                        ? 'bg-primary-blue text-white font-bold' 
+                                                                        : isToday 
+                                                                            ? 'text-primary-blue bg-primary-blue/10 font-bold' 
+                                                                            : 'text-text-secondary hover:bg-white/10 hover:text-white'
+                                                                }`}
+                                                            >
+                                                                {day}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div>
                                     <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                         Time
                                     </label>
-                                    <div className="relative">
-                                        <input
-                                            type="time"
-                                            name="time"
-                                            value={formData.time}
-                                            onChange={handleChange}
-                                            className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-blue transition-colors appearance-none pr-10"
-                                        />
-                                        <Clock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary pointer-events-none" />
+                                    <div className="relative" ref={timePickerRef}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsTimePickerOpen(!isTimePickerOpen)}
+                                            className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between text-sm hover:border-white/20 transition-all text-white"
+                                        >
+                                            <span className={formData.time ? "text-white" : "text-text-tertiary"}>
+                                                {formData.time || "Select time"}
+                                            </span>
+                                            <Clock className="w-4 h-4 text-text-secondary" />
+                                        </button>
+
+                                        {isTimePickerOpen && (
+                                            <div className="absolute top-full right-0 mt-2 z-[100] bg-[#161F32]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 w-[240px] animate-in fade-in zoom-in-95 duration-200 origin-top">
+                                                <div className="grid grid-cols-2 gap-4 h-48">
+                                                    <div className="flex flex-col gap-1 overflow-y-auto pr-2 custom-scrollbar">
+                                                        <div className="text-[10px] font-bold text-text-tertiary uppercase mb-1 sticky top-0 bg-[#161F32] py-1">Hour</div>
+                                                        {hours.map(h => (
+                                                            <button
+                                                                key={h}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const currentMin = formData.time ? formData.time.split(':')[1] : "00";
+                                                                    setFormData(prev => ({ ...prev, time: `${h}:${currentMin}` }));
+                                                                }}
+                                                                className={`py-2 rounded-lg text-xs transition-all ${formData.time?.split(':')[0] === h ? 'bg-primary-blue text-white font-bold' : 'text-text-secondary hover:bg-white/5 hover:text-white'}`}
+                                                            >
+                                                                {h}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    <div className="flex flex-col gap-1 overflow-y-auto pr-2 custom-scrollbar">
+                                                        <div className="text-[10px] font-bold text-text-tertiary uppercase mb-1 sticky top-0 bg-[#161F32] py-1">Min</div>
+                                                        {minutes.map(m => (
+                                                            <button
+                                                                key={m}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const currentHour = formData.time ? formData.time.split(':')[0] : "12";
+                                                                    setFormData(prev => ({ ...prev, time: `${currentHour}:${m}` }));
+                                                                    setIsTimePickerOpen(false);
+                                                                }}
+                                                                className={`py-2 rounded-lg text-xs transition-all ${formData.time?.split(':')[1] === m ? 'bg-primary-blue text-white font-bold' : 'text-text-secondary hover:bg-white/5 hover:text-white'}`}
+                                                            >
+                                                                {m}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -296,8 +418,6 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                     onToggle={() => updateTier(tier.id, { enabled: !tier.enabled })}
                                     price={tier.price}
                                     onPriceChange={(e) => updateTier(tier.id, { price: e.target.value })}
-                                    isFree={tier.isFree}
-                                    onFreeToggle={() => updateTier(tier.id, { isFree: !tier.isFree })}
                                 />
                             ))}
                         </div>
@@ -321,6 +441,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                 price: tiers.find(t => t.enabled)?.isFree ? "Free" : tiers.find(t => t.enabled)?.price ? `Rs.${tiers.find(t => t.enabled).price}` : "Free",
                                 text: `${formData.name ? `Event: ${formData.name}\n` : ""}${formData.date ? `Date: ${formData.date}${formData.time ? ` @ ${formData.time}` : ''}\n` : ""}${formData.location ? `Location: ${formData.location}\n` : ""}\n${formData.description || "Your event description will appear here..."}`,
                                 postType: "club-event",
+                                whitespacePre: true,
                                 stats: { likes: 0 },
                                 comments: []
                             }}

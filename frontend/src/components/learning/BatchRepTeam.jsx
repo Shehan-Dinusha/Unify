@@ -40,7 +40,7 @@ const TeamMemberRow = ({
   </div>
 );
 
-const BatchRepTeam = ({ degreeId = 18, currentUserId = 1 }) => {
+const BatchRepTeam = ({ degreeId, currentUserId }) => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 

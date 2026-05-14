@@ -4,6 +4,7 @@ import MainLayout from "../components/layout/MainLayout";
 import LoadMoreButton from "../components/common/LoadMoreButton";
 import { getClubFollowers as getFollowers } from "../services/followerService";
 import Avatar from "../components/common/Avatar";
+import NotFound from "./NotFound";
 const ITEMS_PER_PAGE = 14;
 
 const FollowerCard = ({ follower }) => {
@@ -40,6 +41,7 @@ const FollowersDirectory = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState(null);
+  const [errorStatus, setErrorStatus] = useState(null);
 
   useEffect(() => {
     fetchInitialFollowers();
@@ -55,8 +57,15 @@ const FollowersDirectory = () => {
       setHasMore(data.hasMore);
       setPage(1);
     } catch (err) {
-      setError("Failed to load followers. Please try again later.");
-      console.error("Error fetching followers:", err);
+      if (
+        err.response &&
+        err.response.status === 403
+      ) {
+        setErrorStatus(err.response.status);
+      } else {
+        setError("Failed to load followers. Please try again later.");
+        console.error("Error fetching followers:", err);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -80,15 +89,26 @@ const FollowersDirectory = () => {
     }
   };
 
+  if (errorStatus) {
+    return <NotFound status={errorStatus} />;
+  }
+
+  const sidebarUser = (() => {
+    try {
+      const raw = localStorage.getItem("user");
+      const role = localStorage.getItem("role");
+      if (raw) {
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+        return { name: parsed.name || "User", role: role || "club", displayRole: parsed.displayRole || role || "Club" };
+      }
+    } catch {}
+    return { name: "User", role: "club", displayRole: "Club" };
+  })();
+
   return (
     <MainLayout
-      user={{
-        name: "Alex Johnson",
-        role: "club",
-        displayRole: "Clubs & Societies",
-      }}
+      user={sidebarUser}
       pageTitle="Profile"
-      verificationCount={3}
     >
       <div className="flex flex-col h-full">
         {/* Header Section */}

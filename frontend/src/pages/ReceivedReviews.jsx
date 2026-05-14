@@ -12,6 +12,7 @@ import Card from "../components/common/Card";
 import LoadMoreButton from "../components/common/LoadMoreButton";
 import StarRating from "../components/common/StarRating";
 import Avatar from "../components/common/Avatar";
+import NotFound from "./NotFound";
 import {
   getReceivedReviews,
   toggleOwnerLike,
@@ -231,6 +232,7 @@ const ReceivedReviews = () => {
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errorStatus, setErrorStatus] = useState(null);
 
   const tabs = ["All Reviews", "Unreplied", "5 stars", "Critical"];
   const sortOptions = [
@@ -240,11 +242,8 @@ const ReceivedReviews = () => {
     "Lowest Rating",
   ];
 
-  const user = {
-    name: "Alex Johnson",
-    role: "business",
-    displayRole: "Business & Organization",
-  };
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
 
   const [visibleCount, setVisibleCount] = useState(5);
 
@@ -252,13 +251,22 @@ const ReceivedReviews = () => {
     try {
       setIsLoading(true);
       setError(null);
+      setErrorStatus(null);
       const data = await getReceivedReviews();
       setReviews(data.reviews || []);
       if (data.summary) {
         setMetrics(data.summary);
       }
     } catch (err) {
-      setError("Failed to load reviews.");
+      if (
+        err.response &&
+        (err.response.status === 403 ||
+          err.response.status === 404)
+      ) {
+        setErrorStatus(err.response.status);
+      } else {
+        setError("Failed to load reviews.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -306,6 +314,10 @@ const ReceivedReviews = () => {
   };
 
   const sortedReviews = getSortedReviews();
+
+  if (errorStatus) {
+    return <NotFound status={errorStatus} />;
+  }
 
   if (isLoading) {
     return (
@@ -471,7 +483,7 @@ const ReceivedReviews = () => {
               ))
           ) : (
             <div className="text-gray-400 text-sm font-inter text-center py-8">
-              No reviews found matching the criteria.
+              No reviews yet
             </div>
           )}
         </div>

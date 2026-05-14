@@ -1,11 +1,11 @@
 import React from "react";
 import MainLayout from "../components/layout/MainLayout";
-import { mockRequests } from "../data/mockData";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 import NewsFeed from "../pages/NewsFeed";
 import Marketplace from "../pages/Marketplace";
 import Club from "../pages/Club";
+import ClubVerification from "../pages/ClubVerification";
 import ClubOwnerMarketplace from "../pages/ClubOwnerMarketplace";
 import ClubProduct from "../pages/ClubProduct";
 import ClubCheckout from "../pages/ClubCheckout";
@@ -38,15 +38,14 @@ import CreateServicePostPage from "../pages/CreateServicePostPage";
 
 import MarketplaceReviews from "../pages/MarketplaceReviews";
 import ReceivedReviews from "../pages/ReceivedReviews";
+import MyReviewHistory from "../pages/MyReviewHistory";
 import BoostSelectPackage from "../pages/BoostSelectPackage";
 import BoostConfirmOrder from "../pages/BoostConfirmOrder";
 import BoostPostSuccess from "../pages/BoostPostSuccess";
 
-const PlaceholderPage = ({ title, verificationCount }) => (
+const PlaceholderPage = ({ title }) => (
   <MainLayout
-    user={{ name: "Alex Johnson", role: "admin" }}
     pageTitle={title}
-    verificationCount={verificationCount}
   >
     <div className="flex flex-col items-center justify-center h-full text-center p-lg">
       <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-lg">
@@ -65,7 +64,7 @@ export const businessSharedRoutes = [
   { path: "/business/news-feed", element: <NewsFeed userRole="business" /> },
   { path: "/business/reviews", element: <ReceivedReviews /> },
   { path: "/marketplace", element: <Marketplace /> },
-  { path: "/marketplace/reviews", element: <MarketplaceReviews /> },
+  { path: "/marketplace/:targetId/reviews", element: <MarketplaceReviews /> },
   { path: "/business/boost-post", element: <BoostSelectPackage /> },
   { path: "/business/boost-post/confirm", element: <BoostConfirmOrder /> },
   { path: "/business/boost-post/success", element: <BoostPostSuccess /> },
@@ -80,7 +79,6 @@ export const businessSharedRoutes = [
     element: (
       <PlaceholderPage
         title="Order Dashboard"
-        verificationCount={mockRequests.length}
       />
     ),
   },
@@ -89,7 +87,6 @@ export const businessSharedRoutes = [
     element: (
       <PlaceholderPage
         title="My Products"
-        verificationCount={mockRequests.length}
       />
     ),
   },
@@ -97,31 +94,47 @@ export const businessSharedRoutes = [
 
 // Clubs & societies
 export const clubRoutes = [
+  // Club verification — accessible without being verified
   {
     element: <ProtectedRoute allowedRoles={["Club", "Admin"]} />,
     children: [
-      //{ path: "/marketplace/club", element: <Club /> },
+      { path: "/club-verification", element: <ClubVerification /> },
+    ],
+  },
+  // All other club routes require verification
+  {
+    element: <ProtectedRoute allowedRoles={["Club", "Admin"]} requireVerified />,
+    children: [
       { path: "/club-owner/marketplace", element: <ClubOwnerMarketplace /> },
       { path: "/club-owner/create-product", element: <CreateProductPage /> },
       { path: "/club-owner/create-event", element: <CreateEventPage /> },
       { path: "/club-owner/create-post", element: <CreateNormalPostPage /> },
       { path: "/club-owner/dashboard", element: <ClubOwnerDashboard /> },
-      { path: "/club-owner/product-orders/:type/:id", element: <ProductOrderDashboard /> },
+      {
+        path: "/club-owner/product-orders/:type/:id",
+        element: <ProductOrderDashboard />,
+      },
       { path: "/club-owner/wallet", element: <ClubWalletPage /> },
       { path: "/marketplace/club/product/:type/:id", element: <ClubProduct /> },
       { path: "/marketplace/club/checkout", element: <ClubCheckout /> },
       { path: "/marketplace/club/payment-success", element: <ClubPaymentSuccess /> },
+      { path: "/profile/reviews", element: <MyReviewHistory /> },
       { path: "/club/followers", element: <FollowersDirectory /> },
-    ]
-  }
+    ],
+  },
 ];
 
 // Boarding owners
 export const boardingOwnerRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["BOARDING"]} />,
+    element: (
+      <ProtectedRoute
+        allowedRoles={["Business", "Admin"]}
+        allowedCategories={["BOARDING"]}
+      />
+    ),
     children: [
-      { path: "/marketplace/boarding", element: <Boarding /> },
+
       { path: "/boarding-owner/marketplace", element: <BoardingOwnerMarketplace /> },
       { path: "/boarding-owner/create-post", element: <CreateBoardingPostPage /> },
     ]
@@ -131,9 +144,14 @@ export const boardingOwnerRoutes = [
 // Food & café
 export const foodCafeRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["FOOD"]} />,
+    element: (
+      <ProtectedRoute
+        allowedRoles={["Business", "Admin"]}
+        allowedCategories={["FOOD"]}
+      />
+    ),
     children: [
-      { path: "/marketplace/food-cafe", element: <FoodCafe /> },
+
       { path: "/food-cafe-owner/marketplace", element: <FoodCafeOwnerMarketplace /> },
       { path: "/food-cafe-owner/create-post", element: <CreateFoodCafePostPage /> },
     ]
@@ -143,9 +161,14 @@ export const foodCafeRoutes = [
 // Self-employed services
 export const selfEmployedRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["Business", "Admin"]} allowedCategories={["SELF_EMPLOYED"]} />,
+    element: (
+      <ProtectedRoute
+        allowedRoles={["Business", "Admin"]}
+        allowedCategories={["SELF_EMPLOYED"]}
+      />
+    ),
     children: [
-      { path: "/marketplace/services", element: <Services /> },
+
       { path: "/services-owner/marketplace", element: <ServicesOwnerMarketplace /> },
       { path: "/services-owner/create-post", element: <CreateServicePostPage /> },
     ]
@@ -153,7 +176,10 @@ export const selfEmployedRoutes = [
 ];
 
 export const businessRoutes = [
-  ...businessSharedRoutes,
+  {
+    element: <ProtectedRoute allowedRoles={["Business", "Club", "Admin"]} requireVerified />,
+    children: businessSharedRoutes,
+  },
   ...clubRoutes,
   ...boardingOwnerRoutes,
   ...foodCafeRoutes,

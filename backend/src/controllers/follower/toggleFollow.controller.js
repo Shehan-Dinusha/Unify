@@ -2,17 +2,8 @@ import { User, UserFollower, ClubProfile } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
 
 export const toggleFollowClub = catchAsync(async (req, res) => {
-  const followerId = req.user?.id || req.body.followerId; // User making the request OR pass in body
+  const followerId = req.user.id;
   const followingId = req.params.clubId; // User they want to follow
-
-  if (!followerId) {
-    return sendResponse(
-      res,
-      401,
-      false,
-      "Not authorized. No user id provided.",
-    );
-  }
 
   // Find the user who wants to follow
   const follower = await User.findByPk(followerId);
@@ -21,7 +12,7 @@ export const toggleFollowClub = catchAsync(async (req, res) => {
   }
 
   // Rule: Only students can follow clubs
-  if (follower.role !== "Student") {
+  if (follower.role?.toLowerCase() !== "student") {
     return sendResponse(res, 403, false, "Only students can follow clubs.");
   }
 
@@ -32,7 +23,7 @@ export const toggleFollowClub = catchAsync(async (req, res) => {
   }
 
   // Rule: Only clubs can be followed
-  if (targetUser.role !== "Club") {
+  if (targetUser.role?.toLowerCase() !== "club") {
     return sendResponse(res, 403, false, "You can only follow clubs.");
   }
 

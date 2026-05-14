@@ -23,13 +23,14 @@ import {
   removeVerifiedAccountValidator,
   revokeBatchRepStatusValidator,
 } from "../validators/verification.validator.js";
-import { protect } from "../middlewares/auth.middleware.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 // POST /api/v1/verifications/submit
 router.post(
   "/submit",
   protect,
+  authorize("Student", "Club"),
   uploadToS3({ type: "single", fieldName: "document", folder: "verifications" }),
   submitVerificationRequestValidator,
   validateRequest,
@@ -37,14 +38,26 @@ router.post(
 );
 
 // GET /api/v1/verifications/pending
-router.get("/pending", getPendingVerifications);
+router.get(
+  "/pending",
+  protect,
+  authorize("Admin"),
+  getPendingVerifications,
+);
 
 // GET /api/v1/verifications/verified
-router.get("/verified", getVerifiedEntities);
+router.get(
+  "/verified",
+  protect,
+  authorize("Admin"),
+  getVerifiedEntities,
+);
 
 // PATCH /api/v1/verifications/:id/approve
 router.patch(
   "/:id/approve",
+  protect,
+  authorize("Admin"),
   approveVerificationRequestValidator,
   validateRequest,
   approveVerificationRequest,
@@ -53,6 +66,8 @@ router.patch(
 // PATCH /api/v1/verifications/:id/reject
 router.patch(
   "/:id/reject",
+  protect,
+  authorize("Admin"),
   rejectVerificationRequestValidator,
   validateRequest,
   rejectVerificationRequest,
@@ -61,6 +76,7 @@ router.patch(
 // GET /api/v1/verifications/status
 router.get(
   "/status",
+  protect,
   getVerificationStatusValidator,
   validateRequest,
   getVerificationStatus,
@@ -69,6 +85,7 @@ router.get(
 // DELETE /api/v1/verifications/remove
 router.delete(
   "/remove",
+  protect,
   deleteVerificationRequestValidator,
   validateRequest,
   deleteVerificationRequest,
@@ -77,6 +94,8 @@ router.delete(
 // GET /api/v1/verifications/:id/document
 router.get(
   "/:id/document",
+  protect,
+  authorize("Admin"),
   getVerificationDocumentValidator,
   validateRequest,
   getVerificationDocument,
@@ -85,6 +104,8 @@ router.get(
 // DELETE /api/v1/verifications/:id/remove-verified
 router.delete(
   "/:id/remove-verified",
+  protect,
+  authorize("Admin"),
   removeVerifiedAccountValidator,
   validateRequest,
   removeVerifiedAccount,
@@ -93,6 +114,7 @@ router.delete(
 // POST /api/v1/verifications/revoke-batch-rep
 router.post(
   "/revoke-batch-rep",
+  protect,
   revokeBatchRepStatusValidator,
   validateRequest,
   revokeBatchRepStatus,

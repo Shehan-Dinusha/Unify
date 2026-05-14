@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Tag, Calendar, Edit3, X, Upload, Check, ChevronDown, Plus, Trash2, Search, Loader2, ImagePlus } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Tag, Calendar, Edit3, X, Upload, Check, ChevronDown, Plus, Trash2, Search, Loader2, ImagePlus, Shirt, Watch, FileCode, Ticket } from "lucide-react";
 import Card from "../common/Card";
 import ClubPostCard from "../club/ClubPostCard";
 import postService from "../../services/postService";
@@ -22,6 +22,36 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
     const [newColor, setNewColor] = useState({ hex: "#3B82F6", name: "" });
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = React.useRef(null);
+    const dropdownRef = React.useRef(null);
+    const datePickerRef = React.useRef(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+    const [calendarDate, setCalendarDate] = useState(new Date());
+
+    const categories = [
+        { id: "Apparel", label: "Apparel", icon: Shirt, desc: "Clothing, hoodies & more" },
+        { id: "Accessories", label: "Accessories", icon: Watch, desc: "Bags, caps & jewelry" },
+        { id: "Digital", label: "Digital", icon: FileCode, desc: "E-books, designs & files" },
+        { id: "Tickets", label: "Tickets", icon: Ticket, desc: "Events & raffles" },
+    ];
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+            if (datePickerRef.current && !datePickerRef.current.contains(event.target)) {
+                setIsDatePickerOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const daysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
+    const startDay = (y, m) => new Date(y, m, 1).getDay();
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
     const handleFiles = (files) => {
         const newImages = Array.from(files)
@@ -121,7 +151,12 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                 {/* Left Column: Form Sections */}
                 <div className="flex flex-col gap-6 pb-8">
                     {/* Basic Information */}
-                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6">
+                    <Card 
+                        variant="card" 
+                        overflow="overflow-visible" 
+                        className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6"
+                        style={{ zIndex: isDropdownOpen ? 100 : 1 }}
+                    >
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-2 bg-blue-500/20 text-blue-500 rounded-lg">
                                 <Edit3 className="w-5 h-5" />
@@ -156,8 +191,8 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                                     value={formData.description}
                                     onChange={handleInputChange}
                                     placeholder="Describe your product..."
-                                    rows={4}
-                                    className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-blue transition-colors resize-none mb-2"
+                                    rows={6}
+                                    className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-blue transition-colors resize-y mb-2"
                                 />
                                 <div className="text-right text-[10px] text-text-secondary italic">
                                     Highlight key features, materials, and club relevance.
@@ -214,26 +249,66 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                                         name="price"
                                         value={formData.price}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-blue transition-colors"
+                                        className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-blue transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     />
                                 </div>
                                 <div>
                                     <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                         Category
                                     </label>
-                                    <div className="relative">
-                                        <select
-                                            name="category"
-                                            value={formData.category}
-                                            onChange={handleInputChange}
-                                            className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-blue transition-colors appearance-none"
+                                    <div className="relative" ref={dropdownRef}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                            className={`w-full bg-[#0F172A]/80 border ${isDropdownOpen ? 'border-primary-blue ring-1 ring-primary-blue/20' : 'border-white/10'} rounded-xl px-4 py-3 flex items-center justify-between transition-all duration-200 group`}
                                         >
-                                            <option>Apparel</option>
-                                            <option>Accessories</option>
-                                            <option>Digital</option>
-                                            <option>Tickets</option>
-                                        </select>
-                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary pointer-events-none" />
+                                            <div className="flex items-center gap-3">
+                                                {(() => {
+                                                    const current = categories.find(c => c.id === formData.category) || categories[0];
+                                                    const Icon = current.icon;
+                                                    return (
+                                                        <>
+                                                            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-primary-blue">
+                                                                <Icon size={18} />
+                                                            </div>
+                                                            <span className="text-sm font-medium text-white">{current.label}</span>
+                                                        </>
+                                                    );
+                                                })()}
+                                            </div>
+                                            <ChevronDown className={`w-4 h-4 text-text-secondary transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+
+                                        {isDropdownOpen && (
+                                            <div className="absolute top-full left-0 right-0 mt-2 z-[100] bg-[#161F32]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top">
+                                                <div className="p-2 flex flex-col gap-1">
+                                                    {categories.map((cat) => {
+                                                        const Icon = cat.icon;
+                                                        const isSelected = formData.category === cat.id;
+                                                        return (
+                                                            <button
+                                                                key={cat.id}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setFormData(prev => ({ ...prev, category: cat.id }));
+                                                                    setIsDropdownOpen(false);
+                                                                }}
+                                                                className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-200 text-left ${isSelected ? 'bg-primary-blue/20 text-primary-blue border border-primary-blue/20' : 'hover:bg-white/5 text-text-secondary hover:text-white border border-transparent'}`}
+                                                            >
+                                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-primary-blue text-white' : 'bg-white/5 text-text-tertiary'}`}>
+                                                                    <Icon size={20} />
+                                                                </div>
+                                                                <div className="flex flex-col min-w-0">
+                                                                    <span className="text-sm font-bold truncate">{cat.label}</span>
+                                                                    <span className="text-[11px] opacity-60 truncate">{cat.desc}</span>
+                                                                </div>
+                                                                {isSelected && <Check size={16} className="ml-auto shrink-0" />}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -330,21 +405,85 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
                     </Card>
 
                     {/* Deadline & Note */}
-                    <Card variant="card" className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6">
+                    <Card variant="card" overflow="overflow-visible" className="bg-[#1A2F45]/60 border-white/5 !p-4 sm:!p-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
                                     Order Deadline
                                 </label>
-                                <div className="relative">
-                                    <input
-                                        type="date"
-                                        name="deadline"
-                                        value={formData.deadline}
-                                        onChange={handleInputChange}
-                                        className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary-blue transition-colors text-sm appearance-none"
-                                    />
-                                    <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary pointer-events-none" />
+                                <div className="relative" ref={datePickerRef}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                                        className="w-full bg-[#0F172A]/80 border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between text-sm hover:border-white/20 transition-all"
+                                    >
+                                        <span className={formData.deadline ? "text-white" : "text-text-tertiary"}>
+                                            {formData.deadline ? new Date(formData.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : "Select deadline date"}
+                                        </span>
+                                        <Calendar className="w-4 h-4 text-text-secondary" />
+                                    </button>
+
+                                    {isDatePickerOpen && (
+                                        <div className="absolute bottom-full left-0 mb-2 z-[100] bg-[#161F32]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 w-[280px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1))}
+                                                    className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                                                >
+                                                    <ChevronDown className="w-4 h-4 rotate-90" />
+                                                </button>
+                                                <div className="text-sm font-bold text-white">
+                                                    {monthNames[calendarDate.getMonth()]} {calendarDate.getFullYear()}
+                                                </div>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1))}
+                                                    className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                                                >
+                                                    <ChevronDown className="w-4 h-4 -rotate-90" />
+                                                </button>
+                                            </div>
+
+                                            <div className="grid grid-cols-7 gap-1 mb-2">
+                                                {weekDays.map(d => (
+                                                    <div key={d} className="text-[10px] font-bold text-text-tertiary text-center uppercase">{d}</div>
+                                                ))}
+                                            </div>
+
+                                            <div className="grid grid-cols-7 gap-1">
+                                                {Array.from({ length: startDay(calendarDate.getFullYear(), calendarDate.getMonth()) }).map((_, i) => (
+                                                    <div key={`empty-${i}`} />
+                                                ))}
+                                                {Array.from({ length: daysInMonth(calendarDate.getFullYear(), calendarDate.getMonth()) }).map((_, i) => {
+                                                    const day = i + 1;
+                                                    const dateStr = `${calendarDate.getFullYear()}-${String(calendarDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                                    const isSelected = formData.deadline === dateStr;
+                                                    const isToday = new Date().toISOString().split('T')[0] === dateStr;
+
+                                                    return (
+                                                        <button
+                                                            key={day}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setFormData(prev => ({ ...prev, deadline: dateStr }));
+                                                                setIsDatePickerOpen(false);
+                                                            }}
+                                                            className={`aspect-square rounded-lg text-xs flex items-center justify-center transition-all ${
+                                                                isSelected 
+                                                                    ? 'bg-primary-blue text-white font-bold' 
+                                                                    : isToday 
+                                                                        ? 'text-primary-blue bg-primary-blue/10 font-bold' 
+                                                                        : 'text-text-secondary hover:bg-white/10 hover:text-white'
+                                                            }`}
+                                                        >
+                                                            {day}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div>

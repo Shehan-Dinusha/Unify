@@ -2,7 +2,7 @@ import { ClubEventPost, ClubProfile } from "../../modules/index.js";
 
 const getUploadedFileUrls = (files) => {
   if (!files) return [];
-  return files.map((file) => `/uploads/verifications/${file.filename}`);
+  return files.map((file) => file.location);
 };
 
 export const createClubEventPost = async (req, res) => {
@@ -29,7 +29,7 @@ export const createClubEventPost = async (req, res) => {
     }
 
     const files = req.files || [];
-    const coverImage = files.length > 0 ? { url: files[0].location || `/uploads/verifications/${files[0].filename}` } : null;
+    const coverImage = files.length > 0 ? { url: files[0].location } : null;
 
 
     let tiers = req.body.tiers || req.body.tickets;

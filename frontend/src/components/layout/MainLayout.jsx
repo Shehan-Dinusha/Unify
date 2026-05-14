@@ -1,16 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UnifiedSidebar from "./Sidebar";
 import Header from "./Header";
+import verificationService from "../../services/verificationService";
 
 const MainLayout = ({
   children,
   user,
   pageTitle,
   headerRight,
-  verificationCount,
   sidebarDisabled = false,
 }) => {
+  const [fetchedCount, setFetchedCount] = useState(0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const response = await verificationService.getPendingRequests();
+        if (response.success) {
+          setFetchedCount(response.data?.requests?.length || 0);
+        }
+      } catch {
+        // Non-admin users will get a 403 — silently ignore
+      }
+    };
+    fetchCount();
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prevState) => !prevState);
@@ -25,7 +40,7 @@ const MainLayout = ({
       {/* Fixed Sidebar */}
       <UnifiedSidebar
         user={user}
-        verificationCount={verificationCount}
+        verificationCount={fetchedCount}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         sidebarDisabled={sidebarDisabled}

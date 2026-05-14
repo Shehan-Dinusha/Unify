@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ThumbsUp, ThumbsDown, ChevronDown, Trash2, Heart } from "lucide-react";
+import { useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
@@ -16,6 +17,7 @@ import {
 } from "../components/common/ReviewModals";
 import StarRating from "../components/common/StarRating";
 import Avatar from "../components/common/Avatar";
+import NotFound from "./NotFound";
 
 const ShieldCheckIcon = () => (
   <svg
@@ -35,31 +37,6 @@ const ShieldCheckIcon = () => (
     <path
       d="M8.5 13.5L11 16L16.5 10.5"
       stroke="background"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const CheckCircleIcon = () => (
-  <svg
-    width="28"
-    height="28"
-    viewBox="0 0 28 28"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M25.6667 13.0433V14.0001C25.6652 16.5165 24.8475 18.966 23.3364 20.9846C21.8252 23.0033 19.6997 24.4842 17.269 25.2093C14.8383 25.9344 12.2285 25.8653 9.81816 25.0135C7.40785 24.1617 5.3225 22.5732 3.864 20.4735C2.40549 18.3737 1.64998 15.8711 1.70119 13.3314C1.75239 10.7916 2.60741 8.35626 4.13757 6.38605C5.66774 4.41585 7.79375 2.9723 10.2036 2.26998C12.6133 1.56767 15.1802 1.6433 17.525 2.48512"
-      stroke="#22C55E"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M25.6667 4.66675L14 16.3451L10.5 12.8451"
-      stroke="#22C55E"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -532,14 +509,17 @@ const MarketplaceReviews = () => {
   const [visibleCount, setVisibleCount] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errorStatus, setErrorStatus] = useState(null);
 
-  const TARGET_ID = 3; // ID of existing Business user "Campus Bites & Cafe"
+  const { targetId } = useParams();
 
   const fetchReviewsData = async () => {
+    if (!targetId) return;
     try {
       setIsLoading(true);
       setError(null);
-      const data = await getTargetReviews(TARGET_ID);
+      setErrorStatus(null);
+      const data = await getTargetReviews(targetId);
       setReviews(data.reviews || []);
       setSummary(
         data.summary || {
@@ -549,7 +529,16 @@ const MarketplaceReviews = () => {
         },
       );
     } catch (err) {
-      setError("Failed to load reviews.");
+      if (
+        err.response &&
+        (err.response.status === 400 ||
+          err.response.status === 403 ||
+          err.response.status === 404)
+      ) {
+        setErrorStatus(err.response.status);
+      } else {
+        setError("Failed to load reviews.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -570,19 +559,16 @@ const MarketplaceReviews = () => {
     "Lowest Rating",
   ];
 
-  // using the default user from MainLayout usage in Marketplace.jsx
-  const user = {
-    name: "Alex Johnson",
-    role: "student",
-    displayRole: "Student",
-  };
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
 
   const hasSubmitted = reviews.some((r) => r.isOwn);
 
   const handleReviewSubmit = async ({ rating, review, isAnonymous }) => {
+    if (!targetId) return;
     try {
       await submitReview({
-        targetId: TARGET_ID,
+        targetId: parseInt(targetId, 10),
         rating,
         review,
         isAnonymous,
@@ -651,6 +637,10 @@ const MarketplaceReviews = () => {
 
   const sortedReviews = getSortedReviews();
 
+  if (errorStatus) {
+    return <NotFound status={errorStatus} />;
+  }
+
   if (isLoading) {
     return (
       <MainLayout user={user} pageTitle="Marketplace" verificationCount={0}>
@@ -693,9 +683,11 @@ const MarketplaceReviews = () => {
           ) : (
             <Card
               variant="card"
-              className="w-full lg:w-96 h-[470px] flex flex-col justify-center items-center"
+              className="w-full lg:w-96 h-[470px]"
             >
-              <span className="text-gray-400">No reviews yet</span>
+              <div className="flex flex-col justify-center items-center h-full text-gray-400">
+                No reviews yet
+              </div>
             </Card>
           )}
           {hasSubmitted ? (

@@ -16,6 +16,7 @@ import {
 } from "../services/followerService";
 
 import Avatar from "../components/common/Avatar";
+import NotFound from "./NotFound";
 
 const ITEMS_PER_PAGE = 10; // Keeping 10 for demonstration
 
@@ -105,6 +106,7 @@ const Followings = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState(null);
+  const [errorStatus, setErrorStatus] = useState(null);
 
   const [sortOrder, setSortOrder] = useState("asc");
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
@@ -123,8 +125,15 @@ const Followings = () => {
       setHasMore(data.hasMore);
       setPage(1);
     } catch (err) {
-      setError("Failed to load followings. Please try again later.");
-      console.error("Error fetching followings:", err);
+      if (
+        err.response &&
+        err.response.status === 403
+      ) {
+        setErrorStatus(err.response.status);
+      } else {
+        setError("Failed to load followings. Please try again later.");
+        console.error("Error fetching followings:", err);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -214,15 +223,26 @@ const Followings = () => {
     }
   };
 
+  if (errorStatus) {
+    return <NotFound status={errorStatus} />;
+  }
+
+  const sidebarUser = (() => {
+    try {
+      const raw = localStorage.getItem("user");
+      const role = localStorage.getItem("role");
+      if (raw) {
+        const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+        return { name: parsed.name || "User", role: role || "student", displayRole: parsed.displayRole || role || "Student" };
+      }
+    } catch {}
+    return { name: "User", role: "student", displayRole: "Student" };
+  })();
+
   return (
     <MainLayout
-      user={{
-        name: "Alex Johnson",
-        role: "student",
-        displayRole: "Student",
-      }}
+      user={sidebarUser}
       pageTitle="Profile"
-      verificationCount={3}
     >
       <div className="flex flex-col h-full mx-auto w-full relative max-w-[1000px] px-4 md:px-0">
         {/* Background glow effect as per design */}

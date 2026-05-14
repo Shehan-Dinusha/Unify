@@ -3,10 +3,10 @@ import VerificationRequest from "../../modules/VerificationRequest.model.js";
 import User from "../../modules/User.model.js";
 import ClubProfile from "../../modules/ClubProfile.model.js";
 import StudentProfile from "../../modules/StudentProfile.model.js";
-import Notification from "../../modules/Notification.model.js";
 import AdminLog from "../../modules/AdminLog.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { notifyUser } from "../../services/notification.service.js";
 
 /**
  * Handle admin approval of a Verification Request.
@@ -18,7 +18,7 @@ export const approveVerificationRequest = async (req, res, next) => {
 
   try {
     const { id } = req.params; // Expecting the verification request ID in the URL params
-    const adminId = req.user?.id || 2; // Fallback to 1 for testing purposes until Auth is wired in
+    const adminId = req.user.id;
 
     // 1. Fetch the request constraints
     const request = await VerificationRequest.findByPk(id, {
@@ -108,18 +108,7 @@ export const approveVerificationRequest = async (req, res, next) => {
       await user.save({ transaction });
     }
 
-    // 4. Dispatch In-App Notification alerting the user of success
-    await Notification.create(
-      {
-        userId: user.id,
-        type: "General",
-        title: "Verification Approved! 🎉",
-        content: `Your request to be verified as a ${requestedRole} has been officially approved. Please log in again to access your new privileges.`,
-      },
-      { transaction },
-    );
-
-    // 5. Generate Admin Security Audit Log
+    // 4. Generate Admin Security Audit Log
     await AdminLog.create(
       {
         adminId,
@@ -135,6 +124,18 @@ export const approveVerificationRequest = async (req, res, next) => {
 
     // Commit all database mutations atomically
     await transaction.commit();
+
+    // Fire-and-forget notification (never blocks the response)
+    notifyUser({
+      userId: user.id,
+      actorId: adminId,
+      type: "Verification",
+      title: "Verification Approved! 🎉",
+      content: `Your request to be verified as a ${requestedRole} has been officially approved. You now have access to all the privileges associated with this role. Welcome aboard!`,
+      referenceId: request.id,
+      referenceType: "Verification",
+      dedupeKey: `verification:approved:${request.id}`,
+    }).catch(() => {});
 
     return sendResponse(
       res,

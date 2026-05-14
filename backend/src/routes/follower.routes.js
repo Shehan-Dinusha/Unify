@@ -2,7 +2,10 @@ import express from "express";
 import { toggleFollowClub } from "../controllers/follower/toggleFollow.controller.js";
 import { getClubFollowers } from "../controllers/follower/getFollowers.controller.js";
 import { getStudentFollowings } from "../controllers/follower/getFollowing.controller.js";
+import { getPublicFollowers } from "../controllers/follower/getPublicFollowers.controller.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
+import { requireClubVerification } from "../middlewares/verifyClub.middleware.js";
 import {
   toggleFollowValidator,
   getFollowersValidator,
@@ -11,8 +14,33 @@ import {
 
 const router = express.Router();
 
-router.get("/my-followers", getFollowersValidator, validateRequest, getClubFollowers);
-router.get("/my-followings", getFollowingValidator, validateRequest, getStudentFollowings);
-router.post("/:clubId/toggle", toggleFollowValidator, validateRequest, toggleFollowClub);
+router.get(
+  "/my-followers",
+  protect,
+  authorize("Club"),
+  requireClubVerification,
+  getFollowersValidator,
+  validateRequest,
+  getClubFollowers,
+);
+router.get(
+  "/my-followings",
+  protect,
+  authorize("Student"),
+  getFollowingValidator,
+  validateRequest,
+  getStudentFollowings,
+);
+router.post(
+  "/:clubId/toggle",
+  protect,
+  authorize("Student"),
+  toggleFollowValidator,
+  validateRequest,
+  toggleFollowClub,
+);
+
+// Publicly viewable endpoint
+router.get("/:userId/followers", protect, getPublicFollowers);
 
 export default router;

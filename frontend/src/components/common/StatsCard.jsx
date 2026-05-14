@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import Card from "./Card";
 
 const StatsCard = ({
@@ -21,20 +21,20 @@ const StatsCard = ({
       <div className="absolute top-[80px] left-lg">
         <p className="text-body-small-bold text-text-secondary">{title}</p>
       </div>
-      <div className="absolute top-[100px] left-lg flex items-end gap-sm">
+      <div className="absolute top-[100px] left-lg right-lg min-w-0">
         {loading ? (
           <div className="h-8 w-16 bg-white/5 animate-pulse rounded" />
         ) : (
-          <>
-            <span className="text-heading-medium text-text-primary">
+          <div className="flex items-baseline gap-2">
+            <span className="text-heading-medium text-text-primary truncate">
               {value}
             </span>
             {subValue && (
-              <span className={`text-body-small-bold pb-xs ${subValueClass}`}>
+              <span className={`text-body-extra-small truncate ${subValueClass}`}>
                 {subValue}
               </span>
             )}
-          </>
+          </div>
         )}
       </div>
     </Card>

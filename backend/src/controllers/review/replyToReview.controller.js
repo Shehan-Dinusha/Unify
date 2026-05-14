@@ -8,11 +8,7 @@ export const replyToReview = async (req, res, next) => {
     const { reviewId } = req.params;
     const { content } = req.body;
 
-    // Fallback to 3 for testing if req.user is not yet defined
-    const currentUserId = req.user?.id || 3;
-
-
-
+    const currentUserId = req.user.id;
     const review = await Review.findByPk(reviewId);
 
     if (!review) {

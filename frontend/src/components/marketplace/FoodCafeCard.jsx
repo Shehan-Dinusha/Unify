@@ -1,7 +1,7 @@
 // src/components/marketplace/FoodCafeCard.jsx
 
 import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Send, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Send, ChevronLeft, ChevronRight, Zap } from "lucide-react";
 import Card from "../common/Card";
 import { getImageUrl } from "../../utils/formatters";
 
@@ -41,12 +41,12 @@ const ImageCarousel = ({ images, title }) => {
     const next = (e) => { e.stopPropagation(); setIdx(i => (i + 1) % imgList.length); };
 
     return (
-        <div className="relative w-full h-[320px] bg-white/5 overflow-hidden">
+        <div className="relative w-full bg-white/5 flex justify-center items-center min-h-[200px] max-h-[600px] overflow-hidden">
             <img
                 key={idx}
                 src={getImageUrl(imgList[idx])}
                 alt={title}
-                className="w-full h-full object-cover transition-opacity duration-300"
+                className="w-full h-auto min-h-[200px] object-cover sm:object-contain max-h-[600px] transition-opacity duration-300"
             />
 
             {/* Nav arrows */}
@@ -104,7 +104,7 @@ const CommentSection = ({ postComments, onAddComment }) => {
                                     <span className="text-[13px] font-semibold text-text-primary">{c.user}</span>
                                     <span className="text-[11px] text-text-tertiary">{c.time}</span>
                                 </div>
-                                <p className="text-[13px] text-text-secondary leading-relaxed">{c.text}</p>
+                                <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-wrap">{c.text}</p>
                             </div>
                         </div>
                     ))}
@@ -143,6 +143,41 @@ const FoodCafeCard = ({ post, onClick }) => {
     const [commentOpen, setCommentOpen] = useState(false);
     const [postComments, setPostComments] = useState(post.comments || []);
 
+    const isPromoted = post.isPromoted;
+    const boostMeta = post.boostMeta;
+    const highlightStyle = boostMeta?.highlightStyle || "none";
+
+    // Build card border classes and styles based on highlightStyle
+    const boostStyles = (() => {
+        if (!isPromoted || !boostMeta) return { 
+            borderClass: "border border-white/5", 
+            glowStyle: {} 
+        };
+
+        switch (highlightStyle) {
+            case "gold":
+                return {
+                    borderClass: "border-2 border-[#FBBF24] animate-pulse-slow",
+                    glowStyle: { boxShadow: "0 0 30px rgba(251, 191, 36, 0.4)" }
+                };
+            case "blue":
+                return {
+                    borderClass: "border-2 border-[#3B82F6]",
+                    glowStyle: { boxShadow: "0 0 25px rgba(59, 130, 246, 0.3)" }
+                };
+            case "subtle":
+                return {
+                    borderClass: "border-2 border-white/30",
+                    glowStyle: { boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)" }
+                };
+            default:
+                return { 
+                    borderClass: "border border-white/5", 
+                    glowStyle: {} 
+                };
+        }
+    })();
+
     const handleAddComment = (text) => {
         setPostComments(prev => [...prev, {
             id: `new-${Date.now()}`, user: "You", seed: "Me", time: "just now", text,
@@ -150,7 +185,7 @@ const FoodCafeCard = ({ post, onClick }) => {
     };
 
     return (
-        <Card variant="card" padding="p-0" className="overflow-hidden" onClick={onClick}>
+        <Card variant="card" padding="p-0" className={`overflow-hidden transition-all duration-300 !border-0 ${boostStyles.borderClass}`} style={boostStyles.glowStyle} onClick={onClick}>
             {/* Image carousel */}
             <ImageCarousel images={post.images || post.image || post.coverImage} title={post.title || post.name} />
 
@@ -173,6 +208,18 @@ const FoodCafeCard = ({ post, onClick }) => {
                             </p>
                         </div>
                     </div>
+
+                    {/* Boost Badge */}
+                    {isPromoted && (
+                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            highlightStyle === 'gold' ? 'bg-[#FBBF24] text-black' : 
+                            highlightStyle === 'blue' ? 'bg-primary-blue text-white' : 
+                            'bg-white/10 text-white'
+                        }`}>
+                            <Zap size={10} fill="currentColor" />
+                            Promoted
+                        </div>
+                    )}
                 </div>
 
                 {/* Title 
@@ -185,7 +232,7 @@ const FoodCafeCard = ({ post, onClick }) => {
                 </div>*/}
 
                 {/* Description */}
-                <p className="text-body-medium text-text-secondary leading-6 mb-4 line-clamp-2">
+                <p className="text-body-medium text-text-secondary leading-6 mb-4 line-clamp-2 whitespace-pre-wrap">
                     {post.description}
                 </p>
 

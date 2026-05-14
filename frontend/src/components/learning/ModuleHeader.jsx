@@ -1,4 +1,4 @@
-import { FolderOpen, Upload, Edit2, Plus } from "lucide-react";
+import { FolderOpen, Upload, Edit2 } from "lucide-react";
 import Button from "../common/Button";
 import { useState } from "react";
 import UploadMaterialModal from "./UploadMaterialModal";
@@ -9,18 +9,18 @@ import { useToast } from "../common/Toast";
  * Renders the top header for the selected module showing details and access
  */
 const ModuleHeader = ({
-  moduleName = "Programming Fundamentals",
-  moduleCode = "IN1101",
-  semesterName = "Semester 1",
-  degrees = ["Bsc.(Hons) IT", "Bsc.(Hons) AI"],
-  lastUpdated = "2 hours ago",
+  moduleName,
+  moduleCode,
+  semesterName,
+  degrees = [],
+  lastUpdated,
   isPublic = true,
   onEditSave,
   onDelete,
   moduleId,
   onMaterialUploaded,
   availableDegrees = [],
-  primaryDegree = "Bsc.(Hons) IT",
+  primaryDegree,
   semesters = [],
   categories = [],
 }) => {

@@ -10,6 +10,7 @@ import {
   getMyClubProfile,
   changePassword,
   deleteAccount,
+  getPublicProfile,
 } from "../controllers/profile/index.js";
 import {
   studentProfileValidator,
@@ -24,6 +25,9 @@ const router = express.Router();
 
 // All profile routes require authentication
 router.use(protect);
+
+// ── Public Profile ───────────────────────────────────────────────────────────
+router.get("/public/:userId", getPublicProfile);
 
 // ── Student Profile ───────────────────────────────────────────────────────────
 router.put(
