@@ -33,7 +33,6 @@ const RecentPostsSection = ({ posts = [] }) => {
               location={post.location}
               description={post.content || post.description}
               image={displayImage}
-              imageStyle="cover"
               likes={post.likesCount || 0}
               comments={post.commentsCount || 0}
               initialIsLiked={post.isLiked}
