@@ -1,6 +1,5 @@
 import Review from "../../modules/Review.model.js";
 import User from "../../modules/User.model.js";
-import ClubProfile from "../../modules/ClubProfile.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 

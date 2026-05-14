@@ -21,10 +21,6 @@ const VerificationRequest = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true, // S3 object key for primary document e.g. 'verifications/user-id/doc.pdf'
     },
-    documentKeys: {
-      type: DataTypes.JSON,
-      allowNull: true, // Array of S3 keys if multiple documents are uploaded
-    },
     documentMetadata: {
       type: DataTypes.JSON,
       allowNull: true, // Extra metadata (file type, size, original name, etc.)

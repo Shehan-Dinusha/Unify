@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import Card from "./Card";
 import Button from "./Button";
-import StarRating from "./StarRating";
-import { Trash2, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 /**
  * DeleteReviewModal — modal for confirming review deletion.

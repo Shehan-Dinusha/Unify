@@ -40,7 +40,7 @@ router.post(
   toggleFollowClub,
 );
 
-// Publicly viewable follower endpoint
+// Publicly viewable endpoint
 router.get("/:userId/followers", protect, getPublicFollowers);
 
 export default router;

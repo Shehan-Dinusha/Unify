@@ -1,14 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  X,
-  Play,
-  Volume2,
-  Maximize,
-  Settings,
-  MessageSquare,
-  PlayCircle,
-  FastForward,
-} from "lucide-react";
+import { X } from "lucide-react";
 
 /**
  * Full-screen video player modal mimicking the provided design

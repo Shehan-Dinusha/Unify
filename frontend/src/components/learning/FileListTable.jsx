@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Play,
   Edit2,
   Trash2,
   PlayCircle,

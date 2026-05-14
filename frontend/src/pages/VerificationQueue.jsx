@@ -198,10 +198,8 @@ const VerificationQueue = () => {
 
   return (
     <MainLayout
-      user={{ name: "Alex Johnson", role: "admin" }}
       pageTitle="Verification Queue"
       headerRight={headerActions}
-      verificationCount={requests.length}
     >
       {activeTab === "requests" ? (
         <RequestList

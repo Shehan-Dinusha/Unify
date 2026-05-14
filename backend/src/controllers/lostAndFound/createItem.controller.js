@@ -1,8 +1,6 @@
 import LostAndFound from "../../modules/LostAndFound.model.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
-import s3Service from "../../services/s3.service.js";
 import { runMatchingEngine } from "../../services/lostAndFoundMatcher.service.js";
-import fs from "fs";
 
 export const createItem = catchAsync(async (req, res, next) => {
   // express-validator and multer guarantee this payload is clean
@@ -28,29 +26,8 @@ export const createItem = catchAsync(async (req, res, next) => {
 
   let s3ImageKeys = [];
 
-  // Handle multiple uploaded files
   if (req.files && req.files.length > 0) {
-    // Process all files concurrently
-    const uploadPromises = req.files.map(async (file) => {
-      try {
-        // Upload to an S3 folder specifically named 'lost-and-found'
-        const fileKey = await s3Service.uploadFile(
-          file.path,
-          file.originalname,
-          file.mimetype,
-          "lost-and-found"
-        );
-        // Delete the temporary local file
-        if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
-        return fileKey; // Returns something like 'lost-and-found/timestamp-photo.jpg'
-      } catch (err) {
-        console.error("Failed to upload to S3 or cleanup local file:", err);
-        return null;
-      }
-    });
-    // Wait for all S3 uploads to complete
-    const results = await Promise.all(uploadPromises);
-    s3ImageKeys = results.filter((key) => key !== null); // Remove failures
+    s3ImageKeys = req.files.map((file) => file.location).filter((key) => key !== null);
   }
   // Create item in DB storing S3 KEYS (not public URLs)
   const newItem = await LostAndFound.create({
