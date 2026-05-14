@@ -42,10 +42,12 @@ const VerificationQueue = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const response = await verificationService.getPendingRequests();
+      const lastViewed = localStorage.getItem("verificationLastViewed") || undefined;
+      const response = await verificationService.getPendingRequests(lastViewed);
       if (response.success) {
         setRequests(response.data?.requests || []);
         setRequestStats(response.data?.stats || null);
+        localStorage.setItem("verificationLastViewed", Date.now().toString());
       }
     } catch (error) {
       if (error.response?.status === 403) {

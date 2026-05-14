@@ -20,9 +20,10 @@ export const getVerifiedEntities = async (req, res, next) => {
     startOfDay.setHours(0, 0, 0, 0);
 
     const lastViewedParam = req.query.lastViewed;
+    const lastViewedTimestamp = parseInt(lastViewedParam, 10);
     const sinceDate =
-      lastViewedParam && !isNaN(new Date(lastViewedParam))
-        ? new Date(lastViewedParam)
+      lastViewedParam && !isNaN(lastViewedTimestamp)
+        ? new Date(lastViewedTimestamp)
         : startOfDay;
 
     // Count how many entities were verified "recently" (Since last visit OR today), plus global totals.
