@@ -3,11 +3,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import { CheckCircle2, LayoutDashboard, FileText } from "lucide-react";
+import { getCurrentUser } from "../services/authService";
 
 const StudentReportSuccess = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const user = { name: "Alex Johnson", role: "student" };
+  const user = getCurrentUser() || { name: "Student", role: "student" };
 
   const referenceId = location.state?.reportId || `#SRI-UNI-${Math.floor(1000 + Math.random() * 9000)}`;
   const today = new Date();

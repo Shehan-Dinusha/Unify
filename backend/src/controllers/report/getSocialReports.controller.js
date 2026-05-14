@@ -275,6 +275,7 @@ export const getSocialReportById = async (req, res, next) => {
                 item.seller?.name || "Deleted Business",
               ),
               status: item.seller?.status || "Inactive",
+              role: item.seller?.role || "Business",
             };
             reportedContent = {
               id: `item_${item.id}`,
@@ -297,6 +298,9 @@ export const getSocialReportById = async (req, res, next) => {
               post.author?.name || "Deleted User",
             ),
             status: post.author?.status || "Inactive",
+            role: post.author?.role || "Student",
+            createdAt: post.author?.createdAt,
+            lastActive: post.author?.lastActive,
           };
           reportedContent = {
             id: String(post.id),
@@ -322,6 +326,9 @@ export const getSocialReportById = async (req, res, next) => {
               comment.user?.name || "Deleted User",
             ),
             status: comment.user?.status || "Inactive",
+            role: comment.user?.role || "Student",
+            createdAt: comment.user?.createdAt,
+            lastActive: comment.user?.lastActive,
           };
           reportedContent = {
             id: `comment_${comment.id}`,
@@ -339,6 +346,9 @@ export const getSocialReportById = async (req, res, next) => {
             name: user.name,
             avatar: await resolveAvatarUrl(user.avatar, user.name),
             status: user.status,
+            role: user.role,
+            createdAt: user.createdAt,
+            lastActive: user.lastActive,
           };
           reportedContent = {
             id: String(user.id),
@@ -357,6 +367,9 @@ export const getSocialReportById = async (req, res, next) => {
           name: r.offender.name,
           avatar: await resolveAvatarUrl(r.offender.avatar, r.offender.name),
           status: r.offender.status,
+          role: r.offender.role,
+          createdAt: r.offender.createdAt,
+          lastActive: r.offender.lastActive,
         };
       if (r.post)
         reportedContent = {
@@ -444,10 +457,10 @@ export const getSocialReportById = async (req, res, next) => {
       stats: postStats,
       offender: {
         ...offender,
-        accountAge: "6 Months",
-        lastActive: "2 hours ago",
-        region: "Colombo, LK",
-        emailStatus: "Verified",
+        accountAge: offender.createdAt ? moment(offender.createdAt).fromNow() : "N/A",
+        lastActive: offender.lastActive ? moment(offender.lastActive).fromNow() : "Never",
+        region: "N/A",
+        emailStatus: offender.status === 'Active' ? 'Verified' : 'Pending',
       },
       reportedBy: {
         name: isStudentReport
@@ -470,20 +483,13 @@ export const getSocialReportById = async (req, res, next) => {
               r.reporter?.name || "User",
             ),
         note: isStudentReport ? r.additionalDetails : r.description,
-        badge: "Verified Student",
+        badge: isStudentReport ? "Verified Student" : "User",
         source: isStudentReport ? "Mobile App" : "Web Portal",
-        reputation: "4.8/5.0",
+        reputation: isStudentReport ? (r.student?.studentProfile?.reputationScore || "N/A") : "N/A",
       },
       evidence,
       activityLog: buildActivityLog(r),
-      violationHistory: [
-        { type: "Spam", date: "2023-11-12", status: "Dismissed" },
-        {
-          type: "Inappropriate Language",
-          date: "2024-01-05",
-          status: "Action Taken",
-        },
-      ],
+      violationHistory: [],
       reportCount: 1,
     });
   } catch (error) {

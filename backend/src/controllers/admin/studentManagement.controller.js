@@ -108,7 +108,7 @@ export const getStudentDirectory = async (req, res, next) => {
 export const getStudentStats = async (req, res, next) => {
   try {
     const totalStudents = await User.count({ where: { role: 'Student' } });
-    const verifiedIdentities = await User.count({ where: { role: 'Student', status: 'Active' } }); // Mock logic for "Verified"
+    const verifiedIdentities = await User.count({ where: { role: 'Student', status: 'Active' } });
     const flaggedSessions = await StudentReport.count({ where: { status: { [Op.ne]: 'Resolved' } } });
 
     // Activity Rate calculation (active in last 30 days / total)
@@ -349,7 +349,7 @@ export const addStudentNote = async (req, res, next) => {
 
 /**
  * POST /api/v1/admin/students/:id/force-logout
- * MOCK: Forces a user logout.
+ * Forces a user logout.
  */
 export const forceLogout = async (req, res, next) => {
   try {
@@ -385,7 +385,7 @@ export const forceLogout = async (req, res, next) => {
 
 /**
  * POST /api/v1/admin/students/:id/warning
- * MOCK: Sends a warning to a student.
+ * Sends a warning to a student.
  */
 export const sendStudentWarning = async (req, res, next) => {
   try {

@@ -2,16 +2,15 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
-import { mockStudentReports } from "../data/mockReportData";
+import { getCurrentUser } from "../services/authService";
 import { CheckCircle2, LayoutDashboard, FileText, RotateCcw } from "lucide-react";
 
 const StudentReportWithdrawalSuccess = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const report = mockStudentReports.find((r) => r.id === id);
-  const user = { name: "Alex Johnson", role: "student" };
+  const user = getCurrentUser() || { name: 'Student', role: 'student' };
 
-  const displayId = report ? report.reportId : `#RPT-${id}`;
+  const displayId = `#RPT-${id}`;
 
   return (
     <MainLayout user={user} pageTitle="Report Withdrawal" verificationCount={0}>

@@ -103,7 +103,7 @@ const StudentOwnerView = ({ repStatus = "NOT_SUBMITTED", repReason }) => {
       iconBg: "bg-blue-500/20",
       title: "My Reports",
       description: "Access your all submitted reports.",
-      path: "/report-moderation",
+      path: "/student/reports",
     },
   ];
 

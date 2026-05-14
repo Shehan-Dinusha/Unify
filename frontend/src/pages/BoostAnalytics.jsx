@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
-import { mockRequests } from '../data/mockData';
-import {
-  mockBoostCampaigns,
-  mockBoostAnalytics,
-  mockBoostInteractions,
-} from '../data/mockBoostPostData';
+import { getCurrentUser } from '../services/authService';
+import { getCampaignById, getCampaignAnalytics, getCampaignInteractions } from '../services/boostService';
 import {
   Eye,
   MousePointerClick,
@@ -18,7 +14,36 @@ import {
   CheckCircle2,
   TrendingUp,
   TrendingDown,
+  AlertTriangle,
 } from 'lucide-react';
+
+// ── Default fallback data (used only when API returns no data yet) ──────────
+const defaultAnalytics = {
+  totalReach: '0',
+  reachChange: '—',
+  reachChangeLabel: 'No data yet',
+  clicks: '0',
+  ctr: '0%',
+  clicksChange: '—',
+  clicksChangeLabel: 'No data yet',
+  adSpend: 'Rs 0',
+  adSpendChange: '—',
+  adSpendChangeLabel: '—',
+  salesAttributed: 'Rs. 0',
+  roi: '0x',
+  performanceData: {
+    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4'],
+    boostedReach: [0, 0, 0, 0],
+    organicReach: [0, 0, 0, 0],
+  },
+  conversionFunnel: {
+    impressions: 0,
+    clicks: 0,
+    clicksRate: '0%',
+    purchases: 0,
+    purchasesRate: '0%',
+  },
+};
 
 const BoostAnalytics = () => {
   const navigate = useNavigate();
@@ -26,22 +51,64 @@ const BoostAnalytics = () => {
   const [timeRange, setTimeRange] = useState('7');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const campaign = mockBoostCampaigns.find((c) => c.id === id) || mockBoostCampaigns[0];
-  const analytics = mockBoostAnalytics[campaign.id] || mockBoostAnalytics['campaign-001'];
+  // ── API State ───────────────────────────────────────────────────────────
+  const [campaign, setCampaign] = useState(null);
+  const [analytics, setAnalytics] = useState(defaultAnalytics);
+  const [interactions, setInteractions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // ── Fetch campaign, analytics, and interactions from backend ────────────
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [campaignRes, analyticsRes, interactionsRes] = await Promise.allSettled([
+          getCampaignById(id),
+          getCampaignAnalytics(id),
+          getCampaignInteractions(id),
+        ]);
+
+        if (campaignRes.status === 'fulfilled' && campaignRes.value?.data) {
+          setCampaign(campaignRes.value.data);
+        } else {
+          setError('Campaign not found. Please check the campaign ID.');
+        }
+
+        if (analyticsRes.status === 'fulfilled' && analyticsRes.value?.data) {
+          setAnalytics({ ...defaultAnalytics, ...analyticsRes.value.data });
+        }
+
+        if (interactionsRes.status === 'fulfilled' && interactionsRes.value?.data) {
+          setInteractions(Array.isArray(interactionsRes.value.data) ? interactionsRes.value.data : []);
+        }
+      } catch (err) {
+        console.error('[BoostAnalytics] Failed to load:', err);
+        setError('Failed to load analytics. Please check the backend.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) loadData();
+  }, [id]);
 
   // Filter interactions
   const filteredInteractions = searchQuery.trim()
-    ? mockBoostInteractions.filter(
+    ? interactions.filter(
       (i) =>
-        i.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        i.content.toLowerCase().includes(searchQuery.toLowerCase())
+        (i.user || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (i.content || '').toLowerCase().includes(searchQuery.toLowerCase())
     )
-    : mockBoostInteractions;
+    : interactions;
 
   // SVG Performance Chart
   const renderPerformanceChart = () => {
     const { labels, boostedReach, organicReach } = analytics.performanceData;
-    const maxVal = Math.max(...boostedReach, ...organicReach);
+    if (!labels || labels.length === 0) {
+      return <p className="text-body-small text-text-secondary font-inter text-center py-xl">No performance data available yet.</p>;
+    }
+    const maxVal = Math.max(...boostedReach, ...organicReach, 1);
     const width = 600;
     const height = 200;
     const padX = 50;
@@ -138,12 +205,12 @@ const BoostAnalytics = () => {
   // Conversion Funnel
   const renderConversionFunnel = () => {
     const { impressions, clicks, clicksRate, purchases, purchasesRate } = analytics.conversionFunnel;
-    const maxBar = impressions;
+    const maxBar = impressions || 1;
 
     const items = [
-      { label: 'Impressions', value: impressions.toLocaleString(), rate: null, width: 100, color: 'bg-white/10' },
-      { label: 'Clicks', value: clicks.toLocaleString(), rate: clicksRate, width: (clicks / maxBar) * 100, color: 'bg-primary-blue' },
-      { label: 'Purchase', value: purchases.toLocaleString(), rate: purchasesRate, width: (purchases / maxBar) * 100 + 15, color: 'bg-state-warning' },
+      { label: 'Impressions', value: (impressions || 0).toLocaleString(), rate: null, width: 100, color: 'bg-white/10' },
+      { label: 'Clicks', value: (clicks || 0).toLocaleString(), rate: clicksRate, width: (clicks / maxBar) * 100, color: 'bg-primary-blue' },
+      { label: 'Purchase', value: (purchases || 0).toLocaleString(), rate: purchasesRate, width: (purchases / maxBar) * 100 + 15, color: 'bg-state-warning' },
     ];
 
     return (
@@ -225,11 +292,39 @@ const BoostAnalytics = () => {
     },
   ];
 
+  // ── Loading State ──────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <MainLayout user={getCurrentUser() || { name: 'Admin', role: 'Admin' }} pageTitle="Boost Analytics" verificationCount={0}>
+        <div className="flex items-center justify-center h-64 text-text-secondary text-body-small">
+          Loading analytics...
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // ── Error State ────────────────────────────────────────────────────────
+  if (error || !campaign) {
+    return (
+      <MainLayout user={getCurrentUser() || { name: 'Admin', role: 'Admin' }} pageTitle="Boost Analytics" verificationCount={0}>
+        <Card variant="container" className="border-state-error/30 bg-state-error/5">
+          <div className="flex items-center gap-md">
+            <AlertTriangle size={24} className="text-state-error shrink-0" />
+            <div>
+              <p className="text-body-medium-bold text-state-error">Failed to Load Analytics</p>
+              <p className="text-body-small text-text-secondary">{error || 'Campaign not found.'}</p>
+            </div>
+          </div>
+        </Card>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout
-      user={{ name: 'Alex Johnson', role: 'admin' }}
+      user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
       pageTitle="Boost Analytics"
-      verificationCount={mockRequests.length}
+      verificationCount={0}
     >
       <div className="flex flex-col gap-lg">
         {/* Campaign Info Card */}
@@ -238,7 +333,7 @@ const BoostAnalytics = () => {
             {/* Campaign Image */}
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-white/10 flex-shrink-0">
               <img
-                src={campaign.image}
+                src={campaign.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(campaign.name || 'Campaign')}&background=2666F1&color=fff&size=96`}
                 alt={campaign.name}
                 className="w-full h-full object-cover"
               />
@@ -248,17 +343,17 @@ const BoostAnalytics = () => {
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-sm mb-sm">
                 <span className="text-[10px] font-bold bg-state-success/15 text-state-success px-2.5 py-0.5 rounded-full">
-                  {campaign.status}
+                  {campaign.status || 'Active'}
                 </span>
                 <span className="text-body-extra-small text-text-secondary font-inter flex items-center gap-1">
-                  ⏱ Posted {campaign.postedDate}
+                  ⏱ Posted {campaign.postedDate || campaign.createdAt || '—'}
                 </span>
               </div>
               <h2 className="text-body-large-bold md:text-heading-small text-text-primary font-inter mb-1">
-                {campaign.postTitle}
+                {campaign.postTitle || campaign.name || 'Boost Campaign'}
               </h2>
               <p className="text-body-small text-text-secondary font-inter leading-relaxed max-w-2xl">
-                {campaign.description}
+                {campaign.description || 'No description available.'}
               </p>
             </div>
 
@@ -408,7 +503,7 @@ const BoostAnalytics = () => {
                 {/* User */}
                 <div className="md:col-span-3 flex items-center gap-sm">
                   <img
-                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${interaction.avatar}`}
+                    src={interaction.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(interaction.user || 'U')}&background=2666F1&color=fff`}
                     alt={interaction.user}
                     className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0"
                   />
@@ -418,7 +513,7 @@ const BoostAnalytics = () => {
                 {/* Action */}
                 <div className="md:col-span-2">
                   <span
-                    className={`inline-block text-body-extra-small-bold font-inter px-2.5 py-0.5 rounded-full ${interaction.actionColor}`}
+                    className={`inline-block text-body-extra-small-bold font-inter px-2.5 py-0.5 rounded-full ${interaction.actionColor || 'bg-white/10 text-text-secondary'}`}
                   >
                     {interaction.action}
                   </span>
@@ -436,7 +531,7 @@ const BoostAnalytics = () => {
 
                 {/* Impact */}
                 <div className="md:col-span-2 text-right">
-                  <span className={`text-body-small-bold font-inter ${interaction.impactColor}`}>
+                  <span className={`text-body-small-bold font-inter ${interaction.impactColor || 'text-text-secondary'}`}>
                     {interaction.impact}
                   </span>
                 </div>

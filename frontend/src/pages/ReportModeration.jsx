@@ -9,6 +9,7 @@ import {
     RotateCcw, TrendingUp, ShieldAlert, ShieldCheck, AlertTriangle,
 } from 'lucide-react';
 import { getAvatarUrl } from '../utils/formatters';
+import { getCurrentUser } from '../services/authService';
 
 /* ─── HELPERS ────────────────────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
@@ -108,7 +109,7 @@ const ReportModeration = () => {
         loadReports();
     }, [filterType, filterStatus]);
 
-    const typeOptions   = [{ value:'',label:'All Report Types' },{ value:'Hate Speech',label:'Hate Speech' },{ value:'Nudity',label:'Nudity' },{ value:'Spam',label:'Spam' },{ value:'Harassment',label:'Harassment' }];
+    const typeOptions   = [{ value:'',label:'All Report Types' },{ value:'Inappropriate Content',label:'Inappropriate Content' },{ value:'Spam',label:'Spam' },{ value:'Harassment',label:'Harassment' },{ value:'Misinformation',label:'Misinformation' },{ value:'Other',label:'Other' }];
     // Status values must match what the backend getSocialReportQueue maps (admin UI statuses)
     const statusOptions = [
         { value:'',          label:'All Status' },
@@ -125,7 +126,7 @@ const ReportModeration = () => {
 
     return (
         <MainLayout
-            user={{ name: 'Alex Johnson', role: 'admin' }}
+            user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
             pageTitle="Report Moderation"
         >
             <div className="flex flex-col gap-lg">

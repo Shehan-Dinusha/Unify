@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import { LineChart, DonutChart } from '../components/chart';
-import { mockRequests } from '../data/mockData';
+import { getCurrentUser } from '../services/authService';
 import {
   getRevenueOverview,
   getRevenueTrajectory,
@@ -12,6 +12,7 @@ import {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const RevenueOverview = () => {
+    const user = getCurrentUser() || { name: 'Admin', role: 'Admin' };
     // ─── API State ──────────────────────────────────────────────────────────
     const [stats, setStats] = useState(null);
     const [trajectory, setTrajectory] = useState(null);
@@ -100,9 +101,9 @@ const RevenueOverview = () => {
     if (loading) {
         return (
             <MainLayout
-                user={{ name: 'Alex Johnson', role: 'admin' }}
+                user={user}
                 pageTitle="Revenue Overview"
-                verificationCount={mockRequests.length}
+                verificationCount={0}
             >
                 <div className="flex items-center justify-center h-64">
                     <div className="flex flex-col items-center gap-md">
@@ -117,9 +118,9 @@ const RevenueOverview = () => {
     if (error) {
         return (
             <MainLayout
-                user={{ name: 'Alex Johnson', role: 'admin' }}
+                user={user}
                 pageTitle="Revenue Overview"
-                verificationCount={mockRequests.length}
+                verificationCount={0}
             >
                 <div className="flex items-center justify-center h-64">
                     <div className="flex flex-col items-center gap-md text-center">
@@ -140,9 +141,9 @@ const RevenueOverview = () => {
 
     return (
         <MainLayout
-            user={{ name: 'Alex Johnson', role: 'admin' }}
+            user={user}
             pageTitle="Revenue Overview"
-            verificationCount={mockRequests.length}
+            verificationCount={0}
         >
             {/* ── Stats Row ─────────────────────────────────────── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-md mb-lg">

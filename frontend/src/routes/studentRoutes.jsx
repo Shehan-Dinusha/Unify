@@ -41,7 +41,7 @@ export const studentRoutes = [
   // 1. PROFILE ROUTES (Accessible by everyone logged in, including unverified clubs)
   {
     element: (
-      <ProtectedRoute allowedRoles={["Student", "Business", "Club", "Admin"]} />
+      <ProtectedRoute allowedRoles={["Student", "Business", "Club"]} />
     ),
     children: [
       { path: "/profile", element: <OwnProfilePage /> },
@@ -53,7 +53,7 @@ export const studentRoutes = [
   // 2. SHARED ROUTES (Require club verification for Club users)
   {
     element: (
-      <ProtectedRoute allowedRoles={["Student", "Business", "Club", "Admin"]} requireVerified />
+      <ProtectedRoute allowedRoles={["Student", "Business", "Club"]} requireVerified />
     ),
     children: [
       { path: "/news-feed", element: <NewsFeed /> },
@@ -65,7 +65,7 @@ export const studentRoutes = [
   // 3. NOTIFICATIONS (Accessible to all, including unverified clubs)
   {
     element: (
-      <ProtectedRoute allowedRoles={["Student", "Business", "Club", "Admin"]} />
+      <ProtectedRoute allowedRoles={["Student", "Business", "Club"]} />
     ),
     children: [
       { path: "/notifications", element: <Notification /> },
@@ -73,7 +73,7 @@ export const studentRoutes = [
   },
   // 4. STUDENT-ONLY ROUTES
   {
-    element: <ProtectedRoute allowedRoles={["Student", "Admin", "Business"]} />,
+    element: <ProtectedRoute allowedRoles={["Student", "Business"]} />,
     children: [
       { path: "/lost-and-found", element: <LostAndFound /> },
       { path: "/my-lost-and-found", element: <MyLostAndFound /> },

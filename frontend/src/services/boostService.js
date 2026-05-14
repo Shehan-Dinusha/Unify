@@ -221,3 +221,42 @@ export const getCampaigns = async () => {
     throw new Error(extractErrorMessage(error));
   }
 };
+
+/**
+ * Get a specific campaign by ID.
+ * @param {string} id
+ */
+export const getCampaignById = async (id) => {
+  try {
+    const response = await api.get(`/boosts/campaigns/${encodeURIComponent(id)}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+};
+
+/**
+ * Get campaign analytics (performance, funnel, reach data).
+ * @param {string} id
+ */
+export const getCampaignAnalytics = async (id) => {
+  try {
+    const response = await api.get(`/boosts/campaigns/${encodeURIComponent(id)}/analytics`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+};
+
+/**
+ * Get interactions for a specific campaign.
+ * @param {string} id
+ */
+export const getCampaignInteractions = async (id) => {
+  try {
+    const response = await api.get(`/boosts/campaigns/${encodeURIComponent(id)}/interactions`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+};

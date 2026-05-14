@@ -96,14 +96,14 @@ export const businessSharedRoutes = [
 export const clubRoutes = [
   // Club verification — accessible without being verified
   {
-    element: <ProtectedRoute allowedRoles={["Club", "Admin"]} />,
+    element: <ProtectedRoute allowedRoles={["Club"]} />,
     children: [
       { path: "/club-verification", element: <ClubVerification /> },
     ],
   },
   // All other club routes require verification
   {
-    element: <ProtectedRoute allowedRoles={["Club", "Admin"]} requireVerified />,
+    element: <ProtectedRoute allowedRoles={["Club"]} requireVerified />,
     children: [
       { path: "/club-owner/marketplace", element: <ClubOwnerMarketplace /> },
       { path: "/club-owner/create-product", element: <CreateProductPage /> },
@@ -129,7 +129,7 @@ export const boardingOwnerRoutes = [
   {
     element: (
       <ProtectedRoute
-        allowedRoles={["Business", "Admin"]}
+        allowedRoles={["Business"]}
         allowedCategories={["BOARDING"]}
       />
     ),
@@ -146,7 +146,7 @@ export const foodCafeRoutes = [
   {
     element: (
       <ProtectedRoute
-        allowedRoles={["Business", "Admin"]}
+        allowedRoles={["Business"]}
         allowedCategories={["FOOD"]}
       />
     ),
@@ -163,7 +163,7 @@ export const selfEmployedRoutes = [
   {
     element: (
       <ProtectedRoute
-        allowedRoles={["Business", "Admin"]}
+        allowedRoles={["Business"]}
         allowedCategories={["SELF_EMPLOYED"]}
       />
     ),
@@ -177,7 +177,7 @@ export const selfEmployedRoutes = [
 
 export const businessRoutes = [
   {
-    element: <ProtectedRoute allowedRoles={["Business", "Club", "Admin"]} requireVerified />,
+    element: <ProtectedRoute allowedRoles={["Business", "Club"]} requireVerified />,
     children: businessSharedRoutes,
   },
   ...clubRoutes,
