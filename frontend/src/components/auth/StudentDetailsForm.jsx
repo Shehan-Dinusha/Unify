@@ -30,9 +30,9 @@ const StudentDetailsForm = ({ onNext, initialData, loading }) => {
     regNumber: initialData?.registrationNumber || "",
     gender: initialData?.gender?.toLowerCase() || "",
     dob: "", // Will be set in useEffect
-    addresses: initialData?.addresses || [
-      { street: "", city: "", postalCode: "" },
-    ],
+    addresses: initialData?.addresses?.length
+      ? initialData.addresses.map(a => ({ street: a.street || "", city: a.city || "", postalCode: a.postalCode || "" }))
+      : [{ street: "", city: "", postalCode: "" }],
     universityId: initialData?.universityId ? String(initialData.universityId) : "",
     facultyId: initialData?.facultyId ? String(initialData.facultyId) : "",
     degreeId: initialData?.degreeId ? String(initialData.degreeId) : "",
@@ -59,8 +59,8 @@ const StudentDetailsForm = ({ onNext, initialData, loading }) => {
         gender: initialData.gender?.toLowerCase() || "",
         dob: formattedDob,
         addresses:
-          initialData.addresses && initialData.addresses.length > 0
-            ? initialData.addresses
+          initialData.addresses?.length
+            ? initialData.addresses.map(a => ({ street: a.street || "", city: a.city || "", postalCode: a.postalCode || "" }))
             : [{ street: "", city: "", postalCode: "" }],
         universityId: initialData.universityId
           ? String(initialData.universityId)

@@ -1,5 +1,5 @@
 import express from "express";
-import uploadService from "../services/upload.service.js"; // Standard configured multer instance
+import { uploadToS3 } from "../middlewares/s3Upload.middleware.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
 import {
   createLostFoundItemValidator,
@@ -27,7 +27,7 @@ router.use(protect);
 // 1. Create a new Item (uses multipart/form-data for image)
 router.post(
   "/",
-  uploadService.array("images", 5), // extracts req.file & req.body
+  ...uploadToS3({ type: "array", fieldName: "images", folder: "lost-and-found", maxCount: 5 }),
   createLostFoundItemValidator,
   validateRequest,
   createItem
@@ -66,7 +66,7 @@ router.get(
 // 5. Edit an item
 router.put(
   "/:id",
-  uploadService.array("images", 5), // Allows updating the images too
+  ...uploadToS3({ type: "array", fieldName: "images", folder: "lost-and-found", maxCount: 5 }),
   editLostFoundItemValidator,
   validateRequest,
   editItem

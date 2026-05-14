@@ -20,7 +20,7 @@ const EditProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState(null);
-  const [activeRole, setActiveRole] = useState(searchParams.get("role") || "student");
+  const [activeRole, setActiveRole] = useState((searchParams.get("role") || "student").toLowerCase());
 
   const fetchProfile = async () => {
     try {

@@ -44,31 +44,6 @@ const ShieldCheckIcon = () => (
   </svg>
 );
 
-const CheckCircleIcon = () => (
-  <svg
-    width="28"
-    height="28"
-    viewBox="0 0 28 28"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M25.6667 13.0433V14.0001C25.6652 16.5165 24.8475 18.966 23.3364 20.9846C21.8252 23.0033 19.6997 24.4842 17.269 25.2093C14.8383 25.9344 12.2285 25.8653 9.81816 25.0135C7.40785 24.1617 5.3225 22.5732 3.864 20.4735C2.40549 18.3737 1.64998 15.8711 1.70119 13.3314C1.75239 10.7916 2.60741 8.35626 4.13757 6.38605C5.66774 4.41585 7.79375 2.9723 10.2036 2.26998C12.6133 1.56767 15.1802 1.6433 17.525 2.48512"
-      stroke="#22C55E"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M25.6667 4.66675L14 16.3451L10.5 12.8451"
-      stroke="#22C55E"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 const RatingSummary = ({ summary }) => {
   return (
     <Card

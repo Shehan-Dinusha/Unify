@@ -9,10 +9,6 @@ import {
   CheckCircle,
   AlertCircle,
   Eye,
-  Download,
-  Upload,
-  Users,
-  FileType,
   Trash2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -431,13 +427,21 @@ const BatchRepVerification = () => {
                     >
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                          submissionStatus === "declined" || submissionStatus === "removed"
-                            ? "bg-red-500/20 border-red-500/30"
-                            : "bg-red-500/20 border-red-500/30"
+                          submissionStatus === "approved"
+                            ? "bg-green-500/20 border-green-500/30"
+                            : submissionStatus === "pending"
+                              ? "bg-amber-500/20 border-amber-500/30"
+                              : "bg-red-500/20 border-red-500/30"
                         }`}
                       >
                         <FileText
-                          className={`w-4 h-4 ${submissionStatus === "declined" || submissionStatus === "removed" ? "text-red-400" : "text-red-400"}`}
+                          className={`w-4 h-4 ${
+                            submissionStatus === "approved"
+                              ? "text-green-400"
+                              : submissionStatus === "pending"
+                                ? "text-amber-400"
+                                : "text-red-400"
+                          }`}
                         />
                       </div>
                       <div className="flex flex-col overflow-hidden">

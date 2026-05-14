@@ -312,31 +312,32 @@ const PostCard = ({
 
   // Build card border classes and styles based on highlightStyle
   const boostStyles = (() => {
-    if (!isPromoted || !boostMeta) return { 
-      borderClass: "border border-white/5", 
-      glowStyle: {} 
-    };
+    if (!isPromoted || !boostMeta)
+      return {
+        borderClass: "border border-white/5",
+        glowStyle: {},
+      };
 
     switch (highlightStyle) {
       case "gold":
         return {
           borderClass: "border-2 border-[#FBBF24] animate-pulse-slow",
-          glowStyle: { boxShadow: "0 0 30px rgba(251, 191, 36, 0.4)" }
+          glowStyle: { boxShadow: "0 0 30px rgba(251, 191, 36, 0.4)" },
         };
       case "blue":
         return {
           borderClass: "border-2 border-[#3B82F6]",
-          glowStyle: { boxShadow: "0 0 25px rgba(59, 130, 246, 0.3)" }
+          glowStyle: { boxShadow: "0 0 25px rgba(59, 130, 246, 0.3)" },
         };
       case "subtle":
         return {
           borderClass: "border-2 border-white/30",
-          glowStyle: { boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)" }
+          glowStyle: { boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)" },
         };
       default:
-        return { 
-          borderClass: "border border-white/5", 
-          glowStyle: {} 
+        return {
+          borderClass: "border border-white/5",
+          glowStyle: {},
         };
     }
   })();
@@ -345,7 +346,10 @@ const PostCard = ({
     <Card
       variant="card"
       padding="p-0"
-      className={"w-full overflow-hidden transition-all duration-300 !border-0 " + boostStyles.borderClass}
+      className={
+        "w-full overflow-hidden transition-all duration-300 !border-0 " +
+        boostStyles.borderClass
+      }
       style={boostStyles.glowStyle}
     >
       {/* Post Image */}
@@ -470,25 +474,30 @@ const PostCard = ({
               {/* Boost */}
               <button
                 onClick={() =>
-                  !isPromoted && reportNavigate("/business/boost-post", {
+                  !isPromoted &&
+                  reportNavigate("/business/boost-post", {
                     state: { postId: postId, postType: postType },
                   })
                 }
                 disabled={isPromoted}
                 className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
-                  isPromoted 
-                    ? "opacity-40 cursor-not-allowed" 
+                  isPromoted
+                    ? "opacity-40 cursor-not-allowed"
                     : "hover:bg-white/5 hover:text-[#FBBF24]"
                 }`}
               >
                 <div className="flex items-center gap-1.5">
                   <Zap
                     size={20}
-                    className={!isPromoted ? "group-hover:fill-[#FBBF24]/20" : ""}
+                    className={
+                      !isPromoted ? "group-hover:fill-[#FBBF24]/20" : ""
+                    }
                     strokeWidth={1.8}
                   />
                 </div>
-                <span className="text-[11px]">{isPromoted ? "Active Boost" : "Boost"}</span>
+                <span className="text-[11px]">
+                  {isPromoted ? "Active Boost" : "Boost"}
+                </span>
               </button>
 
               {/* Delete */}

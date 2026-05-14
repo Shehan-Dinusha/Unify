@@ -5,7 +5,6 @@ import morgan from "morgan";
 import { errorHandler } from "./middlewares/error.middleware.js";
 import { authRateLimiter, apiRateLimiter } from "./middlewares/rateLimit.middleware.js";
 import { sendResponse } from "./utils/response.js";
-import path from "path";
 import apiRoutes from "./routes/index.js";
 
 const app = express();
@@ -50,13 +49,6 @@ app.get("/health", (_req, res) => {
 // ── API Routes ────────────────────────────────────────────────────────────────
 app.use("/api/v1/auth", authRateLimiter);
 app.use("/api/v1", apiRateLimiter, apiRoutes);
-
-// ── Static Files (Temporary prior to S3 migration) ────────────────────────────
-app.use("/uploads", (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  next();
-}, express.static(path.join(process.cwd(), "uploads")));
 
 // ── 404 Handler ───────────────────────────────────────────────────────────────
 app.use((_req, _res, next) => {

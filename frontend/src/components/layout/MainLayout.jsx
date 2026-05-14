@@ -8,7 +8,6 @@ const MainLayout = ({
   user,
   pageTitle,
   headerRight,
-  verificationCount,
   sidebarDisabled = false,
 }) => {
   const [fetchedCount, setFetchedCount] = useState(0);

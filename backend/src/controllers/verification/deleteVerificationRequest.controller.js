@@ -3,7 +3,6 @@ import User from "../../modules/User.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { deleteVerificationFile } from "../../utils/verificationUrl.util.js";
-import bcrypt from "bcryptjs";
 
 export const deleteVerificationRequest = async (req, res, next) => {
   try {
@@ -30,8 +29,7 @@ export const deleteVerificationRequest = async (req, res, next) => {
     existingRequest.documentUrl = null;
     await existingRequest.save();
 
-    // Soft delete the row
-    await existingRequest.destroy({ force: true });
+      await existingRequest.destroy({ force: true });
 
     return sendResponse(
       res,

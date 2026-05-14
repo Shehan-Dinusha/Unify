@@ -21,9 +21,9 @@ const BoardingDetailsForm = ({ onNext, initialData, loading }) => {
     nic: initialData?.nic || "",
     gender: initialData?.gender?.toLowerCase() || "",
     dob: "", // Will be set in useEffect
-    addresses: initialData?.addresses || [
-      { street: "", city: "", postalCode: "" },
-    ],
+    addresses: initialData?.addresses?.length
+      ? initialData.addresses.map(a => ({ street: a.street || "", city: a.city || "", postalCode: a.postalCode || "" }))
+      : [{ street: "", city: "", postalCode: "" }],
     profileImage: null,
   });
 
@@ -46,8 +46,8 @@ const BoardingDetailsForm = ({ onNext, initialData, loading }) => {
         gender: initialData.gender?.toLowerCase() || "",
         dob: formattedDob,
         addresses:
-          initialData.addresses && initialData.addresses.length > 0
-            ? initialData.addresses
+          initialData.addresses?.length
+            ? initialData.addresses.map(a => ({ street: a.street || "", city: a.city || "", postalCode: a.postalCode || "" }))
             : [{ street: "", city: "", postalCode: "" }],
         profileImage: null,
       });
