@@ -9,3 +9,4 @@ export { seedBoostData } from "./seedBoostData.controller.js";
 export { seedLearningData } from "./seedLearningData.controller.js";
 export { seedAllUserTypes } from "./seed_all_user_types.js";
 export { seedAdmin } from "./seedAdmin.controller.js";
+export { seedUsers } from "./seedUsers.controller.js";

@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import ProfileHeader from "../ProfileHeader";
 import ProfileDashboardCard from "../ProfileDashboardCard";
 import Button from "../../common/Button";
@@ -39,6 +40,8 @@ const BoardingOwnerOwnerView = () => {
     },
   ];
 
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col gap-4 md:gap-lg text-start">
       {/* Dashboard Cards Grid */}
@@ -50,10 +53,21 @@ const BoardingOwnerOwnerView = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3 md:gap-md">
-        <Button variant="primary" fullWidth icon={Plus} className="py-2.5 md:py-3">
+        <Button
+          variant="primary"
+          fullWidth
+          icon={Plus}
+          className="py-2.5 md:py-3"
+          onClick={() => navigate("/boarding-owner/create-post")}
+        >
           Create Post
         </Button>
-        <Button variant="outline" fullWidth icon={Zap} className="py-2.5 md:py-3">
+        <Button
+          variant="outline"
+          fullWidth
+          icon={Zap}
+          className="py-2.5 md:py-3"
+        >
           Boost Post
         </Button>
       </div>

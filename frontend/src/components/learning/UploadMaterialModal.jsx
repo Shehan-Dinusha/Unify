@@ -14,7 +14,7 @@ import * as learningService from "../../services/learningService";
 const UploadMaterialModal = ({
   isOpen,
   onClose,
-  moduleName = "Programming Fundamentals",
+  moduleName,
   moduleId,
   categories = [],
   onSuccess,

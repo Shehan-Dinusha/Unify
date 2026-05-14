@@ -5,69 +5,8 @@ import StarRating from "./StarRating";
 import { Trash2, X } from "lucide-react";
 
 /**
- * AddReviewModal — "Rate your experience" modal matching user's design.
+ * DeleteReviewModal — modal for confirming review deletion.
  */
-export const AddReviewModal = ({ onClose, onConfirm }) => {
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (rating === 0) return;
-    onConfirm({ rating, comment });
-    onClose();
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
-      <Card
-        variant="card"
-        className="w-full max-w-[440px] !p-0 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 border border-white/10"
-      >
-        {/* Header with Close */}
-        <div className="absolute top-4 right-4 text-text-tertiary hover:text-white cursor-pointer transition-colors" onClick={onClose}>
-          <X size={20} />
-        </div>
-
-        <div className="p-8 pb-6 flex flex-col items-center text-center">
-          <h2 className="text-xl font-bold text-text-primary mb-4 text-white">Rate your experience</h2>
-          <p className="text-text-secondary text-sm leading-relaxed mb-6 px-2">
-            We highly value your feedback! Kindly take a moment to rate your experience and provide us with your valuable feedback.
-          </p>
-
-          {/* Interactive Stars */}
-          <div className="mb-8 scale-150 transform">
-            <StarRating
-              rating={rating}
-              interactive={true}
-              onRate={setRating}
-            />
-          </div>
-
-          {/* Comment Area */}
-          <div className="w-full mb-8">
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Tell us about your experience!"
-              className="w-full h-32 bg-white/5 border border-white/10 rounded-[20px] p-md text-white text-base md:text-sm placeholder:text-text-tertiary outline-none focus:border-state-warning/30 transition-all resize-none shadow-inner"
-            />
-          </div>
-
-          {/* Submit Button */}
-          <Button
-            onClick={handleSubmit}
-            disabled={rating === 0}
-            variant="primary"
-            className="w-32 h-11 shadow-lg shadow-primary-blue/20 font-bold"
-          >
-            Submit
-          </Button>
-        </div>
-      </Card>
-    </div>
-  );
-};
 
 export const DeleteReviewModal = ({ onClose, onConfirm }) => {
   return (

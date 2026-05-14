@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import {
   Info,
   ArrowRight,
@@ -444,7 +444,7 @@ const BatchRepVerification = () => {
                         <span
                           className={`text-sm font-bold truncate ${submissionStatus === "declined" || submissionStatus === "removed" ? "text-red-400 line-through" : "text-neutral-100"}`}
                         >
-                          {submittedFile?.name || "Batch_rep_nomination.pdf"}
+                          {submittedFile?.name || "Document unavailable"}
                         </span>
                         <span className="text-zinc-400 text-xs">
                           {submittedFile
