@@ -3,15 +3,16 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import UserSuspensionService from "../../services/userSuspension.service.js";
 
-/**
- * PUT /api/v1/reports/social/:id
- * Handles all admin actions from ReportDetail.jsx.
- */
+//Handles all admin actions from ReportDetail.jsx.
 export const processSocialReport = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { action, notes, reason } = req.body;
-    const adminId = req.user?.id || 1;
+    const { action, notes, reason, reasonTag, severity } = req.body;
+    const adminId = req.user?.id;
+
+    if (!adminId) {
+      return sendResponse(res, 401, false, 'Admin authentication required');
+    }
 
     if (!action) {
       return sendResponse(res, 400, false, 'Action is required');
@@ -147,8 +148,8 @@ export const processSocialReport = async (req, res, next) => {
         await UserSuspensionService.createSuspension({
           userId: targetUserId,
           reason: reason || 'Violation of platform guidelines',
-          reasonTag: 'Violation of Terms',
-          severity: 'High',
+          reasonTag: reasonTag || 'Violation of Terms',
+          severity: severity || 'High',
           effectiveDate: new Date(),
           adminNotes: `Suspended via Report Moderation for report ID ${id}. ${notes || ''}`
         }, adminId);

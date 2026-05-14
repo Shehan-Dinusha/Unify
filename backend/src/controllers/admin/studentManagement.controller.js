@@ -15,10 +15,7 @@ import moment from 'moment';
 import UserSuspensionService from '../../services/userSuspension.service.js';
 import { resolveAvatarUrl } from '../../utils/avatarUrl.util.js';
 
-/**
- * GET /api/v1/admin/students
- * Retrieves the student directory with filtering and search.
- */
+//Retrieves the student directory with filtering and search.
 export const getStudentDirectory = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, search, faculty, status } = req.query;
@@ -101,10 +98,7 @@ export const getStudentDirectory = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/v1/admin/students/stats
- * Dashboard statistics for Student Management.
- */
+//Dashboard statistics for Student Management.
 export const getStudentStats = async (req, res, next) => {
   try {
     const totalStudents = await User.count({ where: { role: 'Student' } });
@@ -133,10 +127,7 @@ export const getStudentStats = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/v1/admin/students/:id
- * Detailed student profile for Admin view.
- */
+//Detailed student profile for Admin view.
 export const getStudentProfile = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -245,15 +236,16 @@ export const getStudentProfile = async (req, res, next) => {
   }
 };
 
-/**
- * PUT /api/v1/admin/students/:id/status
- * Updates student status (Suspend/Active).
- */
+//Updates student status (Suspend/Active).
 export const updateStudentStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status, reason, suspensionCategory, sendEmail } = req.body;
-    const adminId = req.user?.id || 1;
+    const adminId = req.user?.id;
+
+    if (!adminId) {
+      return sendResponse(res, 401, false, "Admin authentication required.");
+    }
 
     const user = await User.findByPk(id);
     if (!user || user.role !== 'Student') {
@@ -315,15 +307,16 @@ export const updateStudentStatus = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/v1/admin/students/:id/notes
- * Adds an internal admin note to the profile.
- */
+//Adds an internal admin note to the profile.
 export const addStudentNote = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { text } = req.body;
-    const adminName = req.user?.name || 'Admin';
+    const adminName = req.user?.name;
+
+    if (!adminName) {
+      return sendResponse(res, 401, false, "Admin authentication required.");
+    }
 
     const profile = await StudentProfile.findOne({ where: { userId: id } });
     if (!profile) {
@@ -347,14 +340,16 @@ export const addStudentNote = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/v1/admin/students/:id/force-logout
- * Forces a user logout.
- */
+//Forces a user logout.
 export const forceLogout = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const adminId = req.user?.id || 1;
+    const adminId = req.user?.id;
+
+    if (!adminId) {
+      return sendResponse(res, 401, false, "Admin authentication required.");
+    }
+
     const user = await User.findByPk(id);
 
     if (!user || user.role !== 'Student') {
@@ -383,15 +378,17 @@ export const forceLogout = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/v1/admin/students/:id/warning
- * Sends a warning to a student.
- */
+//Sends a warning to a student.
 export const sendStudentWarning = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { message, category, severity, sendEmail } = req.body;
-    const adminId = req.user?.id || 1;
+    const adminId = req.user?.id;
+
+    if (!adminId) {
+      return sendResponse(res, 401, false, "Admin authentication required.");
+    }
+
     const user = await User.findByPk(id);
 
     if (!user || user.role !== 'Student') {

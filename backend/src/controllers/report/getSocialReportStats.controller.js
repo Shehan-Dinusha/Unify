@@ -3,15 +3,7 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { Op } from "sequelize";
 
-/**
- * GET /api/v1/reports/social/stats
- * Dashboard statistics for the Social Report Moderation page.
- * Returns: totalPending, criticalFlags, resolvedToday
- * 
- * IMPORTANT: Stats are calculated exclusively from the StudentReport table
- * to maintain consistency with the moderation queue, which also only
- * displays StudentReport records.
- */
+//Returns report statistics for the social report moderation page.
 export const getSocialReportStats = async (req, res, next) => {
   try {
     // 1. Total Pending — reports waiting for admin review

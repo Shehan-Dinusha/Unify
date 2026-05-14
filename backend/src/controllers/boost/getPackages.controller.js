@@ -2,11 +2,7 @@ import boostService from "../../services/boost.service.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Retrieves all boost packages.
- * Business users see only 'live' packages.
- * Admins can include archived packages with ?includeArchived=true.
- */
+//Retrieves all boost packages.
 export const getPackages = async (req, res, next) => {
   try {
     const includeArchived = req.query.includeArchived === "true";

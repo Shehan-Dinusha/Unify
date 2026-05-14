@@ -1,26 +1,20 @@
 import { body, query, param } from "express-validator";
 
-/**
- * Validator for student directory filtering
- */
+//Validator for student directory filtering
 export const studentDirectoryValidator = [
   query('faculty').optional().notEmpty().withMessage('Faculty filter cannot be empty'),
   query('status').optional().isIn(['Active', 'Suspended', 'all', 'active', 'suspended']).withMessage('Invalid status filter'),
   query('search').optional(),
 ];
 
-/**
- * Validator for business directory filtering
- */
+//Validator for business directory filtering
 export const businessDirectoryValidator = [
   query('category').optional().notEmpty().withMessage('Category filter cannot be empty'),
   query('status').optional().isIn(['Active', 'Suspended', 'all', 'active', 'suspended']).withMessage('Invalid status filter'),
   query('search').optional(),
 ];
 
-/**
- * Validator for updating user status
- */
+//Validator for updating user status
 export const updateStatusValidator = [
   param('id').notEmpty().withMessage('User ID is required').isInt().withMessage('User ID must be an integer'),
   body('status').notEmpty().withMessage('Status is required').isIn(['Active', 'Suspended', 'Inactive']).withMessage('Invalid status'),
@@ -34,17 +28,13 @@ export const updateStatusValidator = [
   body('sendEmail').optional().isBoolean().withMessage('sendEmail must be a boolean'),
 ];
 
-/**
- * Validator for adding an internal note
- */
+//Validator for adding an internal note
 export const addNoteValidator = [
   param('id').notEmpty().withMessage('User ID is required').isInt().withMessage('User ID must be an integer'),
   body('text').notEmpty().withMessage('Note text is required').isLength({ min: 1, max: 2000 }).withMessage('Note must be between 1 and 2000 characters'),
 ];
 
-/**
- * Validator for sending a warning
- */
+//Validator for sending a warning
 export const sendWarningValidator = [
   param('id').notEmpty().withMessage('User ID is required').isInt().withMessage('User ID must be an integer'),
   body('message').notEmpty().withMessage('Warning message is required').isLength({ min: 5, max: 1000 }).withMessage('Warning message must be between 5 and 1000 characters'),

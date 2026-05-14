@@ -5,13 +5,14 @@ import logger from "../../utils/logger.js";
 import moment from "moment";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
-/**
- * Retrieves reports for a specific student with filters and pagination.
- * 100% Compatible with StudentSubmittedReports.jsx search and filter requirements.
- */
+//Retrieves reports for a specific student with filters and pagination.
 export const getStudentReports = async (req, res, next) => {
   try {
-    const studentId = req.user?.id || 4; // Default to seeded student ID for testing
+    const studentId = req.user?.id;
+
+    if (!studentId) {
+      return sendResponse(res, 401, false, 'Student authentication required');
+    }
 
     const { status, category, reportType, search, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;

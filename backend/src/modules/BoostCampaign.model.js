@@ -1,11 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
-/**
- * BoostCampaign Model
- * Represents an active or completed boosting campaign created by a business user.
- * 100% Compatible with Frontend BoostConfirmOrder, BoostPostSuccess, BoostAnalytics pages.
- */
+//Represents an active or completed boosting campaign created by a business user.
 const BoostCampaign = sequelize.define(
   "BoostCampaign",
   {

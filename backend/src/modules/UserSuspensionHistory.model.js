@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
+//Records admin actions against a suspended user
 const UserSuspensionHistory = sequelize.define(
   "UserSuspensionHistory",
   {

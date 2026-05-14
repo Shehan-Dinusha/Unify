@@ -4,16 +4,11 @@ import logger from "../../utils/logger.js";
 import { updateStudentReputation } from "../../services/reputation.service.js";
 import UserSuspensionService from "../../services/userSuspension.service.js";
 
-/**
- * Handle admin updates to a report's status, priority, and notes.
- * Performs manual validation matching the Verification module pattern.
- */
+//Handle admin updates to a report's status, priority, and notes.
 export const updateReport = async (req, res, next) => {
   try {
-    // TODO: Add admin authorization check here
-    
     const { id } = req.params;
-    const { status, adminNotes, priority, action, notes, reason } = req.body;
+    const { status, adminNotes, priority, action, notes, reason, reasonTag, severity } = req.body;
 
     // 2. Fetch and Update
     let whereClause = {};
@@ -78,12 +73,15 @@ export const updateReport = async (req, res, next) => {
         case 'suspend_user':
           // ✅ Use UserSuspensionService to ensure records are created in the suspension table
           if (report.reportedEntityId) {
-            const adminId = req.user?.id || 1;
+            const adminId = req.user?.id;
+            if (!adminId) {
+              return sendResponse(res, 401, false, 'Admin authentication required');
+            }
             await UserSuspensionService.createSuspension({
               userId: report.reportedEntityId,
               reason: reason || 'Violation of platform guidelines',
-              reasonTag: 'Violation of Terms',
-              severity: 'High',
+              reasonTag: reasonTag || 'Violation of Terms',
+              severity: severity || 'High',
               effectiveDate: new Date(),
               adminNotes: `Suspended via Student Report Management for report ID ${id}. ${notes || ''}`
             }, adminId);

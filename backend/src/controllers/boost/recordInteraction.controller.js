@@ -4,15 +4,16 @@ import BoostInteraction from "../../modules/BoostInteraction.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Records a user interaction on a boosted campaign.
- * Increments campaign-level counters (impressions, clicks).
- * 100% Compatible with Frontend BoostAnalytics interaction tracking.
- */
+//Records a user interaction on a boosted campaign.
 export const recordInteraction = async (req, res, next) => {
   try {
     const { id } = req.params; // campaign id
-    const userId = req.user?.id || 1;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return sendResponse(res, 401, false, "Authentication required.");
+    }
+
     const { action, content, impact, date } = req.body;
 
     // 1. Validate action

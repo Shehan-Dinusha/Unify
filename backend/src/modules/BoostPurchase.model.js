@@ -1,11 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
-/**
- * BoostPurchase Model
- * Records every boost purchase made by a business user.
- * Tracks the package selected, target post, payment details, and expiry.
- */
+//Records every boost purchase made by a business user.
 const BoostPurchase = sequelize.define(
   "BoostPurchase",
   {

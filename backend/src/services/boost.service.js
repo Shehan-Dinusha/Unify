@@ -13,11 +13,7 @@ import {
 } from "../modules/index.js";
 import logger from "../utils/logger.js";
 
-/**
- * ─── DEFAULT BOOST CONFIG ──────────────────────────────────────────
- * These are the 6 engine parameters that control how a boost behaves.
- * Admins can customize these per package.
- */
+//─── DEFAULT BOOST CONFIG ──────────────────────────────────────────
 const DEFAULT_BOOST_CONFIG = {
   feedPriority: 10,           // 1-10: lower = higher in feed. 1 = top.
   visibilityMultiplier: 1,    // 1-5: how many extra slots the post gets.
@@ -27,12 +23,7 @@ const DEFAULT_BOOST_CONFIG = {
   autoRefreshHours: 0,        // 0 = off. 6/12/24 = post gets auto-bumped every X hours.
 };
 
-/**
- * ─── AUTO-GENERATE FEATURES TEXT FROM CONFIG ───────────────────────
- * Converts the boostConfig engine parameters into human-readable
- * feature strings for the package selection page.
- * This makes boostConfig the SINGLE SOURCE OF TRUTH.
- */
+//─── AUTO-GENERATE FEATURES TEXT FROM CONFIG ───────────────────────
 function generateFeaturesFromConfig(config, durationValue, durationUnit) {
   const features = [];
 
@@ -83,12 +74,7 @@ function generateFeaturesFromConfig(config, durationValue, durationUnit) {
   return features;
 }
 
-/**
- * Boost Service
- *
- * Handles all business logic for boost packages, purchases, and logs.
- * ALL data comes from database — ZERO hardcoding.
- */
+//Handles all business logic for boost packages, purchases, and logs.
 class BoostService {
   // ── ID Generators ────────────────────────────────────────────────────────
 
@@ -114,9 +100,7 @@ class BoostService {
 
   // ── Duration Helpers ─────────────────────────────────────────────────────
 
-  /**
-   * Calculate expiry date from purchase date based on package duration.
-   */
+//Calculate expiry date from purchase date based on package duration.
   calculateExpiryDate(purchaseDate, durationValue, durationUnit) {
     const expiry = new Date(purchaseDate);
     switch (durationUnit) {
@@ -627,12 +611,8 @@ class BoostService {
 
   // ── Feed Boost Engine ───────────────────────────────────────────────────
 
-  /**
-   * Get ALL active boosts for the feed, keyed by postId.
-   * Called by getFeed controller to inject boost metadata into each post.
-   *
-   * Returns a Map<postId, { boostConfig, packageName, expiryDate, ... }>
-   */
+//Get ALL active boosts for the feed, keyed by postId.
+
   async getActiveBoostsForFeed() {
     const now = new Date();
 
@@ -685,11 +665,6 @@ class BoostService {
   }
 
   // ── Expiry Enforcement ──────────────────────────────────────────────────
-
-  /**
-   * Find all BoostPurchases where expiryDate < NOW and status is still 'active',
-   * set them to 'expired', and un-promote the linked posts.
-   */
   async enforceExpiredBoosts() {
     const now = new Date();
 
