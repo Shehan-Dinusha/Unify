@@ -43,6 +43,11 @@ export const ChatProvider = ({ children }) => {
       return;
     }
 
+    // Only connect socket for roles that use chat
+    const user = getCurrentUser();
+    const role = user?.role?.toLowerCase();
+    if (role !== "student" && role !== "club") return;
+
     if (socketRef.current) return;
 
     const token = localStorage.getItem("token");
@@ -57,7 +62,6 @@ export const ChatProvider = ({ children }) => {
     });
 
     newSocket.on("connect", () => {
-      console.log("⚡ Global Chat Socket Connected");
       refreshUnreadCount();
     });
 
