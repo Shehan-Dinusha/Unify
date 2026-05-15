@@ -17,6 +17,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { getAvatarUrl } from '../utils/formatters';
+import { getCurrentUser } from '../services/authService';
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -273,7 +274,7 @@ const BusinessProfile = () => {
 
   return (
     <MainLayout
-      user={{ name: 'Alex Johnson', role: 'admin' }}
+      user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
       pageTitle={`${biz.name}'s Profile`}
     >
       {biz.status === 'Suspended' && (

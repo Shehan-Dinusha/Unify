@@ -6,7 +6,7 @@ import Input from "../components/common/Input";
 import Select from "../components/common/Select";
 import Button from "../components/common/Button";
 import { useBoostPackages } from "../context/BoostPackageContext";
-import { mockRequests } from "../data/mockData";
+import { getCurrentUser } from "../services/authService";
 import {
   CheckCircle2,
   Trash2,
@@ -210,10 +210,10 @@ const BoostPackageForm = () => {
 
   return (
       <MainLayout
-        user={{ name: "Alex Johnson", role: "admin" }}
+        user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
         pageTitle="Package Configuration"
         headerRight={null}
-        verificationCount={mockRequests.length}
+        verificationCount={0}
       >
         <div className="flex flex-col gap-lg">
           {/* Page Title + Mobile Buttons */}

@@ -8,6 +8,7 @@ import {
   updateReportSchema, 
   withdrawReportSchema 
 } from '../validators/report.validator.js';
+import { protect } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ const router = express.Router();
 // POST /api/v1/reports - Create a new report
 router.post(
   '/',
+  protect,
   uploadToS3({ 
     type: 'array', 
     fieldName: 'evidenceFiles', 
@@ -34,6 +36,7 @@ router.post(
 // GET /api/v1/reports - Get all reports for the logged-in student
 router.get(
   '/',
+  protect,
   ReportController.getStudentReports
 );
 
@@ -88,6 +91,7 @@ router.put(
 // GET /api/v1/reports/:id - Get specific report details
 router.get(
   '/:id',
+  protect,
   [param('id').notEmpty().withMessage('Report ID is required')],
   validate,
   ReportController.getReportById
@@ -104,6 +108,7 @@ router.put(
 // DELETE /api/v1/reports/:id - Withdraw a report
 router.delete(
   '/:id',
+  protect,
   withdrawReportSchema,
   validate,
   ReportController.withdrawReport

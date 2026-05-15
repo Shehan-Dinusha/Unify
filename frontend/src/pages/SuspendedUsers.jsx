@@ -6,8 +6,8 @@ import Input from '../components/common/Input';
 import Select from '../components/common/Select';
 import { useToast } from '../components/common/Toast';
 import { Search, RotateCcw, AlertTriangle, ShieldAlert, CheckCircle2, Filter, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { mockRequests } from '../data/mockData';
-import { reasonTagColors } from '../data/mockSuspendedUsers';
+import { getCurrentUser } from '../services/authService';
+import Badge from '../components/common/Badge';
 import { getDashboardStatistics, getAllSuspendedUsers } from '../services/suspensionService';
 import { getAvatarUrl } from '../utils/formatters';
 
@@ -218,9 +218,9 @@ const SuspendedUsers = () => {
 
     return (
         <MainLayout
-            user={{ name: 'Alex Johnson', role: 'admin' }}
+            user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
             pageTitle="Suspended Users"
-            verificationCount={mockRequests.length}
+            verificationCount={0}
         >
             {/* ── Stats Row ──────────────────────────────────── */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-md mb-lg">
@@ -373,16 +373,7 @@ const SuspendedUsers = () => {
 
                         {/* Reason Tag */}
                         <div>
-                            <span className={`inline-flex items-center gap-xs text-body-extra-small-bold px-sm py-xs rounded-lg whitespace-nowrap ${reasonTagColors[user.reasonTag] || 'bg-white/10 text-text-secondary'
-                                }`}>
-                                <span className="text-[10px]">
-                                    {user.reasonTag === 'ToS Violation' && '🔥'}
-                                    {user.reasonTag === 'Payment Failure' && '💳'}
-                                    {user.reasonTag === 'Suspicious Activity' && '⚠️'}
-                                    {user.reasonTag === 'Harassment' && '🚫'}
-                                </span>
-                                {user.reasonTag}
-                            </span>
+                            <Badge type="reason" value={user.reasonTag} />
                         </div>
 
                         {/* Actions */}
@@ -424,10 +415,7 @@ const SuspendedUsers = () => {
                                     <p className="text-body-medium-bold text-text-primary truncate">{user.name || 'Unknown User'}</p>
                                     <p className="text-body-extra-small text-text-secondary truncate">{user.email || '—'}</p>
                                 </div>
-                                <span className={`inline-flex items-center gap-xs text-body-extra-small-bold px-sm py-xs rounded-lg shrink-0 ${reasonTagColors[user.reasonTag] || 'bg-white/10 text-text-secondary'
-                                    }`}>
-                                    {user.reasonTag}
-                                </span>
+                                <Badge type="reason" value={user.reasonTag} className="ml-2" />
                             </div>
 
                             {/* Details Row */}

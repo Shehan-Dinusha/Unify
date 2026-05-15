@@ -15,12 +15,13 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { getAvatarUrl } from "../utils/formatters";
+import { getCurrentUser } from "../services/authService";
 
 const StudentReportDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const toast = useToast();
-  const user = { name: "Alex Johnson", role: "student", id: 4 };
+  const user = getCurrentUser() || { name: "Student", role: "student" };
 
   // ── Data State ─────────────────────────────────────────────────────
   const [report, setReport] = useState(null);

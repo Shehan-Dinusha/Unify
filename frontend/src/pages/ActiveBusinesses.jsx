@@ -3,44 +3,45 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Select from '../components/common/Select';
-import { Search, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Search, RotateCcw, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import Input from '../components/common/Input';
 import { useToast } from '../components/common/Toast';
 import { getBusinessDirectory, getBusinessStats } from '../services/businessService';
 import { getAvatarUrl } from '../utils/formatters';
+import { getCurrentUser } from '../services/authService';
 
 // ─── Stat Definitions ───────────────────────────────────────────────────────
 
 const businessStats = [
     {
         title: 'Verified Businesses',
-        value: '1,894',
-        change: '↗ +12% this month',
-        changeClass: 'text-state-success',
+        value: '—',
+        change: 'Loading...',
+        changeClass: 'text-text-secondary',
         icon: '✅',
         iconBg: 'bg-state-success/20',
     },
     {
         title: 'Pending Approvals',
-        value: '24',
-        change: '⏳ Awaiting Review',
+        value: '—',
+        change: '⏳ Loading...',
         changeClass: 'text-state-warning',
         icon: '📋',
         iconBg: 'bg-state-error/20',
     },
     {
         title: 'Avg. Subscription',
-        value: 'Rs. 8000',
-        change: '↑ +4% per user',
-        changeClass: 'text-state-success',
+        value: '—',
+        change: 'Loading...',
+        changeClass: 'text-text-secondary',
         icon: '💰',
         iconBg: 'bg-state-success/20',
     },
     {
         title: 'Retention Rate',
-        value: '98.2%',
-        change: '� High Loyalty',
-        changeClass: 'text-primary-accent',
+        value: '—',
+        change: 'Loading...',
+        changeClass: 'text-text-secondary',
         icon: '📈',
         iconBg: 'bg-primary-blue/20',
     },
@@ -89,6 +90,12 @@ const ActiveBusinesses = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // ── Pagination State ────────────────────────────────────
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const PAGE_LIMIT = 10;
+
     // ── Fetch Stats on mount ────────────────────────────────
     useEffect(() => {
         const fetchStats = async () => {
@@ -121,9 +128,9 @@ const ActiveBusinesses = () => {
                         iconBg: 'bg-gradient-to-br from-state-success/10 to-transparent' 
                     },
                     { 
-                        value: d.retentionRate || '98.2%', 
+                        value: d.retentionRate || 'N/A', 
                         title: 'Retention Rate', 
-                        change: `💎 ${d.retentionLabel || 'High Loyalty'}`,
+                        change: `💎 ${d.retentionLabel || 'N/A'}`,
                         changeClass: 'text-primary-accent',
                         icon: '📈', 
                         iconBg: 'bg-gradient-to-br from-primary-accent/10 to-transparent' 
@@ -137,7 +144,12 @@ const ActiveBusinesses = () => {
         fetchStats();
     }, []);
 
-    // ── Fetch Businesses when filters change ────────────────
+    // ── Reset page when filters change ──────────────────────
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter, categoryFilter]);
+
+    // ── Fetch Businesses when filters or page change ────────
     useEffect(() => {
         const fetchBusinesses = async () => {
             setLoading(true);
@@ -147,8 +159,13 @@ const ActiveBusinesses = () => {
                     search: searchQuery,
                     status: statusFilter,
                     category: categoryFilter,
+                    page: currentPage,
+                    limit: PAGE_LIMIT,
                 });
-                setBusinesses(result.data?.businesses || result.data || []);
+                const data = result.data || {};
+                setBusinesses(data.businesses || []);
+                setTotalCount(data.total || 0);
+                setTotalPages(Math.ceil((data.total || 0) / PAGE_LIMIT));
             } catch (err) {
                 console.error('[ActiveBusinesses] Failed to load businesses:', err);
                 setError('Failed to connect to the server. Please check backend.');
@@ -158,18 +175,23 @@ const ActiveBusinesses = () => {
             }
         };
         fetchBusinesses();
-    }, [searchQuery, statusFilter, categoryFilter]);
+    }, [searchQuery, statusFilter, categoryFilter, currentPage]);
 
     const handleResetFilters = () => {
         setSearchQuery('');
         setActiveFilter('All Businesses');
         setCategoryFilter('all');
         setStatusFilter('all');
+        setCurrentPage(1);
     };
+
+    // ── Pagination Helpers ──────────────────────────────────
+    const startItem = (currentPage - 1) * PAGE_LIMIT + 1;
+    const endItem = Math.min(currentPage * PAGE_LIMIT, totalCount);
 
     return (
         <MainLayout
-            user={{ name: 'Alex Johnson', role: 'admin' }}
+            user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
             pageTitle="Active Businesses"
         >
             {/* ── Stats Row ─────────────────────────────────────── */}
@@ -282,8 +304,7 @@ const ActiveBusinesses = () => {
             </div>
 
             {/* ── Business Directory Table ──────────────────────── */}
-            {/* Use a raw styled div — Card's inner wrapper adds padding we don't want for a table */}
-            <div className="relative overflow-hidden border border-white/20 rounded-2xl bg-white/5 backdrop-blur-sm hidden md:block">
+            <div className="relative overflow-hidden border border-white/20 rounded-2xl bg-white/5 backdrop-blur-sm mb-md hidden md:block">
 
                 {/* Table Header */}
                 <div
@@ -360,6 +381,54 @@ const ActiveBusinesses = () => {
                 )}
             </div>
 
+            {/* ── Pagination Controls ─────────────────────────────── */}
+            {!loading && !error && totalCount > 0 && (
+                <div className="hidden md:flex flex-col sm:flex-row items-center justify-between gap-md mb-lg px-sm">
+                    <p className="text-body-small text-text-secondary">
+                        Showing {startItem}–{endItem} of {totalCount} businesses
+                    </p>
+                    <div className="flex items-center gap-sm">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="flex items-center gap-xs px-md py-sm rounded-xl text-body-small-bold border border-white/10 text-text-secondary hover:text-text-primary hover:bg-white/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            <ChevronLeft size={16} /> Previous
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                            .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                            .reduce((acc, p, idx, arr) => {
+                                if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
+                                acc.push(p);
+                                return acc;
+                            }, [])
+                            .map((p, idx) =>
+                                p === '...' ? (
+                                    <span key={`ellipsis-${idx}`} className="px-sm text-text-secondary">…</span>
+                                ) : (
+                                    <button
+                                        key={p}
+                                        onClick={() => setCurrentPage(p)}
+                                        className={`w-9 h-9 rounded-lg text-body-small-bold transition-all ${currentPage === p
+                                            ? 'bg-primary-blue text-white shadow-lg shadow-primary-blue/25'
+                                            : 'text-text-secondary hover:text-text-primary hover:bg-white/5 border border-white/10'
+                                            }`}
+                                    >
+                                        {p}
+                                    </button>
+                                )
+                            )}
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="flex items-center gap-xs px-md py-sm rounded-xl text-body-small-bold border border-white/10 text-text-secondary hover:text-text-primary hover:bg-white/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            Next <ChevronRight size={16} />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* ── Mobile Cards View ──────────────────────────────── */}
             <div className="grid grid-cols-1 gap-md md:hidden">
                 {!loading && !error && businesses.map((biz) => (
@@ -404,6 +473,29 @@ const ActiveBusinesses = () => {
                     </Card>
                 ))}
             </div>
+
+            {/* ── Mobile Pagination ──────────────────────────────── */}
+            {!loading && !error && totalCount > PAGE_LIMIT && (
+                <div className="flex items-center justify-center gap-md mt-md mb-lg md:hidden">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-md py-sm rounded-xl text-body-small-bold border border-white/10 text-text-secondary disabled:opacity-30"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <span className="text-body-small text-text-secondary">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-md py-sm rounded-xl text-body-small-bold border border-white/10 text-text-secondary disabled:opacity-30"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
+            )}
         </MainLayout>
     );
 };

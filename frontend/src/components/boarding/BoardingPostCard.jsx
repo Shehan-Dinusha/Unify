@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MapPin, Send, ChevronLeft, ChevronRight, Heart, MessageCircle } from "lucide-react";
 import Card from "../common/Card";
-import { getImageUrl, getAvatarUrl } from "../../utils/formatters";
+import { getImageUrl, formatTimeAgo,getAvatarUrl } from "../../utils/formatters";
+import newsfeedService from "../../services/newsfeedService";
+import { useSavedPosts } from "../../context/SavedPostsContext";
+import { getCurrentUser } from "../../services/authService";
 
 /* ─── Action Button ──────────────────────────────────────────── */
 const ActionBtn = ({ svgSrc, icon: Icon, label, count, showBoth, activeColor = "text-primary", onClick, active, fillActive = false }) => (
@@ -149,7 +152,10 @@ const CommentSection = ({ postComments, onAddComment }) => {
 };
 
 /* ─── Main Card ──────────────────────────────────────────────── */
-const BoardingPostCard = ({ post, onClick, currentUser }) => {
+const BoardingPostCard = ({ post, onClick,currentUser }) => {
+    const { toggleSavePost } = useSavedPosts();
+    const currentUser = getCurrentUser();
+
     const [liked, setLiked] = useState(post.isLiked || false);
     const [likes, setLikes] = useState(post.likesCount || post.stats?.likes || 0);
     const [saved, setSaved] = useState(post.isSaved || false);
@@ -157,11 +163,98 @@ const BoardingPostCard = ({ post, onClick, currentUser }) => {
     const [reported, setReported] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);
     const [postComments, setPostComments] = useState(post.comments || []);
+    const [commentCount, setCommentCount] = useState(post.commentsCount || post.stats?.comments || (post.comments ? post.comments.length : 0));
+    const [loadingComments, setLoadingComments] = useState(false);
 
-    const handleAddComment = (text) => {
-        setPostComments(prev => [...prev, {
-            id: `new-${Date.now()}`, user: "You", seed: "Me", time: "just now", text,
-        }]);
+    const postType = post?.postType || "boarding";
+    const postId = post?.id;
+
+    const handleToggleLike = async () => {
+        const wasLiked = liked;
+        setLiked(!wasLiked);
+        setLikes(wasLiked ? Math.max(0, likes - 1) : likes + 1);
+
+        try {
+            await newsfeedService.toggleLike(postType, postId);
+        } catch (err) {
+            console.error("Failed to toggle like:", err);
+            setLiked(wasLiked);
+            setLikes(wasLiked ? likes : Math.max(0, likes - 1));
+        }
+    };
+
+    const handleToggleSave = async () => {
+        const wasSaved = saved;
+        setSaved(!wasSaved);
+        if (post) toggleSavePost(post);
+
+        try {
+            await newsfeedService.toggleSave(postType, postId);
+        } catch (err) {
+            console.error("Failed to toggle save:", err);
+            setSaved(wasSaved);
+            if (post) toggleSavePost(post);
+        }
+    };
+
+    const handleToggleComments = async () => {
+        const shouldShow = !commentOpen;
+        setCommentOpen(shouldShow);
+
+        if (shouldShow && postComments.length === 0) {
+            try {
+                setLoadingComments(true);
+                const data = await newsfeedService.getComments(postType, postId);
+                const fetchedComments = (data.comments || []).map((c) => ({
+                    id: c.id,
+                    user: c.user?.name || "User",
+                    avatar: c.user?.avatar,
+                    seed: c.user?.name || "User",
+                    time: c.createdAt ? formatTimeAgo(c.createdAt) : "just now",
+                    text: c.content,
+                }));
+                setPostComments(fetchedComments);
+                setCommentCount(fetchedComments.length);
+            } catch (err) {
+                console.error("Failed to fetch comments:", err);
+            } finally {
+                setLoadingComments(false);
+            }
+        }
+    };
+
+    const handleAddComment = async (text) => {
+        const tempComment = {
+            id: `new-${Date.now()}`,
+            user: currentUser?.name || "You",
+            avatar: currentUser?.avatar,
+            seed: currentUser?.name || "Me",
+            time: "just now",
+            text,
+        };
+        setPostComments((prev) => [...prev, tempComment]);
+        setCommentCount((c) => c + 1);
+
+        try {
+            const data = await newsfeedService.addComment(postType, postId, text);
+            if (data.comment) {
+                const realComment = {
+                    id: data.comment.id,
+                    user: data.comment.user?.name || currentUser?.name || "You",
+                    avatar: data.comment.user?.avatar || currentUser?.avatar,
+                    seed: data.comment.user?.name || currentUser?.name || "Me",
+                    time: "just now",
+                    text: data.comment.content,
+                };
+                setPostComments((prev) =>
+                    prev.map((c) => (c.id === tempComment.id ? realComment : c)),
+                );
+            }
+        } catch (err) {
+            console.error("Failed to add comment:", err);
+            setPostComments((prev) => prev.filter((c) => c.id !== tempComment.id));
+            setCommentCount((c) => Math.max(0, c - 1));
+        }
     };
 
     const [isExpanded, setIsExpanded] = useState(false);
@@ -236,16 +329,16 @@ const BoardingPostCard = ({ post, onClick, currentUser }) => {
                         activeColor="text-primary-blue"
                         active={liked}
                         fillActive={true}
-                        onClick={() => { setLiked(p => !p); setLikes(n => liked ? n - 1 : n + 1); }}
+                        onClick={handleToggleLike}
                     />
                     <ActionBtn
                         icon={MessageCircle}
                         label="Comments"
-                        count={postComments.length}
+                        count={commentCount}
                         showBoth
                         activeColor="text-primary-blue"
                         active={commentOpen}
-                        onClick={() => setCommentOpen(o => !o)}
+                        onClick={handleToggleComments}
                     />
                     {/*<ActionBtn
                         svgSrc="/icon_boost_controller.svg"

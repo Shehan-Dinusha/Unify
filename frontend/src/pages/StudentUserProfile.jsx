@@ -36,6 +36,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { getAvatarUrl } from '../utils/formatters';
+import { getCurrentUser } from '../services/authService';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -512,7 +513,7 @@ const StudentUserProfile = () => {
   }
 
   return (
-    <MainLayout user={{ name: 'Alex Johnson', role: 'admin' }} pageTitle={`${user.name}'s Profile`}>
+    <MainLayout user={getCurrentUser() || { name: 'Admin', role: 'Admin' }} pageTitle={`${user.name}'s Profile`}>
       {user.status === 'Suspended' && (
         <div className="mb-lg p-lg rounded-2xl bg-state-error/10 border border-state-error/30 flex items-center gap-md animate-pulse">
           <div className="w-12 h-12 rounded-full bg-state-error/20 flex items-center justify-center">

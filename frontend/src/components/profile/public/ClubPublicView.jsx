@@ -3,9 +3,8 @@ import ProfileHeader from "../ProfileHeader";
 import AboutSection from "../AboutSection";
 import Card from "../../common/Card";
 import Button from "../../common/Button";
-import { UserCheck, UserPlus } from "lucide-react";
+import { UserCheck, UserPlus, Users } from "lucide-react";
 import RecentPostsSection from "./RecentPostsSection";
-import FollowersListModal from "../modals/FollowersListModal";
 import { unfollowOrganization } from "../../../services/followerService";
 import { getCurrentUser } from "../../../services/authService";
 
@@ -16,7 +15,6 @@ import { getCurrentUser } from "../../../services/authService";
  *   - Clubs do not follow other accounts.
  */
 const ClubPublicView = ({ profile }) => {
-  const [followersModalType, setFollowersModalType] = useState(null);
   const [isFollowing, setIsFollowing] = useState(profile?.isFollowing || false);
   const [followerCount, setFollowerCount] = useState(profile?.followerCount || 0);
 
@@ -45,6 +43,38 @@ const ClubPublicView = ({ profile }) => {
 
       {/* Right — Top Sections */}
       <div className="flex flex-col gap-4 md:gap-md">
+        {/* Social Action Bar — unified card */}
+        <Card variant="container" padding="p-3 md:p-4">
+          <div className="flex flex-row items-center justify-between gap-4">
+            {/* Followers Stat */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-primary-blue/10 flex items-center justify-center shrink-0">
+                <Users size={16} className="text-primary-blue" />
+              </div>
+              <div className="flex flex-col items-start">
+                <span className="text-base md:text-lg text-text-primary font-bold leading-tight">
+                  {followerCount}
+                </span>
+                <span className="text-[10px] md:text-[11px] text-text-secondary uppercase tracking-wider font-medium">
+                  Followers
+                </span>
+              </div>
+            </div>
+
+            {/* Follow / Following Button */}
+            {isStudent && (
+              <Button
+                onClick={handleToggleFollow}
+                variant={isFollowing ? "outline" : "primary"}
+                className="rounded-xl text-[12px] md:text-[13px] font-bold whitespace-nowrap px-4 md:px-5 py-2 md:py-2.5 shrink-0"
+                icon={isFollowing ? UserCheck : UserPlus}
+              >
+                {isFollowing ? "Following" : "Follow Club"}
+              </Button>
+            )}
+          </div>
+        </Card>
+
         {/* About */}
         <AboutSection
           description={
@@ -52,34 +82,6 @@ const ClubPublicView = ({ profile }) => {
             "A community for book lovers and writers. Join us for monthly readings and discussions."
           }
         />
-
-        {/* Followers Stat Card & Follow Button */}
-        <div className="flex items-stretch gap-2.5 md:gap-4 max-w-[420px]">
-          <Card
-            variant="container"
-            padding="p-2 md:p-3"
-            className="flex-1 flex flex-col items-center justify-center text-center gap-0.5 md:gap-1 cursor-pointer hover:bg-white/5 transition-colors"
-            onClick={() => setFollowersModalType("followers")}
-          >
-            <span className="text-lg md:text-xl text-text-primary font-bold block leading-none">
-              {followerCount}
-            </span>
-            <span className="text-[9px] md:text-[10px] text-text-secondary uppercase tracking-widest font-semibold">
-              Followers
-            </span>
-          </Card>
-
-          {isStudent && (
-            <Button
-              onClick={handleToggleFollow}
-              variant={isFollowing ? "outline" : "primary"}
-              className="flex-1 rounded-xl text-[13px] md:text-[14px] font-bold h-auto self-stretch whitespace-nowrap px-3 md:px-5"
-              icon={isFollowing ? UserCheck : UserPlus}
-            >
-              {isFollowing ? "Following" : "Follow Club"}
-            </Button>
-          )}
-        </div>
       </div>
 
       {/* Bottom Row — Full Width Sections */}
@@ -87,15 +89,6 @@ const ClubPublicView = ({ profile }) => {
         {/* Recent Post Feed */}
         <RecentPostsSection posts={profile?.posts} />
       </div>
-
-      {/* Followers / Following List Modal */}
-      {followersModalType && (
-        <FollowersListModal
-          userId={profile?.id}
-          type={followersModalType}
-          onClose={() => setFollowersModalType(null)}
-        />
-      )}
     </div>
   );
 };

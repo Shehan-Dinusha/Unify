@@ -66,6 +66,14 @@ const Boarding = sequelize.define(
       type: DataTypes.DECIMAL(11, 8),
       allowNull: true,
     },
+    likesCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    commentsCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   },
   {
     tableName: "boardings",
