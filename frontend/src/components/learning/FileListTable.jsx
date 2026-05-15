@@ -194,21 +194,21 @@ const FileListTable = ({
 
               {/* Uploader Column */}
               <div className="w-40 flex items-center gap-2 pr-4">
-                {file.uploader.avatar ? (
+                {file.uploader?.avatar ? (
                   <img
                     src={file.uploader.avatar}
-                    alt={file.uploader.name}
+                    alt={file.uploader?.name || "Uploader"}
                     className="w-6 h-6 rounded-full border border-gray-700"
                   />
                 ) : (
                   <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center border border-gray-700">
                     <span className="text-white text-[10px] font-medium font-inter">
-                      {file.uploader.initials}
+                      {file.uploader?.initials || "?"}
                     </span>
                   </div>
                 )}
                 <span className="text-gray-300 text-xs font-normal font-inter leading-5 truncate">
-                  {file.uploader.name}
+                  {file.uploader?.name || "Unknown"}
                 </span>
               </div>
 
