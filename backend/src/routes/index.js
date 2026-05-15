@@ -23,6 +23,7 @@ import lostAndFoundRoutes from "./lostAndFound.routes.js";
 import newsfeedRoutes from "./newsfeed.routes.js";
 import chatRoutes from "./chat.routes.js";
 import notificationRoutes from "./notification.routes.js";
+import searchRoutes from "./search.routes.js";
 
 const router = express.Router();
 
@@ -51,5 +52,6 @@ router.use("/lost-and-found", lostAndFoundRoutes);
 router.use("/newsfeed", newsfeedRoutes);
 router.use("/chat", chatRoutes);
 router.use("/notifications", notificationRoutes);
+router.use("/search", searchRoutes);
 
 export default router;
