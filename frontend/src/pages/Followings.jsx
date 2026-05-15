@@ -15,8 +15,7 @@ import {
   getSingleFollowing,
   unfollowOrganization,
 } from "../services/followerService";
-import chatService from "../services/chatService";
-
+import * as chatService from "../services/chatService";
 import Avatar from "../components/common/Avatar";
 import NotFound from "./NotFound";
 
@@ -28,12 +27,19 @@ const FollowingCard = ({ following, onUnfollow }) => {
 
   const handleMessage = async () => {
     try {
+      console.log("Creating conversation with user:", following.id);
       const res = await chatService.createConversation(following.id);
+      console.log("Conversation result:", res);
       if (res.success) {
-        navigate("/messages", { state: { activeConversationId: res.data.id } });
+        navigate("/messages", { 
+          state: { 
+            activeConversationId: res.data.id,
+            newConversation: res.data
+          } 
+        });
       }
     } catch (e) {
-      // silently fail
+      console.error("Failed to start chat", e);
     }
   };
 
@@ -140,10 +146,7 @@ const Followings = () => {
       setHasMore(data.hasMore);
       setPage(1);
     } catch (err) {
-      if (
-        err.response &&
-        err.response.status === 403
-      ) {
+      if (err.response && err.response.status === 403) {
         setErrorStatus(err.response.status);
       } else {
         setError("Failed to load followings. Please try again later.");
@@ -248,17 +251,18 @@ const Followings = () => {
       const role = localStorage.getItem("role");
       if (raw) {
         const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-        return { name: parsed.name || "User", role: role || "student", displayRole: parsed.displayRole || role || "Student" };
+        return {
+          name: parsed.name || "User",
+          role: role || "student",
+          displayRole: parsed.displayRole || role || "Student",
+        };
       }
     } catch (e) {}
     return { name: "User", role: "student", displayRole: "Student" };
   })();
 
   return (
-    <MainLayout
-      user={sidebarUser}
-      pageTitle="Profile"
-    >
+    <MainLayout user={sidebarUser} pageTitle="Profile">
       <div className="flex flex-col h-full mx-auto w-full relative max-w-[1000px] px-4 md:px-0">
         {/* Background glow effect as per design */}
         <div className="w-64 h-64 md:w-96 md:h-96 absolute right-[-50px] md:right-[-200px] top-[200px] md:top-[400px] bg-purple-800/20 rounded-full blur-3xl pointer-events-none z-[-1]" />
