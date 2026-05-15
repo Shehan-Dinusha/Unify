@@ -1,9 +1,12 @@
 // src/components/marketplace/FoodCafeCard.jsx
 
 import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Send, ChevronLeft, ChevronRight, Zap } from "lucide-react";
+import { MapPin, Send, ChevronLeft, ChevronRight, Zap, Heart, MessageCircle, Bookmark } from "lucide-react";
 import Card from "../common/Card";
-import { getImageUrl } from "../../utils/formatters";
+import { getImageUrl, formatTimeAgo } from "../../utils/formatters";
+import newsfeedService from "../../services/newsfeedService";
+import { useSavedPosts } from "../../context/SavedPostsContext";
+import { getCurrentUser } from "../../services/authService";
 
 /* ─── Action Button ──────────────────────────────────────────── */
 const ActionBtn = ({ svgSrc, label, count, showCount, activeColor = "text-primary", onClick, active }) => (
@@ -74,7 +77,7 @@ const ImageCarousel = ({ images, title }) => {
 };
 
 /* ─── Comment Section ────────────────────────────────────────── */
-const CommentSection = ({ postComments, onAddComment }) => {
+const CommentSection = ({ postComments, onAddComment, loading, currentUser }) => {
     const [text, setText] = useState("");
     const inputRef = useRef(null);
 
@@ -86,47 +89,75 @@ const CommentSection = ({ postComments, onAddComment }) => {
         if (!trimmed) return;
         onAddComment(trimmed);
         setText("");
+        if (inputRef.current) {
+            inputRef.current.style.height = "inherit";
+        }
     };
 
     return (
-        <div className="mt-4 border-t border-white/10 pt-4 flex flex-col gap-4">
-            {postComments.length > 0 && (
+        <div className="mt-4 border-t border-white/10 pt-4 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+            {loading && (
+                <div className="text-center text-text-secondary text-sm py-2">
+                    Loading comments...
+                </div>
+            )}
+
+            {!loading && postComments.length > 0 && (
                 <div className="flex flex-col gap-3 max-h-56 overflow-y-auto pr-1 scrollbar-hide">
                     {postComments.map((c) => (
                         <div key={c.id} className="flex gap-3 items-start">
                             <img
-                                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.seed || c.user)}`}
-                                alt={c.user}
-                                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5"
+                                src={
+                                    c.avatar && !c.avatar.includes("placehold") && !c.avatar.includes("dicebear")
+                                        ? c.avatar
+                                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || c.user || "User")}&background=2666F1&color=fff`
+                                }
+                                alt={c.user?.name || c.user || "User"}
+                                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5 object-cover"
                             />
                             <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[13px] font-semibold text-text-primary">{c.user}</span>
-                                    <span className="text-[11px] text-text-tertiary">{c.time}</span>
+                                    <span className="text-[13px] font-semibold text-text-primary">{c.user?.name || c.user || "User"}</span>
+                                    <span className="text-[11px] text-text-tertiary">{c.time || "just now"}</span>
                                 </div>
-                                <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-wrap">{c.text}</p>
+                                <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-wrap break-words">{c.content || c.text}</p>
                             </div>
                         </div>
                     ))}
                 </div>
             )}
-            <form onSubmit={handleSubmit} className="flex items-center gap-2">
+
+            <form onSubmit={handleSubmit} className="flex items-end gap-2">
                 <img
-                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Me"
+                    src={
+                        currentUser?.avatar && !currentUser.avatar.includes("placehold") && !currentUser.avatar.includes("dicebear")
+                            ? currentUser.avatar
+                            : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || "Me")}&background=2666F1&color=fff`
+                    }
                     alt="You"
-                    className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0"
+                    className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1 object-cover"
                 />
-                <div className="flex-1 flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 gap-2 focus-within:border-primary/50 transition-colors">
-                    <input
+                <div className="flex-1 flex items-end bg-white/5 border border-white/10 rounded-2xl px-4 py-2 gap-2 focus-within:border-primary-blue/50 transition-colors">
+                    <textarea
                         ref={inputRef}
-                        type="text"
+                        rows={1}
                         value={text}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={(e) => {
+                            setText(e.target.value);
+                            e.target.style.height = "inherit";
+                            e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSubmit(e);
+                            }
+                        }}
                         placeholder="Write a comment…"
-                        className="flex-1 bg-transparent text-[13px] text-text-primary placeholder:text-text-tertiary outline-none"
+                        className="flex-1 bg-transparent text-[13px] text-text-primary placeholder:text-text-tertiary outline-none resize-none py-1 max-h-32 scrollbar-hide"
                     />
-                    <button type="submit" disabled={!text.trim()} className="text-primary-blue disabled:text-text-tertiary transition-colors">
-                        <Send size={16} strokeWidth={2} />
+                    <button type="submit" disabled={!text.trim()} className="text-primary-blue disabled:text-text-tertiary transition-colors p-1">
+                        <Send size={18} strokeWidth={2} />
                     </button>
                 </div>
             </form>
@@ -136,16 +167,24 @@ const CommentSection = ({ postComments, onAddComment }) => {
 
 /* ─── Main Card ──────────────────────────────────────────────── */
 const FoodCafeCard = ({ post, onClick }) => {
+    const { toggleSavePost } = useSavedPosts();
+    const currentUser = getCurrentUser();
+
     const [liked, setLiked] = useState(post.isLiked || false);
     const [likes, setLikes] = useState(post.likesCount || post.stats?.likes || 0);
     const [saved, setSaved] = useState(post.isSaved || false);
     const [reported, setReported] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);
+    
     const [postComments, setPostComments] = useState(post.comments || []);
+    const [commentCount, setCommentCount] = useState(post.commentsCount || post.stats?.comments || (post.comments ? post.comments.length : 0));
+    const [loadingComments, setLoadingComments] = useState(false);
 
     const isPromoted = post.isPromoted;
     const boostMeta = post.boostMeta;
     const highlightStyle = boostMeta?.highlightStyle || "none";
+    const postType = post?.postType || "normal";
+    const postId = post?.id;
 
     // Build card border classes and styles based on highlightStyle
     const boostStyles = (() => {
@@ -178,10 +217,92 @@ const FoodCafeCard = ({ post, onClick }) => {
         }
     })();
 
-    const handleAddComment = (text) => {
-        setPostComments(prev => [...prev, {
-            id: `new-${Date.now()}`, user: "You", seed: "Me", time: "just now", text,
-        }]);
+    const handleToggleLike = async () => {
+        const wasLiked = liked;
+        setLiked(!wasLiked);
+        setLikes(wasLiked ? likes - 1 : likes + 1);
+
+        try {
+            await newsfeedService.toggleLike(postType, postId);
+        } catch (err) {
+            console.error("Failed to toggle like:", err);
+            setLiked(wasLiked);
+            setLikes(wasLiked ? likes : likes - 1);
+        }
+    };
+
+    const handleToggleSave = async () => {
+        const wasSaved = saved;
+        setSaved(!wasSaved);
+        if (post) toggleSavePost(post);
+
+        try {
+            await newsfeedService.toggleSave(postType, postId);
+        } catch (err) {
+            console.error("Failed to toggle save:", err);
+            setSaved(wasSaved);
+            if (post) toggleSavePost(post);
+        }
+    };
+
+    const handleToggleComments = async () => {
+        const shouldShow = !commentOpen;
+        setCommentOpen(shouldShow);
+
+        if (shouldShow && postComments.length === 0) {
+            try {
+                setLoadingComments(true);
+                const data = await newsfeedService.getComments(postType, postId);
+                const fetchedComments = (data.comments || []).map((c) => ({
+                    id: c.id,
+                    user: c.user?.name || "User",
+                    avatar: c.user?.avatar,
+                    seed: c.user?.name || "User",
+                    time: c.createdAt ? formatTimeAgo(c.createdAt) : "just now",
+                    text: c.content,
+                }));
+                setPostComments(fetchedComments);
+                setCommentCount(fetchedComments.length);
+            } catch (err) {
+                console.error("Failed to fetch comments:", err);
+            } finally {
+                setLoadingComments(false);
+            }
+        }
+    };
+
+    const handleAddComment = async (text) => {
+        const tempComment = {
+            id: `new-${Date.now()}`,
+            user: currentUser?.name || "You",
+            avatar: currentUser?.avatar,
+            seed: currentUser?.name || "Me",
+            time: "just now",
+            text,
+        };
+        setPostComments((prev) => [...prev, tempComment]);
+        setCommentCount((c) => c + 1);
+
+        try {
+            const data = await newsfeedService.addComment(postType, postId, text);
+            if (data.comment) {
+                const realComment = {
+                    id: data.comment.id,
+                    user: data.comment.user?.name || currentUser?.name || "You",
+                    avatar: data.comment.user?.avatar || currentUser?.avatar,
+                    seed: data.comment.user?.name || currentUser?.name || "Me",
+                    time: "just now",
+                    text: data.comment.content,
+                };
+                setPostComments((prev) =>
+                    prev.map((c) => (c.id === tempComment.id ? realComment : c)),
+                );
+            }
+        } catch (err) {
+            console.error("Failed to add comment:", err);
+            setPostComments((prev) => prev.filter((c) => c.id !== tempComment.id));
+            setCommentCount((c) => c - 1);
+        }
     };
 
     return (
@@ -237,45 +358,77 @@ const FoodCafeCard = ({ post, onClick }) => {
                 </p>
 
                 {/* Action bar */}
-                <div className="pt-md border-t border-white/10 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
-                    <ActionBtn
-                        svgSrc="/icon_like_marketplace.svg"
-                        label="Like"
-                        count={likes}
-                        showCount
-                        activeColor="text-red-500"
-                        active={liked}
-                        onClick={() => { setLiked(p => !p); setLikes(n => liked ? n - 1 : n + 1); }}
-                    />
-                    <ActionBtn
-                        svgSrc="/icon_comment_marketplace.svg"
-                        label="Comments"
-                        count={postComments.length}
-                        showCount
-                        activeColor="text-blue-500"
-                        active={commentOpen}
-                        onClick={() => setCommentOpen(o => !o)}
-                    />
-                    <ActionBtn
-                        svgSrc="/icon_save_marketplace.svg"
-                        label="Save"
-                        activeColor="text-yellow-500"
-                        active={saved}
-                        onClick={() => setSaved(p => !p)}
-                    />
-                    <ActionBtn
-                        svgSrc="/icon_report_marketplace.svg"
-                        label="Report"
-                        activeColor="text-orange-500"
-                        active={reported}
+                <div className="grid grid-cols-4 text-[#94A3B8] text-xs sm:text-body-small pt-md border-t border-white/10" onClick={(e) => e.stopPropagation()}>
+                    {/* Like */}
+                    <button
+                        onClick={handleToggleLike}
+                        className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${liked ? "text-primary-blue" : ""}`}
+                    >
+                        <div className="flex items-center gap-1.5">
+                            <Heart
+                                size={20}
+                                className={liked ? "fill-current" : ""}
+                                strokeWidth={liked ? 0 : 1.8}
+                            />
+                            <span>{likes}</span>
+                        </div>
+                        <span className="text-[11px]">Like</span>
+                    </button>
+
+                    {/* Comment */}
+                    <button
+                        onClick={handleToggleComments}
+                        className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${commentOpen ? "text-primary-blue" : ""}`}
+                    >
+                        <div className="flex items-center gap-1.5">
+                            <MessageCircle size={20} strokeWidth={1.8} />
+                            <span>{commentCount}</span>
+                        </div>
+                        <span className="text-[11px]">Comment</span>
+                    </button>
+
+                    {/* Save */}
+                    <button
+                        onClick={handleToggleSave}
+                        className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${saved ? "text-primary-blue" : ""}`}
+                    >
+                        <div className="flex items-center gap-1.5">
+                            <Bookmark
+                                size={20}
+                                className={saved ? "fill-current" : ""}
+                                strokeWidth={saved ? 0 : 1.8}
+                            />
+                        </div>
+                        <span className="text-[11px]">
+                            {saved ? "Saved" : "Save"}
+                        </span>
+                    </button>
+
+                    {/* Report */}
+                    <button
                         onClick={() => setReported(p => !p)}
-                    />
+                        className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error ${reported ? "text-state-error" : ""}`}
+                    >
+                        <div className="flex items-center gap-1.5">
+                            <img
+                                src="/icon_report_marketplace.svg"
+                                alt="Report"
+                                className={`w-5 h-5 transition-opacity ${reported ? "opacity-100" : "opacity-70 group-hover:opacity-100"}`}
+                            />
+                        </div>
+                        <span className="text-[11px]">Report</span>
+                    </button>
                 </div>
 
                 {/* Comment section */}
                 {commentOpen && (
                     <div onClick={(e) => e.stopPropagation()}>
-                        <CommentSection postComments={postComments} onAddComment={handleAddComment} />
+                        <CommentSection 
+                            postComments={postComments} 
+                            onAddComment={handleAddComment} 
+                            loading={loadingComments}
+                            currentUser={currentUser}
+                        />
                     </div>
                 )}
             </div>
