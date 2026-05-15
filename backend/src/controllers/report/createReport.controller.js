@@ -12,13 +12,14 @@ const generateReportId = () => {
   return `#RPT-${date}-${random}`;
 };
 
-/**
- * Handle student submission of a new report.
- * Refactored to use the Modern S3 Pattern (Memory-based).
- */
+//Handle student submission of a new report.
 export const createReport = async (req, res, next) => {
   try {
-    const studentId = req.user?.id || 4; // Default to seeded student ID for testing
+    const studentId = req.user?.id;
+
+    if (!studentId) {
+      return sendResponse(res, 401, false, 'Student authentication required');
+    }
     
     const { 
       reportType, 

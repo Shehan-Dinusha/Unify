@@ -11,18 +11,12 @@ import {
   reactivateUserSchema 
 } from "../validators/suspension.validator.js";
 
-// Dummy middlewares - these should be replaced with actual ones if they exist elsewhere
-const authenticateToken = (req, res, next) => {
-  // Mock admin context for now
-  req.admin = { id: 1, role: 'admin' };
-  next();
-};
-
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.use(authenticateToken);
+router.use(protect, authorize('Admin'));
 
 router.get("/stats/dashboard", getDashboardStatistics);
 router.get("/", getAllSuspendedUsers);

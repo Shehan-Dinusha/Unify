@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
+//Records a business user's request to withdraw earnings from their wallet.
 const WithdrawalRequest = sequelize.define(
   "WithdrawalRequest",
   {

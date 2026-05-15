@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
+//Core complaint text submitted by the student
 const Report = sequelize.define(
   "Report",
   {

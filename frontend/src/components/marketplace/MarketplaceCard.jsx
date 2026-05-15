@@ -4,6 +4,7 @@ import React from "react";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import { MapPin, Tag } from "lucide-react";
+import { getAvatarUrl } from "../../utils/formatters";
 
 const badgeStyles = {
     Hot: "bg-state-warning/15 text-state-warning border-state-warning/30",
@@ -64,8 +65,9 @@ const MarketplaceCard = ({ item }) => {
                     <div className="flex items-center gap-sm min-w-0">
                         <img
                             className="w-9 h-9 rounded-full object-cover border border-white/20"
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(item.seller.seed)}`}
+                            src={getAvatarUrl(item.seller?.avatar, item.seller?.name)}
                             alt="Seller avatar"
+                            onError={(e) => { e.target.onerror = null; e.target.src = getAvatarUrl(null, item.seller?.name); }}
                         />
                         <div className="min-w-0">
                             <p className="text-body-small-bold text-text-primary truncate">{item.seller.name}</p>

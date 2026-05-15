@@ -379,7 +379,7 @@ const SuspendedUsers = () => {
                         {/* Actions */}
                         <div className="flex items-center justify-end">
                             <button
-                                onClick={() => navigate(`/suspended-users/${user.userId || user.id}`)}
+                                onClick={() => {console.log("Navigating to user id",user.userId); navigate(`/suspended-users/${user.userId || user.id}`)}}
                                 className="px-md py-xs rounded-lg bg-primary-blue/15 text-primary-blue border border-primary-blue/30 text-body-extra-small font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue hover:shadow-lg hover:shadow-primary-blue/25 transition-all duration-200"
                             >
                                 View Profile

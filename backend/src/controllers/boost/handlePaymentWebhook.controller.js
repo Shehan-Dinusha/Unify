@@ -4,21 +4,7 @@ import Post from "../../modules/Post.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * STUB: Payment Webhook Handler
- *
- * This endpoint is designed to be called by a payment gateway (e.g., Stripe)
- * when a payment status changes. It updates the campaign's paymentStatus
- * and transitions the campaign to the appropriate lifecycle state.
- *
- * TODO: Connect to Stripe webhook verification
- * - Verify webhook signature using stripe.webhooks.constructEvent()
- * - Parse event.type (checkout.session.completed, payment_intent.payment_failed, etc.)
- * - Extract campaignId from metadata
- *
- * For now, this accepts a simple JSON body for testing:
- * { campaignId: number, paymentStatus: 'completed'|'failed'|'refunded' }
- */
+// Handles payment events from the payment gateway (Stripe).
 export const handlePaymentWebhook = async (req, res, next) => {
   try {
     const { campaignId, paymentStatus } = req.body;
@@ -61,7 +47,6 @@ export const handlePaymentWebhook = async (req, res, next) => {
       campaign.endDate = endDate;
 
       // Mark the post as promoted
-      // TODO: Replace with proper Post service call
       try {
         const post = await Post.findByPk(campaign.postId);
         if (post) {

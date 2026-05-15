@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MapPin, Send, ChevronLeft, ChevronRight, Zap, Heart, MessageCircle, Bookmark } from "lucide-react";
 import Card from "../common/Card";
-import { getImageUrl, formatTimeAgo } from "../../utils/formatters";
+import { getImageUrl, formatTimeAgo, getAvatarUrl } from "../../utils/formatters";
 import newsfeedService from "../../services/newsfeedService";
 import { useSavedPosts } from "../../context/SavedPostsContext";
 import { getCurrentUser } from "../../services/authService";
@@ -33,7 +33,7 @@ const ActionBtn = ({ svgSrc, label, count, showCount, activeColor = "text-primar
 const ImageCarousel = ({ images, title }) => {
     const [idx, setIdx] = useState(0);
     const imgList = Array.isArray(images) ? images : [images].filter(Boolean);
-    
+
     if (imgList.length === 0) return (
         <div className="w-full h-[320px] bg-white/5 flex items-center justify-center">
             <p className="text-text-tertiary">No image available</p>
@@ -175,7 +175,7 @@ const FoodCafeCard = ({ post, onClick }) => {
     const [saved, setSaved] = useState(post.isSaved || false);
     const [reported, setReported] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);
-    
+
     const [postComments, setPostComments] = useState(post.comments || []);
     const [commentCount, setCommentCount] = useState(post.commentsCount || post.stats?.comments || (post.comments ? post.comments.length : 0));
     const [loadingComments, setLoadingComments] = useState(false);
@@ -188,9 +188,9 @@ const FoodCafeCard = ({ post, onClick }) => {
 
     // Build card border classes and styles based on highlightStyle
     const boostStyles = (() => {
-        if (!isPromoted || !boostMeta) return { 
-            borderClass: "border border-white/5", 
-            glowStyle: {} 
+        if (!isPromoted || !boostMeta) return {
+            borderClass: "border border-white/5",
+            glowStyle: {}
         };
 
         switch (highlightStyle) {
@@ -210,9 +210,9 @@ const FoodCafeCard = ({ post, onClick }) => {
                     glowStyle: { boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)" }
                 };
             default:
-                return { 
-                    borderClass: "border border-white/5", 
-                    glowStyle: {} 
+                return {
+                    borderClass: "border border-white/5",
+                    glowStyle: {}
                 };
         }
     })();
@@ -305,6 +305,10 @@ const FoodCafeCard = ({ post, onClick }) => {
         }
     };
 
+    const [isExpanded, setIsExpanded] = useState(false);
+    const DESCRIPTION_LIMIT = 180;
+    const isLongDescription = post.description && post.description.length > DESCRIPTION_LIMIT;
+
     return (
         <Card variant="card" padding="p-0" className={`overflow-hidden transition-all duration-300 !border-0 ${boostStyles.borderClass}`} style={boostStyles.glowStyle} onClick={onClick}>
             {/* Image carousel */}
@@ -316,9 +320,10 @@ const FoodCafeCard = ({ post, onClick }) => {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <img
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.author?.name || post.userSeed || "user")}`}
+                            src={getAvatarUrl(post.author?.avatar, post.author?.name || post.user)}
                             alt={post.author?.name || post.user}
                             className="w-10 h-10 rounded-full border border-white/20"
+                            onError={(e) => { e.target.onerror = null; e.target.src = getAvatarUrl(null, post.author?.name || post.user); }}
                         />
                         <div>
                             <p className="text-body-medium-bold text-text-primary group-hover:text-primary-blue transition-colors font-bold">
@@ -332,100 +337,73 @@ const FoodCafeCard = ({ post, onClick }) => {
 
                     {/* Boost Badge */}
                     {isPromoted && (
-                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            highlightStyle === 'gold' ? 'bg-[#FBBF24] text-black' : 
-                            highlightStyle === 'blue' ? 'bg-primary-blue text-white' : 
-                            'bg-white/10 text-white'
-                        }`}>
+                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${highlightStyle === 'gold' ? 'bg-[#FBBF24] text-black' :
+                                highlightStyle === 'blue' ? 'bg-primary-blue text-white' :
+                                    'bg-white/10 text-white'
+                            }`}>
                             <Zap size={10} fill="currentColor" />
                             Promoted
                         </div>
                     )}
                 </div>
 
-                {/* Title 
-                <h3 className="text-heading-small text-text-primary mb-1 group-hover:text-primary-blue transition-colors font-bold">{post.title}</h3>
-                */}
-                {/* Location 
-                <div className="flex items-center gap-1 mb-2">
-                    <MapPin size={14} className="text-text-tertiary flex-shrink-0" />
-                    <span className="text-[14px] text-text-tertiary line-clamp-1">{post.location}</span>
-                </div>*/}
-
                 {/* Description */}
-                <p className="text-body-medium text-text-secondary leading-6 mb-4 line-clamp-2 whitespace-pre-wrap">
-                    {post.description}
-                </p>
+                <div className="text-body-medium text-text-secondary leading-6 mb-4">
+                    <p className="whitespace-pre-wrap">
+                        {isLongDescription && !isExpanded
+                            ? `${post.description.slice(0, DESCRIPTION_LIMIT).trimEnd()}...`
+                            : post.description}
+                    </p>
+                    {isLongDescription && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsExpanded(!isExpanded);
+                            }}
+                            className="text-primary-blue hover:text-primary-blue/80 text-sm font-semibold mt-1 transition-colors"
+                        >
+                            {isExpanded ? "See less" : "See more"}
+                        </button>
+                    )}
+                </div>
 
                 {/* Action bar */}
-                <div className="grid grid-cols-4 text-[#94A3B8] text-xs sm:text-body-small pt-md border-t border-white/10" onClick={(e) => e.stopPropagation()}>
-                    {/* Like */}
-                    <button
-                        onClick={handleToggleLike}
-                        className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${liked ? "text-primary-blue" : ""}`}
-                    >
-                        <div className="flex items-center gap-1.5">
-                            <Heart
-                                size={20}
-                                className={liked ? "fill-current" : ""}
-                                strokeWidth={liked ? 0 : 1.8}
-                            />
-                            <span>{likes}</span>
-                        </div>
-                        <span className="text-[11px]">Like</span>
-                    </button>
-
-                    {/* Comment */}
-                    <button
-                        onClick={handleToggleComments}
-                        className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${commentOpen ? "text-primary-blue" : ""}`}
-                    >
-                        <div className="flex items-center gap-1.5">
-                            <MessageCircle size={20} strokeWidth={1.8} />
-                            <span>{commentCount}</span>
-                        </div>
-                        <span className="text-[11px]">Comment</span>
-                    </button>
-
-                    {/* Save */}
-                    <button
-                        onClick={handleToggleSave}
-                        className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors ${saved ? "text-primary-blue" : ""}`}
-                    >
-                        <div className="flex items-center gap-1.5">
-                            <Bookmark
-                                size={20}
-                                className={saved ? "fill-current" : ""}
-                                strokeWidth={saved ? 0 : 1.8}
-                            />
-                        </div>
-                        <span className="text-[11px]">
-                            {saved ? "Saved" : "Save"}
-                        </span>
-                    </button>
-
-                    {/* Report */}
-                    <button
-                        onClick={() => setReported(p => !p)}
-                        className={`flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error ${reported ? "text-state-error" : ""}`}
-                    >
-                        <div className="flex items-center gap-1.5">
-                            <img
-                                src="/icon_report_marketplace.svg"
-                                alt="Report"
-                                className={`w-5 h-5 transition-opacity ${reported ? "opacity-100" : "opacity-70 group-hover:opacity-100"}`}
-                            />
-                        </div>
-                        <span className="text-[11px]">Report</span>
-                    </button>
+                <div className="pt-md border-t border-white/10 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
+                    <ActionBtn
+                        svgSrc="/icon_like_marketplace.svg"
+                        label="Like"
+                        count={likes}
+                        showCount
+                        activeColor="text-red-500"
+                        active={liked}
+                        onClick={() => { setLiked(p => !p); setLikes(n => liked ? n - 1 : n + 1); }}
+                    />
+                    <ActionBtn
+                        svgSrc="/icon_comment_marketplace.svg"
+                        label="Comments"
+                        count={postComments.length}
+                        showCount
+                        activeColor="text-blue-500"
+                        active={commentOpen}
+                        onClick={() => setCommentOpen(o => !o)}
+                    />
+                    {currentUser?.role === 'STUDENT' && (
+                        <ActionBtn
+                            svgSrc="/icon_save_marketplace.svg"
+                            label="Save"
+                            activeColor="text-yellow-500"
+                            active={saved}
+                            onClick={() => setSaved(p => !p)}
+                        />
+                    )}
                 </div>
 
                 {/* Comment section */}
                 {commentOpen && (
                     <div onClick={(e) => e.stopPropagation()}>
-                        <CommentSection 
-                            postComments={postComments} 
-                            onAddComment={handleAddComment} 
+                        <CommentSection
+                            postComments={postComments}
+                            onAddComment={handleAddComment}
                             loading={loadingComments}
                             currentUser={currentUser}
                         />

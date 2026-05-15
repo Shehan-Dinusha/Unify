@@ -7,19 +7,7 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
-/**
- * Confirm a Boost payment after Stripe Checkout redirect.
- *
- * Called by the frontend BoostPostSuccess page with { sessionId }.
- * 1. Retrieves the Stripe session to verify payment_status === 'paid'.
- * 2. Reads metadata (packageId, postId, userId) from the session.
- * 3. Calls boostService.purchaseBoost() to create the BoostPurchase record
- *    and mark the post as promoted.
- * 4. Returns the purchase data to the frontend for display.
- *
- * This prevents double-purchases because boostService checks for existing active
- * boosts on the same post, and the Stripe session can only be confirmed once.
- */
+//confirm boost payment after stripe checkout redirect
 export const confirmBoostPayment = async (req, res) => {
   if (!stripe) {
     return sendResponse(
@@ -76,7 +64,12 @@ export const confirmBoostPayment = async (req, res) => {
     const packageId = metadata.packageId;
     const postId = metadata.postId ? parseInt(metadata.postId, 10) : null;
     const postType = metadata.postType || null;
-    const userId = metadata.userId ? parseInt(metadata.userId, 10) : (req.user?.id || 1);
+    const userId = metadata.userId ? parseInt(metadata.userId, 10) : req.user?.id;
+
+    if (!userId) {
+      return sendResponse(res, 401, false, "Authentication required.");
+    }
+
     const amount = metadata.amount ? parseFloat(metadata.amount) : 0;
 
     if (!packageId) {

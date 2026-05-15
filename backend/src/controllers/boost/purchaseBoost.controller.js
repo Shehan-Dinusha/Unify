@@ -2,14 +2,15 @@ import boostService from "../../services/boost.service.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Handle user purchase of a boost package.
- * Creates BoostPurchase record, calculates expiry, returns transaction details.
- * 100% Compatible with Frontend BoostConfirmOrder → BoostPostSuccess flow.
- */
+//Handle user purchase of a boost package.
 export const purchaseBoost = async (req, res, next) => {
   try {
-    const userId = req.user?.id || 1; // TODO: remove fallback after auth is enforced
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return sendResponse(res, 401, false, "Authentication required.");
+    }
+    
     const { packageId, postId, postType } = req.body;
 
     if (!packageId) {

@@ -2,15 +2,12 @@ import StudentReport from "../../modules/StudentReport.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Handle student withdrawing their own report.
- * Performs manual validation matching the Verification module pattern.
- */
+//Handle student withdrawing their own report.
 export const withdrawReport = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { withdrawalReason } = req.body;
-    const studentId = req.user?.id || 4; // Default to seeded student ID for testing
+    const studentId = req.user?.id;
 
     if (!studentId) {
       return sendResponse(res, 401, false, 'Student authentication required');

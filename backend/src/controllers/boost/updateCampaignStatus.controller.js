@@ -3,10 +3,6 @@ import BoostCampaign from "../../modules/BoostCampaign.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Valid status transitions for campaigns.
- * Key = current status, Value = array of allowed next statuses.
- */
 const VALID_TRANSITIONS = {
   'Pending': ['Active', 'Cancelled'],
   'Active': ['Paused', 'Completed', 'Cancelled'],
@@ -15,17 +11,16 @@ const VALID_TRANSITIONS = {
   'Cancelled': [],       // Terminal state
 };
 
-/**
- * Handle status updates for a campaign.
- * Admin can transition any valid status.
- * Business user can cancel their own campaign.
- * Performs manual validation matching the Report module pattern.
- */
+//Updates the status of a boost campaign.
 export const updateCampaignStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const userId = req.user?.id || 1;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return sendResponse(res, 401, false, "Authentication required.");
+    }
 
     // 1. Validate status value
     const validStatuses = ['Pending', 'Active', 'Paused', 'Completed', 'Cancelled'];
@@ -49,7 +44,6 @@ export const updateCampaignStatus = async (req, res, next) => {
     }
 
     // 3. Check ownership (business user can only cancel their own)
-    // TODO: Add admin bypass when RBAC middleware is available
     if (campaign.userId !== userId && status !== 'Cancelled') {
       return sendResponse(res, 403, false, 'You do not have permission to update this campaign.');
     }

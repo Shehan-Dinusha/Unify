@@ -23,8 +23,12 @@ import {
 const BoostSelectPackage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { packages, loading, error } = useBoostPackages();
+  const { packages, loading, error, fetchPackages } = useBoostPackages();
   const [selectedPkgId, setSelectedPkgId] = useState(null);
+
+  React.useEffect(() => {
+    fetchPackages();
+  }, [fetchPackages]);
 
   // Get the postId/postType passed from the Boost button on PostCard
   const { postId, postType } = location.state || {};

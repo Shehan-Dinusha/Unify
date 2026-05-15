@@ -1,12 +1,4 @@
-/**
- * Admin Dashboard Service
- *
- * API calls to the backend for the Admin Dashboard and Revenue Overview pages.
- * Follows the same pattern as suspensionService.js — direct axios calls, no mock fallback.
- *
- * Endpoints hit: /api/v1/admin/dashboard/* and /api/v1/admin/revenue-overview/*
- */
-
+//Admin Dashboard Service
 import api from './api';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -31,9 +23,7 @@ const extractErrorMessage = (error) => {
 
 // ─── Dashboard Endpoints ────────────────────────────────────────────────────
 
-/**
- * Get dashboard top stats (total students, boost revenue, active businesses).
- */
+//Get dashboard top stats (total students, boost revenue, active businesses).
 export const getDashboardStats = async () => {
   try {
     const response = await api.get('/admin/dashboard/stats');
@@ -56,9 +46,7 @@ export const getPlatformGrowth = async (range = 'month') => {
   }
 };
 
-/**
- * Get content moderation stats (resolved, reviewing, pending).
- */
+//Get content moderation stats (resolved, reviewing, pending).
 export const getContentModeration = async () => {
   try {
     const response = await api.get('/admin/dashboard/content-moderation');
@@ -68,9 +56,7 @@ export const getContentModeration = async () => {
   }
 };
 
-/**
- * Get business engagement data by category.
- */
+//Get business engagement data by category.
 export const getBusinessEngagement = async () => {
   try {
     const response = await api.get('/admin/dashboard/business-engagement');
@@ -82,9 +68,7 @@ export const getBusinessEngagement = async () => {
 
 // ─── Revenue Overview Endpoints ─────────────────────────────────────────────
 
-/**
- * Get revenue overview stats (total revenue, biz boosts, avg spend, projected).
- */
+//Get revenue overview stats (total revenue, biz boosts, avg spend, projected).
 export const getRevenueOverview = async () => {
   try {
     const response = await api.get('/admin/revenue-overview');
@@ -109,9 +93,7 @@ export const getRevenueTrajectory = async (year) => {
   }
 };
 
-/**
- * Get revenue breakdown by category for the donut chart.
- */
+//Get revenue breakdown by category for the donut chart.
 export const getRevenueBreakdown = async () => {
   try {
     const response = await api.get('/admin/revenue-overview/breakdown');
