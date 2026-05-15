@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import chatService from "../services/chatService";
-import { isAuthenticated } from "../services/authService";
+import { isAuthenticated, getCurrentUser } from "../services/authService";
 import { io } from "socket.io-client";
 
 const ChatContext = createContext({ unreadMessageCount: 0, refreshUnreadCount: () => {}, socket: null });
@@ -16,13 +16,19 @@ export const ChatProvider = ({ children }) => {
 
   const refreshUnreadCount = useCallback(async () => {
     if (!isAuthenticated()) return;
+
+    // Only fetch for roles that can use chat — prevents 403 for Admin/Business
+    const user = getCurrentUser();
+    const role = user?.role?.toLowerCase();
+    if (role !== "student" && role !== "club") return;
+
     try {
       const data = await chatService.getUnreadCount();
       if (data.success) {
         setUnreadMessageCount(data.data.unreadCount ?? 0);
       }
-    } catch (err) {
-      console.error("Failed to fetch unread chat count:", err);
+    } catch {
+      // Silently ignore — unread count stays at 0
     }
   }, []);
 
@@ -36,6 +42,11 @@ export const ChatProvider = ({ children }) => {
       }
       return;
     }
+
+    // Only connect socket for roles that use chat
+    const user = getCurrentUser();
+    const role = user?.role?.toLowerCase();
+    if (role !== "student" && role !== "club") return;
 
     if (socketRef.current) return;
 
@@ -51,7 +62,6 @@ export const ChatProvider = ({ children }) => {
     });
 
     newSocket.on("connect", () => {
-      console.log("⚡ Global Chat Socket Connected");
       refreshUnreadCount();
     });
 

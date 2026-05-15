@@ -29,6 +29,8 @@ export const login = async (req, res) => {
 
     if (!user) return sendResponse(res, 401, false, "Invalid credentials");
     if (!user.isVerified) return sendResponse(res, 403, false, "Please verify your account first");
+    if (user.status === "Deleted") return sendResponse(res, 401, false, "This account has been deleted");
+    if (user.status === "Suspended") return sendResponse(res, 403, false, "Account is suspended");
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) return sendResponse(res, 401, false, "Invalid credentials");
