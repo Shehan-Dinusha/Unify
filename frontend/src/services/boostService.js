@@ -1,19 +1,9 @@
-/**
- * Boost API Service
- *
- * API calls to the backend for the Boost feature.
- * Follows the same pattern as suspensionService.js — direct axios calls, no mock fallback.
- *
- * Endpoints hit: /api/v1/boosts/*
- */
-
+//Boost API Service
 import api from './api';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-/**
- * Extract a user-friendly error message from an axios error.
- */
+//Extract a user-friendly error message from an axios error.
 const extractErrorMessage = (error) => {
   if (error.response) {
     const { status, data } = error.response;

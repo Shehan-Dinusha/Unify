@@ -1,11 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
-/**
- * BoostLog Model
- * Tracks configuration changes made by admins to boost packages.
- * 100% Compatible with Frontend BoostController "Recent Configuration Changes" list.
- */
+//Tracks configuration changes made by admins to boost packages.
 const BoostLog = sequelize.define(
   "BoostLog",
   {

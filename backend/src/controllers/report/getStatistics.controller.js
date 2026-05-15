@@ -4,14 +4,9 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { Op } from "sequelize";
 
-/**
- * Handle admin retrieval of summary statistics for reports.
- * Provides breakdown by status, category (reason), and report type.
- */
+//Handle admin retrieval of summary statistics for reports.
 export const getStatistics = async (req, res, next) => {
   try {
-    // TODO: Add admin authorization check once RBAC middleware is available
-    
     const total = await StudentReport.count();
     const pending = await StudentReport.count({ where: { status: 'Pending Review' } });
     const inProgress = await StudentReport.count({ where: { status: 'In Progress' } });

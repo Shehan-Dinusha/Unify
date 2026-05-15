@@ -1,11 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
-/**
- * BoostInteraction Model
- * Tracks individual user interactions on boosted campaigns.
- * 100% Compatible with Frontend BoostAnalytics Top Interactions table.
- */
+//Tracks individual user interactions on boosted campaigns.
 const BoostInteraction = sequelize.define(
   "BoostInteraction",
   {

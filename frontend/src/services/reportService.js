@@ -1,19 +1,9 @@
-/**
- * Report Moderation Service
- *
- * Direct API calls to the backend for Social Report Moderation.
- * Mirrors the pattern used in studentService.js — no mock data, no fallback.
- *
- * Endpoints hit: /api/v1/reports/social/*
- */
-
+//Report Moderation Service
 import api from './api';
 
 // ─── Service Functions ──────────────────────────────────────────────────────
 
-/**
- * Get social report moderation dashboard stats (Total Pending, Critical Flags, Resolved Today)
- */
+//Get social report moderation dashboard stats (Total Pending, Critical Flags, Resolved Today)
 export const getReportStats = async () => {
   const response = await api.get('/reports/social/stats');
   return response.data;
@@ -113,12 +103,7 @@ export const addReportNote = async (id, notes) => {
   return response.data;
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
-// STUDENT REPORT SYSTEM — Used by StudentSubmittedReports, StudentReportDetail,
-// StudentReportIssue, StudentReportWithdrawal pages.
-// Endpoints hit: /api/v1/reports/* (non-social)
-// ═══════════════════════════════════════════════════════════════════════════
-
+// STUDENT REPORT SYSTEM — Used by StudentSubmittedReports, StudentReportDetail,StudentReportIssue, StudentReportWithdrawal pages.
 /**
  * Get all reports submitted by the logged-in student
  * @param {{ status?: string, category?: string, search?: string }} filters

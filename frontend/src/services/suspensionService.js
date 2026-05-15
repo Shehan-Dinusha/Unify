@@ -1,19 +1,10 @@
-/**
- * User Suspension Service
- *
- * API calls to the backend for the Suspended Users admin feature.
- * Follows the same pattern as reportService.js — direct axios calls, no mock fallback.
- *
- * Endpoints hit: /api/v1/admin/suspended-users/*
- */
+//User Suspension Service
 
 import api from './api';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-/**
- * Extract a user-friendly error message from an axios error.
- */
+//Extract a user-friendly error message from an axios error.
 const extractErrorMessage = (error) => {
   if (error.response) {
     const { status, data } = error.response;
@@ -39,10 +30,7 @@ const extractErrorMessage = (error) => {
 
 // ─── Service Functions ──────────────────────────────────────────────────────
 
-/**
- * Get dashboard statistics for the suspended users overview.
- * Returns: { suspendedAccounts, pendingAppeals, reactivatedThisMonth }
- */
+//Get dashboard statistics for the suspended users overview.
 export const getDashboardStatistics = async () => {
   try {
     const response = await api.get('/admin/suspended-users/stats/dashboard');

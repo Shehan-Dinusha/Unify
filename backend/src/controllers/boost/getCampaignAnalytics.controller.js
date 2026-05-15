@@ -5,10 +5,7 @@ import BoostInteraction from "../../modules/BoostInteraction.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Retrieves detailed analytics for a specific campaign.
- * 100% Compatible with Frontend BoostAnalytics page stats + chart data.
- */
+// Retrieves detailed analytics for a specific campaign.
 export const getCampaignAnalytics = async (req, res, next) => {
   try {
     const { id } = req.params;

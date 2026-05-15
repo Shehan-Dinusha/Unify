@@ -4,14 +4,15 @@ import BoostPackage from "../../modules/BoostPackage.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Retrieves a single campaign detail by ID.
- * Includes the associated package info.
- */
+//Retrieves a single campaign detail by ID.
 export const getCampaignById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id || 1;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return sendResponse(res, 401, false, "Authentication required.");
+    }
 
     const isNumeric = !isNaN(id) && !isNaN(parseFloat(id));
     const campaign = await BoostCampaign.findOne({
@@ -35,7 +36,6 @@ export const getCampaignById = async (req, res, next) => {
     }
 
     // Business users can only view their own campaigns
-    // TODO: Add admin bypass when RBAC middleware is available
     if (campaign.userId !== userId) {
       return sendResponse(res, 404, false, 'Campaign not found or unauthorized');
     }

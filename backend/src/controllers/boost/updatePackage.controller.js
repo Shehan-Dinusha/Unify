@@ -2,13 +2,15 @@ import boostService from "../../services/boost.service.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Handle admin update of an existing boost package.
- * 100% Compatible with Frontend BoostPackageForm (edit mode).
- */
+//Handle admin update of an existing boost package.
 export const updatePackage = async (req, res, next) => {
   try {
-    const adminId = req.user?.id || null;
+    const adminId = req.user?.id;
+
+    if (!adminId) {
+      return sendResponse(res, 401, false, "Admin authentication required.");
+    }
+
     const result = await boostService.updatePackage(req.params.id, req.body, adminId);
 
     if (result.noChange) {

@@ -17,9 +17,7 @@ import { Op } from "sequelize";
 import s3Service from "../../services/s3.service.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
-/**
- * Builds an activity log from the adminNotes field.
- */
+//Builds an activity log from the adminNotes field.
 const buildActivityLog = (report) => {
   const log = [
     {
@@ -99,9 +97,7 @@ const uiStatusMap = {
   Withdrawn: "Withdrawn",
 };
 
-/**
- * GET /api/v1/reports/social/queue
- */
+//Retrieves social reports for the admin moderation queue.
 export const getSocialReportQueue = async (req, res, next) => {
   try {
     const { status, type } = req.query;
@@ -183,9 +179,7 @@ export const getSocialReportQueue = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/v1/reports/social/:id
- */
+//Retrieves a single social report by ID for admin review.
 export const getSocialReportById = async (req, res, next) => {
   try {
     const { id } = req.params;

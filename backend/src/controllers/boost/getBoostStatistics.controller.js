@@ -5,14 +5,9 @@ import BoostPackage from "../../modules/BoostPackage.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Handle admin retrieval of boost system statistics.
- * 100% Compatible with Frontend BoostController stats row.
- */
+//Handle admin retrieval of boost system statistics.
 export const getBoostStatistics = async (req, res, next) => {
   try {
-    // TODO: Add admin authorization check once RBAC middleware is available
-
     // 1. Date Ranges for Trends
     const now = new Date();
     const thirtyDaysAgo = new Date();

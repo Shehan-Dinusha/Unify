@@ -4,10 +4,7 @@ import BoostCampaign from "../../modules/BoostCampaign.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Retrieves interactions for a specific campaign with search and pagination.
- * 100% Compatible with Frontend BoostAnalytics Top Interactions table.
- */
+// Retrieves interactions for a specific campaign with search and pagination.
 export const getInteractions = async (req, res, next) => {
   try {
     const { id } = req.params; // campaign id

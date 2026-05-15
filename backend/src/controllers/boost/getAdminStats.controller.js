@@ -1,10 +1,7 @@
 import boostService from "../../services/boost.service.js";
 import { sendResponse } from "../../utils/response.js";
 
-/**
- * GET /api/v1/boosts/admin/stats
- * Returns DB-driven stats for the admin boost dashboard tiles.
- */
+//Returns DB-driven stats for the admin boost dashboard tiles.
 export const getAdminStats = async (req, res, next) => {
   try {
     const stats = await boostService.getAdminStats();

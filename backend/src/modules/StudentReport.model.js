@@ -1,11 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/database.js";
 
-/**
- * StudentReport Model
- * Refactored to 100% parity with the Frontend UI scenarios.
- * Fixed: Moved unique constraint to indexes to avoid Sequelize ALTER TABLE syntax errors.
- */
 const StudentReport = sequelize.define(
   "StudentReport",
   {

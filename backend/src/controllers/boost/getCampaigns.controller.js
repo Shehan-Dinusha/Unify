@@ -3,13 +3,14 @@ import BoostCampaign from "../../modules/BoostCampaign.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Retrieves campaigns for the logged-in business user with filters and pagination.
- * 100% Compatible with business user dashboard campaign listing.
- */
+//Retrieves campaigns for the logged-in business user with filters and pagination.
 export const getCampaigns = async (req, res, next) => {
   try {
-    const userId = req.user?.id || 1;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return sendResponse(res, 401, false, "Authentication required.");
+    }
 
     const { status, search, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;

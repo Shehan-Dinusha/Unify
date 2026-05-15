@@ -2,9 +2,7 @@ import boostService from "../../services/boost.service.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Retrieves a single boost package by ID.
- */
+//Retrieves a single boost package by ID.
 export const getPackageById = async (req, res, next) => {
   try {
     const pkg = await boostService.getPackageById(req.params.id);

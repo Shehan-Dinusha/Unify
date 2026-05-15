@@ -17,10 +17,7 @@ import logger from '../../utils/logger.js';
 import moment from 'moment';
 import { resolveAvatarUrl } from '../../utils/avatarUrl.util.js';
 
-/**
- * GET /api/v1/admin/businesses
- * Retrieves the business directory with filtering and search.
- */
+//Retrieves the business directory with filtering and search.
 export const getBusinessDirectory = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, search, category, status } = req.query;
@@ -115,10 +112,7 @@ export const getBusinessDirectory = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/v1/admin/businesses/stats
- * Dashboard statistics for Business Management.
- */
+//Dashboard statistics for Business Management.
 export const getBusinessStats = async (req, res, next) => {
   try {
     const startOfThisMonth = moment().startOf('month').toDate();
@@ -221,10 +215,7 @@ export const getBusinessStats = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/v1/admin/businesses/:id
- * Detailed business profile for Admin view.
- */
+//Detailed business profile for Admin view.
 export const getBusinessProfile = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -399,14 +390,16 @@ export const getBusinessProfile = async (req, res, next) => {
   }
 };
 
-/**
- * PUT /api/v1/admin/businesses/:id/status
- */
+//update business status
 export const updateBusinessStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status, reason, suspensionCategory, sendEmail } = req.body;
-    const adminId = req.user?.id || 1;
+    const adminId = req.user?.id;
+
+    if (!adminId) {
+      return sendResponse(res, 401, false, "Admin authentication required.");
+    }
 
     const user = await User.findByPk(id);
     if (!user || !['Business', 'Club'].includes(user.role)) {
@@ -450,14 +443,16 @@ export const updateBusinessStatus = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/v1/admin/businesses/:id/notes
- */
+//add admin note
 export const addBusinessNote = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { text } = req.body;
-    const adminName = req.user?.name || 'Admin';
+    const adminName = req.user?.name;
+
+    if (!adminName) {
+      return sendResponse(res, 401, false, "Admin authentication required.");
+    }
 
     const profile = await BusinessProfile.findOne({ where: { userId: id } });
     if (!profile) {
