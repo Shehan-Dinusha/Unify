@@ -166,7 +166,7 @@ const CommentSection = ({ postComments, onAddComment, loading, currentUser }) =>
 };
 
 /* ─── Main Card ──────────────────────────────────────────────── */
-const FoodCafeCard = ({ post, onClick }) => {
+const FoodCafeCard = ({ post, onClick,currentUser }) => {
     const { toggleSavePost } = useSavedPosts();
     const currentUser = getCurrentUser();
 
