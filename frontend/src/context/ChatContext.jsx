@@ -1,9 +1,20 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import chatService from "../services/chatService";
 import { isAuthenticated, getCurrentUser } from "../services/authService";
 import { io } from "socket.io-client";
 
-const ChatContext = createContext({ unreadMessageCount: 0, refreshUnreadCount: () => {}, socket: null });
+const ChatContext = createContext({
+  unreadMessageCount: 0,
+  refreshUnreadCount: () => {},
+  socket: null,
+});
 
 export const useChat = () => useContext(ChatContext);
 
@@ -17,16 +28,18 @@ export const ChatProvider = ({ children }) => {
   const refreshUnreadCount = useCallback(async () => {
     if (!isAuthenticated()) return;
 
+    // Only fetch for roles that can use chat — prevents 403 for Admin/Business
     const user = getCurrentUser();
-    if (user?.role?.toLowerCase() === "admin") return;
+    const role = user?.role?.toLowerCase();
+    if (role !== "student" && role !== "club") return;
 
     try {
       const data = await chatService.getUnreadCount();
       if (data.success) {
         setUnreadMessageCount(data.data.unreadCount ?? 0);
       }
-    } catch (err) {
-      console.error("Failed to fetch unread chat count:", err);
+    } catch {
+      // Silently ignore — unread count stays at 0
     }
   }, []);
 
@@ -41,10 +54,17 @@ export const ChatProvider = ({ children }) => {
       return;
     }
 
+    // Only connect socket for roles that use chat
+    const user = getCurrentUser();
+    const role = user?.role?.toLowerCase();
+    if (role !== "student" && role !== "club") return;
+
     if (socketRef.current) return;
 
     const token = localStorage.getItem("token");
-    const SOCKET_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1").replace("/api/v1", "");
+    const SOCKET_URL = (
+      import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1"
+    ).replace("/api/v1", "");
 
     const newSocket = io(SOCKET_URL, {
       auth: { token },
@@ -55,7 +75,6 @@ export const ChatProvider = ({ children }) => {
     });
 
     newSocket.on("connect", () => {
-      console.log("⚡ Global Chat Socket Connected");
       refreshUnreadCount();
     });
 
@@ -91,7 +110,9 @@ export const ChatProvider = ({ children }) => {
   }, [refreshUnreadCount]);
 
   return (
-    <ChatContext.Provider value={{ unreadMessageCount, refreshUnreadCount, socket }}>
+    <ChatContext.Provider
+      value={{ unreadMessageCount, refreshUnreadCount, socket }}
+    >
       {children}
     </ChatContext.Provider>
   );

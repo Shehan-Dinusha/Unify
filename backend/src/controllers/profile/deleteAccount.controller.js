@@ -28,10 +28,18 @@ export const deleteAccount = async (req, res) => {
       return sendResponse(res, 401, false, "Incorrect password");
     }
 
-    // Perform deletion (cascades to profiles due to onDelete: 'CASCADE' in associations)
-    await user.destroy();
+    // Soft delete: anonymize personal data and mark as deleted
+    await user.update({
+      name: "Deleted User",
+      email: null,
+      phone: null,
+      avatar: null,
+      status: "Deleted",
+      refreshToken: null,
+      isOnline: false,
+    });
 
-    logger.info(`Account deleted for user ${userId}`);
+    logger.info(`Account soft-deleted for user ${userId}`);
     return sendResponse(res, 200, true, "Account deleted successfully");
   } catch (error) {
     logger.error("Delete Account Error:", error);

@@ -26,6 +26,7 @@ const Club = () => {
                     image: getImageUrl(post.coverImage || post.image || post.images?.[0]),
                     clubName: post.author?.name || "Unknown Club",
                     clubSeed: post.author?.name || "club",
+                    authorAvatar: post.author?.avatar,
                     time: formatTimeAgo(post.createdAt),
                     category: post.category || "Club",
                     text: post.description,

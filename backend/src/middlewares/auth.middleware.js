@@ -34,6 +34,10 @@ export const protect = async (req, res, next) => {
       return sendResponse(res, 403, false, "Account is suspended");
     }
 
+    if (user.status === "Deleted") {
+      return sendResponse(res, 401, false, "This account has been deleted");
+    }
+
     // Attach user to request object
     req.user = user;
     next();
