@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import chatService from "../services/chatService";
-import { isAuthenticated } from "../services/authService";
+import { isAuthenticated, getCurrentUser } from "../services/authService";
 import { io } from "socket.io-client";
 
 const ChatContext = createContext({ unreadMessageCount: 0, refreshUnreadCount: () => {}, socket: null });
@@ -16,6 +16,10 @@ export const ChatProvider = ({ children }) => {
 
   const refreshUnreadCount = useCallback(async () => {
     if (!isAuthenticated()) return;
+
+    const user = getCurrentUser();
+    if (user?.role?.toLowerCase() === "admin") return;
+
     try {
       const data = await chatService.getUnreadCount();
       if (data.success) {
