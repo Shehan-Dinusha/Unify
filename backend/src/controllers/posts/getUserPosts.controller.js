@@ -1,5 +1,15 @@
-import { NormalPost, ClubProductPost, ClubEventPost, Boarding, User, Comment, PostLike, SavedItem } from "../../modules/index.js";
+import {
+  NormalPost,
+  ClubProductPost,
+  ClubEventPost,
+  Boarding,
+  User,
+  Comment,
+  PostLike,
+  SavedItem,
+} from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 const resolveImageUrl = async (img) => {
   if (!img) return img;
@@ -39,6 +49,20 @@ const resolvePostImages = async (post) => {
   if (resolved.coverImage) {
     resolved.coverImage = await resolveImageUrl(resolved.coverImage);
   }
+  // Resolve author avatar
+  if (resolved.author?.avatar !== undefined) {
+    resolved.author = {
+      ...resolved.author,
+      avatar: await resolveAvatarUrl(resolved.author.avatar, resolved.author.name),
+    };
+  }
+  // Resolve host avatar (Boarding posts use 'host')
+  if (resolved.host?.avatar !== undefined) {
+    resolved.host = {
+      ...resolved.host,
+      avatar: await resolveAvatarUrl(resolved.host.avatar, resolved.host.name),
+    };
+  }
   return resolved;
 };
 
@@ -48,7 +72,9 @@ export const getUserPosts = async (req, res) => {
     const currentUserId = req.user?.id; // Viewer's ID (could be same as userId or different)
 
     if (!userId) {
-      return res.status(400).json({ success: false, message: "User ID is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User ID is required" });
     }
 
     const fetchPosts = async (
@@ -83,9 +109,21 @@ export const getUserPosts = async (req, res) => {
     // Fetch public posts from all categories for this specific user
     // We assume if someone is looking at the profile, they can see standard visible posts
     // Note: NormalPost doesn't have isVisible, but ClubProductPost/ClubEventPost do.
-    tasks.push(fetchPosts(NormalPost, "normal", "author", { authorId: userId }));
-    tasks.push(fetchPosts(ClubProductPost, "club-product", "author", { authorId: userId, isVisible: true }));
-    tasks.push(fetchPosts(ClubEventPost, "club-event", "author", { authorId: userId, isVisible: true }));
+    tasks.push(
+      fetchPosts(NormalPost, "normal", "author", { authorId: userId }),
+    );
+    tasks.push(
+      fetchPosts(ClubProductPost, "club-product", "author", {
+        authorId: userId,
+        isVisible: true,
+      }),
+    );
+    tasks.push(
+      fetchPosts(ClubEventPost, "club-event", "author", {
+        authorId: userId,
+        isVisible: true,
+      }),
+    );
     tasks.push(fetchPosts(Boarding, "boarding", "host", { hostId: userId }));
 
     // Wait for all fetches
@@ -93,9 +131,7 @@ export const getUserPosts = async (req, res) => {
     const combinedFeed = results.flat();
 
     // Sort all combined posts by createdAt
-    combinedFeed.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-    );
+    combinedFeed.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     // Trim to a reasonable limit for public profiles
     const finalFeed = combinedFeed.slice(0, 30);
@@ -111,13 +147,27 @@ export const getUserPosts = async (req, res) => {
         let isSaved = false;
 
         try {
-          commentsCount = await Comment.count({ where: { postId: post.id, postType: post.postType } });
-          
+          commentsCount = await Comment.count({
+            where: { postId: post.id, postType: post.postType },
+          });
+
           if (currentUserId) {
-            const likeRecord = await PostLike.findOne({ where: { userId: currentUserId, postId: post.id, postType: post.postType } });
+            const likeRecord = await PostLike.findOne({
+              where: {
+                userId: currentUserId,
+                postId: post.id,
+                postType: post.postType,
+              },
+            });
             isLiked = !!likeRecord;
-            
-            const saveRecord = await SavedItem.findOne({ where: { userId: currentUserId, postId: post.id, postType: post.postType } });
+
+            const saveRecord = await SavedItem.findOne({
+              where: {
+                userId: currentUserId,
+                postId: post.id,
+                postType: post.postType,
+              },
+            });
             isSaved = !!saveRecord;
           }
         } catch (err) {
@@ -131,7 +181,7 @@ export const getUserPosts = async (req, res) => {
           isSaved,
           isPromoted: false,
         };
-      })
+      }),
     );
 
     res.status(200).json({ success: true, posts: feedWithInteractions });
