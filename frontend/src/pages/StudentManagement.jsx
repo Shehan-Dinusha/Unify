@@ -6,18 +6,20 @@ import Input from '../components/common/Input';
 import Select from '../components/common/Select';
 import Button from '../components/common/Button';
 import { useToast } from '../components/common/Toast';
-import { Search, RotateCcw, TrendingUp, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Search, RotateCcw, TrendingUp, ShieldCheck, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getStudentDirectory, getStudentStats } from '../services/studentService';
 import { getAvatarUrl } from '../utils/formatters';
+import { getCurrentUser } from '../services/authService';
 
 // ─── Static Options ─────────────────────────────────────────────────────────
 
 const facultyOptions = [
     { value: 'all', label: 'All Faculties' },
-    { value: 'it', label: 'Faculty Of Information Technology' },
-    { value: 'eng', label: 'Faculty of Engineering' },
-    { value: 'sci', label: 'Faculty of Science' },
-    { value: 'mgmt', label: 'Faculty of Management' },
+    { value: 'it', label: 'Information Technology' },
+    { value: 'eng', label: 'Engineering' },
+    { value: 'arch', label: 'Architecture' },
+    { value: 'bus', label: 'Business' },
+    { value: 'med', label: 'Medicine' },
 ];
 
 const statusOptions = [
@@ -42,13 +44,19 @@ const StudentManagement = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All Students');
     const [facultyFilter, setFacultyFilter] = useState('all');
-    const [statusFilter, setStatusFilter] = useState('active');
+    const [statusFilter, setStatusFilter] = useState('all');
 
     // ── Data State ──────────────────────────────────────────
     const [students, setStudents] = useState([]);
     const [stats, setStats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // ── Pagination State ────────────────────────────────────
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const PAGE_LIMIT = 10;
 
     // ── Fetch Stats on mount ────────────────────────────────
     useEffect(() => {
@@ -69,7 +77,12 @@ const StudentManagement = () => {
         fetchStats();
     }, []);
 
-    // ── Fetch Students when filters change ──────────────────
+    // ── Reset page when filters change ──────────────────────
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter, facultyFilter]);
+
+    // ── Fetch Students when filters or page change ──────────
     useEffect(() => {
         const fetchStudents = async () => {
             setLoading(true);
@@ -79,8 +92,13 @@ const StudentManagement = () => {
                     search: searchQuery,
                     status: statusFilter,
                     faculty: facultyFilter,
+                    page: currentPage,
+                    limit: PAGE_LIMIT,
                 });
-                setStudents(result.data?.students || result.data || []);
+                const data = result.data || {};
+                setStudents(data.students || []);
+                setTotalCount(data.total || 0);
+                setTotalPages(Math.ceil((data.total || 0) / PAGE_LIMIT));
             } catch (err) {
                 console.error('[StudentManagement] Failed to load students:', err);
                 setError('Failed to connect to the server. Please make sure the backend is running.');
@@ -90,18 +108,23 @@ const StudentManagement = () => {
             }
         };
         fetchStudents();
-    }, [searchQuery, statusFilter, facultyFilter]);
+    }, [searchQuery, statusFilter, facultyFilter, currentPage]);
 
     const handleResetFilters = () => {
         setSearchQuery('');
         setActiveFilter('All Students');
         setFacultyFilter('all');
         setStatusFilter('all');
+        setCurrentPage(1);
     };
+
+    // ── Pagination Helpers ──────────────────────────────────
+    const startItem = (currentPage - 1) * PAGE_LIMIT + 1;
+    const endItem = Math.min(currentPage * PAGE_LIMIT, totalCount);
 
     return (
         <MainLayout
-            user={{ name: 'Alex Johnson', role: 'admin' }}
+            user={getCurrentUser() || { name: 'Admin', role: 'Admin' }}
             pageTitle="Student Management"
         >
             {/* ── Top Stats Row ─────────────────────────────────── */}
@@ -195,7 +218,7 @@ const StudentManagement = () => {
             )}
 
             {/* ── Student Table ─────────────────────────────────── */}
-            <div className="relative overflow-hidden border border-white/20 rounded-2xl bg-white/5 backdrop-blur-sm mb-lg hidden md:block">
+            <div className="relative overflow-hidden border border-white/20 rounded-2xl bg-white/5 backdrop-blur-sm mb-md hidden md:block">
                 <div
                     className="grid gap-md px-lg py-md border-b border-white/10"
                     style={{ gridTemplateColumns: '2fr 1.5fr 1fr 1fr 1.2fr' }}
@@ -264,6 +287,54 @@ const StudentManagement = () => {
                 )}
             </div>
 
+            {/* ── Pagination Controls ─────────────────────────────── */}
+            {!loading && !error && totalCount > 0 && (
+                <div className="hidden md:flex flex-col sm:flex-row items-center justify-between gap-md mb-lg px-sm">
+                    <p className="text-body-small text-text-secondary">
+                        Showing {startItem}–{endItem} of {totalCount} students
+                    </p>
+                    <div className="flex items-center gap-sm">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="flex items-center gap-xs px-md py-sm rounded-xl text-body-small-bold border border-white/10 text-text-secondary hover:text-text-primary hover:bg-white/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            <ChevronLeft size={16} /> Previous
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                            .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                            .reduce((acc, p, idx, arr) => {
+                                if (idx > 0 && p - arr[idx - 1] > 1) acc.push('...');
+                                acc.push(p);
+                                return acc;
+                            }, [])
+                            .map((p, idx) =>
+                                p === '...' ? (
+                                    <span key={`ellipsis-${idx}`} className="px-sm text-text-secondary">…</span>
+                                ) : (
+                                    <button
+                                        key={p}
+                                        onClick={() => setCurrentPage(p)}
+                                        className={`w-9 h-9 rounded-lg text-body-small-bold transition-all ${currentPage === p
+                                            ? 'bg-primary-blue text-white shadow-lg shadow-primary-blue/25'
+                                            : 'text-text-secondary hover:text-text-primary hover:bg-white/5 border border-white/10'
+                                            }`}
+                                    >
+                                        {p}
+                                    </button>
+                                )
+                            )}
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="flex items-center gap-xs px-md py-sm rounded-xl text-body-small-bold border border-white/10 text-text-secondary hover:text-text-primary hover:bg-white/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            Next <ChevronRight size={16} />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* ── Mobile Cards View ──────────────────────────────── */}
             <div className="grid grid-cols-1 gap-md md:hidden mb-lg">
                 {!loading && !error && students.map((student) => (
@@ -307,6 +378,28 @@ const StudentManagement = () => {
                 ))}
             </div>
 
+            {/* ── Mobile Pagination ──────────────────────────────── */}
+            {!loading && !error && totalCount > PAGE_LIMIT && (
+                <div className="flex items-center justify-center gap-md mb-lg md:hidden">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-md py-sm rounded-xl text-body-small-bold border border-white/10 text-text-secondary disabled:opacity-30"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    <span className="text-body-small text-text-secondary">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-md py-sm rounded-xl text-body-small-bold border border-white/10 text-text-secondary disabled:opacity-30"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
+            )}
 
         </MainLayout>
     );

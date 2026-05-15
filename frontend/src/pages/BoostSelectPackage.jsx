@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import { useBoostPackages } from '../context/BoostPackageContext';
+import { getCurrentUser } from '../services/authService';
 import {
   CheckCircle2,
   Circle,
@@ -67,7 +68,7 @@ const BoostSelectPackage = () => {
   if (loading && packages.length === 0) {
     return (
       <MainLayout
-        user={{ name: 'Alex Johnson', role: 'business', displayRole: 'Business & Organization' }}
+        user={getCurrentUser() || { name: 'Business User', role: 'business', displayRole: 'Business & Organization' }}
         pageTitle="Boost Your Post"
         verificationCount={0}
       >
@@ -81,7 +82,7 @@ const BoostSelectPackage = () => {
 
   return (
     <MainLayout
-      user={{ name: 'Alex Johnson', role: 'business', displayRole: 'Business & Organization' }}
+      user={getCurrentUser() || { name: 'Business User', role: 'business', displayRole: 'Business & Organization' }}
       pageTitle="Boost Your Post"
       verificationCount={0}
     >

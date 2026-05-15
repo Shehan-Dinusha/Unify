@@ -89,6 +89,8 @@ const SidebarItem = ({
 const UnifiedSidebar = ({
   user: propUser,
   verificationCount,
+  reportCount,
+  suspensionCount,
   isOpen,
   onClose,
   sidebarDisabled = false,
@@ -170,13 +172,13 @@ const UnifiedSidebar = ({
         {
           iconSrc: "/icon_report_moderation.svg",
           label: "Report Moderation",
-          badge: 3,
+          badge: reportCount > 0 ? reportCount : null,
           path: "/report-moderation",
         },
         {
           iconSrc: "/icon_suspended_users.svg",
           label: "Suspended Users",
-          badge: 3,
+          badge: suspensionCount > 0 ? suspensionCount : null,
           path: "/suspended-users",
           childPaths: ["/suspended-users"],
         },
@@ -188,7 +190,7 @@ const UnifiedSidebar = ({
         {
           iconSrc: "/icon_tab_verified.svg",
           label: "Verification Queue",
-          badge: verificationCount,
+          badge: verificationCount > 0 ? verificationCount : null,
           path: "/verification-queue",
         },
       ],

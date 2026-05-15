@@ -4,7 +4,7 @@ import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import StatsCard from "../components/common/StatsCard";
 import { BarChart, DonutChart, ProgressBar } from "../components/chart";
-import { mockRequests } from "../data/mockData";
+import { getCurrentUser } from "../services/authService";
 import {
   getDashboardStats,
   getPlatformGrowth,
@@ -35,6 +35,7 @@ const formatFnMap = {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const user = getCurrentUser() || { name: 'Admin', role: 'Admin' };
   const [activeRange, setActiveRange] = useState("This Month");
   const [chartIdx, setChartIdx] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(true);
@@ -187,9 +188,9 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <MainLayout
-        user={{ name: "Alex Johnson", role: "admin" }}
+        user={user}
         pageTitle="Admin Dashboard"
-        verificationCount={mockRequests.length}
+        verificationCount={0}
       >
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center gap-md">
@@ -204,9 +205,9 @@ const AdminDashboard = () => {
   if (error) {
     return (
       <MainLayout
-        user={{ name: "Alex Johnson", role: "admin" }}
+        user={user}
         pageTitle="Admin Dashboard"
-        verificationCount={mockRequests.length}
+        verificationCount={0}
       >
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center gap-md text-center">
@@ -227,9 +228,9 @@ const AdminDashboard = () => {
 
   return (
     <MainLayout
-      user={{ name: "Alex Johnson", role: "admin" }}
+      user={user}
       pageTitle="Admin Dashboard"
-      verificationCount={mockRequests.length}
+      verificationCount={0}
     >
       {/* ── Top Stats Row ─────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-md mb-lg">

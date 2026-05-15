@@ -475,7 +475,26 @@ class BoostService {
       // Optional: validate post if provided
       if (postId) {
         // Try to find the post in the base table or specific table
-        const post = await Post.findByPk(postId);
+        let post = await Post.findByPk(postId);
+        
+        if (!post) {
+          if (postType === "normal") {
+            post = await NormalPost.findByPk(postId);
+          } else if (postType === "club-product") {
+            post = await ClubProductPost.findByPk(postId);
+          } else if (postType === "club-event") {
+            post = await ClubEventPost.findByPk(postId);
+          } else if (postType === "boarding") {
+            post = await Boarding.findByPk(postId);
+          } else {
+            // Try all if type is unknown
+            post = await NormalPost.findByPk(postId) ||
+                   await ClubProductPost.findByPk(postId) ||
+                   await ClubEventPost.findByPk(postId) ||
+                   await Boarding.findByPk(postId);
+          }
+        }
+
         if (!post) {
           const error = new Error("Post not found.");
           error.statusCode = 404;

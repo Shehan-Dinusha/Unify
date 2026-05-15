@@ -3,7 +3,7 @@ import { Navigate, Outlet } from "react-router-dom";
 const rolePaths = {
   Student: "/news-feed",
   Club: "/club-owner/marketplace",
-  Admin: "/admin/dashboard",
+  Admin: "/admin",
   Business: {
     FOOD: "/food-cafe-owner/marketplace",
     BOARDING: "/boarding-owner/marketplace",

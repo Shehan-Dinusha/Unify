@@ -363,18 +363,15 @@ export const getContentModeration = async () => {
     SELECT status, COUNT(*) AS count FROM (
       SELECT CASE
         WHEN status IN ('Resolved', 'Dismissed') THEN 'resolved'
-        WHEN status IN ('In Review', 'In Progress') THEN 'reviewing'
-        ELSE 'pending'
-      END AS status
-      FROM reports
-      UNION ALL
-      SELECT CASE
-        WHEN status IN ('Resolved', 'Dismissed') THEN 'resolved'
         WHEN status = 'In Progress' THEN 'reviewing'
-        ELSE 'pending'
+        WHEN status = 'Pending Review' THEN 'pending'
+        ELSE 'other'
       END AS status
-      FROM student_reports WHERE "deletedAt" IS NULL
+      FROM student_reports 
+      WHERE "deletedAt" IS NULL 
+        AND status != 'Withdrawn'
     ) combined
+    WHERE status != 'other'
     GROUP BY status
   `);
 
