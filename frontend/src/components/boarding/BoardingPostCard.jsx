@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MapPin, Send, ChevronLeft, ChevronRight, Heart, MessageCircle } from "lucide-react";
 import Card from "../common/Card";
-import { getImageUrl, formatTimeAgo } from "../../utils/formatters";
+import { getImageUrl, formatTimeAgo,getAvatarUrl } from "../../utils/formatters";
 import newsfeedService from "../../services/newsfeedService";
 import { useSavedPosts } from "../../context/SavedPostsContext";
 import { getCurrentUser } from "../../services/authService";
@@ -51,12 +51,12 @@ const ImageCarousel = ({ images, title, price }) => {
     const next = (e) => { e.stopPropagation(); setIdx(i => (i + 1) % imgList.length); };
 
     return (
-        <div className="relative w-full h-[320px] bg-white/5 overflow-hidden">
+        <div className="relative w-full bg-white/5 flex justify-center items-center min-h-[200px] max-h-[500px] overflow-hidden">
             <img
                 key={idx}
                 src={getImageUrl(imgList[idx])}
                 alt={title}
-                className="w-full h-full object-cover transition-opacity duration-300"
+                className="w-full h-auto min-h-[200px] object-cover sm:object-contain max-h-[500px] transition-opacity duration-300"
             />
 
             {/* Price pill overlay */}
@@ -152,7 +152,7 @@ const CommentSection = ({ postComments, onAddComment }) => {
 };
 
 /* ─── Main Card ──────────────────────────────────────────────── */
-const BoardingPostCard = ({ post, onClick }) => {
+const BoardingPostCard = ({ post, onClick,currentUser }) => {
     const { toggleSavePost } = useSavedPosts();
     const currentUser = getCurrentUser();
 
@@ -257,6 +257,10 @@ const BoardingPostCard = ({ post, onClick }) => {
         }
     };
 
+    const [isExpanded, setIsExpanded] = useState(false);
+    const DESCRIPTION_LIMIT = 180;
+    const isLongDescription = post.description && post.description.length > DESCRIPTION_LIMIT;
+
     return (
         <Card variant="card" padding="p-0" className="overflow-hidden cursor-pointer group" onClick={onClick}>
             {/* Image carousel */}
@@ -268,9 +272,10 @@ const BoardingPostCard = ({ post, onClick }) => {
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                         <img
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.author?.name || post.userSeed || "user")}`}
+                            src={getAvatarUrl(post.author?.avatar, post.author?.name)}
                             alt={post.author?.name || post.user}
-                            className="w-9 h-9 rounded-full border border-white/20"
+                            className="w-9 h-9 rounded-full border border-white/20 object-cover"
+                            onError={(e) => { e.target.onerror = null; e.target.src = getAvatarUrl(null, post.author?.name); }}
                         />
                         <div>
                             <p className="text-body-medium-bold text-text-primary group-hover:text-primary-blue transition-colors font-bold">
@@ -283,10 +288,6 @@ const BoardingPostCard = ({ post, onClick }) => {
                     </div>
                 </div>
 
-                {/* Title 
-                <h3 className="text-body-large-bold text-text-primary mb-1 group-hover:text-primary-blue transition-colors line-clamp-1">{post.title}</h3>
-                */}
-
                 {/* Location */}
                 <div className="flex items-center gap-1 mb-2">
                     <MapPin size={13} className="text-text-tertiary flex-shrink-0" />
@@ -294,9 +295,24 @@ const BoardingPostCard = ({ post, onClick }) => {
                 </div>
 
                 {/* Description */}
-                <p className="text-body-medium text-text-secondary leading-6 mb-1 line-clamp-2 whitespace-pre-wrap">
-                    {post.description}
-                </p>
+                <div className="text-body-medium text-text-secondary leading-6 mb-1">
+                    <p className="whitespace-pre-wrap">
+                        {isLongDescription && !isExpanded
+                            ? `${post.description.slice(0, DESCRIPTION_LIMIT).trimEnd()}...`
+                            : post.description}
+                    </p>
+                    {isLongDescription && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsExpanded(!isExpanded);
+                            }}
+                            className="text-primary-blue hover:text-primary-blue/80 text-sm font-semibold mt-1 transition-colors"
+                        >
+                            {isExpanded ? "See less" : "See more"}
+                        </button>
+                    )}
+                </div>
 
                 {/* Gender tag */}
                 <span className="inline-block mt-1 mb-3 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/8 border border-white/10 text-text-tertiary">
@@ -331,20 +347,15 @@ const BoardingPostCard = ({ post, onClick }) => {
                         active={boosted}
                         onClick={() => setBoosted(p => !p)}
                     />*/}
-                    <ActionBtn
-                        svgSrc="/icon_save_marketplace.svg"
-                        label="Save"
-                        activeColor="text-purple-400"
-                        active={saved}
-                        onClick={handleToggleSave}
-                    />
-                    <ActionBtn
-                        svgSrc="/icon_report_marketplace.svg"
-                        label="Report"
-                        activeColor="text-red-400"
-                        active={reported}
-                        onClick={() => setReported(p => !p)}
-                    />
+                    {currentUser?.role === 'STUDENT' && (
+                        <ActionBtn
+                            svgSrc="/icon_save_marketplace.svg"
+                            label="Save"
+                            activeColor="text-purple-400"
+                            active={saved}
+                            onClick={() => setSaved(p => !p)}
+                        />
+                    )}
                 </div>
 
                 {/* Comment section */}
