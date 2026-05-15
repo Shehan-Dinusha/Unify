@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   MessageSquare,
   Loader2,
@@ -14,6 +15,7 @@ import {
   getSingleFollowing,
   unfollowOrganization,
 } from "../services/followerService";
+import chatService from "../services/chatService";
 
 import Avatar from "../components/common/Avatar";
 import NotFound from "./NotFound";
@@ -21,7 +23,19 @@ import NotFound from "./NotFound";
 const ITEMS_PER_PAGE = 10; // Keeping 10 for demonstration
 
 const FollowingCard = ({ following, onUnfollow }) => {
+  const navigate = useNavigate();
   const [isFollowing, setIsFollowing] = useState(true);
+
+  const handleMessage = async () => {
+    try {
+      const res = await chatService.createConversation(following.id);
+      if (res.success) {
+        navigate("/messages", { state: { activeConversationId: res.data.id } });
+      }
+    } catch (e) {
+      // silently fail
+    }
+  };
 
   const handleFollowClick = () => {
     setIsFollowing(!isFollowing);
@@ -60,6 +74,7 @@ const FollowingCard = ({ following, onUnfollow }) => {
       {/* Right side Actions */}
       <div className="flex items-center justify-end gap-3 shrink-0">
         <button
+          onClick={handleMessage}
           className="w-11 h-11 md:w-10 md:h-10 bg-blue-600/10 hover:bg-blue-600/20 transition-colors rounded-full flex justify-center items-center group/btn cursor-pointer border-none outline-none"
           aria-label={`Message ${following.name}`}
         >
@@ -235,7 +250,7 @@ const Followings = () => {
         const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
         return { name: parsed.name || "User", role: role || "student", displayRole: parsed.displayRole || role || "Student" };
       }
-    } catch {}
+    } catch (e) {}
     return { name: "User", role: "student", displayRole: "Student" };
   })();
 

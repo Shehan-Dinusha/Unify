@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MessageSquare, Loader2 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import LoadMoreButton from "../components/common/LoadMoreButton";
 import { getClubFollowers as getFollowers } from "../services/followerService";
+import chatService from "../services/chatService";
 import Avatar from "../components/common/Avatar";
 import NotFound from "./NotFound";
 const ITEMS_PER_PAGE = 14;
 
 const FollowerCard = ({ follower }) => {
+  const navigate = useNavigate();
+
+  const handleMessage = async () => {
+    try {
+      const res = await chatService.createConversation(follower.id);
+      if (res.success) {
+        navigate("/messages", { state: { activeConversationId: res.data.id } });
+      }
+    } catch (e) {
+      // silently fail
+    }
+  };
+
   return (
     <div className="w-full h-20 px-4 py-4 relative bg-white/5 rounded-2xl flex justify-between items-center border border-white/20 hover:bg-white/10 transition-colors">
       <div className="flex justify-start items-center gap-4">
@@ -24,6 +39,7 @@ const FollowerCard = ({ follower }) => {
       </div>
 
       <button
+        onClick={handleMessage}
         className="w-12 h-10 bg-blue-600/10 hover:bg-blue-600/20 transition-colors rounded-full flex justify-center items-center group cursor-pointer border-none outline-none"
         aria-label={`Message ${follower.name}`}
       >

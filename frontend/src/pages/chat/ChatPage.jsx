@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import MainLayout from "../../components/layout/MainLayout";
 import {
   Search, CheckCheck, ShieldAlert, Loader2
@@ -35,9 +36,17 @@ const ChatPage = () => {
   } = useChatSocket();
   const { refreshUnreadCount } = useChat();
 
+  const location = useLocation();
   const searchInputRef = useRef(null);
   const prevChatIdRef = useRef(null);
   const searchTimerRef = useRef(null);
+
+  // ── Auto-select conversation from navigation state ─────────────────────
+  useEffect(() => {
+    if (location.state?.activeConversationId) {
+      setActiveChatId(location.state.activeConversationId);
+    }
+  }, [location.state?.activeConversationId]);
 
   // ── Fetch conversations on mount ────────────────────────────────────────
   useEffect(() => {
