@@ -1,16 +1,25 @@
 import { Op } from "sequelize";
 import { NormalPost, User } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 const resolveImageUrl = async (img) => {
   if (!img) return img;
   if (img.includes("X-Amz-Signature")) return img;
   const s3UrlMatch = img.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
   if (s3UrlMatch) {
-    try { return await getFileUrl(s3UrlMatch[1]); } catch { return img; }
+    try {
+      return await getFileUrl(s3UrlMatch[1]);
+    } catch {
+      return img;
+    }
   }
   if (!img.startsWith("http") && !img.startsWith("/")) {
-    try { return await getFileUrl(img); } catch { return img; }
+    try {
+      return await getFileUrl(img);
+    } catch {
+      return img;
+    }
   }
   return img;
 };
@@ -22,6 +31,13 @@ const resolvePostImages = async (post) => {
   }
   if (resolved.coverImage) {
     resolved.coverImage = await resolveImageUrl(resolved.coverImage);
+  }
+  // Resolve author avatar
+  if (resolved.author?.avatar !== undefined) {
+    resolved.author = {
+      ...resolved.author,
+      avatar: await resolveAvatarUrl(resolved.author.avatar, resolved.author.name),
+    };
   }
   return resolved;
 };
@@ -60,14 +76,17 @@ export const getNewAnnouncements = async (req, res) => {
         // In getFeed, "food-cafe" uses category "FOOD" and "services" uses "SELF_EMPLOYED"
         let postType = "normal";
         if (announcement.category === "FOOD") postType = "food-cafe";
-        else if (announcement.category === "SELF_EMPLOYED") postType = "services";
+        else if (announcement.category === "SELF_EMPLOYED")
+          postType = "services";
 
         const withType = { ...announcement, postType };
         return resolvePostImages(withType);
-      })
+      }),
     );
 
-    res.status(200).json({ success: true, announcements: processedAnnouncements });
+    res
+      .status(200)
+      .json({ success: true, announcements: processedAnnouncements });
   } catch (error) {
     console.error("Error fetching new announcements:", error);
     res.status(500).json({ success: false, error: error.message });
