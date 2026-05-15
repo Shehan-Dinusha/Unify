@@ -15,6 +15,12 @@ const startServer = async () => {
     await sequelize.authenticate();
     logger.info("✅ Database connection established successfully.");
 
+    // DEV ONLY — auto-sync model changes (remove when switching to migrations)
+    if (NODE_ENV === "development") {
+      await sequelize.sync({ alter: true });
+      logger.info("🔄 Database synced (dev mode).");
+    }
+
     // 2. Start background jobs
     startOtpCleanupJob();
 
