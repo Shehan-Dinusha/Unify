@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MapPin, Send, ChevronLeft, ChevronRight, Zap, Heart, MessageCircle, Bookmark } from "lucide-react";
 import Card from "../common/Card";
-import { getImageUrl, formatTimeAgo,getAvatarUrl } from "../../utils/formatters";
+import { getImageUrl, formatTimeAgo, getAvatarUrl } from "../../utils/formatters";
 import newsfeedService from "../../services/newsfeedService";
 import { useSavedPosts } from "../../context/SavedPostsContext";
 import { getCurrentUser } from "../../services/authService";
@@ -33,7 +33,7 @@ const ActionBtn = ({ svgSrc, label, count, showCount, activeColor = "text-primar
 const ImageCarousel = ({ images, title }) => {
     const [idx, setIdx] = useState(0);
     const imgList = Array.isArray(images) ? images : [images].filter(Boolean);
-    
+
     if (imgList.length === 0) return (
         <div className="w-full h-[320px] bg-white/5 flex items-center justify-center">
             <p className="text-text-tertiary">No image available</p>
@@ -166,7 +166,7 @@ const CommentSection = ({ postComments, onAddComment, loading, currentUser }) =>
 };
 
 /* ─── Main Card ──────────────────────────────────────────────── */
-const FoodCafeCard = ({ post, onClick,currentUser }) => {
+const FoodCafeCard = ({ post, onClick }) => {
     const { toggleSavePost } = useSavedPosts();
     const currentUser = getCurrentUser();
 
@@ -175,7 +175,7 @@ const FoodCafeCard = ({ post, onClick,currentUser }) => {
     const [saved, setSaved] = useState(post.isSaved || false);
     const [reported, setReported] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);
-    
+
     const [postComments, setPostComments] = useState(post.comments || []);
     const [commentCount, setCommentCount] = useState(post.commentsCount || post.stats?.comments || (post.comments ? post.comments.length : 0));
     const [loadingComments, setLoadingComments] = useState(false);
@@ -188,9 +188,9 @@ const FoodCafeCard = ({ post, onClick,currentUser }) => {
 
     // Build card border classes and styles based on highlightStyle
     const boostStyles = (() => {
-        if (!isPromoted || !boostMeta) return { 
-            borderClass: "border border-white/5", 
-            glowStyle: {} 
+        if (!isPromoted || !boostMeta) return {
+            borderClass: "border border-white/5",
+            glowStyle: {}
         };
 
         switch (highlightStyle) {
@@ -210,9 +210,9 @@ const FoodCafeCard = ({ post, onClick,currentUser }) => {
                     glowStyle: { boxShadow: "0 0 15px rgba(255, 255, 255, 0.1)" }
                 };
             default:
-                return { 
-                    borderClass: "border border-white/5", 
-                    glowStyle: {} 
+                return {
+                    borderClass: "border border-white/5",
+                    glowStyle: {}
                 };
         }
     })();
@@ -337,11 +337,10 @@ const FoodCafeCard = ({ post, onClick,currentUser }) => {
 
                     {/* Boost Badge */}
                     {isPromoted && (
-                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            highlightStyle === 'gold' ? 'bg-[#FBBF24] text-black' : 
-                            highlightStyle === 'blue' ? 'bg-primary-blue text-white' : 
-                            'bg-white/10 text-white'
-                        }`}>
+                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${highlightStyle === 'gold' ? 'bg-[#FBBF24] text-black' :
+                                highlightStyle === 'blue' ? 'bg-primary-blue text-white' :
+                                    'bg-white/10 text-white'
+                            }`}>
                             <Zap size={10} fill="currentColor" />
                             Promoted
                         </div>
@@ -402,9 +401,9 @@ const FoodCafeCard = ({ post, onClick,currentUser }) => {
                 {/* Comment section */}
                 {commentOpen && (
                     <div onClick={(e) => e.stopPropagation()}>
-                        <CommentSection 
-                            postComments={postComments} 
-                            onAddComment={handleAddComment} 
+                        <CommentSection
+                            postComments={postComments}
+                            onAddComment={handleAddComment}
                             loading={loadingComments}
                             currentUser={currentUser}
                         />
