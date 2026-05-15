@@ -1,13 +1,35 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MessageSquare, Loader2 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import LoadMoreButton from "../components/common/LoadMoreButton";
 import { getClubFollowers as getFollowers } from "../services/followerService";
+import * as chatService from "../services/chatService";
 import Avatar from "../components/common/Avatar";
 import NotFound from "./NotFound";
 const ITEMS_PER_PAGE = 14;
 
 const FollowerCard = ({ follower }) => {
+  const navigate = useNavigate();
+
+  const handleMessage = async () => {
+    try {
+      console.log("Creating conversation with user:", follower.id);
+      const res = await chatService.createConversation(follower.id);
+      console.log("Conversation result:", res);
+      if (res.success) {
+        navigate("/messages", { 
+          state: { 
+            activeConversationId: res.data.id,
+            newConversation: res.data
+          } 
+        });
+      }
+    } catch (e) {
+      console.error("Failed to start chat", e);
+    }
+  };
+
   return (
     <div className="w-full h-20 px-4 py-4 relative bg-white/5 rounded-2xl flex justify-between items-center border border-white/20 hover:bg-white/10 transition-colors">
       <div className="flex justify-start items-center gap-4">
@@ -24,6 +46,7 @@ const FollowerCard = ({ follower }) => {
       </div>
 
       <button
+        onClick={handleMessage}
         className="w-12 h-10 bg-blue-600/10 hover:bg-blue-600/20 transition-colors rounded-full flex justify-center items-center group cursor-pointer border-none outline-none"
         aria-label={`Message ${follower.name}`}
       >
@@ -57,10 +80,7 @@ const FollowersDirectory = () => {
       setHasMore(data.hasMore);
       setPage(1);
     } catch (err) {
-      if (
-        err.response &&
-        err.response.status === 403
-      ) {
+      if (err.response && err.response.status === 403) {
         setErrorStatus(err.response.status);
       } else {
         setError("Failed to load followers. Please try again later.");
@@ -99,17 +119,18 @@ const FollowersDirectory = () => {
       const role = localStorage.getItem("role");
       if (raw) {
         const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-        return { name: parsed.name || "User", role: role || "club", displayRole: parsed.displayRole || role || "Club" };
+        return {
+          name: parsed.name || "User",
+          role: role || "club",
+          displayRole: parsed.displayRole || role || "Club",
+        };
       }
     } catch {}
     return { name: "User", role: "club", displayRole: "Club" };
   })();
 
   return (
-    <MainLayout
-      user={sidebarUser}
-      pageTitle="Profile"
-    >
+    <MainLayout user={sidebarUser} pageTitle="Profile">
       <div className="flex flex-col h-full">
         {/* Header Section */}
         <div className="flex flex-col gap-2 mb-8 mt-2">

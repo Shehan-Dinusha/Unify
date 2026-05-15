@@ -15,29 +15,20 @@ const startServer = async () => {
     await sequelize.authenticate();
     logger.info("✅ Database connection established successfully.");
 
-    // 2. Sync schema
-    //    - Development / Docker:  alter:true  → adds new columns / tables without dropping data
-    //    - Production:            use migrations instead (never auto-sync in prod)
-    if (NODE_ENV !== "production") {
+    // DEV ONLY — auto-sync model changes (remove when switching to migrations)
+    if (NODE_ENV === "development") {
       await sequelize.sync({ alter: true });
-      logger.info("✅ Database schema synced (alter: true).");
-    } else {
-      // In production, tables must already exist via proper migrations.
-      // Uncomment the line below only if you intentionally want a one-time sync in prod:
-      // await sequelize.sync();
-      logger.info(
-        "ℹ️  Production mode — skipping auto-sync. Run migrations manually.",
-      );
+      logger.info("🔄 Database synced (dev mode).");
     }
 
-    // 3. Start background jobs
+    // 2. Start background jobs
     startOtpCleanupJob();
 
-    // 4. Create HTTP server and attach Socket.IO
+    // 3. Create HTTP server and attach Socket.IO
     const httpServer = createServer(app);
     initializeSocket(httpServer);
 
-    // 5. Start HTTP + WebSocket server
+    // 4. Start HTTP + WebSocket server
     httpServer.listen(PORT, () => {
       logger.info(`🚀 Server running in [${NODE_ENV}] mode on port ${PORT}`);
       logger.info(`🔌 Socket.IO listening on ws://localhost:${PORT}`);

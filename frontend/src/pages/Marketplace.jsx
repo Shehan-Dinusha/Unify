@@ -3,7 +3,12 @@ import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import CategoryTile from "../components/marketplace/CategoryTile";
 import PopularPostCard from "../components/marketplace/PopularPostCard";
-import { mockMarketplaceCategories } from "../data/mockMarketplaceData";
+const CATEGORIES = [
+    { id: "cat-services", title: "Services", subtitle: "Tutoring and more", image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80" },
+    { id: "cat-merch", title: "Clubs' Merchandise", subtitle: "Official club gear", image: "https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=1200&q=80" },
+    { id: "cat-boardings", title: "Boardings", subtitle: "Find a place to stay", image: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1200&q=80" },
+    { id: "cat-food", title: "Food & Café", subtitle: "Discover campus eats", image: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1200&q=80" },
+];
 import postService from "../services/postService";
 import { getImageUrl } from "../utils/formatters";
 import { Loader2 } from "lucide-react";
@@ -53,7 +58,7 @@ const Marketplace = () => {
                         className="flex flex-nowrap gap-4 overflow-x-auto px-lg pb-2
             [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                     >
-                        {mockMarketplaceCategories.map((cat) => (
+                        {CATEGORIES.map((cat) => (
                             <div key={cat.id} className="shrink-0">
                                 <CategoryTile
                                     title={cat.title}

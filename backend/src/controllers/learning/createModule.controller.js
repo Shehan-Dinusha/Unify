@@ -1,4 +1,9 @@
-import { AcademicModule, Semester, Degree } from "../../modules/index.js";
+import {
+  AcademicModule,
+  Semester,
+  Degree,
+  StudentProfile,
+} from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -56,11 +61,17 @@ export const createModule = async (req, res, next) => {
       );
     }
 
+    // Get creator's degree
+    const studentProfile = await StudentProfile.findOne({
+      where: { userId: req.user.id },
+    });
+
     // 5. Create new module
     const newModule = await AcademicModule.create({
       name: title,
       code,
       semesterId: foundSemester.id,
+      creatorDegreeId: studentProfile ? studentProfile.degreeId : null,
     });
 
     // 6. Handle Degree Visibility (many-to-many relationship)

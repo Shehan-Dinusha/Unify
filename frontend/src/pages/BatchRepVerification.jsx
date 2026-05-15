@@ -97,7 +97,6 @@ const BatchRepVerification = () => {
       const response = await verificationService.submitRequest(formData);
       if (response.success) {
         setSubmissionStatus("pending");
-        setTimeout(() => navigate("/profile?role=student"), 1500);
       }
     } catch (error) {
       setSubmitError(

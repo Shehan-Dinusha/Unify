@@ -62,29 +62,9 @@ export const getStudentCourseStructure = async (req, res, next) => {
       ],
     });
 
-    // Filter to only include publicly available or explicitly assigned semesters
+    // Filter to only include explicitly assigned semesters
     const formattedSemesters = [];
     for (const sem of allSemesters) {
-      const dbConfigCount = await SemesterVisibility.count({
-        where: {
-          semesterId: sem.id,
-          degreeId: degreeId,
-        },
-      });
-      // If 0 config rows, it's public. If >0, student's batch must be mapped as true.
-      if (dbConfigCount === 0) {
-        formattedSemesters.push({
-          id: sem.id,
-          name: sem.name,
-          modules: sem.modules.map((mod) => ({
-            id: mod.id,
-            code: mod.code,
-            name: mod.name,
-          })),
-        });
-        continue;
-      }
-
       const explicitVisibleCount = await SemesterVisibility.count({
         where: {
           semesterId: sem.id,

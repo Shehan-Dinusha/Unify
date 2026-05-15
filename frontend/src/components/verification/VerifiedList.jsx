@@ -44,7 +44,8 @@ const VerifiedList = () => {
   const fetchVerified = async () => {
     try {
       setLoading(true);
-      const response = await verificationService.getVerifiedEntities();
+      const lastViewed = localStorage.getItem("verificationLastViewed") || undefined;
+      const response = await verificationService.getVerifiedEntities(lastViewed);
       if (response.success) {
         setVerifiedEntities(response.data?.verified || []);
         setStats(
@@ -56,6 +57,7 @@ const VerifiedList = () => {
             newVerifiedReps: 0,
           },
         );
+        localStorage.setItem("verificationLastViewed", Date.now().toString());
       }
     } catch (error) {
       setErrorMessage("Failed to fetch verified entities.");

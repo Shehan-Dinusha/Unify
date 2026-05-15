@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   MessageSquare,
   Loader2,
@@ -14,14 +15,33 @@ import {
   getSingleFollowing,
   unfollowOrganization,
 } from "../services/followerService";
-
+import * as chatService from "../services/chatService";
 import Avatar from "../components/common/Avatar";
 import NotFound from "./NotFound";
 
 const ITEMS_PER_PAGE = 10; // Keeping 10 for demonstration
 
 const FollowingCard = ({ following, onUnfollow }) => {
+  const navigate = useNavigate();
   const [isFollowing, setIsFollowing] = useState(true);
+
+  const handleMessage = async () => {
+    try {
+      console.log("Creating conversation with user:", following.id);
+      const res = await chatService.createConversation(following.id);
+      console.log("Conversation result:", res);
+      if (res.success) {
+        navigate("/messages", { 
+          state: { 
+            activeConversationId: res.data.id,
+            newConversation: res.data
+          } 
+        });
+      }
+    } catch (e) {
+      console.error("Failed to start chat", e);
+    }
+  };
 
   const handleFollowClick = () => {
     setIsFollowing(!isFollowing);
@@ -60,6 +80,7 @@ const FollowingCard = ({ following, onUnfollow }) => {
       {/* Right side Actions */}
       <div className="flex items-center justify-end gap-3 shrink-0">
         <button
+          onClick={handleMessage}
           className="w-11 h-11 md:w-10 md:h-10 bg-blue-600/10 hover:bg-blue-600/20 transition-colors rounded-full flex justify-center items-center group/btn cursor-pointer border-none outline-none"
           aria-label={`Message ${following.name}`}
         >
@@ -125,10 +146,7 @@ const Followings = () => {
       setHasMore(data.hasMore);
       setPage(1);
     } catch (err) {
-      if (
-        err.response &&
-        err.response.status === 403
-      ) {
+      if (err.response && err.response.status === 403) {
         setErrorStatus(err.response.status);
       } else {
         setError("Failed to load followings. Please try again later.");
@@ -233,17 +251,18 @@ const Followings = () => {
       const role = localStorage.getItem("role");
       if (raw) {
         const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-        return { name: parsed.name || "User", role: role || "student", displayRole: parsed.displayRole || role || "Student" };
+        return {
+          name: parsed.name || "User",
+          role: role || "student",
+          displayRole: parsed.displayRole || role || "Student",
+        };
       }
-    } catch {}
+    } catch (e) {}
     return { name: "User", role: "student", displayRole: "Student" };
   })();
 
   return (
-    <MainLayout
-      user={sidebarUser}
-      pageTitle="Profile"
-    >
+    <MainLayout user={sidebarUser} pageTitle="Profile">
       <div className="flex flex-col h-full mx-auto w-full relative max-w-[1000px] px-4 md:px-0">
         {/* Background glow effect as per design */}
         <div className="w-64 h-64 md:w-96 md:h-96 absolute right-[-50px] md:right-[-200px] top-[200px] md:top-[400px] bg-purple-800/20 rounded-full blur-3xl pointer-events-none z-[-1]" />

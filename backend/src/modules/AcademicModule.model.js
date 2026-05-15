@@ -21,6 +21,10 @@ const AcademicModule = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
+    creatorDegreeId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
   },
   {
     tableName: "academic_modules",

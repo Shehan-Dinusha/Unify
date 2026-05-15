@@ -19,6 +19,12 @@ export const getBatchRepCourseStructure = async (req, res, next) => {
       return sendResponse(res, 404, false, "Degree not found");
     }
 
+    const availableDegrees = await Degree.findAll({
+      where: { facultyId: degree.facultyId },
+      attributes: ["id", "name"],
+      order: [["name", "ASC"]],
+    });
+
     const semesters = await Semester.findAll({
       attributes: ["id", "name"],
       order: [["name", "ASC"]],
@@ -26,7 +32,7 @@ export const getBatchRepCourseStructure = async (req, res, next) => {
         {
           model: AcademicModule,
           as: "modules",
-          attributes: ["id", "code", "name"],
+          attributes: ["id", "code", "name", "creatorDegreeId"],
           include: [
             {
               model: Degree,
@@ -65,6 +71,7 @@ export const getBatchRepCourseStructure = async (req, res, next) => {
             id: mod.id,
             code: mod.code,
             name: mod.name,
+            creatorDegreeId: mod.creatorDegreeId,
           })),
         };
       }),
@@ -78,6 +85,7 @@ export const getBatchRepCourseStructure = async (req, res, next) => {
       {
         degreeName: degree.name,
         semesters: formattedSemesters,
+        availableDegrees: availableDegrees,
       },
     );
   } catch (error) {

@@ -41,13 +41,14 @@ export const getPendingVerifications = async (req, res, next) => {
       }),
     ];
 
-    if (lastViewedParam && !isNaN(new Date(lastViewedParam))) {
+    const lastViewedTimestamp = parseInt(lastViewedParam, 10);
+    if (lastViewedParam && !isNaN(lastViewedTimestamp)) {
       // Count pending requests created strictly AFTER the admin's last visit timestamp
       countQueries.push(
         VerificationRequest.count({
           where: {
             status: "PENDING",
-            createdAt: { [Op.gt]: new Date(lastViewedParam) },
+            createdAt: { [Op.gt]: new Date(lastViewedTimestamp) },
           },
         }),
       );

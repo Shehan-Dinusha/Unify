@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Search, CornerUpLeft, Loader2, Heart, ShieldCheck, X } from "lucide-react";
+import { Search, CornerUpLeft, Loader2, Heart, ShieldCheck, X, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
@@ -54,6 +54,13 @@ const VerificationIcon = () => (
   </div>
 );
 
+// Semester / Learning Icon
+const SemesterIcon = () => (
+  <div className="w-10 h-10 shrink-0 rounded-full bg-[#162743] flex items-center justify-center">
+    <BookOpen size={18} className="text-primary-blue" />
+  </div>
+);
+
 /* --- Main Notification Card --- */
 const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
   const { type, title, content, time, isUnread, avatar, image } = notification;
@@ -70,6 +77,9 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
       case "verification":
         return <VerificationIcon />;
       default:
+        if (notification.referenceType === "Semester") {
+          return <SemesterIcon />;
+        }
         return <div className="w-10 h-10 bg-white/10 rounded-full" />;
     }
   };
@@ -241,6 +251,8 @@ const Notification = () => {
   const handleNavigateToPost = (referenceId, referenceType) => {
     if (referenceType === "LostAndFound") {
       navigate(`/lost-and-found?view=detail&id=${referenceId}`);
+    } else if (referenceType === "Semester") {
+      navigate("/student-learning");
     } else {
       navigate("/news-feed", {
         state: {

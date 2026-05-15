@@ -94,7 +94,6 @@ const ClubVerification = () => {
       const response = await verificationService.submitRequest(formData);
       if (response.success) {
         setSubmissionStatus("pending");
-        setTimeout(() => navigate("/profile?role=club_society"), 1500);
       }
     } catch (error) {
       setSubmitError(

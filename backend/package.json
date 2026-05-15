@@ -7,10 +7,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "migrate": "npx sequelize-cli db:migrate",
-    "migrate:undo": "npx sequelize-cli db:migrate:undo",
-    "seed": "npx sequelize-cli db:seed:all",
-    "seed:undo": "npx sequelize-cli db:seed:undo:all",
+    "migrate": "npx sequelize-cli db:migrate --options-path .sequelizerc.cjs",
+    "migrate:undo": "npx sequelize-cli db:migrate:undo --options-path .sequelizerc.cjs",
+    "seed": "npx sequelize-cli db:seed:all --options-path .sequelizerc.cjs",
+    "seed:undo": "npx sequelize-cli db:seed:undo:all --options-path .sequelizerc.cjs",
     "lint": "eslint src"
   },
   "dependencies": {

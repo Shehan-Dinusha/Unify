@@ -15,6 +15,8 @@ const EditModuleModal = ({
   availableDegrees = [],
   primaryDegree,
   semesters = [],
+  creatorDegreeId,
+  userDegreeId,
 }) => {
   const [title, setTitle] = useState("");
   const [code, setCode] = useState("");
@@ -77,6 +79,11 @@ const EditModuleModal = ({
     (d) => !selectedDegrees.includes(d) && d !== primaryDegree,
   );
 
+  const isOwner =
+    !creatorDegreeId ||
+    !userDegreeId ||
+    String(creatorDegreeId) === String(userDegreeId);
+
   const modalContent = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-dark-1/80 backdrop-blur-md transition-all duration-300 px-4">
       <Card
@@ -104,6 +111,7 @@ const EditModuleModal = ({
             placeholder="e.g. Advanced Calculus II"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            disabled={!isOwner}
           />
 
           <div className="flex flex-col sm:flex-row gap-4 w-full">
@@ -113,6 +121,7 @@ const EditModuleModal = ({
                 placeholder="e.g. MAT400"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
+                disabled={!isOwner}
               />
             </div>
             <div
@@ -124,7 +133,11 @@ const EditModuleModal = ({
                 placeholder="Select..."
                 value={semester}
                 onChange={(e) => setSemester(e.target.value)}
-                options={semesters.map(sem => ({ label: sem.name, value: sem.name }))}
+                disabled={!isOwner}
+                options={semesters.map((sem) => ({
+                  label: sem.name,
+                  value: sem.name,
+                }))}
               />
             </div>
           </div>
@@ -157,9 +170,9 @@ const EditModuleModal = ({
                         <Lock size={12} className="text-gray-400" />
                       )}
                       <span className={`text-body-extra-small text-white`}>
-                        {degree} {isPrimary && "(Primary)"}
+                        {degree} {isPrimary && "(Current)"}
                       </span>
-                      {!isPrimary && (
+                      {isOwner && !isPrimary && (
                         <Button
                           variant="ghost"
                           onClick={() => handleRemoveDegree(degree)}
@@ -173,7 +186,7 @@ const EditModuleModal = ({
                 })}
               </div>
 
-              {unselectedDegrees.length > 0 && (
+              {isOwner && unselectedDegrees.length > 0 && (
                 <div className="w-full relative">
                   <div
                     className="w-full pt-2 mt-1 border-t border-white/5 flex justify-between items-center cursor-pointer group px-1"
@@ -229,12 +242,13 @@ const EditModuleModal = ({
                 className="text-red-400 group-hover:text-red-300"
               />
               <span className="text-red-400 text-body-small-bold group-hover:text-red-300">
-                Delete Module
+                {isOwner ? "Delete Module" : "Remove Module Integration"}
               </span>
             </Button>
             <p className="text-center text-zinc-400 text-[10px] sm:text-body-extra-small leading-tight">
-              This action will permanently remove the module and its associated
-              folder structure.
+              {isOwner
+                ? "This action will permanently remove the module and its associated folder structure."
+                : "This action will unlink the module from your degree. Original owner's structure remains intact."}
             </p>
           </div>
         </div>
@@ -248,15 +262,17 @@ const EditModuleModal = ({
           >
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleSave}
-            disabled={!title || !code || !semester}
-            className="w-auto px-4 h-10 rounded-xl shadow-[0px_4px_6px_-4px_rgba(43,140,238,0.25)] flex justify-center items-center gap-1.5 text-white text-body-small-bold disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap overflow-visible"
-          >
-            <Save size={16} className="text-white shrink-0" />
-            <span>Save Module</span>
-          </Button>
+          {isOwner && (
+            <Button
+              variant="primary"
+              onClick={handleSave}
+              disabled={!title || !code || !semester}
+              className="w-auto px-4 h-10 rounded-xl shadow-[0px_4px_6px_-4px_rgba(43,140,238,0.25)] flex justify-center items-center gap-1.5 text-white text-body-small-bold disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap overflow-visible"
+            >
+              <Save size={16} className="text-white shrink-0" />
+              <span>Save Module</span>
+            </Button>
+          )}
         </div>
       </Card>
     </div>
