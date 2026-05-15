@@ -166,7 +166,7 @@ const CommentSection = ({ postComments, onAddComment, loading, currentUser }) =>
 };
 
 /* ─── Main Card ──────────────────────────────────────────────── */
-const FoodCafeCard = ({ post, onClick,currentUser }) => {
+const FoodCafeCard = ({ post, onClick }) => {
     const { toggleSavePost } = useSavedPosts();
     const currentUser = getCurrentUser();
 
@@ -338,8 +338,8 @@ const FoodCafeCard = ({ post, onClick,currentUser }) => {
                     {/* Boost Badge */}
                     {isPromoted && (
                         <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${highlightStyle === 'gold' ? 'bg-[#FBBF24] text-black' :
-                                highlightStyle === 'blue' ? 'bg-primary-blue text-white' :
-                                    'bg-white/10 text-white'
+                            highlightStyle === 'blue' ? 'bg-primary-blue text-white' :
+                                'bg-white/10 text-white'
                             }`}>
                             <Zap size={10} fill="currentColor" />
                             Promoted
