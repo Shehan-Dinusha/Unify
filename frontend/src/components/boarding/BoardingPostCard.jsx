@@ -152,7 +152,7 @@ const CommentSection = ({ postComments, onAddComment }) => {
 };
 
 /* ─── Main Card ──────────────────────────────────────────────── */
-const BoardingPostCard = ({ post, onClick,currentUser }) => {
+const BoardingPostCard = ({ post, onClick }) => {
     const { toggleSavePost } = useSavedPosts();
     const currentUser = getCurrentUser();
 
