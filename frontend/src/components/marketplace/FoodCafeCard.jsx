@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MapPin, Send, ChevronLeft, ChevronRight, Zap } from "lucide-react";
 import Card from "../common/Card";
-import { getImageUrl } from "../../utils/formatters";
+import { getImageUrl, getAvatarUrl } from "../../utils/formatters";
 
 /* ─── Action Button ──────────────────────────────────────────── */
 const ActionBtn = ({ svgSrc, label, count, showCount, activeColor = "text-primary", onClick, active }) => (
@@ -135,7 +135,7 @@ const CommentSection = ({ postComments, onAddComment }) => {
 };
 
 /* ─── Main Card ──────────────────────────────────────────────── */
-const FoodCafeCard = ({ post, onClick }) => {
+const FoodCafeCard = ({ post, onClick, currentUser }) => {
     const [liked, setLiked] = useState(post.isLiked || false);
     const [likes, setLikes] = useState(post.likesCount || post.stats?.likes || 0);
     const [saved, setSaved] = useState(post.isSaved || false);
@@ -184,6 +184,10 @@ const FoodCafeCard = ({ post, onClick }) => {
         }]);
     };
 
+    const [isExpanded, setIsExpanded] = useState(false);
+    const DESCRIPTION_LIMIT = 180;
+    const isLongDescription = post.description && post.description.length > DESCRIPTION_LIMIT;
+
     return (
         <Card variant="card" padding="p-0" className={`overflow-hidden transition-all duration-300 !border-0 ${boostStyles.borderClass}`} style={boostStyles.glowStyle} onClick={onClick}>
             {/* Image carousel */}
@@ -195,9 +199,10 @@ const FoodCafeCard = ({ post, onClick }) => {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <img
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.author?.name || post.userSeed || "user")}`}
+                            src={getAvatarUrl(post.author?.avatar, post.author?.name || post.user)}
                             alt={post.author?.name || post.user}
                             className="w-10 h-10 rounded-full border border-white/20"
+                            onError={(e) => { e.target.onerror = null; e.target.src = getAvatarUrl(null, post.author?.name || post.user); }}
                         />
                         <div>
                             <p className="text-body-medium-bold text-text-primary group-hover:text-primary-blue transition-colors font-bold">
@@ -222,19 +227,25 @@ const FoodCafeCard = ({ post, onClick }) => {
                     )}
                 </div>
 
-                {/* Title 
-                <h3 className="text-heading-small text-text-primary mb-1 group-hover:text-primary-blue transition-colors font-bold">{post.title}</h3>
-                */}
-                {/* Location 
-                <div className="flex items-center gap-1 mb-2">
-                    <MapPin size={14} className="text-text-tertiary flex-shrink-0" />
-                    <span className="text-[14px] text-text-tertiary line-clamp-1">{post.location}</span>
-                </div>*/}
-
                 {/* Description */}
-                <p className="text-body-medium text-text-secondary leading-6 mb-4 line-clamp-2 whitespace-pre-wrap">
-                    {post.description}
-                </p>
+                <div className="text-body-medium text-text-secondary leading-6 mb-4">
+                    <p className="whitespace-pre-wrap">
+                        {isLongDescription && !isExpanded
+                            ? `${post.description.slice(0, DESCRIPTION_LIMIT).trimEnd()}...`
+                            : post.description}
+                    </p>
+                    {isLongDescription && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsExpanded(!isExpanded);
+                            }}
+                            className="text-primary-blue hover:text-primary-blue/80 text-sm font-semibold mt-1 transition-colors"
+                        >
+                            {isExpanded ? "See less" : "See more"}
+                        </button>
+                    )}
+                </div>
 
                 {/* Action bar */}
                 <div className="pt-md border-t border-white/10 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
@@ -256,20 +267,15 @@ const FoodCafeCard = ({ post, onClick }) => {
                         active={commentOpen}
                         onClick={() => setCommentOpen(o => !o)}
                     />
-                    <ActionBtn
-                        svgSrc="/icon_save_marketplace.svg"
-                        label="Save"
-                        activeColor="text-yellow-500"
-                        active={saved}
-                        onClick={() => setSaved(p => !p)}
-                    />
-                    <ActionBtn
-                        svgSrc="/icon_report_marketplace.svg"
-                        label="Report"
-                        activeColor="text-orange-500"
-                        active={reported}
-                        onClick={() => setReported(p => !p)}
-                    />
+                    {currentUser?.role === 'STUDENT' && (
+                        <ActionBtn
+                            svgSrc="/icon_save_marketplace.svg"
+                            label="Save"
+                            activeColor="text-yellow-500"
+                            active={saved}
+                            onClick={() => setSaved(p => !p)}
+                        />
+                    )}
                 </div>
 
                 {/* Comment section */}
