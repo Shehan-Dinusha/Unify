@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MapPin, Send, ChevronLeft, ChevronRight, Heart, MessageCircle } from "lucide-react";
 import Card from "../common/Card";
-import { getImageUrl, formatTimeAgo,getAvatarUrl } from "../../utils/formatters";
+import { getImageUrl, formatTimeAgo, getAvatarUrl } from "../../utils/formatters";
 import newsfeedService from "../../services/newsfeedService";
 import { useSavedPosts } from "../../context/SavedPostsContext";
 import { getCurrentUser } from "../../services/authService";
