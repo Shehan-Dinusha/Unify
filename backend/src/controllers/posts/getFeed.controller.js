@@ -49,32 +49,7 @@ const resolvePostImages = async (post) => {
  * getFeed — The BOOST-AWARE Feed Controller
  * ═══════════════════════════════════════════════════════════════════════
  *
- * HOW THE 6 BOOST FEATURES WORK HERE:
- *
- * ┌─────────────────────────┬──────────────────────────────────────────┐
- * │ boostConfig Parameter   │ What it does in this controller          │
- * ├─────────────────────────┼──────────────────────────────────────────┤
- * │ feedPriority (1-10)     │ Boosted posts sort to the TOP of feed.  │
- * │                         │ Lower number = higher position.          │
- * │                         │ feedPriority=1 always shows first.      │
- * ├─────────────────────────┼──────────────────────────────────────────┤
- * │ visibilityMultiplier    │ The post can appear MULTIPLE times in   │
- * │ (1-5)                   │ the feed. 2x = post shows twice, once   │
- * │                         │ at its priority slot and again lower.   │
- * ├─────────────────────────┼──────────────────────────────────────────┤
- * │ highlightStyle          │ Injected into the post response so the  │
- * │ ("none"|"subtle"|       │ frontend PostCard renders a matching    │
- * │  "blue"|"gold")         │ border/glow/badge style.                │
- * ├─────────────────────────┼──────────────────────────────────────────┤
- * │ crossCategoryReach      │ If true, the post appears in EVERY      │
- * │ (boolean)               │ category feed (club, boarding, etc.)    │
- * │                         │ even if it belongs to a different one.  │
- * ├─────────────────────────┼──────────────────────────────────────────┤
- * │ analyticsLevel          │ Passed through to frontend. "basic"     │
- * │ ("none"|"basic"|        │ shows impression count. "detailed"      │
- * │  "detailed")            │ shows impressions + clicks + CTR.       │
- * └─────────────────────────┴──────────────────────────────────────────┘
- */
+**/
 export const getFeed = async (req, res) => {
   try {
     const { type = "all" } = req.query;
@@ -255,9 +230,6 @@ export const getFeed = async (req, res) => {
     }
 
     // ═══════ STEP 3.5: FEATURE — autoRefreshHours ═══════
-    // If a boosted post has autoRefreshHours > 0, treat its createdAt as
-    // the most recent refresh cycle. This makes it appear as "fresh" content
-    // even if the original post is days old — like OLX/Facebook ad bumping.
     const now = new Date();
     for (const post of boostedPosts) {
       const refreshHours = post._boostMeta.autoRefreshHours || 0;
@@ -272,9 +244,6 @@ export const getFeed = async (req, res) => {
     }
 
     // ═══════ STEP 4: FEATURE — visibilityMultiplier ═══════
-    // If a boosted post has visibilityMultiplier > 1, insert duplicate
-    // entries at calculated positions deeper in the feed.
-    // NOTE: This feature is disabled for "My Posts" view to avoid confusion.
     const boostDuplicates = [];
     if (type !== "my-posts") {
       for (const post of boostedPosts) {

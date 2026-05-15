@@ -32,7 +32,8 @@ export const ChatProvider = ({ children }) => {
 
   // Socket Connection Logic
   useEffect(() => {
-    if (!isAuthenticated()) {
+    const user = getCurrentUser();
+    if (!isAuthenticated() || user?.role?.toLowerCase() === "admin") {
       if (socketRef.current) {
         socketRef.current.disconnect();
         setSocket(null);
