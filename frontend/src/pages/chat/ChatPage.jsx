@@ -100,10 +100,25 @@ const ChatPage = () => {
 
     // New message received in a room
     const handleReceive = ({ message, conversationId }) => {
-      setAllMessages((prev) => ({
-        ...prev,
-        [conversationId]: [...(prev[conversationId] || []), message],
-      }));
+      setAllMessages((prev) => {
+        const existing = prev[conversationId] || [];
+        const optimisticIdx = existing.findIndex(
+          (m) =>
+            typeof m.id === "string" &&
+            m.id.startsWith("temp-") &&
+            m.senderId === message.senderId &&
+            m.text === message.text,
+        );
+        if (optimisticIdx !== -1) {
+          const updated = [...existing];
+          updated[optimisticIdx] = message;
+          return { ...prev, [conversationId]: updated };
+        }
+        return {
+          ...prev,
+          [conversationId]: [...existing, message],
+        };
+      });
 
       // Update conversation list
       setConversations((prev) =>
@@ -394,6 +409,26 @@ const ChatPage = () => {
       if (!activeChatId) return;
       if (!text.trim() && attachments.length === 0) return;
 
+      const optimisticMsg = {
+        id: `temp-${Date.now()}`,
+        conversationId: activeChatId,
+        senderId: currentUser?.id,
+        senderName: currentUser?.name || "You",
+        text: text.trim(),
+        attachments: attachments.length > 0
+          ? attachments.map((a) => ({
+              key: a.key, name: a.name, type: a.type, url: a.url, isImage: a.isImage,
+            }))
+          : null,
+        isRead: true,
+        createdAt: new Date().toISOString(),
+      };
+
+      setAllMessages((prev) => ({
+        ...prev,
+        [activeChatId]: [...(prev[activeChatId] || []), optimisticMsg],
+      }));
+
       sendMessage({
         conversationId: activeChatId,
         text,
@@ -409,7 +444,7 @@ const ChatPage = () => {
             : undefined,
       });
     },
-    [activeChatId, sendMessage],
+    [activeChatId, sendMessage, currentUser],
   );
 
   const handleDeleteConversation = useCallback(
