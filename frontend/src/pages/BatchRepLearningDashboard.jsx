@@ -182,6 +182,7 @@ const BatchRepLearningDashboard = () => {
   };
 
   const handleMaterialChanged = async () => {
+    await refreshCategories();
     await refreshActiveModule();
     await refreshFiles();
   };
