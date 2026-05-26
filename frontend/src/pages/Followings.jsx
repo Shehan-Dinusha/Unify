@@ -25,7 +25,12 @@ const FollowingCard = ({ following, onUnfollow }) => {
   const navigate = useNavigate();
   const [isFollowing, setIsFollowing] = useState(true);
 
-  const handleMessage = async () => {
+  const handleViewProfile = () => {
+    navigate(`/profile/${following.id}`);
+  };
+
+  const handleMessage = async (e) => {
+    e.stopPropagation();
     try {
       console.log("Creating conversation with user:", following.id);
       const res = await chatService.createConversation(following.id);
@@ -43,7 +48,8 @@ const FollowingCard = ({ following, onUnfollow }) => {
     }
   };
 
-  const handleFollowClick = () => {
+  const handleFollowClick = (e) => {
+    e.stopPropagation();
     setIsFollowing(!isFollowing);
     if (isFollowing) {
       onUnfollow(following.id);
@@ -53,7 +59,7 @@ const FollowingCard = ({ following, onUnfollow }) => {
   return (
     <div className="w-full min-h-24 md:h-24 p-4 relative bg-white/5 rounded-2xl hover:bg-white/10 transition-colors border border-white/20 flex flex-row items-center justify-between gap-2 md:gap-4 group">
       {/* Left side details */}
-      <div className="flex items-center gap-3 md:gap-4 flex-1 overflow-hidden min-w-0">
+      <div onClick={handleViewProfile} className="flex items-center gap-3 md:gap-4 flex-1 overflow-hidden min-w-0 cursor-pointer">
         {/* Avatar */}
         <div className="w-12 h-12 md:w-16 md:h-16 min-w-[48px] md:min-w-[64px] bg-gray-800 rounded-full border border-gray-800 flex items-center justify-center overflow-hidden shrink-0">
           <Avatar
