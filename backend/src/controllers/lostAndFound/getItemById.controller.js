@@ -39,6 +39,7 @@ export const getItemById = catchAsync(async (req, res, next) => {
 
   const formattedItem = {
     id: item.id,
+    ownerId: item.userId,
     postId: `LF-${item.id}`,
     type: item.type.toLowerCase(),
     title: item.title,

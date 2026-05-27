@@ -119,3 +119,22 @@ export const getItemMatches = async (id) => {
     throw error;
   }
 };
+
+/**
+ * Submit a claim on a Lost or Found item.
+ *
+ * @param {number|string} id - The ID of the item
+ * @param {{ contactNumber: string, description: string }} payload
+ */
+export const claimItem = async (id, { contactNumber, description }) => {
+  try {
+    const response = await api.post(`/lost-and-found/${id}/claim`, {
+      contactNumber,
+      description,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting claim:", error);
+    throw error;
+  }
+};

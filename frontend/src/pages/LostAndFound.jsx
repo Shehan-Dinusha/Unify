@@ -14,9 +14,10 @@ import {
   CheckCircle,
 } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
-import { getItems, getItemById, getItemMatches } from "../services/lostAndFoundService";
+import { getItems, getItemById, getItemMatches, claimItem } from "../services/lostAndFoundService";
 import CreatePostModal from "../components/lost-found/CreatePostModal";
 import ReportItemForm from "../components/lost-found/ReportItemForm";
+import ContactModal from "../components/lost-found/ContactModal";
 
 /* ─── Item card ──────────────────────────────────────────────── */
 const ItemCard = ({ item, onSelect }) => {
@@ -89,9 +90,17 @@ const ItemCard = ({ item, onSelect }) => {
 };
 
 /* ─── Item Detail View ───────────────────────────────────────── */
-const ItemDetailView = ({ item, matches, onBack, onSelectMatch }) => {
+const ItemDetailView = ({ item, matches, onBack, onSelectMatch, currentUserId }) => {
   const isLost = item.type === "lost";
   const [activeImage, setActiveImage] = useState(0);
+  const [showContactModal, setShowContactModal] = useState(false);
+
+  // Hide the claim button if the viewer is the post owner
+  const isOwner = currentUserId && item.ownerId && currentUserId === item.ownerId;
+
+  const handleClaimSubmit = async ({ contactNumber, description }) => {
+    await claimItem(item.id, { contactNumber, description });
+  };
 
   return (
     <div className="flex flex-col gap-5 w-full max-w-5xl mx-auto px-2 sm:px-0">
@@ -279,13 +288,28 @@ const ItemDetailView = ({ item, matches, onBack, onSelectMatch }) => {
             </div>
           </div>
 
-          {/* Action Button */}
-          <button className="w-full py-3.5 rounded-xl text-white text-body-medium-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 bg-primary-blue hover:brightness-110">
-            <CheckCircle size={18} />
-            {isLost ? "I Found This" : "Claim This Item"}
-          </button>
+          {/* Action Button — hidden for post owner */}
+          {!isOwner && (
+            <button
+              onClick={() => setShowContactModal(true)}
+              className="w-full py-3.5 rounded-xl text-white text-body-medium-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 bg-gradient-to-r from-primary-blue to-[#60A5FA] hover:brightness-110"
+            >
+              <CheckCircle size={18} />
+              {isLost ? "I Found This" : "Claim This Item"}
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Contact Modal */}
+      {showContactModal && (
+        <ContactModal
+          isLost={isLost}
+          itemTitle={item.title}
+          onClose={() => setShowContactModal(false)}
+          onSubmit={handleClaimSubmit}
+        />
+      )}
     </div>
   );
 };
@@ -294,7 +318,7 @@ const ItemDetailView = ({ item, matches, onBack, onSelectMatch }) => {
 const FILTERS = ["All", "Lost Items", "Found Items"];
 
 /* ─── Item Detail View Wrapper ───────────────────────────────── */
-const ItemDetailViewWrapper = ({ id, onBack, onSelectMatch }) => {
+const ItemDetailViewWrapper = ({ id, onBack, onSelectMatch, currentUserId }) => {
   const [item, setItem] = useState(null);
   const [matches, setMatches] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -321,7 +345,7 @@ const ItemDetailViewWrapper = ({ id, onBack, onSelectMatch }) => {
   if (loading) return <div className="text-center text-text-secondary py-10">Loading item...</div>;
   if (!item) return <div className="text-center text-text-secondary py-10">Item not found. <button onClick={onBack} className="text-primary-blue hover:underline">Go back</button></div>;
 
-  return <ItemDetailView item={item} matches={matches} onBack={onBack} onSelectMatch={onSelectMatch} />;
+  return <ItemDetailView item={item} matches={matches} onBack={onBack} onSelectMatch={onSelectMatch} currentUserId={currentUserId} />;
 };
 
 /* ─── Page ───────────────────────────────────────────────────── */
@@ -407,6 +431,7 @@ const LostAndFound = () => {
           id={Number(searchParams.get("id"))} 
           onBack={() => setView("list")} 
           onSelectMatch={(matchId) => setSearchParams({ view: "detail", id: String(matchId) })}
+          currentUserId={currentUser?.id}
         />
       ) : view === "lostForm" || view === "foundForm" ? (
         <ReportItemForm

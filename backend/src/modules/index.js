@@ -21,6 +21,7 @@ import Comment from "./Comment.model.js";
 import PostLike from "./PostLike.model.js";
 import Boarding from "./Boarding.model.js";
 import LostAndFound from "./LostAndFound.model.js";
+import ClaimRequest from "./ClaimRequest.model.js";
 import MarketplaceItem from "./MarketplaceItem.model.js";
 import Semester from "./Semester.model.js";
 import AcademicModule from "./AcademicModule.model.js";
@@ -231,6 +232,21 @@ User.hasMany(LostAndFound, {
   onDelete: "CASCADE",
 });
 LostAndFound.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// --- Claim Requests ---
+LostAndFound.hasMany(ClaimRequest, {
+  foreignKey: "itemId",
+  as: "claims",
+  onDelete: "CASCADE",
+});
+ClaimRequest.belongsTo(LostAndFound, { foreignKey: "itemId", as: "item" });
+
+User.hasMany(ClaimRequest, {
+  foreignKey: "claimantId",
+  as: "claimRequests",
+  onDelete: "CASCADE",
+});
+ClaimRequest.belongsTo(User, { foreignKey: "claimantId", as: "claimant" });
 
 // --- Marketplace ---
 MarketplaceItem.belongsTo(User, { foreignKey: "sellerId", as: "seller" });
@@ -655,4 +671,5 @@ export {
   OTP,
   UserSuspension,
   UserSuspensionHistory,
+  ClaimRequest,
 };
