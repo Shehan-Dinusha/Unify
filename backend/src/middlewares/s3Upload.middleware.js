@@ -16,6 +16,9 @@ const fileFilter = (req, file, cb) => {
     "image/gif",
     "image/svg+xml",
     "application/pdf",
+    "video/mp4",
+    "video/webm",
+    "video/ogg",
   ];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
@@ -31,7 +34,7 @@ const fileFilter = (req, file, cb) => {
 const s3Upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
 });
 
 /**

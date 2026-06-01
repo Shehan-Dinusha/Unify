@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Trash2, ChevronDown, ThumbsUp, ThumbsDown, Heart } from "lucide-react";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
@@ -14,10 +15,16 @@ import StarRating from "../components/common/StarRating";
 import NotFound from "./NotFound";
 
 const ReviewHistoryCard = ({ review, onDelete }) => {
+  const navigate = useNavigate();
+
+  const handleViewProfile = () => {
+    navigate(`/profile/${review.targetId}`);
+  };
+
   return (
     <Card variant="container" className="w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
-        <div className="flex items-center gap-3">
+        <div onClick={handleViewProfile} className="flex items-center gap-3 cursor-pointer">
           <img
             className="w-10 h-10 rounded-full object-cover"
             src={review.targetAvatar}

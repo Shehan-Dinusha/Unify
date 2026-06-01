@@ -41,10 +41,29 @@ const ChatPage = () => {
   const prevChatIdRef = useRef(null);
   const searchTimerRef = useRef(null);
 
+  // Merge API data with existing conversations, preserving any added from navigation state
+  const mergeConversations = (incoming) => {
+    if (!incoming) return;
+    setConversations((prev) => {
+      const map = new Map();
+      for (const c of prev) map.set(c.id, c);
+      for (const c of incoming) map.set(c.id, c);
+      return Array.from(map.values());
+    });
+  };
+
   // ── Auto-select conversation from navigation state ─────────────────────
   useEffect(() => {
     if (location.state?.activeConversationId) {
       setActiveChatId(location.state.activeConversationId);
+      if (location.state?.newConversation) {
+        setConversations((prev) => {
+          const exists = prev.some(
+            (c) => c.id === location.state.newConversation.id,
+          );
+          return exists ? prev : [location.state.newConversation, ...prev];
+        });
+      }
     }
   }, [location.state?.activeConversationId]);
 
@@ -55,7 +74,7 @@ const ChatPage = () => {
         setLoading(true);
         const res = await chatService.getConversations();
         if (res.success) {
-          setConversations(res.data || []);
+          mergeConversations(res.data);
         }
       } catch (err) {
         console.error("Failed to fetch conversations:", err);
@@ -70,7 +89,7 @@ const ChatPage = () => {
   useEffect(() => {
     if (isConnected && !loading) {
       chatService.getConversations().then((res) => {
-        if (res.success) setConversations(res.data || []);
+        if (res.success) mergeConversations(res.data);
       });
     }
   }, [isConnected]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -81,10 +100,25 @@ const ChatPage = () => {
 
     // New message received in a room
     const handleReceive = ({ message, conversationId }) => {
-      setAllMessages((prev) => ({
-        ...prev,
-        [conversationId]: [...(prev[conversationId] || []), message],
-      }));
+      setAllMessages((prev) => {
+        const existing = prev[conversationId] || [];
+        const optimisticIdx = existing.findIndex(
+          (m) =>
+            typeof m.id === "string" &&
+            m.id.startsWith("temp-") &&
+            m.senderId === message.senderId &&
+            m.text === message.text,
+        );
+        if (optimisticIdx !== -1) {
+          const updated = [...existing];
+          updated[optimisticIdx] = message;
+          return { ...prev, [conversationId]: updated };
+        }
+        return {
+          ...prev,
+          [conversationId]: [...existing, message],
+        };
+      });
 
       // Update conversation list
       setConversations((prev) =>
@@ -132,7 +166,7 @@ const ChatPage = () => {
         }
         // New conversation — refetch list
         chatService.getConversations().then((res) => {
-          if (res.success) setConversations(res.data || []);
+          if (res.success) mergeConversations(res.data);
         });
         return prev;
       });
@@ -363,10 +397,37 @@ const ChatPage = () => {
     prevChatIdRef.current = activeChatId;
   }, [activeChatId, joinRoom, leaveRoom, markRead]);
 
+  // ── Re-join room when socket connects after activeChatId was already set ──
+  useEffect(() => {
+    if (isConnected && activeChatId && typeof activeChatId === "number") {
+      joinRoom(activeChatId);
+    }
+  }, [isConnected, activeChatId, joinRoom]);
+
   const handleSendMessage = useCallback(
     (text, attachments = []) => {
       if (!activeChatId) return;
       if (!text.trim() && attachments.length === 0) return;
+
+      const optimisticMsg = {
+        id: `temp-${Date.now()}`,
+        conversationId: activeChatId,
+        senderId: currentUser?.id,
+        senderName: currentUser?.name || "You",
+        text: text.trim(),
+        attachments: attachments.length > 0
+          ? attachments.map((a) => ({
+              key: a.key, name: a.name, type: a.type, url: a.url, isImage: a.isImage,
+            }))
+          : null,
+        isRead: true,
+        createdAt: new Date().toISOString(),
+      };
+
+      setAllMessages((prev) => ({
+        ...prev,
+        [activeChatId]: [...(prev[activeChatId] || []), optimisticMsg],
+      }));
 
       sendMessage({
         conversationId: activeChatId,
@@ -383,7 +444,7 @@ const ChatPage = () => {
             : undefined,
       });
     },
-    [activeChatId, sendMessage],
+    [activeChatId, sendMessage, currentUser],
   );
 
   const handleDeleteConversation = useCallback(
