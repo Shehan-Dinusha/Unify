@@ -18,7 +18,7 @@ import TypeBadge from './TypeBadge';
 import DeleteModal from './DeleteModal';
 import DismissModal from './DismissModal';
 import ResolveModal from './ResolveModal';
-import SuspendModal from './SuspendModal';
+import SuspendModal from '../../components/common/SuspendModal';
 import SuccessModal from './SuccessModal';
 
 const avatar = (name, url) => url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${(name || 'User').replace(/\s/g,'')}`;
@@ -430,16 +430,18 @@ const ReportDetail = () => {
                 <SuspendModal
                     open={true}
                     onClose={closeModal}
-                    actionLoading={actionLoading}
+                    loading={actionLoading}
+                    onConfirm={() => confirmAction('suspended')}
+                    userName={r.offender.name}
+                    userEmail={r.offender.email || ''}
+                    userAvatar={avatar(r.offender.name, r.offender.avatar)}
                     suspendReason={suspendReason}
                     onSuspendReasonChange={setSuspendReason}
                     suspendDetail={suspendDetail}
                     onSuspendDetailChange={setSuspendDetail}
                     sendEmail={sendEmail}
                     onSendEmailChange={setSendEmail}
-                    onConfirm={() => confirmAction('suspended')}
-                    report={r}
-                    avatar={avatar}
+                    reasons={['Violation of Terms', 'Spam Activity', 'Non-payment']}
                 />
             )}
             {success !== null && (
