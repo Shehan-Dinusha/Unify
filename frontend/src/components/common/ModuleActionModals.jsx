@@ -20,8 +20,8 @@ export const ModuleActionSuccessModal = ({
   return (
     <ModalBackdrop>
       <Card
-        variant="card"
-        className="w-full max-w-[440px] !p-0 overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+        variant="modal" padding="p-0"
+        className=""
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           {/* Icon */}

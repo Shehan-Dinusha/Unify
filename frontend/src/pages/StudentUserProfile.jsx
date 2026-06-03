@@ -185,7 +185,7 @@ const StudentUserProfile = () => {
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
         <div className="min-h-full flex items-center justify-center px-4 py-6">
-          <Card variant="card" padding="p-0" className="w-full max-w-[560px] outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+          <Card variant="modal" padding="p-0" className="w-full max-w-[560px]">
             <div className="p-lg flex flex-col">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -276,7 +276,7 @@ const StudentUserProfile = () => {
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
         <div className="min-h-full flex items-center justify-center px-4 py-6">
-          <Card variant="card" padding="p-0" className="w-full max-w-[480px] outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+          <Card variant="modal" padding="p-0" className="">
             <div className="p-8 flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-state-error/15 flex items-center justify-center mb-5 ring-4 ring-state-error/10">
                 <div className="w-10 h-10 rounded-full bg-state-error flex items-center justify-center shadow-[0_0_15px_rgba(255,99,102,0.4)]">
@@ -325,7 +325,7 @@ const StudentUserProfile = () => {
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
         <div className="min-h-full flex items-center justify-center px-4 py-6">
-          <Card variant="card" padding="p-0" className="w-full max-w-[500px] outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+          <Card variant="modal" padding="p-0" className="">
             <div className="w-full h-1 bg-white/5 rounded-t-3xl overflow-hidden"><div className="h-full w-3/4 bg-gradient-to-r from-primary-blue to-primary-accent rounded-r" /></div>
             <div className="p-lg flex flex-col">
               <div className="flex items-center justify-between mb-5">
@@ -389,7 +389,7 @@ const StudentUserProfile = () => {
       return (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
           <div className="min-h-full flex items-center justify-center px-4 py-6">
-            <Card variant="card" padding="p-0" className="w-full max-w-[480px] outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+            <Card variant="modal" padding="p-0" className="">
               <div className="p-8 pb-6 flex flex-col items-center text-center">
                 <div className="relative mb-6">
                   <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-blue/20 to-blue-500/20 flex items-center justify-center ring-4 ring-primary-blue/10 shadow-[0_0_40px_rgba(43,140,238,0.3)]"><ShieldCheck size={36} className="text-primary-blue" /></div>
@@ -421,7 +421,7 @@ const StudentUserProfile = () => {
       return (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
           <div className="min-h-full flex items-center justify-center px-4 py-6">
-            <Card variant="card" padding="p-0" className="w-full max-w-[480px] outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+            <Card variant="modal" padding="p-0" className="">
               <div className="p-8 pb-6 flex flex-col items-center text-center">
                 <div className="relative mb-6">
                   <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-blue/20 to-cyan-500/20 flex items-center justify-center ring-4 ring-primary-blue/10 shadow-[0_0_40px_rgba(43,140,238,0.3)]"><Power size={36} className="text-primary-blue" /></div>
@@ -452,7 +452,7 @@ const StudentUserProfile = () => {
       return (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
           <div className="min-h-full flex items-center justify-center px-4 py-6">
-            <Card variant="card" padding="p-0" className="w-full max-w-[480px] outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+            <Card variant="modal" padding="p-0" className="">
               <div className="p-8 pb-6 flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5 bg-state-success/10"><CheckCircle2 size={36} className="text-state-success" /></div>
                 <h2 className="text-xl font-bold text-white font-inter mb-3">Suspension Applied Successfully</h2>

@@ -64,7 +64,7 @@ const SuspendedUserSuccess = () => {
     >
       {/* Success Modal — inside MainLayout so sidebar shows behind blur */}
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">
-        <Card variant="card" padding="p-0" className="w-full max-w-[480px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl my-auto">
+        <Card variant="modal" padding="p-0" className="w-full max-w-[480px] my-auto">
 
           {/* Loading State */}
           {loading && (

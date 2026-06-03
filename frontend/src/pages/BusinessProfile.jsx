@@ -118,7 +118,7 @@ const BusinessProfile = () => {
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
         <div className="min-h-full flex items-center justify-center px-4 py-6">
-          <Card variant="card" padding="p-0" className="w-full max-w-[500px] outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+          <Card variant="modal" padding="p-0" className="w-full max-w-[500px]">
             <div className="w-full h-1 bg-white/5 rounded-t-3xl overflow-hidden"><div className="h-full w-3/4 bg-gradient-to-r from-primary-blue to-primary-accent rounded-r" /></div>
             <div className="p-lg flex flex-col">
               <div className="flex items-center justify-between mb-5">
@@ -179,7 +179,7 @@ const BusinessProfile = () => {
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
         <div className="min-h-full flex items-center justify-center px-4 py-6">
-          <Card variant="card" padding="p-0" className="w-full max-w-[440px] outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+          <Card variant="modal" padding="p-0" className="">
             <div className="p-lg flex flex-col">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
@@ -217,7 +217,7 @@ const BusinessProfile = () => {
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
         <div className="min-h-full flex items-center justify-center px-4 py-6">
-          <Card variant="card" padding="p-0" className="w-full max-w-[440px] outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+          <Card variant="modal" padding="p-0" className="">
             <div className="p-8 pb-6 flex flex-col items-center text-center">
               <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 ring-4 ${cfg.ringClass}`}>{cfg.icon}</div>
               <h2 className="text-xl font-bold text-white mb-3">{cfg.title}</h2>

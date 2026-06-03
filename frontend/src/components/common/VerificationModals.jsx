@@ -20,9 +20,9 @@ export const ActionErrorModal = ({
   return (
     <ModalBackdrop>
       <Card
-        variant="card"
+        variant="modal"
         padding="p-0"
-        className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+        className=""
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
@@ -58,8 +58,9 @@ export const WithdrawalSuccessModal = ({ isOpen, onClose }) => {
   return (
     <ModalBackdrop>
       <Card
-        variant="card"
-        className="w-full max-w-[440px] !p-0 overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+        variant="modal"
+        padding="p-0"
+        className=""
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
@@ -98,8 +99,9 @@ export const RevocationSuccessModal = ({ isOpen, onClose }) => {
   return (
     <ModalBackdrop>
       <Card
-        variant="card"
-        className="w-full max-w-[440px] !p-0 overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+        variant="modal"
+        padding="p-0"
+        className=""
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
@@ -143,9 +145,9 @@ export const VerificationConfirmationModal = ({
   return (
     <ModalBackdrop>
       <Card
-        variant="card"
+        variant="modal"
         padding="p-0"
-        className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+        className=""
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           {/* Icon */}
@@ -197,8 +199,9 @@ export const VerificationSuccessModal = ({
   return (
     <ModalBackdrop>
       <Card
-        variant="card"
-        className="w-full max-w-[440px] !p-0 overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+        variant="modal"
+        padding="p-0"
+        className=""
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           {/* Icon */}
@@ -260,9 +263,9 @@ export const VerificationRejectionModal = ({
   return (
     <ModalBackdrop>
       <Card
-        variant="card"
+        variant="modal"
         padding="p-0"
-        className="w-full max-w-[440px] h-[500px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+        className="h-[500px]"
       >
         <div className="flex flex-col h-full w-full">
           {/* Header */}
@@ -383,9 +386,9 @@ export const VerificationRejectedSuccessModal = ({
   return (
     <ModalBackdrop>
       <Card
-        variant="card"
+        variant="modal"
         padding="p-0"
-        className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+        className=""
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           {/* Icon */}

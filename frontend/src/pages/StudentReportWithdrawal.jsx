@@ -72,9 +72,9 @@ const StudentReportWithdrawal = () => {
       <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
         <div className="min-h-full flex items-center justify-center px-4 py-10">
           <Card
-            variant="card"
+            variant="modal"
             padding="p-0"
-            className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+            className=""
           >
             <div className="p-lg flex flex-col">
             {/* Header */}

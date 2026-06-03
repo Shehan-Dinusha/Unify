@@ -155,9 +155,9 @@ const BoostPostSuccess = () => {
       {/* Success Modal — inside MainLayout so sidebar shows behind blur */}
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">
         <Card
-          variant="card"
+          variant="modal"
           padding="p-0"
-          className="w-full max-w-[480px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl my-auto"
+          className="my-auto"
         >
           <div className="p-6 sm:p-8 pb-4 sm:pb-6 flex flex-col items-center text-center">
             {/* Success Icon */}

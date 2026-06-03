@@ -33,9 +33,9 @@ const RevokePrivilegesModal = ({ isOpen, onClose, onConfirm }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
       {step === "confirm" && (
         <Card
-          variant="card"
+          variant="modal"
           padding="p-0"
-          className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
+          className="animate-in fade-in zoom-in duration-200"
         >
           {/* Close button */}
           <button
@@ -104,9 +104,9 @@ const RevokePrivilegesModal = ({ isOpen, onClose, onConfirm }) => {
 
       {step === "success" && (
         <Card
-          variant="card"
+          variant="modal"
           padding="p-0"
-          className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
+          className="animate-in fade-in zoom-in duration-200"
         >
           <div className="p-8 pb-6 flex flex-col items-center text-center">
             <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">

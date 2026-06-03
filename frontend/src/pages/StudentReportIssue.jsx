@@ -181,9 +181,9 @@ const StudentReportIssue = () => {
         <div className="min-h-full flex items-center justify-center px-4 py-6 sm:py-10">
           {/* ── ONE single glass card containing everything ── */}
           <Card
-            variant="card"
+            variant="modal"
             padding="p-0"
-            className="w-full max-w-[600px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+            className=""
           >
             {/* Card Header */}
             <div className="p-5 sm:p-6 pb-0 flex items-start justify-between">
@@ -480,9 +480,9 @@ const StudentReportIssue = () => {
         <div className="fixed inset-0 z-[60] overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
           <div className="min-h-full flex items-center justify-center px-4 py-8">
             <Card
-              variant="card"
+              variant="modal"
               padding="p-0"
-              className="w-full max-w-[420px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+              className=""
             >
               <div className="p-6 sm:p-8 pb-4 sm:pb-6 flex flex-col items-center text-center">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 ring-4 ring-primary-blue/5">

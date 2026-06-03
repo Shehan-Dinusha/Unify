@@ -713,7 +713,7 @@ const BoostPackageForm = () => {
         {/* Save Confirmation Modal — inside MainLayout so sidebar shows behind blur */}
         {showSaveConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
-            <Card variant="card" padding="p-0" className="w-full max-w-[420px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl">
+            <Card variant="modal" padding="p-0" className="">
               <div className="p-8 pb-6 flex flex-col items-center text-center">
                 <div className="w-16 h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-primary-blue/5">
                   <Save size={32} className="text-primary-blue" />
@@ -740,7 +740,7 @@ const BoostPackageForm = () => {
         {/* Success Modal — inside MainLayout so sidebar shows behind blur */}
         {showSuccess && successData && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">
-            <Card variant="card" padding="p-0" className="w-full max-w-[480px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl my-auto">
+            <Card variant="modal" padding="p-0" className="my-auto">
               <div className="p-6 sm:p-8 pb-4 sm:pb-6 flex flex-col items-center text-center">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 ring-4 ring-state-success/5">
                   <CheckCircle2 size={28} className="text-state-success sm:hidden" />

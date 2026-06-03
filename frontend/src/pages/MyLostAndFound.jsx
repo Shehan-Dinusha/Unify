@@ -379,9 +379,9 @@ const MyLostAndFound = () => {
 
           {/* Glass Card */}
           <Card
-            variant="card"
+            variant="modal"
             padding="p-6 sm:p-8"
-            className="w-full max-w-sm animate-in fade-in zoom-in-95 duration-200 text-center outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+            className="animate-in fade-in zoom-in-95 duration-200 text-center"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Warning Icon */}
@@ -427,9 +427,9 @@ const MyLostAndFound = () => {
 
           {/* Glass Card */}
           <Card
-            variant="card"
+            variant="modal"
             padding="p-6 sm:p-8"
-            className="w-full max-w-sm animate-in fade-in zoom-in-95 duration-200 text-center outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl"
+            className="animate-in fade-in zoom-in-95 duration-200 text-center"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close X */}
