@@ -1,6 +1,7 @@
 import React from "react";
 import Card from "./Card";
 import Button from "./Button";
+import { CheckIcon } from "./Icons";
 import { Trash2 } from "lucide-react";
 
 /**
@@ -59,18 +60,7 @@ export const ReviewDeletedModal = ({ onClose }) => {
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
             <div className="w-8 h-8 flex items-center justify-center text-state-success">
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <CheckIcon />
             </div>
           </div>
 

@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import { useToast } from '../components/common/Toast';
+import { CheckSmallIcon } from '../components/common/Icons';
 import { ShieldCheck, LayoutDashboard, UserX, Loader2 } from 'lucide-react';
 import { getCurrentUser } from '../services/authService';
 import { getSuspendedUserById } from '../services/suspensionService';
@@ -103,11 +104,7 @@ const SuspendedUserSuccess = () => {
                       className={`relative w-11 h-6 rounded-full transition-all duration-200 ${notifyStudent ? 'bg-primary-blue' : 'bg-white/20'}`}
                     >
                       <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-200 flex items-center justify-center ${notifyStudent ? 'left-[22px]' : 'left-0.5'}`}>
-                        {notifyStudent && (
-                          <svg width="10" height="8" viewBox="0 0 10 8" fill="none" className="text-primary-blue">
-                            <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        )}
+                        {notifyStudent && <CheckSmallIcon className="text-primary-blue" />}
                       </div>
                     </button>
                   </div>

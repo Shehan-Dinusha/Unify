@@ -5,6 +5,7 @@ import ModuleHeader from "../components/learning/ModuleHeader";
 import CategoryGrid from "../components/learning/CategoryGrid";
 import FileListTable from "../components/learning/FileListTable";
 import BatchRepTeam from "../components/learning/BatchRepTeam";
+import { BookIcon } from "../components/common/Icons";
 import { ModuleActionSuccessModal } from "../components/common/ModuleActionModals";
 import * as learningService from "../services/learningService";
 import { getCurrentUser } from "../services/authService";
@@ -436,21 +437,7 @@ const BatchRepLearningDashboard = () => {
       <div className="w-full relative pb-20 mt-0">
         {/* Breadcrumb Context Title spanning above grid */}
         <div className="flex items-center gap-1.5 text-gray-400 text-xs font-bold font-inter leading-5 w-full mb-6 mt-2 pl-1">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-gray-400"
-          >
-            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-          </svg>
+          <BookIcon className="text-gray-400" />
           <span>{facultyName}</span>
           <span className="font-normal mx-0.5">/</span>
           <span>{degreeName}</span>
@@ -522,40 +509,12 @@ const BatchRepLearningDashboard = () => {
               </>
             ) : semesters.some((sem) => sem.modules?.length > 0) ? (
               <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mb-4 opacity-50"
-                >
-                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                </svg>
+                <BookIcon className="mb-4 opacity-50 w-12 h-12" />
                 <p>Select a module from the sidebar to view details</p>
               </div>
             ) : (
               <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mb-4 opacity-50"
-                >
-                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                </svg>
+                <BookIcon className="mb-4 opacity-50 w-12 h-12" />
                 <p>Create a module first to start uploading materials</p>
               </div>
             )}

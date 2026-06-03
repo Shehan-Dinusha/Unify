@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Camera, Trash2 } from "lucide-react";
+import { ChevronDownIcon, SaveIcon } from "../common/Icons";
 import { editItem } from "../../services/lostAndFoundService";
 
 const parseTimeForInput = (timeStr) => {
@@ -189,9 +190,7 @@ const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
               </select>
               {/* Custom simple chevron */}
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-tertiary">
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <ChevronDownIcon />
               </div>
             </div>
           </div>
@@ -289,11 +288,7 @@ const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
                   isSubmitting ? "bg-gray-500 cursor-not-allowed" : "bg-primary-blue hover:brightness-110"
                 }`}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16L21 8V19C21 20.1046 20.1046 21 19 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M17 21V13H7V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M7 3V8H15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <SaveIcon />
                 {isSubmitting ? "Saving..." : "Save Changes"}
               </button>
             </div>

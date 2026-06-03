@@ -6,6 +6,7 @@ import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import Avatar from "../components/common/Avatar";
 import LoadMoreButton from "../components/common/LoadMoreButton";
+import { CoffeeIcon, HouseIcon, InfoCircleIcon } from "../components/common/Icons";
 import { getMyReviews, deleteReview } from "../services/reviewService";
 import {
   DeleteReviewModal,
@@ -358,48 +359,9 @@ const MyReviewHistory = () => {
                   "All Reviews"
                 ) : (
                   <div className="flex items-center gap-1.5 ">
-                    {tab === "Boarding" && (
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                    )}
-                    {tab === "Food/Cafe" && (
-                      <svg
-                        width="12"
-                        height="13"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                    )}
-                    {tab === "Services" && (
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                    )}
+                    {tab === "Boarding" && <HouseIcon />}
+                    {tab === "Food/Cafe" && <CoffeeIcon />}
+                    {tab === "Services" && <InfoCircleIcon />}
                     {tab}
                   </div>
                 )}

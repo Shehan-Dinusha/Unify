@@ -3,6 +3,7 @@ import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
 import Button from "../components/common/Button";
 import { ArrowUp, Coins, DollarSign, Ticket, ShoppingBag, ArrowUpRight, GraduationCap, Check } from "lucide-react";
+import { BankIcon } from "../components/common/Icons";
 import { useNavigate } from "react-router-dom";
 
 /* ─── Mock data ─────────────────────────────────────────────── */
@@ -140,10 +141,7 @@ const WithdrawModal = ({ onClose, onConfirm }) => {
                         </label>
                         <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-4">
                             <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                                {/* Bank icon */}
-                                <svg className="w-5 h-5 text-text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <path d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 10v11M12 10v11M16 10v11" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                <BankIcon className="w-5 h-5 text-text-secondary" />
                             </div>
                             <div>
                                 <p className="text-white text-base font-medium">Chase Checking</p>

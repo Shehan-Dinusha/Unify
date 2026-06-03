@@ -1,6 +1,7 @@
 import React from "react";
 import Button from "./Button";
 import Card from "./Card";
+import { CheckIcon, TrashIcon } from "./Icons";
 
 const ModalBackdrop = ({ children }) => (
   <div className="fixed inset-0 z-[150] flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
@@ -32,33 +33,7 @@ export const ModuleActionSuccessModal = ({
             }`}
           >
             <div className="w-8 h-8 flex items-center justify-center">
-              {isDelete ? (
-                <svg
-                  width="100%"
-                  height="100%"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
-                    fill="currentColor"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  width="100%"
-                  height="100%"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"
-                    fill="currentColor"
-                  />
-                </svg>
-              )}
+              {isDelete ? <TrashIcon /> : <CheckIcon />}
             </div>
           </div>
 

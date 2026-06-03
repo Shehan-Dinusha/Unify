@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Button from "./Button";
 import Card from "./Card";
+import { CheckIcon, CloseIcon, MinusCircleIcon, ShieldCheckFilledIcon, WarningIcon } from "./Icons";
 
 const ModalBackdrop = ({ children }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
@@ -26,18 +27,7 @@ export const ActionErrorModal = ({
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
             <div className="w-8 h-8 flex items-center justify-center text-state-error">
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <WarningIcon />
             </div>
           </div>
 
@@ -74,18 +64,7 @@ export const WithdrawalSuccessModal = ({ isOpen, onClose }) => {
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
             <div className="w-8 h-8 flex items-center justify-center text-state-success">
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <CheckIcon />
             </div>
           </div>
 
@@ -125,18 +104,7 @@ export const RevocationSuccessModal = ({ isOpen, onClose }) => {
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
             <div className="w-8 h-8 flex items-center justify-center text-state-success">
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <CheckIcon />
             </div>
           </div>
 
@@ -183,18 +151,7 @@ export const VerificationConfirmationModal = ({
           {/* Icon */}
           <div className="w-16 h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-primary-blue/5">
             <div className="w-8 h-8 flex items-center justify-center text-primary-blue">
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 24 28"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 0L0 5.33333V12C0 18.6667 5.10667 24.8933 12 26.6667C18.8933 24.8933 24 18.6667 24 12V5.33333L12 0ZM9.33333 20L4 14.6667L5.88 12.7867L9.33333 16.2267L18.12 7.44L20 9.33333L9.33333 20Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <ShieldCheckFilledIcon />
             </div>
           </div>
 
@@ -247,18 +204,7 @@ export const VerificationSuccessModal = ({
           {/* Icon */}
           <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
             <div className="w-8 h-8 flex items-center justify-center text-state-success">
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <CheckIcon />
             </div>
           </div>
 
@@ -323,18 +269,7 @@ export const VerificationRejectionModal = ({
           <div className="px-6 py-4 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-red-900/30 rounded-full flex items-center justify-center text-state-error">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"
-                    fill="currentColor"
-                  />
-                </svg>
+                <WarningIcon className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-body-large-bold text-text-primary leading-tight">
@@ -349,18 +284,7 @@ export const VerificationRejectionModal = ({
               onClick={onClose}
               className="p-2 text-text-secondary hover:text-text-primary transition-colors"
             >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <CloseIcon className="w-6 h-6" />
             </button>
           </div>
 
@@ -467,18 +391,7 @@ export const VerificationRejectedSuccessModal = ({
           {/* Icon */}
           <div className="relative mb-6">
             <div className="w-20 h-20 bg-red-900/30 rounded-full flex items-center justify-center ring-4 ring-state-error/10">
-              <svg
-                width="36"
-                height="36"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM17 13H7V11H17V13Z"
-                  fill="#F87171"
-                />
-              </svg>
+              <MinusCircleIcon className="w-9 h-9 text-red-400" />
             </div>
           </div>
 

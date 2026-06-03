@@ -5,6 +5,7 @@ import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import LoadMoreButton from "../components/common/LoadMoreButton";
+import { ArrowDownIcon, ArrowRightIcon, CheckIcon, ShieldCheckIcon } from "../components/common/Icons";
 import {
   getTargetReviews,
   submitReview,
@@ -18,31 +19,6 @@ import {
 import StarRating from "../components/common/StarRating";
 import Avatar from "../components/common/Avatar";
 import NotFound from "./NotFound";
-
-const ShieldCheckIcon = () => (
-  <svg
-    width="24"
-    height="28"
-    viewBox="0 0 24 28"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M12 26.5C12 26.5 22.5 21.5 22.5 12.5V5L12 1.5L1.5 5V12.5C1.5 21.5 12 26.5 12 26.5Z"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M8.5 13.5L11 16L16.5 10.5"
-      stroke="background"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 const RatingSummary = ({ summary }) => {
   return (
@@ -123,19 +99,7 @@ const HasReviewedCard = () => {
             }}
           >
             Go to your review
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="group-hover:translate-y-1 transition-transform"
-            >
-              <path d="M12 5v14M19 12l-7 7-7-7" />
-            </svg>
+            <ArrowDownIcon className="group-hover:translate-y-1 transition-transform" />
           </Button>
         </div>
       </div>
@@ -199,18 +163,8 @@ const WriteReview = ({ onSubmit }) => {
               className="w-4 h-4 rounded appearance-none border border-gray-900 bg-gray-800 checked:bg-primary-blue transition-colors outline-none"
             />
             {isAnonymous && (
-              <svg
-                className="w-3 h-3 text-white absolute pointer-events-none"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="3"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M5 13l4 4L19 7"
-                />
+              <svg className="w-3 h-3 text-white absolute pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             )}
           </div>
@@ -226,21 +180,7 @@ const WriteReview = ({ onSubmit }) => {
           <span className="text-white text-base font-bold font-inter">
             Submit Review
           </span>
-          <svg
-            width="14"
-            height="12"
-            viewBox="0 0 14 12"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M1.1665 6H12.8332M12.8332 6L7.58317 0.75M12.8332 6L7.58317 11.25"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <ArrowRightIcon />
         </Button>
       </div>
     </Card>
@@ -456,18 +396,7 @@ const ReviewSubmittedModal = ({ onClose }) => {
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
             <div className="w-8 h-8 flex items-center justify-center text-state-success">
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"
-                  fill="currentColor"
-                />
-              </svg>
+              <CheckIcon />
             </div>
           </div>
 
