@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import MainLayout from '../components/layout/MainLayout';
-import Card from '../components/common/Card';
-import { BarChart, DonutChart, ProgressBar } from '../components/chart';
-import orderService from '../services/orderService';
+import MainLayout from '../../components/layout/MainLayout';
+import Card from '../../components/common/Card';
+import { BarChart, DonutChart, ProgressBar } from '../../components/chart';
+import orderService from '../../services/orderService';
 import { useNavigate } from 'react-router-dom';
-import { getImageUrl } from '../utils/formatters';
-import { getCurrentUser } from '../services/authService';
+import { getImageUrl } from '../../utils/formatters';
+import { getCurrentUser } from '../../services/authService';
 import { Wallet, Users } from 'lucide-react';
 import DashboardStats from './DashboardStats';
 import RecentOrdersTable from './RecentOrdersTable';

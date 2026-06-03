@@ -1,5 +1,5 @@
 import React from 'react';
-import ClubPostCard from '../components/club/ClubPostCard';
+import ClubPostCard from '../../components/club/ClubPostCard';
 import { Eye, EyeOff } from 'lucide-react';
 
 const ClubPostVisibilityCard = ({ clubPosts, setClubPosts, navigate, orderService }) => {

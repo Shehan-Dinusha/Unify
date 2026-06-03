@@ -1,5 +1,5 @@
 import React from 'react';
-import Card from '../components/common/Card';
+import Card from '../../components/common/Card';
 import {
   ShoppingBag, Clock, CheckCircle2, ArrowUp,
 } from 'lucide-react';

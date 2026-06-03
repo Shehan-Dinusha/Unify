@@ -1,6 +1,6 @@
 import React from 'react';
-import Card from '../components/common/Card';
-import { getImageUrl } from '../utils/formatters';
+import Card from '../../components/common/Card';
+import { getImageUrl } from '../../utils/formatters';
 
 const RecentOrdersTable = ({ recentOrders, navigate }) => (
   <div>
