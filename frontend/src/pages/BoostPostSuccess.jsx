@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
+import Button from '../components/common/Button';
+import Overlay from '../components/common/Overlay';
 import { CheckCircle2, ArrowRight, CalendarDays, Loader2, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
 import { getCurrentUser } from '../services/authService';
@@ -84,7 +86,7 @@ const BoostPostSuccess = () => {
         pageTitle="Boost Your Post"
         verificationCount={0}
       >
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl">
+        <Overlay open={true} className="!transition-none">
           <Card variant="card" padding="p-lg" className="text-center max-w-sm">
             <Loader2 size={40} className="text-primary-blue animate-spin mx-auto mb-4" />
             <h2 className="text-lg font-bold text-white mb-2">Processing Payment...</h2>
@@ -92,7 +94,7 @@ const BoostPostSuccess = () => {
               Confirming your boost purchase with the payment provider.
             </p>
           </Card>
-        </div>
+        </Overlay>
       </MainLayout>
     );
   }
@@ -105,7 +107,7 @@ const BoostPostSuccess = () => {
         pageTitle="Boost Your Post"
         verificationCount={0}
       >
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl px-4">
+        <Overlay open={true} className="!transition-none">
           <Card variant="card" padding="p-lg" className="text-center max-w-md">
             <div className="w-14 h-14 bg-state-error/10 rounded-full flex items-center justify-center mx-auto mb-4 ring-4 ring-state-error/5">
               <AlertTriangle size={28} className="text-state-error" />
@@ -113,12 +115,12 @@ const BoostPostSuccess = () => {
             <h2 className="text-lg font-bold text-white mb-2">Payment Issue</h2>
             <p className="text-text-secondary text-sm mb-6">{error}</p>
             <div className="flex flex-col gap-3">
-              <button
+              <Button
                 onClick={() => navigate('/business/boost-post')}
-                className="w-full h-11 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary-blue/30 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+                variant="gradient" fullWidth size="medium" className="h-11 gap-2"
               >
                 Try Again
-              </button>
+              </Button>
               <button
                 onClick={() => navigate('/my-posts')}
                 className="w-full h-11 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center hover:bg-white/10 active:scale-[0.98] transition-all duration-200"
@@ -127,7 +129,7 @@ const BoostPostSuccess = () => {
               </button>
             </div>
           </Card>
-        </div>
+        </Overlay>
       </MainLayout>
     );
   }
@@ -153,7 +155,7 @@ const BoostPostSuccess = () => {
       verificationCount={0}
     >
       {/* Success Modal — inside MainLayout so sidebar shows behind blur */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">
+      <Overlay open={true} className="py-6 overflow-y-auto">
         <Card
           variant="modal"
           padding="p-0"
@@ -228,12 +230,12 @@ const BoostPostSuccess = () => {
 
           {/* Actions */}
           <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-1 sm:pt-2 flex flex-col gap-3">
-            <button
+            <Button
               onClick={() => navigate('/news-feed')}
-              className="w-full h-11 sm:h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+              variant="gradient" fullWidth size="medium" className="h-11 sm:h-12 gap-2.5"
             >
               View Boosted Listing <ArrowRight size={18} />
-            </button>
+            </Button>
             <button
               onClick={() => navigate('/my-posts')}
               className="w-full h-11 sm:h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
@@ -242,7 +244,7 @@ const BoostPostSuccess = () => {
             </button>
           </div>
         </Card>
-      </div>
+      </Overlay>
     </MainLayout>
   );
 };

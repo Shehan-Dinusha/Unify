@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
+import Button from '../components/common/Button';
 import { useBoostPackages } from '../context/BoostPackageContext';
 import { getCurrentUser } from '../services/authService';
 import {
@@ -339,13 +340,13 @@ const BoostSelectPackage = () => {
                 </div>
               </div>
 
-              <button
+              <Button
                 onClick={handleBoostNow}
-                className="w-full h-10 mt-md rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+                variant="gradient" fullWidth size="medium" className="h-10 mt-md gap-2"
               >
                 <Zap size={15} />
                 Boost Now
-              </button>
+              </Button>
             </Card>
           </div>
         </div>

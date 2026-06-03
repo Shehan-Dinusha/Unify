@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
+import Overlay from '../components/common/Overlay';
 import { useBoostPackages } from '../context/BoostPackageContext';
 import { getCurrentUser } from '../services/authService';
 import { Plus, Pencil, CheckCircle2, DollarSign, Clock, Trash2, AlertTriangle, ChevronLeft, ChevronRight, RefreshCw, Loader2 } from 'lucide-react';
+import StatusIcon from '../components/common/StatusIcon';
 
 const BoostController = () => {
     const navigate = useNavigate();
@@ -303,13 +305,10 @@ const BoostController = () => {
                 </div>
 
                 {/* Delete Confirmation Modal — inside MainLayout so sidebar shows behind blur */}
-                {deleteTarget && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
+                <Overlay open={deleteTarget !== null} onClose={cancelDelete}>
                         <Card variant="modal" padding="p-0" className="">
                             <div className="p-8 pb-6 flex flex-col items-center text-center">
-                                <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
-                                    <AlertTriangle size={32} className="text-state-error" />
-                                </div>
+                                <StatusIcon variant="error" size="lg" icon={<AlertTriangle size={32} className="text-state-error" />} />
                                 <h2 className="text-xl font-bold text-white mb-3">Delete Package?</h2>
                                 <p className="text-text-secondary text-sm leading-relaxed mb-2 max-w-sm">
                                     Are you sure you want to delete the <span className="text-text-primary font-semibold">"{deleteTarget.name}"</span> package? This action cannot be undone.
@@ -329,8 +328,7 @@ const BoostController = () => {
                                 </button>
                             </div>
                         </Card>
-                    </div>
-                )}
+                    </Overlay>
             </MainLayout>
     );
 };

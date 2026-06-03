@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
+import Button from "../components/common/Button";
+import Overlay from "../components/common/Overlay";
 import { useToast } from "../components/common/Toast";
 import { getMyReportById, withdrawMyReport } from "../services/reportService";
 import { getCurrentUser } from "../services/authService";
@@ -59,9 +61,9 @@ const StudentReportWithdrawal = () => {
   if (loading) {
     return (
       <MainLayout user={user} pageTitle="Report Withdrawal" verificationCount={0}>
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl">
+        <Overlay open={true} className="!transition-none">
           <p className="text-text-secondary">Loading...</p>
-        </div>
+        </Overlay>
       </MainLayout>
     );
   }
@@ -69,8 +71,8 @@ const StudentReportWithdrawal = () => {
   return (
     <MainLayout user={user} pageTitle="Report Withdrawal" verificationCount={0}>
       {/* Modal Overlay */}
-      <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
-        <div className="min-h-full flex items-center justify-center px-4 py-10">
+      <Overlay open={true} className="overflow-y-auto">
+        <div className="min-h-full flex items-center justify-center py-10">
           <Card
             variant="modal"
             padding="p-0"
@@ -143,13 +145,13 @@ const StudentReportWithdrawal = () => {
 
             {/* Buttons — same pattern as admin modals */}
             <div className="flex flex-col gap-3">
-              <button
+              <Button
                 onClick={handleConfirm}
                 disabled={submitting}
-                className={`w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                variant="gradient" fullWidth size="medium" className="gap-2.5"
               >
                 <AlertTriangle size={18} /> {submitting ? 'Withdrawing...' : 'Confirm Withdrawal'}
-              </button>
+              </Button>
               <button
                 onClick={handleCancel}
                 className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
@@ -160,7 +162,7 @@ const StudentReportWithdrawal = () => {
           </div>
         </Card>
       </div>
-    </div>
+    </Overlay>
   </MainLayout>
 );
 };

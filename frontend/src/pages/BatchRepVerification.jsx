@@ -14,6 +14,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import Overlay from "../components/common/Overlay";
 import FileUpload from "../components/common/FileUpload";
 import DocumentPreviewModal from "../components/common/DocumentPreviewModal";
 import verificationService from "../services/verificationService";
@@ -22,6 +23,7 @@ import {
   WithdrawalSuccessModal,
   RevocationSuccessModal,
 } from "../components/common/VerificationModals";
+import StatusIcon from "../components/common/StatusIcon";
 
 const BatchRepVerification = () => {
   const navigate = useNavigate();
@@ -559,16 +561,13 @@ const BatchRepVerification = () => {
       </div>
 
       {/* Withdraw Confirmation Modal - Matched size and style with Club Verif */}
-      {showWithdrawModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
+      <Overlay open={showWithdrawModal} onClose={() => setShowWithdrawModal(false)}>
           <Card
             variant="modal" padding="p-0"
             className="animate-in fade-in zoom-in duration-200"
           >
             <div className="p-6 sm:p-8 sm:pb-6 flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
-                <AlertCircle className="w-8 h-8 text-state-error" />
-              </div>
+              <StatusIcon variant="error" size="lg" icon={<AlertCircle className="w-8 h-8 text-state-error" />} />
 
               <h2 className="text-xl font-bold text-white mb-3">
                 Withdraw Application?
@@ -600,8 +599,7 @@ const BatchRepVerification = () => {
               </Button>
             </div>
           </Card>
-        </div>
-      )}
+        </Overlay>
 
       {/* Document Preview Modal */}
       {previewDocument && (
@@ -613,8 +611,7 @@ const BatchRepVerification = () => {
       )}
 
       {/* Revoke Privileges Modal */}
-      {showRevokeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl px-4">
+      <Overlay open={showRevokeModal} onClose={() => { setShowRevokeModal(false); setConfirmPassword(""); setPasswordError(""); }} className="!transition-none">
           <Card
             variant="card"
             padding="p-0"
@@ -685,8 +682,7 @@ const BatchRepVerification = () => {
               </div>
             </div>
           </Card>
-        </div>
-      )}
+        </Overlay>
 
       {/* Withdrawal Success Modal */}
       <WithdrawalSuccessModal

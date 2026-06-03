@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { ThumbsUp, ThumbsDown, ChevronDown, Trash2, Heart } from "lucide-react";
+import Overlay from "../components/common/Overlay";
 import { useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
 import LoadMoreButton from "../components/common/LoadMoreButton";
 import { ArrowDownIcon, ArrowRightIcon, CheckIcon, ShieldCheckIcon } from "../components/common/Icons";
+import StatusIcon from "../components/common/StatusIcon";
 import {
   getTargetReviews,
   submitReview,
@@ -388,17 +390,13 @@ const ReviewCard = ({ review, onDelete, onFeedback }) => {
 
 const ReviewSubmittedModal = ({ onClose }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
+    <Overlay open={true} onClose={onClose}>
       <Card
         variant="modal" padding="p-0"
         className="animate-in fade-in zoom-in duration-200"
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
-            <div className="w-8 h-8 flex items-center justify-center text-state-success">
-              <CheckIcon />
-            </div>
-          </div>
+          <StatusIcon variant="success" size="lg" icon={<CheckIcon className="w-8 h-8 text-state-success" />} />
 
           <h2 className="text-xl font-bold text-white mb-3">
             Review Submitted
@@ -419,7 +417,7 @@ const ReviewSubmittedModal = ({ onClose }) => {
           </Button>
         </div>
       </Card>
-    </div>
+    </Overlay>
   );
 };
 

@@ -5,6 +5,7 @@ import Card from "../components/common/Card";
 import Input from "../components/common/Input";
 import Select from "../components/common/Select";
 import Button from "../components/common/Button";
+import Overlay from "../components/common/Overlay";
 import { useBoostPackages } from "../context/BoostPackageContext";
 import { getCurrentUser } from "../services/authService";
 import {
@@ -26,6 +27,7 @@ import {
   BarChart3,
   Timer,
 } from "lucide-react";
+import StatusIcon from "../components/common/StatusIcon";
 
 const BoostPackageForm = () => {
   const navigate = useNavigate();
@@ -711,13 +713,10 @@ const BoostPackageForm = () => {
           </div>
         </div>
         {/* Save Confirmation Modal — inside MainLayout so sidebar shows behind blur */}
-        {showSaveConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
+        <Overlay open={showSaveConfirm} onClose={cancelSave}>
             <Card variant="modal" padding="p-0" className="">
               <div className="p-8 pb-6 flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-primary-blue/5">
-                  <Save size={32} className="text-primary-blue" />
-                </div>
+                <StatusIcon variant="info" size="lg" icon={<Save size={32} className="text-primary-blue" />} />
                 <h2 className="text-xl font-bold text-white mb-3">{isEditing ? "Update Package?" : "Save New Package?"}</h2>
                 <p className="text-text-secondary text-sm leading-relaxed mb-2 max-w-sm">
                   {isEditing
@@ -726,20 +725,18 @@ const BoostPackageForm = () => {
                 </p>
               </div>
               <div className="px-8 pb-8 pt-2 flex flex-col gap-3">
-                <button onClick={confirmSave} className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
+                <Button onClick={confirmSave} variant="gradient" fullWidth size="medium" className="gap-2.5">
                   <Save size={18} /> {isEditing ? "Yes, Update Package" : "Yes, Save Package"}
-                </button>
+                </Button>
                 <button onClick={cancelSave} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200">
                   Cancel
                 </button>
               </div>
             </Card>
-          </div>
-        )}
+          </Overlay>
 
         {/* Success Modal — inside MainLayout so sidebar shows behind blur */}
-        {showSuccess && successData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">
+        <Overlay open={showSuccess && successData !== null} onClose={() => {}} className="py-6 overflow-y-auto">
             <Card variant="modal" padding="p-0" className="my-auto">
               <div className="p-6 sm:p-8 pb-4 sm:pb-6 flex flex-col items-center text-center">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 ring-4 ring-state-success/5">
@@ -766,16 +763,15 @@ const BoostPackageForm = () => {
                 </div>
               </div>
               <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-1 sm:pt-2 flex flex-col gap-3">
-                <button onClick={() => navigate("/admin")} className="w-full h-11 sm:h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
+                <Button onClick={() => navigate("/admin")} variant="gradient" fullWidth size="medium" className="h-11 sm:h-12 gap-2.5">
                   <LayoutDashboard size={18} /> Return to Dashboard
-                </button>
+                </Button>
                 <button onClick={() => navigate("/boost-controller")} className="w-full h-11 sm:h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200">
                   <Settings size={18} className="text-text-secondary" /> Manage All Packages
                 </button>
               </div>
             </Card>
-          </div>
-        )}
+          </Overlay>
       </MainLayout>
   );
 };

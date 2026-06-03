@@ -14,6 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 import NotFound from "./NotFound";
 import Button from "../components/common/Button";
 import Card from "../components/common/Card";
+import Overlay from "../components/common/Overlay";
 import FileUpload from "../components/common/FileUpload";
 import DocumentPreviewModal from "../components/common/DocumentPreviewModal";
 import verificationService from "../services/verificationService";
@@ -21,6 +22,7 @@ import {
   ActionErrorModal,
   WithdrawalSuccessModal,
 } from "../components/common/VerificationModals";
+import StatusIcon from "../components/common/StatusIcon";
 
 const ClubVerification = () => {
   const navigate = useNavigate();
@@ -519,16 +521,13 @@ const ClubVerification = () => {
       </div>
 
       {/* Withdraw Confirmation Modal */}
-      {showWithdrawModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
+      <Overlay open={showWithdrawModal} onClose={() => setShowWithdrawModal(false)}>
           <Card
             variant="modal" padding="p-0"
             className="animate-in fade-in zoom-in duration-200"
           >
             <div className="p-6 sm:p-8 sm:pb-6 flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
-                <AlertCircle className="w-8 h-8 text-state-error" />
-              </div>
+              <StatusIcon variant="error" size="lg" icon={<AlertCircle className="w-8 h-8 text-state-error" />} />
 
               <h2 className="text-xl font-bold text-white mb-3">
                 Withdraw Application?
@@ -560,8 +559,8 @@ const ClubVerification = () => {
               </Button>
             </div>
           </Card>
-        </div>
-      )}
+          </Overlay>
+
 
       {/* Document Preview Modal */}
       {submittedFile && (

@@ -1,13 +1,9 @@
 import React, { useState } from "react";
 import Button from "./Button";
 import Card from "./Card";
+import Overlay from "./Overlay";
 import { CheckIcon, CloseIcon, MinusCircleIcon, ShieldCheckFilledIcon, WarningIcon } from "./Icons";
-
-const ModalBackdrop = ({ children }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
-    {children}
-  </div>
-);
+import StatusIcon from "./StatusIcon";
 
 export const ActionErrorModal = ({
   isOpen,
@@ -15,21 +11,15 @@ export const ActionErrorModal = ({
   title = "Action Failed",
   message,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <ModalBackdrop>
+    <Overlay open={isOpen} onClose={onClose}>
       <Card
         variant="modal"
         padding="p-0"
         className=""
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
-            <div className="w-8 h-8 flex items-center justify-center text-state-error">
-              <WarningIcon />
-            </div>
-          </div>
+          <StatusIcon variant="error" size="lg" icon={<WarningIcon className="w-8 h-8 text-state-error" />} />
 
           <h2 className="text-xl font-bold text-white mb-3">{title}</h2>
           <div className="text-text-secondary text-sm leading-relaxed mb-6">
@@ -48,26 +38,20 @@ export const ActionErrorModal = ({
           </Button>
         </div>
       </Card>
-    </ModalBackdrop>
+    </Overlay>
   );
 };
 
 export const WithdrawalSuccessModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   return (
-    <ModalBackdrop>
+    <Overlay open={isOpen} onClose={onClose}>
       <Card
         variant="modal"
         padding="p-0"
         className=""
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
-            <div className="w-8 h-8 flex items-center justify-center text-state-success">
-              <CheckIcon />
-            </div>
-          </div>
+          <StatusIcon variant="success" size="lg" icon={<CheckIcon className="w-8 h-8 text-state-success" />} />
 
           <h2 className="text-xl font-bold text-white mb-3">
             Application Withdrawn
@@ -89,26 +73,20 @@ export const WithdrawalSuccessModal = ({ isOpen, onClose }) => {
           </Button>
         </div>
       </Card>
-    </ModalBackdrop>
+    </Overlay>
   );
 };
 
 export const RevocationSuccessModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   return (
-    <ModalBackdrop>
+    <Overlay open={isOpen} onClose={onClose}>
       <Card
         variant="modal"
         padding="p-0"
         className=""
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
-            <div className="w-8 h-8 flex items-center justify-center text-state-success">
-              <CheckIcon />
-            </div>
-          </div>
+          <StatusIcon variant="success" size="lg" icon={<CheckIcon className="w-8 h-8 text-state-success" />} />
 
           <h2 className="text-xl font-bold text-white mb-3">
             Status Revoked
@@ -130,7 +108,7 @@ export const RevocationSuccessModal = ({ isOpen, onClose }) => {
           </Button>
         </div>
       </Card>
-    </ModalBackdrop>
+    </Overlay>
   );
 };
 
@@ -140,10 +118,8 @@ export const VerificationConfirmationModal = ({
   onConfirm,
   loading,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <ModalBackdrop>
+    <Overlay open={isOpen} onClose={onClose}>
       <Card
         variant="modal"
         padding="p-0"
@@ -151,11 +127,7 @@ export const VerificationConfirmationModal = ({
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           {/* Icon */}
-          <div className="w-16 h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-primary-blue/5">
-            <div className="w-8 h-8 flex items-center justify-center text-primary-blue">
-              <ShieldCheckFilledIcon />
-            </div>
-          </div>
+          <StatusIcon variant="info" size="lg" icon={<ShieldCheckFilledIcon className="w-8 h-8 text-primary-blue" />} />
 
           {/* Text */}
           <h2 className="text-xl font-bold text-white mb-3">
@@ -185,7 +157,7 @@ export const VerificationConfirmationModal = ({
           </Button>
         </div>
       </Card>
-    </ModalBackdrop>
+    </Overlay>
   );
 };
 
@@ -194,10 +166,8 @@ export const VerificationSuccessModal = ({
   onClose,
   clubName = "Robotics Club",
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <ModalBackdrop>
+    <Overlay open={isOpen} onClose={onClose}>
       <Card
         variant="modal"
         padding="p-0"
@@ -205,11 +175,7 @@ export const VerificationSuccessModal = ({
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           {/* Icon */}
-          <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
-            <div className="w-8 h-8 flex items-center justify-center text-state-success">
-              <CheckIcon />
-            </div>
-          </div>
+          <StatusIcon variant="success" size="lg" icon={<CheckIcon className="w-8 h-8 text-state-success" />} />
 
           {/* Text */}
           <h2 className="text-xl font-bold text-white mb-3">
@@ -233,7 +199,7 @@ export const VerificationSuccessModal = ({
           </Button>
         </div>
       </Card>
-    </ModalBackdrop>
+    </Overlay>
   );
 };
 
@@ -248,8 +214,6 @@ export const VerificationRejectionModal = ({
   const [selectedReason, setSelectedReason] = useState("Incomplete Documents");
   const [customReason, setCustomReason] = useState("");
 
-  if (!isOpen) return null;
-
   const reasons = [
     "Incomplete Documents",
     "Incorrect Information",
@@ -261,7 +225,7 @@ export const VerificationRejectionModal = ({
     requestType === "Club" ? "club representative" : "batch representative";
 
   return (
-    <ModalBackdrop>
+    <Overlay open={isOpen} onClose={onClose}>
       <Card
         variant="modal"
         padding="p-0"
@@ -371,7 +335,7 @@ export const VerificationRejectionModal = ({
           </div>
         </div>
       </Card>
-    </ModalBackdrop>
+    </Overlay>
   );
 };
 
@@ -381,10 +345,8 @@ export const VerificationRejectedSuccessModal = ({
   clubName = "Robotics Club",
   reason = "Incomplete Documents",
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <ModalBackdrop>
+    <Overlay open={isOpen} onClose={onClose}>
       <Card
         variant="modal"
         padding="p-0"
@@ -425,7 +387,7 @@ export const VerificationRejectedSuccessModal = ({
           </Button>
         </div>
       </Card>
-    </ModalBackdrop>
+    </Overlay>
   );
 };
 

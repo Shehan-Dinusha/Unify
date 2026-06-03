@@ -169,12 +169,12 @@ const StudentSubmittedReports = () => {
 
       {/* ── Submit New Report Button ────── */}
       <div className="mb-md flex justify-start">
-        <button
+        <Button
           onClick={() => navigate("/student/report-issue")}
-          className="h-11 px-6 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+          variant="gradient" size="medium" className="h-11 gap-2"
         >
           <Plus size={18} /> Submit New Report
-        </button>
+        </Button>
       </div>
 
       {/* ── Loading State ──────────────────────────────────── */}

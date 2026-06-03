@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
+import Button from '../components/common/Button';
+import Overlay from '../components/common/Overlay';
 import { useToast } from '../components/common/Toast';
 import { X, ShieldCheck, AlertTriangle, CheckSquare, Square, Loader2 } from 'lucide-react';
 import { getCurrentUser } from '../services/authService';
@@ -109,7 +111,7 @@ const SuspendedUserReactivation = () => {
             verificationCount={0}
         >
             {/* ── Blur Overlay Modal ──────────────────────────── */}
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">
+            <Overlay open={true} className="py-6 overflow-y-auto">
                 <Card variant="modal" padding="p-0" className="w-full max-w-[520px] my-auto">
 
                     {/* ── Loading State ───────────────────────── */}
@@ -252,10 +254,10 @@ const SuspendedUserReactivation = () => {
                                 >
                                     Cancel
                                 </button>
-                                <button
+                                <Button
                                     onClick={handleReactivate}
                                     disabled={submitting}
-                                    className="h-11 sm:h-12 px-8 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                    variant="gradient" size="medium" className="h-11 sm:h-12 gap-2.5"
                                 >
                                     {submitting ? (
                                         <>
@@ -267,12 +269,12 @@ const SuspendedUserReactivation = () => {
                                             <ShieldCheck size={18} /> Reactivate Account
                                         </>
                                     )}
-                                </button>
+                                </Button>
                             </div>
                         </>
                     )}
                 </Card>
-            </div>
+            </Overlay>
         </MainLayout>
     );
 };

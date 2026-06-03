@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
+import Overlay from '../components/common/Overlay';
 import { useToast } from '../components/common/Toast';
 
 import {
@@ -181,10 +182,9 @@ const StudentUserProfile = () => {
      WARNING MODAL
      ═══════════════════════════════════════════════════════════════════════ */
   const renderWarningModal = () => {
-    if (modal !== 'warning') return null;
     return (
-      <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
-        <div className="min-h-full flex items-center justify-center px-4 py-6">
+      <Overlay open={modal === 'warning'} className="overflow-y-auto">
+        <div className="min-h-full flex items-center justify-center py-6">
           <Card variant="modal" padding="p-0" className="w-full max-w-[560px]">
             <div className="p-lg flex flex-col">
               <div className="flex items-center justify-between mb-6">
@@ -264,7 +264,7 @@ const StudentUserProfile = () => {
             </div>
           </Card>
         </div>
-      </div>
+      </Overlay>
     );
   };
 
@@ -272,10 +272,9 @@ const StudentUserProfile = () => {
      FORCE LOGOUT CONFIRM MODAL
      ═══════════════════════════════════════════════════════════════════════ */
   const renderForceLogoutModal = () => {
-    if (modal !== 'forceLogout') return null;
     return (
-      <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
-        <div className="min-h-full flex items-center justify-center px-4 py-6">
+      <Overlay open={modal === 'forceLogout'} className="overflow-y-auto">
+        <div className="min-h-full flex items-center justify-center py-6">
           <Card variant="modal" padding="p-0" className="">
             <div className="p-8 flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-state-error/15 flex items-center justify-center mb-5 ring-4 ring-state-error/10">
@@ -312,7 +311,7 @@ const StudentUserProfile = () => {
             </div>
           </Card>
         </div>
-      </div>
+      </Overlay>
     );
   };
 
@@ -320,11 +319,9 @@ const StudentUserProfile = () => {
      SUSPEND MODAL
      ═══════════════════════════════════════════════════════════════════════ */
   const renderSuspendModal = () => {
-    if (modal !== 'suspend') return null;
-    const reasons = ['Violation of Terms', 'Spam Activity', 'Harassment'];
     return (
-      <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
-        <div className="min-h-full flex items-center justify-center px-4 py-6">
+      <Overlay open={modal === 'suspend'} className="overflow-y-auto">
+        <div className="min-h-full flex items-center justify-center py-6">
           <Card variant="modal" padding="p-0" className="">
             <div className="w-full h-1 bg-white/5 rounded-t-3xl overflow-hidden"><div className="h-full w-3/4 bg-gradient-to-r from-primary-blue to-primary-accent rounded-r" /></div>
             <div className="p-lg flex flex-col">
@@ -375,7 +372,7 @@ const StudentUserProfile = () => {
             </div>
           </Card>
         </div>
-      </div>
+      </Overlay>
     );
   };
 
@@ -387,8 +384,8 @@ const StudentUserProfile = () => {
 
     if (success === 'warning') {
       return (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
-          <div className="min-h-full flex items-center justify-center px-4 py-6">
+        <Overlay open={true} className="overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center py-6">
             <Card variant="modal" padding="p-0" className="">
               <div className="p-8 pb-6 flex flex-col items-center text-center">
                 <div className="relative mb-6">
@@ -406,12 +403,12 @@ const StudentUserProfile = () => {
                 </div>
               </div>
               <div className="px-8 pb-8 pt-2 flex gap-3">
-                <button onClick={() => closeSuccess('dashboard')} className="flex-1 h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"><ArrowLeft size={16} /> Return to Dashboard</button>
+                <Button onClick={() => closeSuccess('dashboard')} variant="gradient" size="medium" className="flex-1 gap-2.5"><ArrowLeft size={16} /> Return to Dashboard</Button>
                 <button onClick={() => closeSuccess('list')} className="flex-1 h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"><RotateCcw size={16} className="text-text-secondary" /> View Queue</button>
               </div>
             </Card>
           </div>
-        </div>
+        </Overlay>
       );
     }
 
@@ -419,8 +416,8 @@ const StudentUserProfile = () => {
       const now = new Date();
       const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
       return (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
-          <div className="min-h-full flex items-center justify-center px-4 py-6">
+        <Overlay open={true} className="overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center py-6">
             <Card variant="modal" padding="p-0" className="">
               <div className="p-8 pb-6 flex flex-col items-center text-center">
                 <div className="relative mb-6">
@@ -439,19 +436,19 @@ const StudentUserProfile = () => {
                 </div>
               </div>
               <div className="px-8 pb-8 pt-2 flex flex-col gap-3">
-                <button onClick={() => closeSuccess('dashboard')} className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"><ArrowLeft size={16} /> Return to Dashboard</button>
+                <Button onClick={() => closeSuccess('dashboard')} variant="gradient" fullWidth size="medium" className="gap-2.5"><ArrowLeft size={16} /> Return to Dashboard</Button>
                 <button onClick={() => closeSuccess('list')} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"><RotateCcw size={16} className="text-text-secondary" /> View Moderation Queue</button>
               </div>
             </Card>
           </div>
-        </div>
+        </Overlay>
       );
     }
 
     if (success === 'suspend') {
       return (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
-          <div className="min-h-full flex items-center justify-center px-4 py-6">
+        <Overlay open={true} className="overflow-y-auto">
+          <div className="min-h-full flex items-center justify-center py-6">
             <Card variant="modal" padding="p-0" className="">
               <div className="p-8 pb-6 flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5 bg-state-success/10"><CheckCircle2 size={36} className="text-state-success" /></div>
@@ -464,12 +461,12 @@ const StudentUserProfile = () => {
                 </div>
               </div>
               <div className="px-8 pb-8 pt-2 flex flex-col gap-3">
-                <button onClick={() => closeSuccess('dashboard')} className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"><ArrowLeft size={16} /> Return to Dashboard</button>
+                <Button onClick={() => closeSuccess('dashboard')} variant="gradient" fullWidth size="medium" className="gap-2.5"><ArrowLeft size={16} /> Return to Dashboard</Button>
                 <button onClick={() => closeSuccess('list')} className="w-full h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"><RotateCcw size={16} className="text-text-secondary" /> View Moderation Queue</button>
               </div>
             </Card>
           </div>
-        </div>
+        </Overlay>
       );
     }
 

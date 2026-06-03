@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import Card from '../components/common/Card';
+import Button from '../components/common/Button';
 import { useBoostPackages } from '../context/BoostPackageContext';
 import { getCurrentUser } from '../services/authService';
 import {
@@ -288,17 +289,17 @@ const BoostConfirmOrder = () => {
                 </div>
 
                 <div className="mt-lg flex flex-col gap-3">
-                  <button
+                  <Button
                     onClick={handleProceedToPayment}
                     disabled={isPurchasing}
-                    className="w-full h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    variant="gradient" fullWidth size="medium" className="gap-2.5"
                   >
                     {isPurchasing ? (
                       <><Loader2 size={16} className="animate-spin" /> Processing...</>
                     ) : (
                       <><Lock size={16} /> Proceed to Payment</>
                     )}
-                  </button>
+                  </Button>
                   <button
                     onClick={handleModifyPackage}
                     disabled={isPurchasing}

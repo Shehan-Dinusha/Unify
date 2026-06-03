@@ -2,6 +2,8 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import Card from "../components/common/Card";
+import Button from "../components/common/Button";
+import Overlay from "../components/common/Overlay";
 import { getCurrentUser } from "../services/authService";
 import { CheckCircle2, LayoutDashboard, FileText, RotateCcw } from "lucide-react";
 
@@ -15,7 +17,7 @@ const StudentReportWithdrawalSuccess = () => {
   return (
     <MainLayout user={user} pageTitle="Report Withdrawal" verificationCount={0}>
       {/* Success Modal — same pattern as SuspendedUserSuccess / BoostPackageForm */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 py-6 overflow-y-auto">
+      <Overlay open={true} className="py-6 overflow-y-auto">
         <Card
           variant="modal"
           padding="p-0"
@@ -80,12 +82,12 @@ const StudentReportWithdrawalSuccess = () => {
             </div>
           </div>
           <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-1 sm:pt-2 flex flex-col gap-3">
-            <button
+            <Button
               onClick={() => navigate("/news-feed")}
-              className="w-full h-11 sm:h-12 rounded-2xl bg-gradient-to-r from-primary-blue to-blue-500 text-white font-inter font-bold text-sm flex items-center justify-center gap-2.5 shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+              variant="gradient" fullWidth size="medium" className="h-11 sm:h-12 gap-2.5"
             >
               <LayoutDashboard size={18} /> Return to Dashboard
-            </button>
+            </Button>
             <button
               onClick={() => navigate("/student/reports")}
               className="w-full h-11 sm:h-12 rounded-2xl border-2 border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center justify-center gap-2.5 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200"
@@ -95,7 +97,7 @@ const StudentReportWithdrawalSuccess = () => {
             </button>
           </div>
         </Card>
-      </div>
+      </Overlay>
     </MainLayout>
   );
 };
