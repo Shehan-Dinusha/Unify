@@ -1,20 +1,13 @@
-import React, { useState, useEffect } from "react";
-import MainLayout from "../components/layout/MainLayout";
-import ModuleSidebar from "../components/learning/ModuleSidebar";
-import ModuleHeader from "../components/learning/ModuleHeader";
-import CategoryGrid from "../components/learning/CategoryGrid";
-import FileListTable from "../components/learning/FileListTable";
-import BatchRepTeam from "../components/learning/BatchRepTeam";
-import { BookIcon } from "../components/common/Icons";
-import { ModuleActionSuccessModal } from "../components/common/ModuleActionModals";
-import * as learningService from "../services/learningService";
-import { getCurrentUser } from "../services/authService";
-import { getMyProfile } from "../services/profileService";
-import { useToast } from "../components/common/Toast";
+import { useState, useEffect } from "react";
+import * as learningService from "../../services/learningService";
+import { getCurrentUser } from "../../services/authService";
+import { getMyProfile } from "../../services/profileService";
+import { useToast } from "../../components/common/Toast";
 
-const BatchRepLearningDashboard = () => {
+export const useBatchRepLearning = () => {
   const currentUser = getCurrentUser();
   const currentUserId = currentUser?.id;
+  const toast = useToast();
 
   const [semesters, setSemesters] = useState([]);
   const [activeSemesterId, setActiveSemesterId] = useState(null);
@@ -23,15 +16,15 @@ const BatchRepLearningDashboard = () => {
   const [degreeId, setDegreeId] = useState(null);
   const [facultyName, setFacultyName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-
-  // Real data states
   const [moduleCategories, setModuleCategories] = useState([]);
   const [categoryFiles, setCategoryFiles] = useState([]);
   const [activeModuleDetails, setActiveModuleDetails] = useState(null);
   const [availableDegrees, setAvailableDegrees] = useState([]);
   const [availableDegreesObjs, setAvailableDegreesObjs] = useState([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  const toast = useToast();
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [actionModuleName, setActionModuleName] = useState("");
 
   const refreshCourseStructure = async () => {
     if (!degreeId) return;
@@ -50,7 +43,6 @@ const BatchRepLearningDashboard = () => {
     }
   };
 
-  // Fetch student profile to get degreeId, then fetch course structure
   useEffect(() => {
     const init = async () => {
       try {
@@ -63,12 +55,10 @@ const BatchRepLearningDashboard = () => {
           setDegreeId(fetchedDegreeId);
           setDegreeName(fetchedDegreeName);
 
-          const res =
-            await learningService.getBatchRepCourseStructure(fetchedDegreeId);
+          const res = await learningService.getBatchRepCourseStructure(fetchedDegreeId);
           if (res?.data?.semesters) {
             setSemesters(res.data.semesters);
-            if (!degreeName)
-              setDegreeName(res.data.degreeName || fetchedDegreeName);
+            if (!degreeName) setDegreeName(res.data.degreeName || fetchedDegreeName);
             if (res.data.availableDegrees) {
               setAvailableDegreesObjs(res.data.availableDegrees);
               setAvailableDegrees(res.data.availableDegrees.map((d) => d.name));
@@ -93,7 +83,6 @@ const BatchRepLearningDashboard = () => {
   useEffect(() => {
     if (!activeModuleId) return;
 
-    // Clear stale state before fetching new module details
     setActiveModuleDetails(null);
     setSelectedCategory(null);
     setCategoryFiles([]);
@@ -101,29 +90,19 @@ const BatchRepLearningDashboard = () => {
     const fetchModuleData = async () => {
       setIsLoadingDetails(true);
       try {
-        let details = null;
         try {
-          details = await learningService.getModuleDetails(
-            activeModuleId,
-            degreeId,
-          );
+          const details = await learningService.getModuleDetails(activeModuleId, degreeId);
           setActiveModuleDetails(details?.data?.module || null);
           if (details?.data?.availableDegrees) {
             setAvailableDegreesObjs(details.data.availableDegrees);
-            setAvailableDegrees(
-              details.data.availableDegrees.map((d) => d.name),
-            );
+            setAvailableDegrees(details.data.availableDegrees.map((d) => d.name));
           }
         } catch (err) {
-          console.warn(
-            "Failed to fetch module details from API, using local state",
-            err,
-          );
+          console.warn("Failed to fetch module details from API, using local state", err);
         }
 
         try {
-          const catsRes =
-            await learningService.getModuleCategories(activeModuleId);
+          const catsRes = await learningService.getModuleCategories(activeModuleId);
           const apiCategories = catsRes.data?.categories || [];
           setModuleCategories(apiCategories);
           if (apiCategories.length > 0) {
@@ -144,7 +123,6 @@ const BatchRepLearningDashboard = () => {
     fetchModuleData();
   }, [activeModuleId]);
 
-  // Fetch materials when selectedCategory changes
   useEffect(() => {
     if (!activeModuleId || !selectedCategory) {
       setCategoryFiles([]);
@@ -153,10 +131,7 @@ const BatchRepLearningDashboard = () => {
 
     const fetchFiles = async () => {
       try {
-        const filesRes = await learningService.getMaterialsByCategory(
-          activeModuleId,
-          selectedCategory.id,
-        );
+        const filesRes = await learningService.getMaterialsByCategory(activeModuleId, selectedCategory.id);
         setCategoryFiles(filesRes.data || []);
       } catch (err) {
         console.warn("Failed to fetch materials", err);
@@ -170,22 +145,13 @@ const BatchRepLearningDashboard = () => {
   const refreshActiveModule = async () => {
     if (!activeModuleId) return;
     try {
-      const details = await learningService.getModuleDetails(
-        activeModuleId,
-        degreeId,
-      );
+      const details = await learningService.getModuleDetails(activeModuleId, degreeId);
       if (details?.data?.module) {
         setActiveModuleDetails(details.data.module);
       }
     } catch (err) {
       console.error("Failed to refresh module details", err);
     }
-  };
-
-  const handleMaterialChanged = async () => {
-    await refreshCategories();
-    await refreshActiveModule();
-    await refreshFiles();
   };
 
   const refreshCategories = async () => {
@@ -206,10 +172,7 @@ const BatchRepLearningDashboard = () => {
   const refreshFiles = async () => {
     if (!activeModuleId || !selectedCategory) return;
     try {
-      const filesRes = await learningService.getMaterialsByCategory(
-        activeModuleId,
-        selectedCategory.id,
-      );
+      const filesRes = await learningService.getMaterialsByCategory(activeModuleId, selectedCategory.id);
       setCategoryFiles(filesRes.data || []);
     } catch (err) {
       console.error(err);
@@ -217,31 +180,24 @@ const BatchRepLearningDashboard = () => {
     }
   };
 
-  // Success Modal States
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [actionModuleName, setActionModuleName] = useState("");
+  const handleMaterialChanged = async () => {
+    await refreshCategories();
+    await refreshActiveModule();
+    await refreshFiles();
+  };
 
-  // Compute Active Module Data derived from state
   const activeSemesterInfo = semesters.find(
-    (sem) =>
-      sem.modules &&
-      sem.modules.some((mod) => String(mod.id) === String(activeModuleId)),
+    (sem) => sem.modules && sem.modules.some((mod) => String(mod.id) === String(activeModuleId)),
   );
 
-  const activeModuleData =
-    activeModuleDetails ||
-    activeSemesterInfo?.modules.find(
-      (mod) => String(mod.id) === String(activeModuleId),
-    );
+  const activeModuleData = activeModuleDetails ||
+    activeSemesterInfo?.modules.find((mod) => String(mod.id) === String(activeModuleId));
 
   const handleAddModule = async (newModule) => {
     try {
       const visibilityIds = newModule.visibility
         .map((degreeName) => {
-          const degObj = availableDegreesObjs.find(
-            (d) => d.name === degreeName,
-          );
+          const degObj = availableDegreesObjs.find((d) => d.name === degreeName);
           return degObj ? degObj.id : null;
         })
         .filter((id) => id !== null);
@@ -284,8 +240,7 @@ const BatchRepLearningDashboard = () => {
       setShowSuccessModal(true);
     } catch (err) {
       console.error("Failed to create module", err);
-      const errorMessage =
-        err.response?.data?.message || err.message || "Unknown error";
+      const errorMessage = err.response?.data?.message || err.message || "Unknown error";
       toast.error("Error", `Failed to create module: ${errorMessage}`);
     }
   };
@@ -299,9 +254,7 @@ const BatchRepLearningDashboard = () => {
 
       const visibilityIds = editedData.visibility
         .map((degreeName) => {
-          const degObj = availableDegreesObjs.find(
-            (d) => d.name === degreeName,
-          );
+          const degObj = availableDegreesObjs.find((d) => d.name === degreeName);
           return degObj ? degObj.id : null;
         })
         .filter((id) => id !== null);
@@ -315,22 +268,16 @@ const BatchRepLearningDashboard = () => {
         visibility: visibilityIds,
       });
 
-      // Update local state
       setSemesters((prevSemesters) => {
         let updatedSemesters = prevSemesters.map((sem) => ({
           ...sem,
           modules: sem.modules
-            ? sem.modules.filter(
-                (mod) => String(mod.id) !== String(activeModuleId),
-              )
+            ? sem.modules.filter((mod) => String(mod.id) !== String(activeModuleId))
             : [],
         }));
 
         updatedSemesters = updatedSemesters.map((sem) => {
-          if (
-            sem.name === editedData.semester ||
-            sem.id === editedData.semester
-          ) {
+          if (sem.name === editedData.semester || sem.id === editedData.semester) {
             return {
               ...sem,
               modules: [
@@ -350,19 +297,16 @@ const BatchRepLearningDashboard = () => {
         return updatedSemesters;
       });
 
-      // Update active module details if we are viewing it
       setActiveModuleDetails((prev) =>
-        prev
-          ? {
-              ...prev,
-              name: editedData.title,
-              code: editedData.code,
-              degrees: editedData.visibility,
-              semester: selectedSemester
-                ? { id: selectedSemester.id, name: selectedSemester.name }
-                : prev.semester,
-            }
-          : null,
+        prev ? {
+          ...prev,
+          name: editedData.title,
+          code: editedData.code,
+          degrees: editedData.visibility,
+          semester: selectedSemester
+            ? { id: selectedSemester.id, name: selectedSemester.name }
+            : prev.semester,
+        } : null,
       );
 
       setActionModuleName(editedData.title);
@@ -382,9 +326,7 @@ const BatchRepLearningDashboard = () => {
         prevSemesters.map((sem) => ({
           ...sem,
           modules: sem.modules
-            ? sem.modules.filter(
-                (mod) => String(mod.id) !== String(activeModuleId),
-              )
+            ? sem.modules.filter((mod) => String(mod.id) !== String(activeModuleId))
             : [],
         })),
       );
@@ -420,125 +362,30 @@ const BatchRepLearningDashboard = () => {
     };
   })();
 
-  return (
-    <MainLayout
-      user={sidebarUser}
-      pageTitle={
-        <div className="flex items-center gap-2">
-          <span>Learning</span>
-          <div className="px-2 py-0.5 bg-blue-600 rounded-full flex justify-center items-center">
-            <span className="text-white text-xs font-bold font-inter leading-5">
-              Batch Rep Dashboard
-            </span>
-          </div>
-        </div>
-      }
-    >
-      <div className="w-full relative pb-20 mt-0">
-        {/* Breadcrumb Context Title spanning above grid */}
-        <div className="flex items-center gap-1.5 text-gray-400 text-xs font-bold font-inter leading-5 w-full mb-6 mt-2 pl-1">
-          <BookIcon className="text-gray-400" />
-          <span>{facultyName}</span>
-          <span className="font-normal mx-0.5">/</span>
-          <span>{degreeName}</span>
-        </div>
-
-        {/* Dashboard Layout */}
-        <div className="w-full flex flex-col lg:flex-row items-start gap-5 mb-5">
-          {/* Left Column (Sticky Sidebar) */}
-          <div className="w-full lg:w-60 shrink-0 lg:sticky lg:top-[28px] z-10 flex flex-col gap-2">
-            <ModuleSidebar
-              title={degreeName}
-              semesters={semesters}
-              activeSemesterId={activeSemesterId}
-              activeModuleId={activeModuleId}
-              onSelectModule={setActiveModuleId}
-              onAddModule={handleAddModule}
-              onRefreshSemesters={refreshCourseStructure}
-              degreeId={degreeId}
-              availableDegrees={availableDegrees}
-              primaryDegree={degreeName}
-            />
-          </div>
-
-          {/* Main Content Area */}
-          <div className="flex-1 w-full flex flex-col items-start gap-5 min-w-0">
-            {activeModuleData ? (
-              <>
-                <ModuleHeader
-                  moduleName={activeModuleData?.name}
-                  moduleCode={activeModuleData?.code || "N/A"}
-                  semesterName={activeSemesterInfo?.name}
-                  isPublic={activeSemesterInfo?.isPublic ?? false}
-                  lastUpdated={activeModuleData?.lastUpdated}
-                  creatorDegreeId={activeModuleData?.creatorDegreeId}
-                  userDegreeId={degreeId}
-                  degrees={
-                    activeModuleData?.degrees?.map((d) =>
-                      typeof d === "string" ? d : d.name,
-                    ) || [degreeName]
-                  }
-                  availableDegrees={availableDegrees}
-                  primaryDegree={degreeName}
-                  semesters={semesters}
-                  onEditSave={handleEditModule}
-                  onDelete={handleDeleteModule}
-                  moduleId={activeModuleId}
-                  categories={moduleCategories}
-                  onMaterialUploaded={handleMaterialChanged}
-                />
-
-                <CategoryGrid
-                  key={activeModuleId}
-                  activeModuleId={activeModuleId}
-                  initialCategories={moduleCategories}
-                  selectedCategoryId={selectedCategory?.id}
-                  onCategoryClick={setSelectedCategory}
-                  onRefresh={refreshCategories}
-                />
-                <FileListTable
-                  activeModuleId={activeModuleId}
-                  categoryId={selectedCategory?.id}
-                  categoryName={
-                    selectedCategory ? selectedCategory.title : "All Files"
-                  }
-                  categories={moduleCategories}
-                  files={categoryFiles}
-                  onRefresh={handleMaterialChanged}
-                />
-              </>
-            ) : semesters.some((sem) => sem.modules?.length > 0) ? (
-              <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
-                <BookIcon className="mb-4 opacity-50 w-12 h-12" />
-                <p>Select a module from the sidebar to view details</p>
-              </div>
-            ) : (
-              <div className="w-full p-10 flex flex-col items-center justify-center bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 text-gray-400">
-                <BookIcon className="mb-4 opacity-50 w-12 h-12" />
-                <p>Create a module first to start uploading materials</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Full width Batch Rep Team */}
-        <BatchRepTeam degreeId={degreeId} currentUserId={currentUserId} />
-
-        <ModuleActionSuccessModal
-          isOpen={showSuccessModal}
-          onClose={() => setShowSuccessModal(false)}
-          moduleName={actionModuleName}
-        />
-
-        <ModuleActionSuccessModal
-          isOpen={showDeleteModal}
-          onClose={closeDeleteModal}
-          moduleName={actionModuleName}
-          isDelete={true}
-        />
-      </div>
-    </MainLayout>
-  );
+  return {
+    currentUser, currentUserId,
+    semesters, setSemesters,
+    activeSemesterId, setActiveSemesterId,
+    activeModuleId, setActiveModuleId,
+    degreeName,
+    degreeId,
+    facultyName,
+    selectedCategory, setSelectedCategory,
+    moduleCategories,
+    categoryFiles,
+    activeModuleData,
+    activeSemesterInfo,
+    availableDegrees,
+    isLoadingDetails,
+    showSuccessModal, setShowSuccessModal,
+    showDeleteModal,
+    actionModuleName,
+    sidebarUser,
+    handleAddModule,
+    handleEditModule,
+    handleDeleteModule,
+    closeDeleteModal,
+    refreshCourseStructure,
+    handleMaterialChanged,
+  };
 };
-
-export default BatchRepLearningDashboard;
