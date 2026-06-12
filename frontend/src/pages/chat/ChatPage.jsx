@@ -1,10 +1,10 @@
-import React from 'react';
-import MainLayout from '../../components/layout/MainLayout';
-import { ShieldAlert } from 'lucide-react';
-import ChatWindow from '../../components/chat/ChatWindow';
-import { EmptyInbox } from '../../components/chat/EmptyChatState';
-import useChatPage from './useChatPage';
-import ConversationList from './ConversationList';
+import React from "react";
+import MainLayout from "../../components/layout/MainLayout";
+import { ShieldAlert } from "lucide-react";
+import ChatWindow from "../../components/chat/ChatWindow";
+import { EmptyInbox } from "../../components/chat/EmptyChatState";
+import useChatPage from "./useChatPage";
+import ConversationList from "./ConversationList";
 
 const ChatPage = () => {
   const {
@@ -36,8 +36,7 @@ const ChatPage = () => {
     isConnected,
   } = useChatPage();
 
-  const isAuthorized =
-    user.role === 'student' || user.role === 'club';
+  const isAuthorized = user.role === "student" || user.role === "club";
   if (!isAuthorized) {
     return (
       <MainLayout user={user} pageTitle="Messages" noPadding>
@@ -78,19 +77,19 @@ const ChatPage = () => {
 
         <div
           className={`flex-1 h-full overflow-hidden transition-all duration-300 ${
-            activeChatId ? 'flex' : 'hidden md:flex'
+            activeChatId ? "flex" : "hidden md:flex"
           }`}
         >
           {activeChatId && activeChat ? (
             <ChatWindow
               activeChat={{
                 id: activeChat.id,
-                name: activeChat.otherUser?.name || 'User',
+                name: activeChat.otherUser?.name || "User",
                 avatar:
                   activeChat.otherUser?.avatar ||
-                  `https://api.dicebear.com/7.x/initials/svg?seed=${activeChat.otherUser?.name || 'U'}`,
+                  `https://api.dicebear.com/7.x/initials/svg?seed=${activeChat.otherUser?.name || "U"}`,
                 isOnline: activeChat.otherUser?.isOnline || false,
-                role: activeChat.otherUser?.role || '',
+                role: activeChat.otherUser?.role || "",
                 lastActive: activeChat.otherUser?.lastActive,
               }}
               messages={allMessages[activeChatId] || []}
