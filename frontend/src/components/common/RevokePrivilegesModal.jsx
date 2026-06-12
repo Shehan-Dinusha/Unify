@@ -10,12 +10,12 @@ import {
 import Button from "./Button";
 import Input from "./Input";
 import Card from "./Card";
+import Overlay from "./Overlay";
+import StatusIcon from "./StatusIcon";
 
 const RevokePrivilegesModal = ({ isOpen, onClose, onConfirm }) => {
   const [step, setStep] = useState("confirm"); // 'confirm' | 'success'
   const [password, setPassword] = useState("");
-
-  if (!isOpen) return null;
 
   const handleConfirm = () => {
     // In real app, validate password via API
@@ -30,12 +30,12 @@ const RevokePrivilegesModal = ({ isOpen, onClose, onConfirm }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4">
+    <Overlay open={isOpen} onClose={handleClose}>
       {step === "confirm" && (
         <Card
-          variant="card"
+          variant="modal"
           padding="p-0"
-          className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
+          className="animate-in fade-in zoom-in duration-200"
         >
           {/* Close button */}
           <button
@@ -46,9 +46,7 @@ const RevokePrivilegesModal = ({ isOpen, onClose, onConfirm }) => {
           </button>
 
           <div className="p-8 pb-6 flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-state-error/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-error/5">
-              <AlertTriangle className="w-8 h-8 text-state-error" />
-            </div>
+            <StatusIcon variant="error" size="lg" icon={<AlertTriangle className="w-8 h-8 text-state-error" />} />
 
             <h2 className="text-xl font-bold text-white mb-3">
               Revoke Privileges?
@@ -104,14 +102,12 @@ const RevokePrivilegesModal = ({ isOpen, onClose, onConfirm }) => {
 
       {step === "success" && (
         <Card
-          variant="card"
+          variant="modal"
           padding="p-0"
-          className="w-full max-w-[440px] overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
+          className="animate-in fade-in zoom-in duration-200"
         >
           <div className="p-8 pb-6 flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5">
-              <CheckCircle className="w-8 h-8 text-state-success" />
-            </div>
+            <StatusIcon variant="success" size="lg" icon={<CheckCircle className="w-8 h-8 text-state-success" />} />
 
             <h2 className="text-xl font-bold text-white mb-3">Role Removed</h2>
             <p className="text-text-secondary text-sm leading-relaxed mb-6">
@@ -155,7 +151,7 @@ const RevokePrivilegesModal = ({ isOpen, onClose, onConfirm }) => {
           </div>
         </Card>
       )}
-    </div>
+    </Overlay>
   );
 };
 

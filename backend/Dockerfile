@@ -1,6 +1,6 @@
 
 # Use Node.js LTS (Long Term Support) version
-FROM node:20-alpine
+FROM node:22-bookworm-slim
 
 # Set the working directory inside the container
 WORKDIR /usr/src/app
