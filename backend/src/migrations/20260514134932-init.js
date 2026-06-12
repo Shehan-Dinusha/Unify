@@ -9,7 +9,7 @@ export default {
       passwordHash: { type: Sequelize.STRING(255), allowNull: false },
       role: { type: Sequelize.ENUM("Student", "Business", "Club", "Admin"), allowNull: false },
       avatar: { type: Sequelize.STRING(255), allowNull: true },
-      status: { type: Sequelize.ENUM("Active", "Suspended"), allowNull: false, defaultValue: "Active" },
+      status: { type: Sequelize.ENUM("Active", "Suspended", "Deleted"), allowNull: false, defaultValue: "Active" },
       isOnline: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
       isVerified: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false },
       refreshToken: { type: Sequelize.TEXT, allowNull: true },
@@ -143,6 +143,8 @@ export default {
       images: { type: Sequelize.JSON, allowNull: true },
       latitude: { type: Sequelize.DECIMAL(10, 8), allowNull: true },
       longitude: { type: Sequelize.DECIMAL(11, 8), allowNull: true },
+      likesCount: { type: Sequelize.INTEGER, defaultValue: 0 },
+      commentsCount: { type: Sequelize.INTEGER, defaultValue: 0 },
       createdAt: { type: Sequelize.DATE, allowNull: false },
       updatedAt: { type: Sequelize.DATE, allowNull: false }
     });
@@ -173,6 +175,7 @@ export default {
       options: { type: Sequelize.JSON, allowNull: true },
       likesCount: { type: Sequelize.INTEGER, defaultValue: 0 },
       isActive: { type: Sequelize.BOOLEAN, defaultValue: true },
+      commentsCount: { type: Sequelize.INTEGER, defaultValue: 0 },
       createdAt: { type: Sequelize.DATE, allowNull: false },
       updatedAt: { type: Sequelize.DATE, allowNull: false }
     });
@@ -200,6 +203,7 @@ export default {
       semesterId: { type: Sequelize.INTEGER, allowNull: false, references: { model: "semesters", key: "id" }, onDelete: "CASCADE", onUpdate: "CASCADE" },
       code: { type: Sequelize.STRING(50), allowNull: false },
       name: { type: Sequelize.STRING(100), allowNull: false },
+      creatorDegreeId: { type: Sequelize.INTEGER, allowNull: false },
       createdAt: { type: Sequelize.DATE, allowNull: false },
       updatedAt: { type: Sequelize.DATE, allowNull: false }
     });
@@ -621,6 +625,14 @@ export default {
       updatedAt: { type: Sequelize.DATE, allowNull: false }
     });
 
+    await queryInterface.addConstraint("academic_modules", {
+      fields: ["creatorDegreeId"],
+      type: "foreign key",
+      references: { table: "degrees", field: "id" },
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL",
+    });
+
     await queryInterface.createTable("batches", {
       id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
       name: { type: Sequelize.STRING(50), allowNull: false },
@@ -678,6 +690,29 @@ export default {
       degreeId: { type: Sequelize.INTEGER, primaryKey: true, references: { model: "degrees", key: "id" }, onDelete: "CASCADE", onUpdate: "CASCADE" },
       moduleId: { type: Sequelize.INTEGER, primaryKey: true, references: { model: "academic_modules", key: "id" }, onDelete: "CASCADE", onUpdate: "CASCADE" }
     });
+
+    // ── Indexes (matching model definitions) ─────────────────────────┬──────────
+    await queryInterface.addIndex("post_likes",              ["userId", "postId", "postType"], { unique: true });
+    await queryInterface.addIndex("review_feedbacks",        ["reviewId", "userId"],           { unique: true, name: "unique_review_user_feedback" });
+    await queryInterface.addIndex("conversations",           ["participantOneId"]);
+    await queryInterface.addIndex("conversations",           ["participantTwoId"]);
+    await queryInterface.addIndex("conversations",           ["participantOneId", "participantTwoId"], { unique: true });
+    await queryInterface.addIndex("conversations",           ["lastMessageAt"]);
+    await queryInterface.addIndex("messages",                ["conversationId", "createdAt"]);
+    await queryInterface.addIndex("messages",                ["senderId"]);
+    await queryInterface.addIndex("messages",                ["conversationId", "isRead"]);
+    await queryInterface.addIndex("boost_campaigns",         ["campaignId"],                   { unique: true });
+    await queryInterface.addIndex("boost_purchases",         ["transactionId"],                { unique: true });
+    await queryInterface.addIndex("student_reports",         ["reportId"],                     { unique: true });
+    await queryInterface.addIndex("user_suspensions",        ["userId"]);
+    await queryInterface.addIndex("user_suspensions",        ["status"]);
+    await queryInterface.addIndex("user_suspensions",        ["reasonTag"]);
+    await queryInterface.addIndex("user_suspensions",        ["suspensionDate"]);
+    await queryInterface.addIndex("semester_visibilities",   ["degreeId", "semesterId", "batchId"], { unique: true });
+    await queryInterface.addIndex("otps",                    ["email"]);
+    await queryInterface.addIndex("otps",                    ["expiresAt"]);
+    await queryInterface.addIndex("otps",                    ["isUsed"]);
+    await queryInterface.addIndex("otps",                    ["expiresAt", "isUsed"]);
   },
 
   down: async (queryInterface, Sequelize) => {

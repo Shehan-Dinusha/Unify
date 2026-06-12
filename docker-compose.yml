@@ -30,23 +30,16 @@ services:
     restart: always
     ports:
       - "${PORT:-5000}:5000"
+    env_file: ./backend/.env
     environment:
       - NODE_ENV=development
       - PORT=5000
-      - DB_HOST=postgres
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_NAME=${DB_NAME:-Unify}
-      - DB_PORT=5432
       - JWT_SECRET=${JWT_SECRET:-change_me_in_production}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1d}
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5173}
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
-    depends_on:
-      postgres:
-        condition: service_healthy   # Wait until postgres passes its healthcheck
     networks:
       - unify-network
 
