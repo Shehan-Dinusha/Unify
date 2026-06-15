@@ -2,7 +2,7 @@ import React from 'react';
 import Card from '../../components/common/Card';
 import {
   ReplyAvatar, LikeAvatar, MatchIcon, VerificationIcon, SemesterIcon,
-  ReviewStarAvatar, ReviewReplyAvatar, ReviewFeedbackAvatar,
+  ReviewStarAvatar, ReviewReplyAvatar, ReviewFeedbackAvatar, FollowerAvatar,
 } from './NotificationIcons';
 
 const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
@@ -16,6 +16,7 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
       case 'verification': return <VerificationIcon />;
       default:
         if (notification.referenceType === 'Semester') return <SemesterIcon />;
+        if (notification.referenceType === 'Follower') return <FollowerAvatar avatar={avatar} />;
         if (notification.referenceType === 'Review') {
           switch (notification.reviewAction) {
             case 'reply': return <ReviewReplyAvatar avatar={avatar} />;
@@ -29,7 +30,7 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
   };
 
   const renderTitle = () => {
-    if (type === 'reply' || type === 'like' || notification.referenceType === 'Review') {
+    if (type === 'reply' || type === 'like' || notification.referenceType === 'Review' || notification.referenceType === 'Follower') {
       const words = title.split(' ');
       if (words.length >= 2) {
         return (

@@ -247,6 +247,92 @@ export const notifyReviewFeedback = async ({ reviewAuthorId, actorId, actorName,
   });
 };
 
+// ── Follower Notification Helpers ─────────────────────────────────────────────
+
+const buildFollowerTitle = (followers) => {
+  if (followers.length === 1) {
+    return `${followers[0].name} started following you`;
+  }
+  if (followers.length === 2) {
+    return `${followers[0].name} and ${followers[1].name} started following you`;
+  }
+  return `${followers[0].name}, ${followers[1].name}, and ${followers.length - 2} others started following you`;
+};
+
+/**
+ * Aggregated follower notification.
+ *
+ * If the club has an unread follower notification, the new follower is appended
+ * to it (title updates). Otherwise a fresh notification is created.
+ */
+export const notifyNewFollower = async ({ clubId, actorId, actorName }) => {
+  try {
+    // Don't notify yourself
+    if (clubId === actorId) return null;
+
+    const existing = await Notification.findOne({
+      where: { userId: clubId, referenceType: "Follower", isUnread: true },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (existing) {
+      const list = JSON.parse(existing.content || "[]");
+      if (!list.some((f) => f.id === actorId)) {
+        list.push({ id: actorId, name: actorName });
+      }
+      existing.content = JSON.stringify(list);
+      existing.title = buildFollowerTitle(list);
+      existing.actorId = actorId;
+      await existing.save();
+      return existing;
+    }
+
+    const list = [{ id: actorId, name: actorName }];
+    return notifyUser({
+      userId: clubId,
+      actorId,
+      type: "General",
+      title: buildFollowerTitle(list),
+      content: JSON.stringify(list),
+      referenceId: clubId,
+      referenceType: "Follower",
+    });
+  } catch (error) {
+    logger.error(`notifyNewFollower error: ${error.message}`);
+    return null;
+  }
+};
+
+/**
+ * Remove a follower from ALL aggregated follower notifications (read and unread).
+ * If any notification's follower list becomes empty, it is destroyed.
+ */
+export const removeFollowerFromNotification = async ({ clubId, followerId }) => {
+  try {
+    const notifications = await Notification.findAll({
+      where: { userId: clubId, referenceType: "Follower" },
+    });
+    if (notifications.length === 0) return null;
+
+    for (const notification of notifications) {
+      const list = JSON.parse(notification.content || "[]");
+      const filtered = list.filter((f) => f.id !== followerId);
+      if (filtered.length === 0) {
+        await notification.destroy();
+      } else {
+        notification.content = JSON.stringify(filtered);
+        notification.title = buildFollowerTitle(filtered);
+        notification.actorId = filtered[filtered.length - 1].id;
+        await notification.save();
+      }
+    }
+    return true;
+  } catch (error) {
+    logger.error(`removeFollowerFromNotification error: ${error.message}`);
+    return null;
+  }
+};
+
 // ── Query Helpers (used by controllers) ──────────────────────────────────────
 
 /**

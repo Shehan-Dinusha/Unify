@@ -1,5 +1,5 @@
 import React from 'react';
-import { CornerUpLeft, Heart, Search, ShieldCheck, BookOpen, Star, MessageSquare, ThumbsUp } from 'lucide-react';
+import { CornerUpLeft, Heart, Search, ShieldCheck, BookOpen, Star, MessageSquare, ThumbsUp, UserPlus } from 'lucide-react';
 
 export const ReplyAvatar = ({ avatar }) => (
   <div className="relative w-10 h-10 shrink-0">
@@ -51,6 +51,15 @@ export const ReviewReplyAvatar = ({ avatar }) => (
     <img src={avatar} alt="Review reply" className="w-full h-full rounded-full object-cover" />
     <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary-blue rounded-full border-2 border-dark-1 flex items-center justify-center">
       <MessageSquare size={10} className="text-white" />
+    </div>
+  </div>
+);
+
+export const FollowerAvatar = ({ avatar }) => (
+  <div className="relative w-10 h-10 shrink-0">
+    <img src={avatar} alt="Follower" className="w-full h-full rounded-full object-cover" />
+    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-dark-1 flex items-center justify-center">
+      <UserPlus size={10} className="text-white" />
     </div>
   </div>
 );

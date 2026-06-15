@@ -39,6 +39,16 @@ const normalizeNotification = (n) => {
     }
   }
 
+  if (referenceType === 'Follower') {
+    // Content holds the aggregated follower list — hide from display
+    if (n.content) {
+      try {
+        JSON.parse(n.content);
+        displayContent = '';
+      } catch {}
+    }
+  }
+
   return {
     id: n.id,
     type: typeLower,
@@ -128,6 +138,8 @@ export const useNotification = () => {
       navigate(`/lost-and-found?view=detail&id=${referenceId}`);
     } else if (referenceType === 'Semester') {
       navigate('/student-learning');
+    } else if (referenceType === 'Follower') {
+      navigate('/club/followers');
     } else if (referenceType === 'Review') {
       const user = authUser;
       if (user?.role === 'Business') {

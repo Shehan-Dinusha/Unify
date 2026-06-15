@@ -22,15 +22,20 @@ const ClubPublicView = ({ profile }) => {
   const isStudent = currentUser?.role?.toLowerCase() === "student";
 
   const handleToggleFollow = async () => {
+    const wasFollowing = isFollowing;
+
+    // Optimistic update — instant UI feedback
+    setIsFollowing(!wasFollowing);
+    setFollowerCount((prev) => (wasFollowing ? prev - 1 : prev + 1));
+
     try {
       await unfollowOrganization(profile.id);
-      setIsFollowing(!isFollowing);
-      setFollowerCount((prev) => (isFollowing ? prev - 1 : prev + 1));
     } catch (err) {
+      // Revert on failure
+      setIsFollowing(wasFollowing);
+      setFollowerCount((prev) => (wasFollowing ? prev + 1 : prev - 1));
       console.error("Failed to toggle follow status:", err);
-      const msg =
-        err.response?.data?.message || err.message || "Failed to toggle follow";
-      alert(msg);
+      alert(err.response?.data?.message || "Failed to toggle follow");
     }
   };
 

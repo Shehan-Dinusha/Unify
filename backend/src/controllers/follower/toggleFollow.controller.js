@@ -1,5 +1,9 @@
 import { User, UserFollower, ClubProfile } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
+import {
+  notifyNewFollower,
+  removeFollowerFromNotification,
+} from "../../services/notification.service.js";
 
 export const toggleFollowClub = catchAsync(async (req, res) => {
   const followerId = req.user.id;
@@ -46,12 +50,18 @@ export const toggleFollowClub = catchAsync(async (req, res) => {
   if (existingFollow) {
     // Already following -> Unfollow
     await existingFollow.destroy();
+    await removeFollowerFromNotification({ clubId: followingId, followerId });
     return sendResponse(res, 200, true, "Successfully unfollowed the club.");
   } else {
     // Not following -> Follow
     await UserFollower.create({
       followerId: followerId,
       followingId: followingId,
+    });
+    await notifyNewFollower({
+      clubId: followingId,
+      actorId: followerId,
+      actorName: follower.name,
     });
     return sendResponse(res, 201, true, "Successfully followed the club.");
   }
