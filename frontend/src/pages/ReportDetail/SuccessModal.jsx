@@ -12,7 +12,7 @@ const SuccessModal = ({
     return (
         <Overlay open={open} className="overflow-y-auto">
             <div className="min-h-full flex items-center justify-center py-6">
-            <Card variant="modal" padding="p-0" className="">
+            <Card variant="modal" padding="p-0" className="max-w-lg">
                 <div className="p-8 pb-6 flex flex-col items-center text-center">
                     <StatusIcon variant="success" size="lg" icon={
                         success === 'deleted'

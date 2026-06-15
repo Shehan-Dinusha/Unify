@@ -296,7 +296,7 @@ const MarketplaceReviews = () => {
               <div
                 key={review.id}
                 ref={setReviewRef(review.id)}
-                className={initialScrollTarget && String(initialScrollTarget) === String(review.id) ? 'scroll-mt-24' : ''}
+                className={`w-full ${initialScrollTarget && String(initialScrollTarget) === String(review.id) ? 'scroll-mt-24' : ''}`}
               >
                 <ReviewCard
                   review={review}

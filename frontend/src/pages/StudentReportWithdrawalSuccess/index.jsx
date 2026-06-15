@@ -21,7 +21,7 @@ const StudentReportWithdrawalSuccess = () => {
         <Card
           variant="modal"
           padding="p-0"
-          className="my-auto"
+          className="max-w-lg my-auto"
         >
           <div className="p-6 sm:p-8 pb-4 sm:pb-6 flex flex-col items-center text-center">
             <div className="w-14 h-14 sm:w-16 sm:h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 ring-4 ring-state-success/5">

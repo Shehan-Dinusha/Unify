@@ -11,7 +11,7 @@ export const DeleteReviewModal = ({ onClose, onConfirm }) => {
     <Overlay open={true} onClose={onClose}>
       <Card
         variant="modal" padding="p-0"
-        className="animate-in fade-in zoom-in duration-200"
+        className="max-w-sm animate-in fade-in zoom-in duration-200"
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <StatusIcon variant="error" size="lg" icon={<Trash2 className="w-8 h-8 text-state-error" />} />
@@ -47,7 +47,7 @@ export const ReviewDeletedModal = ({ onClose }) => {
     <Overlay open={true} onClose={onClose}>
       <Card
         variant="modal" padding="p-0"
-        className="animate-in fade-in zoom-in duration-200"
+        className="max-w-sm animate-in fade-in zoom-in duration-200"
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <StatusIcon variant="success" size="lg" icon={<CheckIcon className="w-8 h-8 text-state-success" />} />

@@ -4,7 +4,7 @@ import Button from '../../components/common/Button';
 import { CheckCircle2, CalendarDays, ArrowRight } from 'lucide-react';
 
 const BoostSuccessContent = ({ packageName, durationDays, transactionId, activationTimestamp, expiryTimestamp, budget, onViewFeed, onMyPosts }) => (
-  <Card variant="modal" padding="p-0" className="my-auto">
+  <Card variant="modal" padding="p-0" className="max-w-sm my-auto">
     <div className="p-6 sm:p-8 pb-4 sm:pb-6 flex flex-col items-center text-center">
       <div className="w-14 h-14 sm:w-16 sm:h-16 bg-state-success/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 ring-4 ring-state-success/5">
         <CheckCircle2 size={28} className="text-state-success sm:hidden" />

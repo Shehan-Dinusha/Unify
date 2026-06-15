@@ -35,7 +35,7 @@ const RevokePrivilegesModal = ({ isOpen, onClose, onConfirm }) => {
         <Card
           variant="modal"
           padding="p-0"
-          className="animate-in fade-in zoom-in duration-200"
+          className="max-w-lg animate-in fade-in zoom-in duration-200"
         >
           {/* Close button */}
           <button
@@ -104,7 +104,7 @@ const RevokePrivilegesModal = ({ isOpen, onClose, onConfirm }) => {
         <Card
           variant="modal"
           padding="p-0"
-          className="animate-in fade-in zoom-in duration-200"
+          className="max-w-lg animate-in fade-in zoom-in duration-200"
         >
           <div className="p-8 pb-6 flex flex-col items-center text-center">
             <StatusIcon variant="success" size="lg" icon={<CheckCircle className="w-8 h-8 text-state-success" />} />
