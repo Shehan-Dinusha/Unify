@@ -1,6 +1,7 @@
 import { Review } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { notifyOwnerLikeReview } from "../../services/notification.service.js";
 
 export const toggleOwnerLike = async (req, res, next) => {
   try {
@@ -24,8 +25,19 @@ export const toggleOwnerLike = async (req, res, next) => {
     }
 
     // Toggle the like status
+    const wasLiked = review.isLikedByOwner;
     review.isLikedByOwner = !review.isLikedByOwner;
     await review.save();
+
+    if (review.isLikedByOwner && !wasLiked) {
+      notifyOwnerLikeReview({
+        reviewAuthorId: review.reviewerId,
+        actorId: currentUserId,
+        actorName: req.user.name,
+        reviewId: review.id,
+        targetId: review.targetId,
+      });
+    }
 
     const message = review.isLikedByOwner
       ? "Review liked successfully."

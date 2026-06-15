@@ -180,6 +180,73 @@ export const notifyMatch = async ({
   });
 };
 
+// ── Review Notification Helpers ───────────────────────────────────────────────
+
+/**
+ * Notify a business owner that someone reviewed their business.
+ */
+export const notifyNewReview = async ({ businessOwnerId, actorId, actorName, reviewId, reviewContent }) => {
+  return notifyUser({
+    userId: businessOwnerId,
+    actorId,
+    type: "General",
+    title: `${actorName} reviewed your business`,
+    content: reviewContent ? `"${reviewContent.substring(0, 80)}"` : null,
+    referenceId: reviewId,
+    referenceType: "Review",
+    dedupeKey: `review:${reviewId}`,
+  });
+};
+
+/**
+ * Notify a review author that the business owner replied to their review.
+ */
+export const notifyReviewReply = async ({ reviewAuthorId, actorId, actorName, reviewId, targetId }) => {
+  return notifyUser({
+    userId: reviewAuthorId,
+    actorId,
+    type: "General",
+    title: `${actorName} replied to your review`,
+    content: JSON.stringify({ targetId }),
+    referenceId: reviewId,
+    referenceType: "Review",
+    dedupeKey: `review-reply:${reviewId}`,
+  });
+};
+
+/**
+ * Notify a review author that the business owner liked their review.
+ */
+export const notifyOwnerLikeReview = async ({ reviewAuthorId, actorId, actorName, reviewId, targetId }) => {
+  return notifyUser({
+    userId: reviewAuthorId,
+    actorId,
+    type: "General",
+    title: `${actorName} liked your review`,
+    content: JSON.stringify({ targetId }),
+    referenceId: reviewId,
+    referenceType: "Review",
+    dedupeKey: `review-like:${actorId}:${reviewId}`,
+  });
+};
+
+/**
+ * Notify a review author that someone found their review helpful or not helpful.
+ */
+export const notifyReviewFeedback = async ({ reviewAuthorId, actorId, actorName, reviewId, targetId, action }) => {
+  const feedbackText = action === "helpful" ? "helpful" : "not helpful";
+  return notifyUser({
+    userId: reviewAuthorId,
+    actorId,
+    type: "General",
+    title: `${actorName} found your review ${feedbackText}`,
+    content: JSON.stringify({ targetId }),
+    referenceId: reviewId,
+    referenceType: "Review",
+    dedupeKey: `review-feedback:${actorId}:${reviewId}:${action}`,
+  });
+};
+
 // ── Query Helpers (used by controllers) ──────────────────────────────────────
 
 /**

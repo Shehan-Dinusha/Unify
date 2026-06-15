@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import MainLayout from "../../components/layout/MainLayout";
 import Card from "../../components/common/Card";
 import LoadMoreButton from "../../components/common/LoadMoreButton";
@@ -78,6 +78,32 @@ const MarketplaceReviews = () => {
   useEffect(() => {
     setVisibleCount(5);
   }, [sortBy]);
+
+  // ── Scroll to a specific review (from notification) ─────────────────────
+  const [searchParams] = useSearchParams();
+  const initialScrollTarget = searchParams.get("scrollToReview");
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const reviewRefs = useRef({});
+
+  const setReviewRef = (reviewId) => (el) => {
+    if (el) reviewRefs.current[reviewId] = el;
+  };
+
+  useEffect(() => {
+    if (initialScrollTarget && reviews.length > 0 && !hasScrolled) {
+      const idx = sortedReviews.findIndex((r) => String(r.id) === String(initialScrollTarget));
+      if (idx >= 0 && idx >= visibleCount) {
+        setVisibleCount(idx + 5);
+      }
+      setTimeout(() => {
+        const el = reviewRefs.current[initialScrollTarget];
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        setHasScrolled(true);
+      }, 300);
+    }
+  }, [initialScrollTarget, reviews, visibleCount, hasScrolled]);
 
   const sortOptions = [
     "Most Relevant",
@@ -267,12 +293,17 @@ const MarketplaceReviews = () => {
 
           <div className="flex flex-col items-center gap-6 w-full">
             {sortedReviews.slice(0, visibleCount).map((review) => (
-              <ReviewCard
+              <div
                 key={review.id}
-                review={review}
-                onDelete={handleDeleteClick}
-                onFeedback={handleFeedbackToggle}
-              />
+                ref={setReviewRef(review.id)}
+                className={initialScrollTarget && String(initialScrollTarget) === String(review.id) ? 'scroll-mt-24' : ''}
+              >
+                <ReviewCard
+                  review={review}
+                  onDelete={handleDeleteClick}
+                  onFeedback={handleFeedbackToggle}
+                />
+              </div>
             ))}
           </div>
 

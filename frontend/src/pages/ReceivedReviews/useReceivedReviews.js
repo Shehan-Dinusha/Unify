@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   getReceivedReviews,
   toggleOwnerLike,
@@ -23,6 +24,12 @@ export const useReceivedReviews = () => {
   const [error, setError] = useState(null);
   const [errorStatus, setErrorStatus] = useState(null);
   const [visibleCount, setVisibleCount] = useState(5);
+  const [scrollToReviewId, setScrollToReviewId] = useState(null);
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const reviewRefs = useRef({});
+
+  const [searchParams] = useSearchParams();
+  const initialScrollTarget = searchParams.get("scrollToReview");
 
   const tabs = ["All Reviews", "Unreplied", "5 stars", "Critical"];
   const sortOptions = [
@@ -95,6 +102,32 @@ export const useReceivedReviews = () => {
 
   const sortedReviews = getSortedReviews();
 
+  const setReviewRef = (reviewId) => (el) => {
+    if (el) reviewRefs.current[reviewId] = el;
+  };
+
+  // Scroll to the target review after data loads
+  useEffect(() => {
+    if (initialScrollTarget && sortedReviews.length > 0 && !hasScrolled) {
+      setScrollToReviewId(initialScrollTarget);
+
+      // Ensure the review is visible (increase visibleCount if needed)
+      const idx = sortedReviews.findIndex((r) => String(r.id) === String(initialScrollTarget));
+      if (idx >= 0 && idx >= visibleCount) {
+        setVisibleCount(idx + 5);
+      }
+
+      // Scroll after render
+      setTimeout(() => {
+        const el = reviewRefs.current[initialScrollTarget];
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        setHasScrolled(true);
+      }, 300);
+    }
+  }, [initialScrollTarget, sortedReviews, visibleCount, hasScrolled]);
+
   return {
     user,
     reviews, metrics,
@@ -106,5 +139,7 @@ export const useReceivedReviews = () => {
     sortedReviews,
     tabs, sortOptions,
     handleReply, handleLike,
+    scrollToReviewId,
+    setReviewRef,
   };
 };

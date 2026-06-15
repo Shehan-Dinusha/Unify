@@ -1,6 +1,7 @@
 import { Review, ReviewFeedback } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { notifyReviewFeedback } from "../../services/notification.service.js";
 
 /**
  * Controller to handle "Helpful" or "Not Helpful" interactions on a review.
@@ -62,6 +63,15 @@ export const toggleReviewFeedback = async (req, res, next) => {
         }
         await review.save();
 
+        notifyReviewFeedback({
+          reviewAuthorId: review.reviewerId,
+          actorId: currentUserId,
+          actorName: req.user.name,
+          reviewId: review.id,
+          targetId: review.targetId,
+          action,
+        });
+
         return sendResponse(
           res,
           200,
@@ -90,6 +100,15 @@ export const toggleReviewFeedback = async (req, res, next) => {
         review.notHelpfulCount += 1;
       }
       await review.save();
+
+      notifyReviewFeedback({
+        reviewAuthorId: review.reviewerId,
+        actorId: currentUserId,
+        actorName: req.user.name,
+        reviewId: review.id,
+        targetId: review.targetId,
+        action,
+      });
 
       return sendResponse(
         res,
