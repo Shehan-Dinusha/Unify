@@ -325,3 +325,18 @@ export const deleteNotification = async (notificationId, userId) => {
   await notification.destroy();
   return true;
 };
+
+/**
+ * Delete a notification by its dedupeKey. Fails silently (never throws).
+ */
+export const deleteByDedupeKey = async (dedupeKey) => {
+  try {
+    const notification = await Notification.findOne({ where: { dedupeKey } });
+    if (!notification) return null;
+    await notification.destroy();
+    return true;
+  } catch (error) {
+    logger.error(`Error deleting notification by dedupeKey: ${error.message}`);
+    return null;
+  }
+};

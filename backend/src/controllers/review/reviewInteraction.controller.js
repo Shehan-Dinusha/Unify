@@ -1,7 +1,7 @@
 import { Review, ReviewFeedback } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
-import { notifyReviewFeedback } from "../../services/notification.service.js";
+import { notifyReviewFeedback, deleteByDedupeKey } from "../../services/notification.service.js";
 
 /**
  * Controller to handle "Helpful" or "Not Helpful" interactions on a review.
@@ -28,6 +28,9 @@ export const toggleReviewFeedback = async (req, res, next) => {
     if (existingFeedback) {
       // If they click the same button again, we remove it (toggle off)
       if (existingFeedback.isHelpful === isHelpfulClicked) {
+        const action = existingFeedback.isHelpful ? "helpful" : "not_helpful";
+        await deleteByDedupeKey(`review-feedback:${currentUserId}:${reviewId}:${action}`);
+
         await existingFeedback.destroy();
 
         if (isHelpfulClicked) {

@@ -1,7 +1,7 @@
 import { Review } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
-import { notifyOwnerLikeReview } from "../../services/notification.service.js";
+import { notifyOwnerLikeReview, deleteByDedupeKey } from "../../services/notification.service.js";
 
 export const toggleOwnerLike = async (req, res, next) => {
   try {
@@ -37,6 +37,8 @@ export const toggleOwnerLike = async (req, res, next) => {
         reviewId: review.id,
         targetId: review.targetId,
       });
+    } else if (!review.isLikedByOwner && wasLiked) {
+      await deleteByDedupeKey(`review-like:${currentUserId}:${review.id}`);
     }
 
     const message = review.isLikedByOwner
