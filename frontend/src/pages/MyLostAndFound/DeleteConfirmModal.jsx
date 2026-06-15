@@ -4,7 +4,7 @@ import Card from "../../components/common/Card";
 const DeleteConfirmModal = ({ onClose, onConfirm }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
     <div className="absolute inset-0 bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4" />
-    <Card variant="modal" padding="p-6 sm:p-8" className="animate-in fade-in zoom-in-95 duration-200 text-center" onClick={(e) => e.stopPropagation()}>
+    <Card variant="modal" padding="p-6 sm:p-8" className="max-w-sm animate-in fade-in zoom-in-95 duration-200 text-center" onClick={(e) => e.stopPropagation()}>
       <div className="w-14 h-14 rounded-full bg-state-error/15 flex items-center justify-center mx-auto mb-4">
         <AlertTriangle size={28} className="text-state-error" />
       </div>

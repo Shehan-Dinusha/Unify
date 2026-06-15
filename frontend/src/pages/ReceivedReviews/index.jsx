@@ -19,6 +19,8 @@ const ReceivedReviews = () => {
     sortedReviews,
     tabs, sortOptions,
     handleReply, handleLike,
+    scrollToReviewId,
+    setReviewRef,
   } = useReceivedReviews();
 
   if (errorStatus) {
@@ -68,7 +70,13 @@ const ReceivedReviews = () => {
         <div className="flex flex-col gap-4">
           {sortedReviews.length > 0 ? (
             sortedReviews.slice(0, visibleCount).map((review) => (
-              <ReceivedReviewCard key={review.id} review={review} onReply={handleReply} onLike={handleLike} />
+              <div
+                key={review.id}
+                ref={setReviewRef(review.id)}
+                className={scrollToReviewId && String(scrollToReviewId) === String(review.id) ? 'scroll-mt-24' : ''}
+              >
+                <ReceivedReviewCard review={review} onReply={handleReply} onLike={handleLike} />
+              </div>
             ))
           ) : (
             <div className="text-gray-400 text-sm font-inter text-center py-8">No reviews yet</div>

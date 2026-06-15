@@ -6,7 +6,7 @@ import { AlertTriangle, Trash2, Loader2 } from 'lucide-react';
 
 const DeleteConfirmModal = ({ open, target, isDeleting, onConfirm, onCancel }) => (
     <Overlay open={open} onClose={onCancel}>
-        <Card variant="modal" padding="p-0">
+        <Card variant="modal" padding="p-0" className="max-w-sm">
             <div className="p-8 pb-6 flex flex-col items-center text-center">
                 <StatusIcon variant="error" size="lg" icon={<AlertTriangle size={32} className="text-state-error" />} />
                 <h2 className="text-xl font-bold text-white mb-3">Delete Package?</h2>

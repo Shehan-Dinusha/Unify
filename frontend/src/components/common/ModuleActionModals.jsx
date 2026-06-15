@@ -15,7 +15,7 @@ export const ModuleActionSuccessModal = ({
     <Overlay open={isOpen} onClose={onClose} zIndex="z-[150]">
       <Card
         variant="modal" padding="p-0"
-        className=""
+        className="max-w-sm"
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           {/* Icon */}

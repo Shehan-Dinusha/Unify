@@ -1,6 +1,9 @@
 import React from 'react';
 import Card from '../../components/common/Card';
-import { ReplyAvatar, LikeAvatar, MatchIcon, VerificationIcon, SemesterIcon } from './NotificationIcons';
+import {
+  ReplyAvatar, LikeAvatar, MatchIcon, VerificationIcon, SemesterIcon,
+  ReviewStarAvatar, ReviewReplyAvatar, ReviewFeedbackAvatar, FollowerAvatar,
+} from './NotificationIcons';
 
 const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
   const { type, title, content, time, isUnread, avatar, image } = notification;
@@ -13,12 +16,21 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
       case 'verification': return <VerificationIcon />;
       default:
         if (notification.referenceType === 'Semester') return <SemesterIcon />;
+        if (notification.referenceType === 'Follower') return <FollowerAvatar avatar={avatar} />;
+        if (notification.referenceType === 'Review') {
+          switch (notification.reviewAction) {
+            case 'reply': return <ReviewReplyAvatar avatar={avatar} />;
+            case 'feedback': return <ReviewFeedbackAvatar avatar={avatar} />;
+            case 'new':
+            default: return <ReviewStarAvatar avatar={avatar} />;
+          }
+        }
         return <div className="w-10 h-10 bg-white/10 rounded-full" />;
     }
   };
 
   const renderTitle = () => {
-    if (type === 'reply' || type === 'like') {
+    if (type === 'reply' || type === 'like' || notification.referenceType === 'Review' || notification.referenceType === 'Follower') {
       const words = title.split(' ');
       if (words.length >= 2) {
         return (
@@ -35,7 +47,7 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
   const handleClick = () => {
     if (isUnread && onMarkRead) onMarkRead(notification.id);
     if (notification.referenceId && notification.referenceType && onNavigate) {
-      onNavigate(notification.referenceId, notification.referenceType);
+      onNavigate(notification.referenceId, notification.referenceType, notification);
     }
   };
 

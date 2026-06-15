@@ -19,7 +19,7 @@ const Card = ({
     container: "bg-white/5 backdrop-blur-sm rounded-2xl",
 
     // Modal Dialog: Standard modal card appearance
-    modal: "w-full overflow-hidden outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl",
+    modal: "w-full bg-white/10 backdrop-blur-md overflow-hidden rounded-2xl outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl",
   };
 
   return (

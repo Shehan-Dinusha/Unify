@@ -1,6 +1,7 @@
 import Review from "../../modules/Review.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { deleteByDedupeKey } from "../../services/notification.service.js";
 
 export const deleteReview = async (req, res, next) => {
   try {
@@ -24,6 +25,8 @@ export const deleteReview = async (req, res, next) => {
     }
 
     await existingReview.destroy();
+
+    await deleteByDedupeKey(`review:${reviewId}`);
 
     logger.info(`Review ID: ${reviewId} deleted by user ID: ${reviewerId}`);
 

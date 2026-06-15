@@ -7,7 +7,7 @@ import StatusIcon from '../../components/common/StatusIcon';
 
 const WithdrawVerificationModal = ({ open, onClose, onConfirm, loading }) => (
   <Overlay open={open} onClose={onClose}>
-    <Card variant="modal" padding="p-0" className="animate-in fade-in zoom-in duration-200">
+    <Card variant="modal" padding="p-0" className="max-w-sm animate-in fade-in zoom-in duration-200">
       <div className="p-6 sm:p-8 sm:pb-6 flex flex-col items-center text-center">
         <StatusIcon variant="error" size="lg" icon={<AlertCircle className="w-8 h-8 text-state-error" />} />
         <h2 className="text-xl font-bold text-white mb-3">Withdraw Application?</h2>

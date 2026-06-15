@@ -16,7 +16,7 @@ export const ActionErrorModal = ({
       <Card
         variant="modal"
         padding="p-0"
-        className=""
+        className="max-w-sm"
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <StatusIcon variant="error" size="lg" icon={<WarningIcon className="w-8 h-8 text-state-error" />} />
@@ -48,7 +48,7 @@ export const WithdrawalSuccessModal = ({ isOpen, onClose }) => {
       <Card
         variant="modal"
         padding="p-0"
-        className=""
+        className="max-w-sm"
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <StatusIcon variant="success" size="lg" icon={<CheckIcon className="w-8 h-8 text-state-success" />} />
@@ -83,7 +83,7 @@ export const RevocationSuccessModal = ({ isOpen, onClose }) => {
       <Card
         variant="modal"
         padding="p-0"
-        className=""
+        className="max-w-sm"
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           <StatusIcon variant="success" size="lg" icon={<CheckIcon className="w-8 h-8 text-state-success" />} />
@@ -123,7 +123,7 @@ export const VerificationConfirmationModal = ({
       <Card
         variant="modal"
         padding="p-0"
-        className=""
+        className="max-w-lg"
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           {/* Icon */}
@@ -171,7 +171,7 @@ export const VerificationSuccessModal = ({
       <Card
         variant="modal"
         padding="p-0"
-        className=""
+        className="max-w-sm"
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           {/* Icon */}
@@ -229,7 +229,7 @@ export const VerificationRejectionModal = ({
       <Card
         variant="modal"
         padding="p-0"
-        className="h-[500px]"
+        className="max-w-lg h-[500px]"
       >
         <div className="flex flex-col h-full w-full">
           {/* Header */}
@@ -350,7 +350,7 @@ export const VerificationRejectedSuccessModal = ({
       <Card
         variant="modal"
         padding="p-0"
-        className=""
+        className="max-w-sm"
       >
         <div className="p-8 pb-6 flex flex-col items-center text-center">
           {/* Icon */}

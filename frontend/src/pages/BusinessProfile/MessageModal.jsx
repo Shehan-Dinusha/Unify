@@ -8,7 +8,7 @@ import StatusIcon from '../../components/common/StatusIcon';
 const MessageModal = ({ open, biz, onClose, onSend }) => (
   <Overlay open={open} className="overflow-y-auto">
     <div className="min-h-full flex items-center justify-center py-6">
-      <Card variant="modal" padding="p-0">
+      <Card variant="modal" padding="p-0" className="max-w-lg">
         <div className="p-lg flex flex-col">
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">

@@ -17,7 +17,7 @@ const ActionSuccessModal = ({ success, biz, onClose }) => {
   return (
     <Overlay open={true} className="overflow-y-auto">
       <div className="min-h-full flex items-center justify-center py-6">
-        <Card variant="modal" padding="p-0">
+        <Card variant="modal" padding="p-0" className="max-w-lg">
           <div className="p-8 pb-6 flex flex-col items-center text-center">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 ring-4 ${cfg.ringClass}`}>{cfg.icon}</div>
             <h2 className="text-xl font-bold text-white mb-3">{cfg.title}</h2>

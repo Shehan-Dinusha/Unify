@@ -15,17 +15,53 @@ const normalizeNotification = (n) => {
   const typeLower = (n.type || 'general').toLowerCase();
   const actorName = n.actorName || n.actor?.name || 'User';
   const actorAvatar = getAvatarUrl(n.avatar || n.actor?.avatar, actorName);
+  const referenceType = n.referenceType || null;
+
+  let reviewAction = null;
+  let metadata = null;
+  let displayContent = n.content;
+
+  if (referenceType === 'Review') {
+    if (n.title?.includes('reviewed your business')) reviewAction = 'new';
+    else if (n.title?.includes('replied to your review')) reviewAction = 'reply';
+    else if (n.title?.includes('liked your review')) reviewAction = 'like';
+    else if (n.title?.includes('found your review')) reviewAction = 'feedback';
+
+    // Hide JSON metadata from display — it's only for navigation
+    if (n.content) {
+      try {
+        const parsed = JSON.parse(n.content);
+        if (parsed.targetId) {
+          metadata = parsed;
+          displayContent = '';
+        }
+      } catch {}
+    }
+  }
+
+  if (referenceType === 'Follower') {
+    // Content holds the aggregated follower list — hide from display
+    if (n.content) {
+      try {
+        JSON.parse(n.content);
+        displayContent = '';
+      } catch {}
+    }
+  }
+
   return {
     id: n.id,
     type: typeLower,
     title: n.title,
-    content: n.content,
+    content: displayContent,
     time: n.time,
     isUnread: n.isUnread,
     image: n.image ? getImageUrl(n.image) : null,
     referenceId: n.referenceId || null,
-    referenceType: n.referenceType || null,
+    referenceType,
     avatar: actorAvatar,
+    reviewAction,
+    metadata,
   };
 };
 
@@ -97,11 +133,25 @@ export const useNotification = () => {
     }
   };
 
-  const handleNavigateToPost = (referenceId, referenceType) => {
+  const handleNavigateToPost = (referenceId, referenceType, notification) => {
     if (referenceType === 'LostAndFound') {
       navigate(`/lost-and-found?view=detail&id=${referenceId}`);
     } else if (referenceType === 'Semester') {
       navigate('/student-learning');
+    } else if (referenceType === 'Follower') {
+      navigate('/club/followers');
+    } else if (referenceType === 'Review') {
+      const user = authUser;
+      if (user?.role === 'Business') {
+        navigate(`/business/reviews?scrollToReview=${referenceId}`);
+      } else {
+        const targetId = notification?.metadata?.targetId;
+        if (targetId) {
+          navigate(`/marketplace/${targetId}/reviews?scrollToReview=${referenceId}`);
+        } else {
+          navigate('/business/reviews');
+        }
+      }
     } else {
       navigate('/news-feed', { state: { targetPostId: referenceId, targetPostType: referenceType } });
     }

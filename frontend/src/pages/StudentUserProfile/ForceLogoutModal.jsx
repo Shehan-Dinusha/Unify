@@ -6,7 +6,7 @@ const ForceLogoutModal = ({ open, onClose, onConfirm, loading, userName, userAva
   return (
     <Overlay open={open} className="overflow-y-auto">
       <div className="min-h-full flex items-center justify-center py-6">
-        <Card variant="modal" padding="p-0" className="">
+        <Card variant="modal" padding="p-0" className="max-w-lg">
           <div className="p-8 flex flex-col items-center text-center">
             <div className="w-16 h-16 rounded-full bg-state-error/15 flex items-center justify-center mb-5 ring-4 ring-state-error/10">
               <div className="w-10 h-10 rounded-full bg-state-error flex items-center justify-center shadow-[0_0_15px_rgba(255,99,102,0.4)]">

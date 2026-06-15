@@ -7,7 +7,7 @@ import Overlay from '../../components/common/Overlay';
 const SubmitConfirmModal = ({ open, onClose, onConfirm, submitting }) => (
   <Overlay open={open} zIndex="z-[60]" className="overflow-y-auto">
     <div className="min-h-full flex items-center justify-center py-8">
-      <Card variant="modal" padding="p-0">
+      <Card variant="modal" padding="p-0" className="max-w-sm">
         <div className="p-6 sm:p-8 pb-4 sm:pb-6 flex flex-col items-center text-center">
           <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary-blue/10 rounded-full flex items-center justify-center mb-4 sm:mb-6 ring-4 ring-primary-blue/5">
             <Send size={28} className="text-primary-blue sm:hidden" />

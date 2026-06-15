@@ -104,7 +104,7 @@ const StudentReportIssue = () => {
     <MainLayout user={user} pageTitle="News Feed" verificationCount={0}>
       <Overlay open={true} className="overflow-y-auto">
         <div className="min-h-full flex items-center justify-center py-6 sm:py-10">
-          <Card variant="modal" padding="p-0">
+          <Card variant="modal" padding="p-0" className="max-w-lg">
             <div className="p-5 sm:p-6 pb-0 flex items-start justify-between">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-white font-inter tracking-tight">Report an Issue</h2>

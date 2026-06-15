@@ -10,7 +10,7 @@ const SuccessModal = ({ open, onClose, type, userName, userId, userAvatar, warni
     return (
       <Overlay open={open} className="overflow-y-auto">
         <div className="min-h-full flex items-center justify-center py-6">
-          <Card variant="modal" padding="p-0" className="">
+          <Card variant="modal" padding="p-0" className="max-w-lg">
             <div className="p-8 pb-6 flex flex-col items-center text-center">
               <div className="relative mb-6">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-blue/20 to-blue-500/20 flex items-center justify-center ring-4 ring-primary-blue/10 shadow-[0_0_40px_rgba(43,140,238,0.3)]"><ShieldCheck size={36} className="text-primary-blue" /></div>
@@ -42,7 +42,7 @@ const SuccessModal = ({ open, onClose, type, userName, userId, userAvatar, warni
     return (
       <Overlay open={open} className="overflow-y-auto">
         <div className="min-h-full flex items-center justify-center py-6">
-          <Card variant="modal" padding="p-0" className="">
+          <Card variant="modal" padding="p-0" className="max-w-lg">
             <div className="p-8 pb-6 flex flex-col items-center text-center">
               <div className="relative mb-6">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-blue/20 to-cyan-500/20 flex items-center justify-center ring-4 ring-primary-blue/10 shadow-[0_0_40px_rgba(43,140,238,0.3)]"><Power size={36} className="text-primary-blue" /></div>
@@ -73,7 +73,7 @@ const SuccessModal = ({ open, onClose, type, userName, userId, userAvatar, warni
     return (
       <Overlay open={open} className="overflow-y-auto">
         <div className="min-h-full flex items-center justify-center py-6">
-          <Card variant="modal" padding="p-0" className="">
+          <Card variant="modal" padding="p-0" className="max-w-lg">
             <div className="p-8 pb-6 flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 ring-4 ring-state-success/5 bg-state-success/10"><CheckCircle2 size={36} className="text-state-success" /></div>
               <h2 className="text-xl font-bold text-white font-inter mb-3">Suspension Applied Successfully</h2>
