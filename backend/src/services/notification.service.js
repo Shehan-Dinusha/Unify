@@ -230,21 +230,92 @@ export const notifyOwnerLikeReview = async ({ reviewAuthorId, actorId, actorName
   });
 };
 
+const buildReviewFeedbackTitle = (users, action) => {
+  const actionText = action === "helpful"
+    ? "found your review helpful"
+    : "found your review not helpful";
+  if (users.length === 1) return `${users[0].name} ${actionText}`;
+  if (users.length === 2) return `${users[0].name} and ${users[1].name} ${actionText}`;
+  return `${users[0].name}, ${users[1].name}, and ${users.length - 2} others ${actionText}`;
+};
+
 /**
- * Notify a review author that someone found their review helpful or not helpful.
+ * Aggregated review feedback notification.
+ *
+ * If the review author already has an unread notification for the same
+ * review+action, the new user is appended to it (title/content updated).
+ * Otherwise a fresh notification is created.
  */
 export const notifyReviewFeedback = async ({ reviewAuthorId, actorId, actorName, reviewId, targetId, action }) => {
-  const feedbackText = action === "helpful" ? "helpful" : "not helpful";
-  return notifyUser({
-    userId: reviewAuthorId,
-    actorId,
-    type: "General",
-    title: `${actorName} found your review ${feedbackText}`,
-    content: JSON.stringify({ targetId }),
-    referenceId: reviewId,
-    referenceType: "Review",
-    dedupeKey: `review-feedback:${actorId}:${reviewId}:${action}`,
-  });
+  try {
+    if (reviewAuthorId === actorId) return null;
+
+    const existing = await Notification.findOne({
+      where: { userId: reviewAuthorId, referenceType: "ReviewFeedback", referenceId: reviewId, isUnread: true },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (existing) {
+      const data = JSON.parse(existing.content || "{}");
+      if (data.action === action) {
+        const list = data.users || [];
+        if (!list.some((u) => u.id === actorId)) {
+          list.push({ id: actorId, name: actorName });
+        }
+        data.users = list;
+        existing.content = JSON.stringify(data);
+        existing.title = buildReviewFeedbackTitle(list, action);
+        existing.actorId = actorId;
+        await existing.save();
+        return existing;
+      }
+    }
+
+    const data = { targetId, action, users: [{ id: actorId, name: actorName }] };
+    return notifyUser({
+      userId: reviewAuthorId,
+      actorId,
+      type: "General",
+      title: buildReviewFeedbackTitle(data.users, action),
+      content: JSON.stringify(data),
+      referenceId: reviewId,
+      referenceType: "ReviewFeedback",
+    });
+  } catch (error) {
+    logger.error(`notifyReviewFeedback error: ${error.message}`);
+    return null;
+  }
+};
+
+/**
+ * Remove a user from ALL aggregated review feedback notifications (read and unread)
+ * for the given review. If any notification's user list becomes empty, it is destroyed.
+ */
+export const removeReviewFeedbackFromNotification = async ({ reviewAuthorId, actorId, reviewId }) => {
+  try {
+    const notifications = await Notification.findAll({
+      where: { userId: reviewAuthorId, referenceType: "ReviewFeedback", referenceId: reviewId },
+    });
+    if (notifications.length === 0) return null;
+
+    for (const notification of notifications) {
+      const data = JSON.parse(notification.content || "{}");
+      const filtered = (data.users || []).filter((u) => u.id !== actorId);
+      if (filtered.length === 0) {
+        await notification.destroy();
+      } else {
+        data.users = filtered;
+        notification.content = JSON.stringify(data);
+        notification.title = buildReviewFeedbackTitle(filtered, data.action);
+        notification.actorId = filtered[filtered.length - 1].id;
+        await notification.save();
+      }
+    }
+    return true;
+  } catch (error) {
+    logger.error(`removeReviewFeedbackFromNotification error: ${error.message}`);
+    return null;
+  }
 };
 
 // ── Follower Notification Helpers ─────────────────────────────────────────────

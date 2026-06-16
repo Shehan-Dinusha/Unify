@@ -39,11 +39,15 @@ const ReceivedReviewCard = ({ review, onReply, onLike }) => {
   const handleToggleLike = async () => {
     if (isLiking) return;
     setIsLiking(true);
+    const prev = isLikedLocally;
+    setIsLikedLocally(!prev);
     try {
       const result = await onLike(review.id);
-      if (result) {
-        setIsLikedLocally(result.isLikedByOwner);
+      if (!result) {
+        setIsLikedLocally(prev);
       }
+    } catch {
+      setIsLikedLocally(prev);
     } finally {
       setIsLiking(false);
     }
