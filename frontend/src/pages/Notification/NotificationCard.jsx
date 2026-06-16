@@ -37,7 +37,7 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
   };
 
   const renderTitle = () => {
-    if (type === 'reply' || type === 'like' || notification.referenceType === 'Review' || notification.referenceType === 'ReviewFeedback' || notification.referenceType === 'Follower') {
+    if (type === 'reply' || type === 'like' || notification.referenceType === 'Review' || notification.referenceType === 'ReviewFeedback' || notification.referenceType === 'Follower' || notification.referenceType === 'Verification') {
       const words = title.split(' ');
       if (words.length >= 2) {
         return (

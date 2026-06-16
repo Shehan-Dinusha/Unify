@@ -51,6 +51,10 @@ const normalizeNotification = (n) => {
     }
   }
 
+  if (referenceType === 'Verification') {
+    // Verification notifications have plain-text content
+  }
+
   if (referenceType === 'Follower') {
     // Content holds the aggregated follower list — hide from display
     if (n.content) {
@@ -153,6 +157,13 @@ export const useNotification = () => {
       navigate('/student-learning');
     } else if (referenceType === 'Follower') {
       navigate('/club/followers');
+    } else if (referenceType === 'Verification') {
+      const role = authUser?.role;
+      if (role === 'Club') {
+        navigate('/club-verification');
+      } else {
+        navigate('/batch-rep-verification');
+      }
     } else if (referenceType === 'Review' || referenceType === 'ReviewFeedback') {
       const user = authUser;
       if (user?.role === 'Business') {

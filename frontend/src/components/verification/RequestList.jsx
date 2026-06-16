@@ -6,7 +6,7 @@ import StatsCard from "../common/StatsCard";
 import Avatar from "../common/Avatar";
 import DocumentPreviewModal from "../common/DocumentPreviewModal";
 
-const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
+const RequestList = ({ requests, stats, onVerify, onReject, loading, isVerifying, isRejecting }) => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -224,9 +224,10 @@ const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
                 <Button
                   variant="dangerOutline"
                   className="h-[42px] border-state-error/30 text-state-error hover:bg-state-error/10 hover:border-state-error/50"
+                  disabled={isRejecting}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onReject(req);
+                    if (!isRejecting) onReject(req);
                   }}
                 >
                   Reject
@@ -234,9 +235,10 @@ const RequestList = ({ requests, stats, onVerify, onReject, loading }) => {
                 <Button
                   variant="primary"
                   className="h-[42px] shadow-none bg-primary-blue hover:bg-primary-blue/90"
+                  disabled={isVerifying}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onVerify(req);
+                    if (!isVerifying) onVerify(req);
                   }}
                 >
                   Verify
