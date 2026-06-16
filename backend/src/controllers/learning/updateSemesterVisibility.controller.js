@@ -34,6 +34,18 @@ export const updateSemesterVisibility = async (req, res, next) => {
       return sendResponse(res, 404, false, "Semester not found");
     }
 
+    // Fetch currently visible batches before updating
+    const existingVisible = await SemesterVisibility.findAll({
+      where: {
+        degreeId: parseInt(degreeId, 10),
+        semesterId: parseInt(semesterId, 10),
+        isVisible: true,
+      },
+      attributes: ["batchId"],
+      transaction: t,
+    });
+    const oldVisibleBatchIds = existingVisible.map((v) => v.batchId);
+
     await SemesterVisibility.destroy({
       where: {
         degreeId: parseInt(degreeId, 10),
@@ -63,32 +75,66 @@ export const updateSemesterVisibility = async (req, res, next) => {
 
     await t.commit();
 
-    if (notifyStudents && visibleBatchIds.length > 0) {
-      const students = await StudentProfile.findAll({
-        where: {
-          degreeId: parseInt(degreeId, 10),
-          batchId: {
-            [Op.in]: visibleBatchIds.map((id) => parseInt(id, 10)),
+    if (notifyStudents) {
+      const parseId = (id) => parseInt(id, 10);
+      const newBatchIds = visibleBatchIds.map(parseId);
+      const gainedIds = newBatchIds.filter((id) => !oldVisibleBatchIds.includes(id));
+      const lostIds = oldVisibleBatchIds.filter((id) => !newBatchIds.includes(id));
+
+      // Notify students in gained batches
+      if (gainedIds.length > 0) {
+        const students = await StudentProfile.findAll({
+          where: {
+            degreeId: parseInt(degreeId, 10),
+            batchId: { [Op.in]: gainedIds },
           },
-        },
-        attributes: ["userId"],
-      });
-
-      const title = `Learning materials now available for ${semester.name}`;
-      const content = `Materials for ${semester.name} are now accessible in your course dashboard.`;
-      const refId = parseInt(semesterId, 10);
-
-      for (const student of students) {
-        await notifyUser({
-          userId: student.userId,
-          actorId: req.user.id,
-          type: "General",
-          title,
-          content,
-          referenceId: refId,
-          referenceType: "Semester",
-          dedupeKey: `semester-visibility:${student.userId}:${degreeId}:${semesterId}`,
+          attributes: ["userId"],
         });
+
+        const title = `Learning materials now available for ${semester.name}`;
+        const content = `Materials for ${semester.name} are now accessible in your course dashboard.`;
+        const refId = parseInt(semesterId, 10);
+
+        for (const student of students) {
+          await notifyUser({
+            userId: student.userId,
+            actorId: req.user.id,
+            type: "General",
+            title,
+            content,
+            referenceId: refId,
+            referenceType: "Semester",
+            dedupeKey: `semester-visibility:${student.userId}:${degreeId}:${semesterId}`,
+          });
+        }
+      }
+
+      // Notify students in lost batches
+      if (lostIds.length > 0) {
+        const students = await StudentProfile.findAll({
+          where: {
+            degreeId: parseInt(degreeId, 10),
+            batchId: { [Op.in]: lostIds },
+          },
+          attributes: ["userId"],
+        });
+
+        const title = `Access removed for ${semester.name}`;
+        const content = `Access to materials for ${semester.name} has been removed from your course dashboard.`;
+        const refId = parseInt(semesterId, 10);
+
+        for (const student of students) {
+          await notifyUser({
+            userId: student.userId,
+            actorId: req.user.id,
+            type: "General",
+            title,
+            content,
+            referenceId: refId,
+            referenceType: "Semester",
+            dedupeKey: `semester-visibility-revoke:${student.userId}:${degreeId}:${semesterId}`,
+          });
+        }
       }
     }
 
