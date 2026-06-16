@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getFollowings, getSingleFollowing, unfollowOrganization } from '../../services/followerService';
+import { getFollowings, getSingleFollowing } from '../../services/followerService';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -74,27 +74,21 @@ export const useFollowings = () => {
   };
 
   const handleUnfollow = useCallback((idToRemove) => {
-    setTimeout(async () => {
-      let newLength = 0;
-      setFollowings((prev) => {
-        const nextList = prev.filter((item) => item.id !== idToRemove);
-        newLength = nextList.length;
-        return nextList;
-      });
-      setTotalFollowings((prev) => Math.max(0, prev - 1));
-      try {
-        await unfollowOrganization(idToRemove);
-        const nextItem = await getSingleFollowing(newLength, sortOrder);
-        if (nextItem) {
-          setFollowings((latestPrev) => {
-            if (latestPrev.find((i) => i.id === nextItem.id)) return latestPrev;
-            return [...latestPrev, nextItem];
-          });
-        }
-      } catch (err) {
-        console.error('Error refetching after unfollow:', err);
+    let newLength = 0;
+    setFollowings((prev) => {
+      const nextList = prev.filter((item) => item.id !== idToRemove);
+      newLength = nextList.length;
+      return nextList;
+    });
+    setTotalFollowings((prev) => Math.max(0, prev - 1));
+    getSingleFollowing(newLength, sortOrder).then((nextItem) => {
+      if (nextItem) {
+        setFollowings((latestPrev) => {
+          if (latestPrev.find((i) => i.id === nextItem.id)) return latestPrev;
+          return [...latestPrev, nextItem];
+        });
       }
-    }, 500);
+    });
   }, [sortOrder]);
 
   return {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MessageSquare, UserCheck, UserPlus } from 'lucide-react';
 import Button from '../../components/common/Button';
 import * as chatService from '../../services/chatService';
+import { unfollowOrganization } from '../../services/followerService';
 import Avatar from '../../components/common/Avatar';
 
 const FollowingCard = ({ following, onUnfollow }) => {
@@ -30,11 +31,17 @@ const FollowingCard = ({ following, onUnfollow }) => {
     }
   };
 
-  const handleFollowClick = (e) => {
+  const handleFollowClick = async (e) => {
     e.stopPropagation();
-    setIsFollowing(!isFollowing);
-    if (isFollowing) {
-      onUnfollow(following.id);
+    const prev = isFollowing;
+    setIsFollowing(!prev);
+    try {
+      await unfollowOrganization(following.id);
+      if (prev) {
+        onUnfollow(following.id);
+      }
+    } catch {
+      setIsFollowing(prev);
     }
   };
 

@@ -17,6 +17,9 @@ export const useVerificationQueue = () => {
   const [rejectedRequest, setRejectedRequest] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -51,6 +54,8 @@ export const useVerificationQueue = () => {
   const handleVerifyClick = (request) => setSelectedRequest(request);
 
   const handleConfirmVerify = async () => {
+    if (isVerifying) return;
+    setIsVerifying(true);
     setRequests((prev) => Array.isArray(prev) ? prev.filter((r) => r.id !== selectedRequest.id) : []);
     setRequestStats((prev) => {
       if (!prev) return prev;
@@ -67,6 +72,8 @@ export const useVerificationQueue = () => {
       setErrorMessage(error.response?.data?.message || "Failed to approve verification. Please try again.");
       setShowErrorModal(true);
       fetchRequests();
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -81,6 +88,8 @@ export const useVerificationQueue = () => {
   };
 
   const handleConfirmReject = async (reason, customReason) => {
+    if (isRejecting) return;
+    setIsRejecting(true);
     const finalReason = customReason || reason;
     setRequests((prev) => Array.isArray(prev) ? prev.filter((r) => r.id !== rejectedRequest.id) : []);
     setRequestStats((prev) => {
@@ -98,6 +107,8 @@ export const useVerificationQueue = () => {
       setErrorMessage(error.response?.data?.message || "Failed to reject verification. Please try again.");
       setShowErrorModal(true);
       fetchRequests();
+    } finally {
+      setIsRejecting(false);
     }
   };
 
@@ -118,5 +129,6 @@ export const useVerificationQueue = () => {
     showRejectionModal, setShowRejectionModal, showRejectionSuccessModal, rejectedRequest, rejectionReason,
     showErrorModal, errorMessage, handleVerifyClick, handleConfirmVerify, handleCloseSuccess,
     handleRejectClick, handleConfirmReject, handleCloseError, handleCloseRejectionSuccess, fetchRequests,
+    isVerifying, isRejecting,
   };
 };

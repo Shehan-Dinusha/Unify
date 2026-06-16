@@ -1,53 +1,13 @@
-import { useState } from "react";
 import { ThumbsUp, ThumbsDown, Trash2, Heart } from "lucide-react";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
 import StarRating from "../../components/common/StarRating";
 import Avatar from "../../components/common/Avatar";
+import useOptimisticFeedback from "../../hooks/useOptimisticFeedback";
 
 const ReviewCard = ({ review, onDelete, onFeedback }) => {
-  const [feedback, setFeedback] = useState(review.currentUserFeedback);
-  const [helpfulCount, setHelpfulCount] = useState(review.helpfulCount);
-  const [notHelpfulCount, setNotHelpfulCount] = useState(
-    review.notHelpfulCount,
-  );
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  const handleHelpful = async () => {
-    if (isUpdating) return;
-    setIsUpdating(true);
-    try {
-      const result = await onFeedback(review.id, "helpful");
-      if (result) {
-        setFeedback(result.feedbackModified === "removed" ? null : "helpful");
-        setHelpfulCount(result.helpfulCount);
-        setNotHelpfulCount(result.notHelpfulCount);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleNotHelpful = async () => {
-    if (isUpdating) return;
-    setIsUpdating(true);
-    try {
-      const result = await onFeedback(review.id, "not_helpful");
-      if (result) {
-        setFeedback(
-          result.feedbackModified === "removed" ? null : "not_helpful",
-        );
-        setHelpfulCount(result.helpfulCount);
-        setNotHelpfulCount(result.notHelpfulCount);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+  const { feedback, helpfulCount, notHelpfulCount, isUpdating, handleHelpful, handleNotHelpful } =
+    useOptimisticFeedback(review.id, review, onFeedback);
 
   return (
     <Card

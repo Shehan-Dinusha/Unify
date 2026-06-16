@@ -8,6 +8,7 @@ const WriteReview = ({ onSubmit }) => {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   return (
     <Card
@@ -71,8 +72,16 @@ const WriteReview = ({ onSubmit }) => {
         </label>
         <Button
           className="w-full sm:w-48 shadow-[0_4px_6px_-4px_rgba(43,140,238,0.25),0_10px_15px_-3px_rgba(43,140,238,0.25)] flex justify-center items-center gap-2 disabled:bg-gray-600 disabled:text-gray-400 disabled:shadow-none"
-          disabled={rating === 0}
-          onClick={() => onSubmit({ rating, review, isAnonymous })}
+          disabled={rating === 0 || isSubmitting}
+          onClick={async () => {
+            if (isSubmitting) return;
+            setIsSubmitting(true);
+            try {
+              await onSubmit({ rating, review, isAnonymous });
+            } finally {
+              setIsSubmitting(false);
+            }
+          }}
         >
           <span className="text-white text-base font-bold font-inter">
             Submit Review

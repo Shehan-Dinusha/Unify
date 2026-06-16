@@ -2,7 +2,8 @@ import React from 'react';
 import Card from '../../components/common/Card';
 import {
   ReplyAvatar, LikeAvatar, MatchIcon, VerificationIcon, SemesterIcon,
-  ReviewStarAvatar, ReviewReplyAvatar, ReviewFeedbackAvatar, FollowerAvatar,
+  ReviewStarAvatar, ReviewReplyAvatar, ReviewFeedbackAvatar,
+  ReviewFeedbackNotHelpfulAvatar, FollowerAvatar,
 } from './NotificationIcons';
 
 const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
@@ -25,12 +26,18 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
             default: return <ReviewStarAvatar avatar={avatar} />;
           }
         }
+        if (notification.referenceType === 'ReviewFeedback') {
+          if (notification.reviewFeedbackAction === 'helpful') {
+            return <ReviewFeedbackAvatar avatar={avatar} />;
+          }
+          return <ReviewFeedbackNotHelpfulAvatar avatar={avatar} />;
+        }
         return <div className="w-10 h-10 bg-white/10 rounded-full" />;
     }
   };
 
   const renderTitle = () => {
-    if (type === 'reply' || type === 'like' || notification.referenceType === 'Review' || notification.referenceType === 'Follower') {
+    if (type === 'reply' || type === 'like' || notification.referenceType === 'Review' || notification.referenceType === 'ReviewFeedback' || notification.referenceType === 'Follower' || notification.referenceType === 'Verification') {
       const words = title.split(' ');
       if (words.length >= 2) {
         return (

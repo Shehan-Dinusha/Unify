@@ -19,6 +19,7 @@ const VerificationQueue = () => {
     showRejectionModal, setShowRejectionModal, showRejectionSuccessModal, rejectedRequest, rejectionReason,
     showErrorModal, errorMessage, handleVerifyClick, handleConfirmVerify, handleCloseSuccess,
     handleRejectClick, handleConfirmReject, handleCloseError, handleCloseRejectionSuccess,
+    isVerifying, isRejecting,
   } = useVerificationQueue();
 
   const headerActions = (
@@ -49,16 +50,16 @@ const VerificationQueue = () => {
   return (
     <MainLayout pageTitle="Verification Queue" headerRight={headerActions}>
       {activeTab === "requests" ? (
-        <RequestList requests={requests} stats={requestStats} onVerify={handleVerifyClick} onReject={handleRejectClick} loading={loading} />
+        <RequestList requests={requests} stats={requestStats} onVerify={handleVerifyClick} onReject={handleRejectClick} loading={loading} isVerifying={isVerifying} isRejecting={isRejecting} />
       ) : (
         <VerifiedList />
       )}
 
-      <VerificationConfirmationModal isOpen={!!selectedRequest} onClose={() => setSelectedRequest(null)} onConfirm={handleConfirmVerify} loading={loading} />
+      <VerificationConfirmationModal isOpen={!!selectedRequest} onClose={() => setSelectedRequest(null)} onConfirm={handleConfirmVerify} loading={isVerifying} />
       <VerificationSuccessModal isOpen={showSuccessModal} onClose={handleCloseSuccess} clubName={verifiedRequest?.name} />
 
       <VerificationRejectionModal isOpen={showRejectionModal} onClose={() => setShowRejectionModal(false)} onConfirm={handleConfirmReject}
-        clubName={rejectedRequest?.name} requestType={rejectedRequest?.type} loading={loading} />
+        clubName={rejectedRequest?.name} requestType={rejectedRequest?.type} loading={isRejecting} />
       <VerificationRejectedSuccessModal isOpen={showRejectionSuccessModal} onClose={handleCloseRejectionSuccess} clubName={rejectedRequest?.name} reason={rejectionReason} />
 
       <ActionErrorModal isOpen={showErrorModal} onClose={handleCloseError} title="Action Failed" message={errorMessage} />

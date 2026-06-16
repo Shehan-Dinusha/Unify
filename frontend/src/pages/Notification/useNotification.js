@@ -18,10 +18,22 @@ const normalizeNotification = (n) => {
   const referenceType = n.referenceType || null;
 
   let reviewAction = null;
+  let reviewFeedbackAction = null;
   let metadata = null;
   let displayContent = n.content;
 
-  if (referenceType === 'Review') {
+  if (referenceType === 'ReviewFeedback') {
+    if (n.content) {
+      try {
+        const parsed = JSON.parse(n.content);
+        if (parsed.targetId) {
+          metadata = parsed;
+          reviewFeedbackAction = parsed.action;
+          displayContent = '';
+        }
+      } catch {}
+    }
+  } else if (referenceType === 'Review') {
     if (n.title?.includes('reviewed your business')) reviewAction = 'new';
     else if (n.title?.includes('replied to your review')) reviewAction = 'reply';
     else if (n.title?.includes('liked your review')) reviewAction = 'like';
@@ -37,6 +49,10 @@ const normalizeNotification = (n) => {
         }
       } catch {}
     }
+  }
+
+  if (referenceType === 'Verification') {
+    // Verification notifications have plain-text content
   }
 
   if (referenceType === 'Follower') {
@@ -61,6 +77,7 @@ const normalizeNotification = (n) => {
     referenceType,
     avatar: actorAvatar,
     reviewAction,
+    reviewFeedbackAction,
     metadata,
   };
 };
@@ -140,7 +157,14 @@ export const useNotification = () => {
       navigate('/student-learning');
     } else if (referenceType === 'Follower') {
       navigate('/club/followers');
-    } else if (referenceType === 'Review') {
+    } else if (referenceType === 'Verification') {
+      const role = authUser?.role;
+      if (role === 'Club') {
+        navigate('/club-verification');
+      } else {
+        navigate('/batch-rep-verification');
+      }
+    } else if (referenceType === 'Review' || referenceType === 'ReviewFeedback') {
       const user = authUser;
       if (user?.role === 'Business') {
         navigate(`/business/reviews?scrollToReview=${referenceId}`);
