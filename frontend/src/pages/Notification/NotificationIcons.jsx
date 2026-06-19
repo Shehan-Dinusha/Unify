@@ -1,5 +1,5 @@
 import React from 'react';
-import { CornerUpLeft, Heart, Search, ShieldCheck, BookOpen, Star, MessageSquare, ThumbsUp, ThumbsDown, UserPlus } from 'lucide-react';
+import { CornerUpLeft, Heart, Search, ShieldCheck, BookOpen, Star, MessageSquare, ThumbsUp, ThumbsDown, UserPlus, PackageCheck } from 'lucide-react';
 
 export const ReplyAvatar = ({ avatar }) => (
   <div className="relative w-10 h-10 shrink-0">
@@ -34,6 +34,12 @@ export const VerificationIcon = () => (
 export const SemesterIcon = () => (
   <div className="w-10 h-10 shrink-0 rounded-full bg-[#162743] flex items-center justify-center">
     <BookOpen size={18} className="text-primary-blue" />
+  </div>
+);
+
+export const OrderIcon = () => (
+  <div className="w-10 h-10 shrink-0 rounded-full bg-state-success/10 flex items-center justify-center">
+    <PackageCheck size={18} className="text-state-success" />
   </div>
 );
 
