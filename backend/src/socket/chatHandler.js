@@ -14,18 +14,22 @@ export const registerChatHandlers = (io, socket) => {
   // ── chat:join — Join a conversation room ──────────────────────────────────
   socket.on("chat:join", async ({ conversationId }) => {
     try {
+      // Join immediately to avoid race with chat:send on first message
+      socket.join(`chat:${conversationId}`);
+
       const conversation = await Conversation.findByPk(conversationId);
 
       if (!conversation) {
+        socket.leave(`chat:${conversationId}`);
         return socket.emit("chat:error", { error: "Conversation not found" });
       }
 
       // Validate user is a participant
       if (conversation.participantOneId !== userId && conversation.participantTwoId !== userId) {
+        socket.leave(`chat:${conversationId}`);
         return socket.emit("chat:error", { error: "Not authorized to join this conversation" });
       }
 
-      socket.join(`chat:${conversationId}`);
       logger.info(`User ${userId} joined room chat:${conversationId}`);
     } catch (error) {
       logger.error("chat:join error:", error);

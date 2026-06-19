@@ -1,6 +1,7 @@
 import { Review, ReviewFeedback } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { notifyReviewFeedback, removeReviewFeedbackFromNotification } from "../../services/notification.service.js";
 
 /**
  * Controller to handle "Helpful" or "Not Helpful" interactions on a review.
@@ -27,6 +28,12 @@ export const toggleReviewFeedback = async (req, res, next) => {
     if (existingFeedback) {
       // If they click the same button again, we remove it (toggle off)
       if (existingFeedback.isHelpful === isHelpfulClicked) {
+        await removeReviewFeedbackFromNotification({
+          reviewAuthorId: review.reviewerId,
+          actorId: currentUserId,
+          reviewId: review.id,
+        });
+
         await existingFeedback.destroy();
 
         if (isHelpfulClicked) {
@@ -50,6 +57,7 @@ export const toggleReviewFeedback = async (req, res, next) => {
         );
       } else {
         // If they click the opposite button, we update the existing record
+        const oldAction = existingFeedback.isHelpful ? "helpful" : "not_helpful";
         existingFeedback.isHelpful = isHelpfulClicked;
         await existingFeedback.save();
 
@@ -61,6 +69,22 @@ export const toggleReviewFeedback = async (req, res, next) => {
           review.helpfulCount = Math.max(0, review.helpfulCount - 1);
         }
         await review.save();
+
+        // Remove from old action's aggregated notification, then add to new
+        await removeReviewFeedbackFromNotification({
+          reviewAuthorId: review.reviewerId,
+          actorId: currentUserId,
+          reviewId: review.id,
+        });
+
+        notifyReviewFeedback({
+          reviewAuthorId: review.reviewerId,
+          actorId: currentUserId,
+          actorName: req.user.name,
+          reviewId: review.id,
+          targetId: review.targetId,
+          action,
+        });
 
         return sendResponse(
           res,
@@ -90,6 +114,15 @@ export const toggleReviewFeedback = async (req, res, next) => {
         review.notHelpfulCount += 1;
       }
       await review.save();
+
+      notifyReviewFeedback({
+        reviewAuthorId: review.reviewerId,
+        actorId: currentUserId,
+        actorName: req.user.name,
+        reviewId: review.id,
+        targetId: review.targetId,
+        action,
+      });
 
       return sendResponse(
         res,

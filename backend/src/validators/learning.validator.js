@@ -176,10 +176,10 @@ export const updateSemesterVisibilityValidator = [
   body("visibleBatchIds.*")
     .isInt()
     .withMessage("Each item in visibleBatchIds must be an integer"),
-  body("notifyReps")
+  body("notifyStudents")
     .optional()
     .isBoolean()
-    .withMessage("notifyReps must be a boolean"),
+    .withMessage("notifyStudents must be a boolean"),
 ];
 
 export const getStudentCourseStructureValidator = [

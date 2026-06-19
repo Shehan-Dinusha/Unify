@@ -21,29 +21,28 @@ const MainLayout = ({
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        // Fetch Verification Count
-        const vResponse = await verificationService.getPendingRequests();
-        if (vResponse.success) {
-          setVerificationCount(vResponse.data?.requests?.length || 0);
-        }
+        if (user?.role === "Admin") {
+          const vResponse = await verificationService.getPendingRequests();
+          if (vResponse.success) {
+            setVerificationCount(vResponse.data?.requests?.length || 0);
+          }
 
-        // Fetch Report Count
-        const rResponse = await reportService.getReportStats();
-        if (rResponse.success) {
-          setReportCount(rResponse.data?.totalPending || 0);
-        }
+          const rResponse = await reportService.getReportStats();
+          if (rResponse.success) {
+            setReportCount(rResponse.data?.totalPending || 0);
+          }
 
-        // Fetch Suspension Count
-        const sResponse = await suspensionService.getDashboardStatistics();
-        if (sResponse.success) {
-          setSuspensionCount(sResponse.data?.suspendedAccounts?.count || 0);
+          const sResponse = await suspensionService.getDashboardStatistics();
+          if (sResponse.success) {
+            setSuspensionCount(sResponse.data?.suspendedAccounts?.count || 0);
+          }
         }
       } catch (error) {
         // Non-admin users or network errors will fail — silently ignore for layout
       }
     };
     fetchCounts();
-  }, []);
+  }, [user?.role]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prevState) => !prevState);

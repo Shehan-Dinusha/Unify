@@ -8,6 +8,7 @@ import {
   Boarding,
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 import logger from "../../utils/logger.js";
 import moment from "moment";
 import s3Service from "../../services/s3.service.js";
@@ -73,14 +74,14 @@ const generateTimeline = (report) => {
   return timeline;
 };
 
-/**
- * GET /api/v1/reports/:id
- * Retrieves a single student report for the STUDENT's own view.
- */
 export const getReportById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const studentId = req.user?.id || 4;
+    const studentId = req.user?.id;
+
+    if (!studentId) {
+      return sendResponse(res, 401, false, 'Student authentication required');
+    }
 
     let report = null;
 
@@ -313,9 +314,7 @@ export const getReportById = async (req, res, next) => {
         name: entityName,
         faculty: entityFaculty,
         entityId: report.reportedEntityId,
-        avatar:
-          entityAvatar ||
-          `https://api.dicebear.com/7.x/avataaars/svg?seed=${report.reportedEntityId}`,
+        avatar: await resolveAvatarUrl(entityAvatar, entityName),
         categoryBadge: categoryDisplayMap[report.category] || report.category,
       },
       description:

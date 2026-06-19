@@ -6,9 +6,9 @@ import Input from "../common/Input";
 import Select from "../common/Select";
 import { X, Lock, Save, ChevronDown } from "lucide-react";
 
-const AddModuleModal = ({ 
-  isOpen, 
-  onClose, 
+const AddModuleModal = ({
+  isOpen,
+  onClose,
   onSave,
   availableDegrees = [],
   primaryDegree,
@@ -112,7 +112,10 @@ const AddModuleModal = ({
                 placeholder="Select Semester..."
                 value={semester}
                 onChange={(e) => setSemester(e.target.value)}
-                options={semesters.map(sem => ({ label: sem.name, value: sem.id }))}
+                options={semesters.map((sem) => ({
+                  label: sem.name,
+                  value: sem.id,
+                }))}
               />
             </div>
           </div>

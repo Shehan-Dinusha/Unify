@@ -7,15 +7,7 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY)
   : null;
 
-/**
- * Create a Stripe Checkout Session for a Boost purchase.
- *
- * This is a ONE-TO-ONE (platform direct) payment — NOT multi-vendor.
- * The payment goes directly to the platform's Stripe account.
- * No transfer_data or destination is used.
- *
- * Body: { packageId, postId, postType, amount, packageName, durationDays }
- */
+//Create a Stripe Checkout Session for a Boost purchase.
 export const createBoostCheckoutSession = async (req, res) => {
   if (!stripe) {
     return sendResponse(
@@ -27,7 +19,12 @@ export const createBoostCheckoutSession = async (req, res) => {
   }
 
   try {
-    const userId = req.user?.id || null;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return sendResponse(res, 401, false, "Authentication required.");
+    }
+
     const { packageId, postId, postType, amount, packageName, durationDays } =
       req.body;
 

@@ -1,9 +1,20 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import chatService from "../services/chatService";
 import { isAuthenticated, getCurrentUser } from "../services/authService";
 import { io } from "socket.io-client";
 
-const ChatContext = createContext({ unreadMessageCount: 0, refreshUnreadCount: () => {}, socket: null });
+const ChatContext = createContext({
+  unreadMessageCount: 0,
+  refreshUnreadCount: () => {},
+  socket: null,
+});
 
 export const useChat = () => useContext(ChatContext);
 
@@ -51,7 +62,9 @@ export const ChatProvider = ({ children }) => {
     if (socketRef.current) return;
 
     const token = localStorage.getItem("token");
-    const SOCKET_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1").replace("/api/v1", "");
+    const SOCKET_URL = (
+      import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1"
+    ).replace("/api/v1", "");
 
     const newSocket = io(SOCKET_URL, {
       auth: { token },
@@ -97,7 +110,9 @@ export const ChatProvider = ({ children }) => {
   }, [refreshUnreadCount]);
 
   return (
-    <ChatContext.Provider value={{ unreadMessageCount, refreshUnreadCount, socket }}>
+    <ChatContext.Provider
+      value={{ unreadMessageCount, refreshUnreadCount, socket }}
+    >
       {children}
     </ChatContext.Provider>
   );

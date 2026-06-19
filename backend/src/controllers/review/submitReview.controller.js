@@ -2,6 +2,7 @@ import Review from "../../modules/Review.model.js";
 import User from "../../modules/User.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { notifyNewReview } from "../../services/notification.service.js";
 
 export const submitReview = async (req, res, next) => {
   try {
@@ -62,6 +63,14 @@ export const submitReview = async (req, res, next) => {
     logger.info(
       `Review submitted by user ID: ${reviewerId} for target ID: ${targetId}`,
     );
+
+    notifyNewReview({
+      businessOwnerId: targetId,
+      actorId: reviewerId,
+      actorName: req.user.name,
+      reviewId: newReview.id,
+      reviewContent: content,
+    });
 
     return sendResponse(
       res,

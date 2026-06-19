@@ -208,13 +208,16 @@ const UploadMaterialModal = ({
                 <FileUpload
                   label=""
                   description=""
-                  maxSizeMB={10}
+                  maxSizeMB={100}
                   hideSubtext={true}
                   acceptedTypes={[
                     "application/pdf",
                     "image/png",
                     "image/jpeg",
                     "image/jpg",
+                    "video/mp4",
+                    "video/webm",
+                    "video/ogg",
                   ]}
                   onFileSelect={(file) => setSelectedFile(file)}
                 />

@@ -1,6 +1,6 @@
 # 🎓 Unify
 
-Welcome to the **Unify** project! Unify is a comprehensive campus and university life management platform designed to connect students, academic representatives, clubs, and local businesses. 
+Welcome to the **Unify** project! Unify is a comprehensive campus and university life management platform designed to connect students, academic representatives, clubs, and local businesses.
 
 Built with a modern full-stack architecture, Unify provides an extensive range of features from academic resource sharing and social networking to a fully-featured digital marketplace and a robust administrative moderation system.
 
@@ -9,16 +9,20 @@ Built with a modern full-stack architecture, Unify provides an extensive range o
 ## 🛠️ Technology Stack
 
 ### Backend
+
 - **Runtime**: Node.js
 - **Framework**: Express.js
-- **Database**: PostgreSQL
-- **ORM**: Sequelize (using ES Modules)
+- **Database**: PostgreSQL (Docker)
+- **ORM**: Sequelize (using ES Modules, Migrations-only)
+- **Real-time API**: Socket.IO (for chat)
+- **Background Jobs**: node-cron
 - **Authentication/Security**: bcryptjs, helmet, cors
 - **File Uploads**: Multer (configured for S3-based media storage)
 - **Validation**: express-validator
 - **Logging**: winston, morgan
 
 ### Frontend
+
 - **Framework**: React 18 (Bootstrapped with Vite)
 - **Styling**: Tailwind CSS & clsx/tailwind-merge
 - **Animations**: Framer Motion
@@ -31,37 +35,45 @@ Built with a modern full-stack architecture, Unify provides an extensive range o
 ## ✨ Key Features
 
 ### 👥 User Profiles & Verification
+
 - **Multi-Role System**: Dedicated profile types for Students, Business Owners, and Club Owners.
 - **Verification System**: Secure document submission for Club profiles and Student Batch Representatives. Includes an Admin Verification Queue for approving or rejecting status updates.
 
 ### 🏪 Digital Marketplace
+
 - **Multi-Vendor Marketplace**: Supports different listing types including Products, Services, Boarding, and Food Cafes.
 - **Financial Operations**: Features a digital wallet, order management, revenue overviews, and withdrawal requests for businesses and clubs.
 - **Stripe Integration**: Secure payment processing for marketplace transactions.
 
 ### ⭐ Review & Feedback System
+
 - **Robust Ratings**: Leave ratings and optional reviews for users, clubs, and businesses.
 - **Review History**: View received reviews and personal review history.
 
 ### 📚 Academic & Learning Hub
+
 - **Learning Dashboards**: Tailored views for regular Students and Batch Representatives.
 - **Material Management**: Share and organize course materials, categorized by Degrees, Semesters, Faculties, and Modules.
 
 ### 💬 Social Networking & Communication
+
 - **Dynamic Newsfeed**: Share normal posts, event announcements, and marketplace items.
 - **Follower System**: Follow users and manage followers directories.
 - **Real-Time Chat**: Direct messaging capabilities using a dedicated chat system.
 
 ### 🛡️ Moderation & Administration
+
 - **Admin Dashboard**: Comprehensive overview of platform metrics and activities.
 - **Reporting System**: Submit and moderate reports regarding content or users.
 - **Suspension System**: Suspend users for policy violations and manage reactivation requests.
 
 ### 🚀 Boost System
+
 - **Content Promotion**: Purchase boost packages to increase the visibility of posts.
 - **Boost Analytics**: Track the performance and interactions of active boost campaigns.
 
 ### 🔍 Lost and Found
+
 - **Centralized Hub**: Report and discover lost items on campus. Track personal lost and found submissions.
 
 ---
@@ -69,6 +81,7 @@ Built with a modern full-stack architecture, Unify provides an extensive range o
 ## 📂 Project Structure
 
 ### Backend (`/backend`)
+
 ```
 backend/
 ├── src/
@@ -87,6 +100,7 @@ backend/
 ```
 
 ### Frontend (`/frontend`)
+
 ```
 frontend/
 ├── src/
@@ -103,86 +117,71 @@ frontend/
 
 ## 🚀 Getting Started
 
-### Prerequisites
-- **Node.js**: v18 or higher
-- **PostgreSQL**: v14 or higher (or use Docker)
-- **Docker & Docker Compose** (Optional, but recommended for database hosting)
-- **npm** or **yarn**
-
-### Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    cd Unify
-    ```
-
-2.  **Backend Setup:**
-    ```bash
-    cd backend
-    npm install
-    cp .env.example .env
-    # Update .env with your database credentials (DB_NAME=unify) and set DB_PORT as needed.
-    ```
-
-3.  **Frontend Setup:**
-    ```bash
-    cd ../frontend
-    npm install
-    cp .env.example .env
-    ```
-
-### Running the Application Locally
-
-1.  **Start the Backend:**
-    ```bash
-    # In /backend
-    npm run dev
-    ```
-    The server will run on `http://localhost:5000`.
-
-2.  **Start the Frontend:**
-    ```bash
-    # In /frontend
-    npm run dev
-    ```
-    The application will be available at `http://localhost:5173`.
-
-### Database Setup
-
-Ensure you have a PostgreSQL database named `unify` created.
-```sql
-CREATE DATABASE unify;
-```
-The application uses Sequelize for ORM with auto-sync configuration (`sync({ alter: true })`).
-
-### Docker Setup
-
-You can run the PostgreSQL database locally using Docker Compose to avoid conflicts with existing local services.
+### Quick Start
 
 ```bash
-# In the root or backend directory depending on docker-compose.yml location
-docker-compose up -d
+# 1. Database (Docker)
+docker compose up -d    # PostgreSQL on :5434
+
+# 2. Backend
+cd backend
+cp .env.example .env    # edit DB_HOST=localhost, DB_PORT=5434
+npm install
+npm run migrate         # create tables from migrations
+npm run seed            # insert seed data (academic structure)
+npm run dev             # http://localhost:5000
+
+# 3. Frontend (separate terminal)
+cd frontend
+npm install
+npm run dev             # http://localhost:5173
 ```
-Make sure `docker-compose.yml` and `.env` are aligned on the correct database port (e.g., 5433 to avoid default Postgres conflicts).
+
+### Commands
+
+Run all commands from the package root (`backend/` or `frontend/`).
+
+| Package  | Command              | What                             |
+| -------- | -------------------- | -------------------------------- |
+| backend  | `npm run dev`        | nodemon auto-restart             |
+| backend  | `npm run lint`       | eslint `src/`                    |
+| backend  | `npm run migrate`    | sequelize-cli db:migrate         |
+| backend  | `npm run seed`       | sequelize-cli db:seed:all        |
+| backend  | `node --test tests/` | run tests (built-in `node:test`) |
+| frontend | `npm run dev`        | Vite dev server                  |
+| frontend | `npm run build`      | Vite production build            |
+| frontend | `npm run lint`       | eslint — `max-warnings 0`        |
 
 ---
 
-## 📝 Code Rules & Standards
+## 🛠️ Architecture & Conventions
 
-### General
-- **Commits**: Use descriptive commit messages (e.g., `feat: add login page`, `fix: resolve db connection issue`).
-- **Formatting**: Use Prettier and ESLint (configured in both frontend and backend) to maintain consistent code style.
+### Database Setup (Migrations vs Auto-Sync)
 
-### Backend
-- **ES Modules**: Ensure the use of `import`/`export` syntax (`"type": "module"` is configured).
-- **Environment Variables**: Always use environment variables for sensitive data, keys, and configurations.
-- **Async/Await**: Use `async/await` for asynchronous operations to maintain readability.
+- **Migrations-only**: There is no database auto-sync mechanism inside the app (do **never** use `sync({ alter: true })`).
+- After pulling model changes, always run: `npm run migrate`.
+- For a fresh DB, run: `npm run migrate && npm run seed`.
+- The `docker-compose.yml` provides a Postgres container mapping to port `5434` to avoid local conflicts.
 
-### Frontend
-- **Components**: Use functional components with hooks. Keep components modular.
-- **Styling**: Exclusively use Tailwind CSS for styling. Avoid inline styles where possible. Use `clsx` and `tailwind-merge` for conditional classes.
-- **State Management**: Utilize Context API or local state hooks.
+### Testing Setup
+
+- Uses **Node.js built-in native test runner** (`node:test` and `node:assert/strict`).
+- No Jest, no other heavy test frameworks.
+- Tests are executed directly with the node binary: `node --test tests/`. There is no test script declared in `package.json`.
+
+### Key Technical Conventions
+
+- **ESM Everywhere**: Both packages use `"type": "module"`. Always use `import`/`export` instead of `require`.
+- **API Prefix**: All backend routes exist under `/api/v1` (e.g., `/api/v1/auth`).
+- **Stripe Webhooks**: Webhook raw payloads are captured via a special express middleware mapping effectively configured matching `/api/v1/payments/webhook`.
+- **Styling**: Exclusively use Tailwind CSS. Component classes are dynamically merged via `clsx` + `tailwind-merge`.
+- **Aliases**: Frontend imports heavily rely on the `@/` alias (which translates to `src/`).
+
+### Project Structure Details
+
+- **Websockets**: `backend/src/socket/` houses Socket.IO initialization and our real-time chat handler.
+- **Cron Jobs**: `backend/src/jobs/` contains background workers relying on `node-cron` (like OTP cleanup).
+- **Validators**: Input schema validations are performed using `express-validator` stored under `backend/src/validators/`.
 
 ---
 

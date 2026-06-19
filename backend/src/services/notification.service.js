@@ -180,6 +180,230 @@ export const notifyMatch = async ({
   });
 };
 
+// ── Review Notification Helpers ───────────────────────────────────────────────
+
+/**
+ * Notify a business owner that someone reviewed their business.
+ */
+export const notifyNewReview = async ({ businessOwnerId, actorId, actorName, reviewId, reviewContent }) => {
+  return notifyUser({
+    userId: businessOwnerId,
+    actorId,
+    type: "General",
+    title: `${actorName} reviewed your business`,
+    content: reviewContent ? `"${reviewContent.substring(0, 80)}"` : null,
+    referenceId: reviewId,
+    referenceType: "Review",
+    dedupeKey: `review:${reviewId}`,
+  });
+};
+
+/**
+ * Notify a review author that the business owner replied to their review.
+ */
+export const notifyReviewReply = async ({ reviewAuthorId, actorId, actorName, reviewId, targetId }) => {
+  return notifyUser({
+    userId: reviewAuthorId,
+    actorId,
+    type: "General",
+    title: `${actorName} replied to your review`,
+    content: JSON.stringify({ targetId }),
+    referenceId: reviewId,
+    referenceType: "Review",
+    dedupeKey: `review-reply:${reviewId}`,
+  });
+};
+
+/**
+ * Notify a review author that the business owner liked their review.
+ */
+export const notifyOwnerLikeReview = async ({ reviewAuthorId, actorId, actorName, reviewId, targetId }) => {
+  return notifyUser({
+    userId: reviewAuthorId,
+    actorId,
+    type: "General",
+    title: `${actorName} liked your review`,
+    content: JSON.stringify({ targetId }),
+    referenceId: reviewId,
+    referenceType: "Review",
+    dedupeKey: `review-like:${actorId}:${reviewId}`,
+  });
+};
+
+const buildReviewFeedbackTitle = (users, action) => {
+  const actionText = action === "helpful"
+    ? "found your review helpful"
+    : "found your review not helpful";
+  if (users.length === 1) return `${users[0].name} ${actionText}`;
+  if (users.length === 2) return `${users[0].name} and ${users[1].name} ${actionText}`;
+  return `${users[0].name}, ${users[1].name}, and ${users.length - 2} others ${actionText}`;
+};
+
+/**
+ * Aggregated review feedback notification.
+ *
+ * If the review author already has an unread notification for the same
+ * review+action, the new user is appended to it (title/content updated).
+ * Otherwise a fresh notification is created.
+ */
+export const notifyReviewFeedback = async ({ reviewAuthorId, actorId, actorName, reviewId, targetId, action }) => {
+  try {
+    if (reviewAuthorId === actorId) return null;
+
+    const existing = await Notification.findOne({
+      where: { userId: reviewAuthorId, referenceType: "ReviewFeedback", referenceId: reviewId, isUnread: true },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (existing) {
+      const data = JSON.parse(existing.content || "{}");
+      if (data.action === action) {
+        const list = data.users || [];
+        if (!list.some((u) => u.id === actorId)) {
+          list.push({ id: actorId, name: actorName });
+        }
+        data.users = list;
+        existing.content = JSON.stringify(data);
+        existing.title = buildReviewFeedbackTitle(list, action);
+        existing.actorId = actorId;
+        await existing.save();
+        return existing;
+      }
+    }
+
+    const data = { targetId, action, users: [{ id: actorId, name: actorName }] };
+    return notifyUser({
+      userId: reviewAuthorId,
+      actorId,
+      type: "General",
+      title: buildReviewFeedbackTitle(data.users, action),
+      content: JSON.stringify(data),
+      referenceId: reviewId,
+      referenceType: "ReviewFeedback",
+    });
+  } catch (error) {
+    logger.error(`notifyReviewFeedback error: ${error.message}`);
+    return null;
+  }
+};
+
+/**
+ * Remove a user from ALL aggregated review feedback notifications (read and unread)
+ * for the given review. If any notification's user list becomes empty, it is destroyed.
+ */
+export const removeReviewFeedbackFromNotification = async ({ reviewAuthorId, actorId, reviewId }) => {
+  try {
+    const notifications = await Notification.findAll({
+      where: { userId: reviewAuthorId, referenceType: "ReviewFeedback", referenceId: reviewId },
+    });
+    if (notifications.length === 0) return null;
+
+    for (const notification of notifications) {
+      const data = JSON.parse(notification.content || "{}");
+      const filtered = (data.users || []).filter((u) => u.id !== actorId);
+      if (filtered.length === 0) {
+        await notification.destroy();
+      } else {
+        data.users = filtered;
+        notification.content = JSON.stringify(data);
+        notification.title = buildReviewFeedbackTitle(filtered, data.action);
+        notification.actorId = filtered[filtered.length - 1].id;
+        await notification.save();
+      }
+    }
+    return true;
+  } catch (error) {
+    logger.error(`removeReviewFeedbackFromNotification error: ${error.message}`);
+    return null;
+  }
+};
+
+// ── Follower Notification Helpers ─────────────────────────────────────────────
+
+const buildFollowerTitle = (followers) => {
+  if (followers.length === 1) {
+    return `${followers[0].name} started following you`;
+  }
+  if (followers.length === 2) {
+    return `${followers[0].name} and ${followers[1].name} started following you`;
+  }
+  return `${followers[0].name}, ${followers[1].name}, and ${followers.length - 2} others started following you`;
+};
+
+/**
+ * Aggregated follower notification.
+ *
+ * If the club has an unread follower notification, the new follower is appended
+ * to it (title updates). Otherwise a fresh notification is created.
+ */
+export const notifyNewFollower = async ({ clubId, actorId, actorName }) => {
+  try {
+    // Don't notify yourself
+    if (clubId === actorId) return null;
+
+    const existing = await Notification.findOne({
+      where: { userId: clubId, referenceType: "Follower", isUnread: true },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (existing) {
+      const list = JSON.parse(existing.content || "[]");
+      if (!list.some((f) => f.id === actorId)) {
+        list.push({ id: actorId, name: actorName });
+      }
+      existing.content = JSON.stringify(list);
+      existing.title = buildFollowerTitle(list);
+      existing.actorId = actorId;
+      await existing.save();
+      return existing;
+    }
+
+    const list = [{ id: actorId, name: actorName }];
+    return notifyUser({
+      userId: clubId,
+      actorId,
+      type: "General",
+      title: buildFollowerTitle(list),
+      content: JSON.stringify(list),
+      referenceId: clubId,
+      referenceType: "Follower",
+    });
+  } catch (error) {
+    logger.error(`notifyNewFollower error: ${error.message}`);
+    return null;
+  }
+};
+
+/**
+ * Remove a follower from ALL aggregated follower notifications (read and unread).
+ * If any notification's follower list becomes empty, it is destroyed.
+ */
+export const removeFollowerFromNotification = async ({ clubId, followerId }) => {
+  try {
+    const notifications = await Notification.findAll({
+      where: { userId: clubId, referenceType: "Follower" },
+    });
+    if (notifications.length === 0) return null;
+
+    for (const notification of notifications) {
+      const list = JSON.parse(notification.content || "[]");
+      const filtered = list.filter((f) => f.id !== followerId);
+      if (filtered.length === 0) {
+        await notification.destroy();
+      } else {
+        notification.content = JSON.stringify(filtered);
+        notification.title = buildFollowerTitle(filtered);
+        notification.actorId = filtered[filtered.length - 1].id;
+        await notification.save();
+      }
+    }
+    return true;
+  } catch (error) {
+    logger.error(`removeFollowerFromNotification error: ${error.message}`);
+    return null;
+  }
+};
+
 // ── Query Helpers (used by controllers) ──────────────────────────────────────
 
 /**
@@ -257,4 +481,19 @@ export const deleteNotification = async (notificationId, userId) => {
 
   await notification.destroy();
   return true;
+};
+
+/**
+ * Delete a notification by its dedupeKey. Fails silently (never throws).
+ */
+export const deleteByDedupeKey = async (dedupeKey) => {
+  try {
+    const notification = await Notification.findOne({ where: { dedupeKey } });
+    if (!notification) return null;
+    await notification.destroy();
+    return true;
+  } catch (error) {
+    logger.error(`Error deleting notification by dedupeKey: ${error.message}`);
+    return null;
+  }
 };

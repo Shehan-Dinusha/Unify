@@ -11,23 +11,21 @@ import logger from "../../utils/logger.js";
  */
 const TAX_RATE = 0.008;
 
-/**
- * Generates a unique campaign ID in format #Campaign-XXXX-X
- */
+//Generates a unique campaign ID in format #Campaign-XXXX-X
 const generateCampaignId = () => {
   const num = Math.floor(1000 + Math.random() * 9000);
   const suffix = String.fromCharCode(65 + Math.floor(Math.random() * 26)); // A-Z
   return `#Campaign-${num}-${suffix}`;
 };
 
-/**
- * Handle business user creation of a new boost campaign.
- * 100% Compatible with Frontend BoostConfirmOrder → BoostPostSuccess flow.
- * Performs manual validation matching the Report module pattern.
- */
+//Handle business user creation of a new boost campaign.
 export const createCampaign = async (req, res, next) => {
   try {
-    const userId = req.user?.id || 1;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return sendResponse(res, 401, false, "Authentication required.");
+    }
 
     const {
       postId,

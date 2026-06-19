@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import Card from "../common/Card";
+import Overlay from "../common/Overlay";
 
 const CategoryModal = ({
   isOpen,
@@ -79,7 +80,7 @@ const CategoryModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-dark-1/80 backdrop-blur-xl transition-all duration-300">
+    <Overlay open={isOpen} onClose={onClose} zIndex="z-[150]">
       <Card
         variant="card"
         className="w-96 !p-0 flex flex-col"
@@ -183,7 +184,7 @@ const CategoryModal = ({
           </button>
         </div>
       </Card>
-    </div>
+    </Overlay>
   );
 };
 

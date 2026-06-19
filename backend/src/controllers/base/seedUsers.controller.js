@@ -35,7 +35,7 @@ function sriLankanMobile() {
   let phone;
   do {
     const prefix = PHONE_PREFIXES[randomInt(0, PHONE_PREFIXES.length - 1)];
-    const part1 = String(100 + randomInt(0, 899)).slice(1);
+    const part1 = String(100 + randomInt(0, 899));
     const part2 = String(10000 + randomInt(0, 8999)).slice(1);
     phone = `+94 ${prefix} ${part1} ${part2}`;
   } while (generatedPhones.has(phone));
@@ -586,7 +586,7 @@ export const seedUsers = async (req, res) => {
         res,
         400,
         false,
-        "Academic structure not found. Run /api/v1/base/seed-academic-structure first.",
+        "Academic structure not found. Run `npm run seed` first.",
       );
     }
 
@@ -700,7 +700,7 @@ export const seedUsers = async (req, res) => {
         const batch = batchPool[randomInt(0, batchPool.length - 1)];
         const regNumber = generateRegNumber(batch.name, degIndex + 1);
 
-        const existing = await findUser(email, phone);
+        const existing = await findUser(email, null);
         if (existing) {
           results.skipped++;
           continue;
@@ -710,7 +710,6 @@ export const seedUsers = async (req, res) => {
           const user = await User.create({
             name: fullName,
             email,
-            phone,
             passwordHash,
             role: "Student",
             isVerified: true,
@@ -747,11 +746,12 @@ export const seedUsers = async (req, res) => {
 
     // ── Seed Clubs ──────────────────────────────────────────────────────────
     for (const club of CLUBS) {
-      const phone = sriLankanMobile();
       const slug = club.name.toLowerCase().replace(/[^a-z0-9]+/g, "");
-      const email = `${slug}@uom.lk`;
+      const hasEmail = Math.random() < 0.5;
+      const email = hasEmail ? `${slug}@uom.lk` : null;
+      const phone = hasEmail ? null : sriLankanMobile();
 
-      const existing = await findUser(email, null);
+      const existing = await findUser(email, phone);
       if (existing) {
         results.skipped++;
         continue;
@@ -787,8 +787,9 @@ export const seedUsers = async (req, res) => {
     // ── Seed Business: Food ──────────────────────────────────────────────────
     let bizIdx = 0;
     for (const b of FOOD) {
-      const email = `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com`;
-      const phone = sriLankanMobile();
+      const hasEmail = Math.random() < 0.5;
+      const email = hasEmail ? `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com` : null;
+      const phone = hasEmail ? null : sriLankanMobile();
       const isMaleOwner = bizIdx % 2 === 0;
       const ownerFirst = isMaleOwner
         ? MALE_FIRST[bizIdx % MALE_FIRST.length]
@@ -854,8 +855,9 @@ export const seedUsers = async (req, res) => {
     // ── Seed Business: Boarding ──────────────────────────────────────────────
     bizIdx = 0;
     for (const b of BOARDING) {
-      const email = `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com`;
-      const phone = sriLankanMobile();
+      const hasEmail = Math.random() < 0.5;
+      const email = hasEmail ? `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com` : null;
+      const phone = hasEmail ? null : sriLankanMobile();
       const isMaleOwner = bizIdx % 2 === 0;
       const ownerFirst = isMaleOwner
         ? MALE_FIRST[bizIdx % MALE_FIRST.length]
@@ -919,8 +921,9 @@ export const seedUsers = async (req, res) => {
     // ── Seed Business: Self-Employed ─────────────────────────────────────────
     bizIdx = 0;
     for (const b of SELF_EMPLOYED) {
-      const email = `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com`;
-      const phone = sriLankanMobile();
+      const hasEmail = Math.random() < 0.5;
+      const email = hasEmail ? `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com` : null;
+      const phone = hasEmail ? null : sriLankanMobile();
       const isMaleOwner = bizIdx % 2 === 0;
       const ownerFirst = isMaleOwner
         ? MALE_FIRST[bizIdx % MALE_FIRST.length]

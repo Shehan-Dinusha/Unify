@@ -2,10 +2,7 @@ import boostService from "../../services/boost.service.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Retrieves all boost configuration logs for the admin panel.
- * Supports pagination via ?page=1&limit=50 query params.
- */
+// Retrieves all boost configuration logs for the admin panel.
 export const getLogs = async (req, res, next) => {
   try {
     const { page, limit, type } = req.query;

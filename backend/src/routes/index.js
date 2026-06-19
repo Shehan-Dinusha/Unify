@@ -17,12 +17,12 @@ import learningRoutes from "./learning.routes.js";
 import educationRoutes from "./education.routes.js";
 import studentManagementRoutes from "./studentManagement.routes.js";
 import businessManagementRoutes from "./businessManagement.routes.js";
-import adminToolsRoutes from "./adminTools.routes.js";
 import adminDashboardRoutes from "./adminDashboard.routes.js";
 import lostAndFoundRoutes from "./lostAndFound.routes.js";
 import newsfeedRoutes from "./newsfeed.routes.js";
 import chatRoutes from "./chat.routes.js";
 import notificationRoutes from "./notification.routes.js";
+import searchRoutes from "./search.routes.js";
 
 const router = express.Router();
 
@@ -45,11 +45,11 @@ router.use("/learning", learningRoutes);
 router.use("/education", educationRoutes);
 router.use("/admin/students", studentManagementRoutes);
 router.use("/admin/businesses", businessManagementRoutes);
-router.use("/admin/tools", adminToolsRoutes);
 router.use("/admin", adminDashboardRoutes);
 router.use("/lost-and-found", lostAndFoundRoutes);
 router.use("/newsfeed", newsfeedRoutes);
 router.use("/chat", chatRoutes);
 router.use("/notifications", notificationRoutes);
+router.use("/search", searchRoutes);
 
 export default router;

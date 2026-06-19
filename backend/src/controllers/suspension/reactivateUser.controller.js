@@ -3,7 +3,14 @@ import UserSuspensionService from "../../services/userSuspension.service.js";
 export const reactivateUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    const adminId = req.admin?.id || 1;
+    const adminId = req.user?.id;
+
+    if (!adminId) {
+      return res.status(401).json({
+        success: false,
+        message: "Admin authentication required."
+      });
+    }
 
     if (!userId) {
       return res.status(400).json({

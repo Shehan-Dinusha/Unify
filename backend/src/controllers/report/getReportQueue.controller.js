@@ -3,14 +3,9 @@ import StudentReport from "../../modules/StudentReport.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * Handle admin retrieval of the overall report queue with advanced filters.
- * 100% Compatible with ReportModeration.jsx requirement for seeing all reports.
- */
+//Handle admin retrieval of the overall report queue with advanced filters.
 export const getReportQueue = async (req, res, next) => {
   try {
-    // TODO: Add admin authorization check once RBAC middleware is available
-    
     const { status, category, reportType, priority, search, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 

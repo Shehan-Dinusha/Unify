@@ -95,6 +95,12 @@ export const refreshCurrentUser = async () => {
     if (!currentUser) return null;
 
     const role = currentUser.role?.toLowerCase();
+    
+    // Admins do not have a specific profile endpoint
+    if (role === "admin") {
+      return currentUser;
+    }
+
     const profile = await getMyProfile(role);
 
     const updatedUser = {
