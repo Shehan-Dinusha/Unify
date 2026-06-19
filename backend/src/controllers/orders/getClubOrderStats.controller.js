@@ -39,6 +39,9 @@ export const getClubOrderStats = async (req, res) => {
     const completedOrders = stats
       .filter((s) => ["Order Completed", "COMPLETED"].includes(s.status))
       .reduce((acc, s) => acc + parseInt(s.count, 10), 0);
+    const unconfirmedOrderCount = stats
+      .filter((s) => s.status === "Order Placed")
+      .reduce((acc, s) => acc + parseInt(s.count, 10), 0);
 
     // 2. Trend Calculation (Total Orders: This Week vs Last Week)
     const startOfThisWeek = moment().subtract(7, "days").startOf("day");
@@ -89,6 +92,7 @@ export const getClubOrderStats = async (req, res) => {
         totalOrders,
         pendingOrders,
         completedOrders,
+        unconfirmedOrderCount,
         totalOrdersTrend: parseFloat(totalOrdersTrend.toFixed(1)),
         pendingActionCount,
         completionRate: parseFloat(completionRate.toFixed(1)),

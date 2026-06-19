@@ -26,7 +26,13 @@ const ClubPostVisibilityCard = ({ clubPosts, setClubPosts, navigate, orderServic
         {clubPosts.map((post) => {
           const isInFeed = post.isVisible;
           return (
-            <div key={post.id} className="relative group">
+            <div key={`${post.postType}-${post.id}`} className="relative group">
+              {post.postType === 'club-product' && post.unconfirmedOrderCount > 0 && (
+                <div className="absolute -top-3 left-4 z-20 flex items-center gap-2 rounded-full bg-primary-blue px-3 py-1.5 text-xs font-bold text-white shadow-[0_0_15px_rgba(43,140,238,0.45)] pointer-events-none">
+                  <span className="h-2 w-2 rounded-full bg-white" />
+                  {post.unconfirmedOrderCount} new {post.unconfirmedOrderCount === 1 ? 'order' : 'orders'}
+                </div>
+              )}
               <div
                 className={`transition-all duration-300 ${
                   isInFeed ? 'opacity-100' : 'opacity-40 grayscale-[30%] pointer-events-none'

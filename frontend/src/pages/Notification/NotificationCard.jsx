@@ -3,7 +3,7 @@ import Card from '../../components/common/Card';
 import {
   ReplyAvatar, LikeAvatar, MatchIcon, VerificationIcon, SemesterIcon,
   ReviewStarAvatar, ReviewReplyAvatar, ReviewFeedbackAvatar,
-  ReviewFeedbackNotHelpfulAvatar, FollowerAvatar,
+  ReviewFeedbackNotHelpfulAvatar, FollowerAvatar, OrderIcon,
 } from './NotificationIcons';
 
 const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
@@ -18,6 +18,7 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
       default:
         if (notification.referenceType === 'Semester') return <SemesterIcon />;
         if (notification.referenceType === 'Follower') return <FollowerAvatar avatar={avatar} />;
+        if (notification.referenceType === 'Order') return <OrderIcon />;
         if (notification.referenceType === 'Review') {
           switch (notification.reviewAction) {
             case 'reply': return <ReviewReplyAvatar avatar={avatar} />;

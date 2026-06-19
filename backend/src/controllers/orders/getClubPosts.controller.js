@@ -1,4 +1,4 @@
-import { ClubProductPost, ClubEventPost } from "../../modules/index.js";
+import { ClubProductPost, ClubEventPost, Order } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
 
 const resolveUrl = async (img) => {
@@ -33,7 +33,7 @@ export const getClubPosts = async (req, res) => {
     }
 
     // raw: false so Sequelize auto-parses JSON columns (images, coverImage, etc.)
-    const [productPosts, eventPosts] = await Promise.all([
+    const [productPosts, eventPosts, unconfirmedOrders] = await Promise.all([
       ClubProductPost.findAll({
         where: { authorId },
         order: [["createdAt", "DESC"]],
@@ -42,7 +42,23 @@ export const getClubPosts = async (req, res) => {
         where: { authorId },
         order: [["createdAt", "DESC"]],
       }),
+      Order.findAll({
+        where: { sellerId: authorId, status: "Order Placed" },
+        attributes: [
+          "itemId",
+          [Order.sequelize.fn("COUNT", Order.sequelize.col("id")), "count"],
+        ],
+        group: ["itemId"],
+        raw: true,
+      }),
     ]);
+
+    const unconfirmedCountByProduct = new Map(
+      unconfirmedOrders.map((order) => [
+        Number(order.itemId),
+        parseInt(order.count, 10),
+      ]),
+    );
 
     // Resolve product post images
     const resolvedProducts = await Promise.all(
@@ -51,7 +67,11 @@ export const getClubPosts = async (req, res) => {
         if (Array.isArray(plain.images) && plain.images.length > 0) {
           plain.images = await Promise.all(plain.images.map(resolveUrl));
         }
-        return { ...plain, postType: "club-product" };
+        return {
+          ...plain,
+          postType: "club-product",
+          unconfirmedOrderCount: unconfirmedCountByProduct.get(Number(plain.id)) || 0,
+        };
       })
     );
 
@@ -62,7 +82,7 @@ export const getClubPosts = async (req, res) => {
         if (plain.coverImage) {
           plain.coverImage = await resolveUrl(plain.coverImage);
         }
-        return { ...plain, postType: "club-event" };
+        return { ...plain, postType: "club-event", unconfirmedOrderCount: 0 };
       })
     );
 
