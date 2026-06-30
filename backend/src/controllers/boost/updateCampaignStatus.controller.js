@@ -2,14 +2,7 @@ import { Op } from 'sequelize';
 import BoostCampaign from "../../modules/BoostCampaign.model.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
-
-const VALID_TRANSITIONS = {
-  'Pending': ['Active', 'Cancelled'],
-  'Active': ['Paused', 'Completed', 'Cancelled'],
-  'Paused': ['Active', 'Cancelled'],
-  'Completed': [],       // Terminal state
-  'Cancelled': [],       // Terminal state
-};
+import { VALID_TRANSITIONS } from "../../services/boost.service.js";
 
 //Updates the status of a boost campaign.
 export const updateCampaignStatus = async (req, res, next) => {
