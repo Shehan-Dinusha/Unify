@@ -6,14 +6,7 @@ import logger from "../../utils/logger.js";
 import { resolveVerificationUrl } from "../../utils/verificationUrl.util.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 import { formatRelativeDate } from "../../utils/date.js";
-
-const formatFileSize = (bytes) => {
-  if (!bytes || bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-};
+import { formatFileSize, detectFileType } from "../../services/verification.service.js";
 
 /**
  * Handle fetching all PENDING verification requests for Admins
@@ -82,12 +75,7 @@ export const getPendingVerifications = async (req, res, next) => {
     // Map to exactly match what the frontend VerificationQueue.jsx components expect!
     const formattedRequests = await Promise.all(
       pendingRequests.map(async (request) => {
-        const mimeType = request.documentMetadata?.mimeType || "";
-        let fileType = "unknown";
-        if (mimeType.includes("pdf")) fileType = "pdf";
-        else if (mimeType.includes("image")) fileType = "image";
-        else if (mimeType.includes("word") || mimeType.includes("document"))
-          fileType = "doc";
+        const fileType = detectFileType(request.documentMetadata?.mimeType);
 
         const [resolvedDocUrl, resolvedAvatar] = await Promise.all([
           resolveVerificationUrl(request.documentUrl),
