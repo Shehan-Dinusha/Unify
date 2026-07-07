@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import * as boostAPI from '../services/boostService';
+import { getCurrentUser, isAuthenticated } from '../services/authService';
 
 const BoostPackageContext = createContext();
 
@@ -52,10 +53,14 @@ export const BoostPackageProvider = ({ children }) => {
 
     // ── Load all data on mount ─────────────────────────────────────────
     useEffect(() => {
-        if (!localStorage.getItem("token")) return;
+        if (!isAuthenticated()) return;
+        const user = getCurrentUser();
+        const isAdmin = user?.role === "Admin";
         fetchPackages();
-        fetchLogs();
-        fetchStats();
+        if (isAdmin) {
+            fetchLogs();
+            fetchStats();
+        }
     }, [fetchPackages, fetchLogs, fetchStats]);
 
     // ── Add Package (calls API) ────────────────────────────────────────
