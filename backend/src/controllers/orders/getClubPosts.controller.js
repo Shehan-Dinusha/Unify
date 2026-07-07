@@ -1,29 +1,6 @@
 import { ClubProductPost, ClubEventPost, Order } from "../../modules/index.js";
-import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
 import logger from "../../utils/logger.js";
-
-const resolveUrl = async (img) => {
-  if (!img) return img;
-  
-  let imgPath = img;
-  // Handle case where img is stored as a JSON object (e.g. { url: "..." } from ClubEventPost)
-  if (typeof img === 'object' && img !== null) {
-    if (img.url) imgPath = img.url;
-    else return imgPath;
-  }
-
-  if (typeof imgPath !== 'string') return imgPath;
-
-  if (imgPath.includes("X-Amz-Signature")) return imgPath;
-  const s3Match = imgPath.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
-  if (s3Match) {
-    try { return await getFileUrl(s3Match[1]); } catch { return imgPath; }
-  }
-  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
-    try { return await getFileUrl(imgPath); } catch { return imgPath; }
-  }
-  return imgPath;
-};
 
 export const getClubPosts = async (req, res) => {
   try {
@@ -66,7 +43,7 @@ export const getClubPosts = async (req, res) => {
       productPosts.map(async (post) => {
         const plain = post.toJSON();
         if (Array.isArray(plain.images) && plain.images.length > 0) {
-          plain.images = await Promise.all(plain.images.map(resolveUrl));
+          plain.images = await Promise.all(plain.images.map(resolveAssetUrl));
         }
         return {
           ...plain,
@@ -81,7 +58,7 @@ export const getClubPosts = async (req, res) => {
       eventPosts.map(async (post) => {
         const plain = post.toJSON();
         if (plain.coverImage) {
-          plain.coverImage = await resolveUrl(plain.coverImage);
+          plain.coverImage = await resolveAssetUrl(plain.coverImage);
         }
         return { ...plain, postType: "club-event", unconfirmedOrderCount: 0 };
       })
