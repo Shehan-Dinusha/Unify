@@ -23,7 +23,6 @@ const NewAnnouncements = () => {
                 const data = await newsfeedService.getNewAnnouncements();
                 setAnnouncements(data.announcements || []);
             } catch (err) {
-                console.error("Failed to fetch announcements:", err);
             } finally {
                 setLoading(false);
             }

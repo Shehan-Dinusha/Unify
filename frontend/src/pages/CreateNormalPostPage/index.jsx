@@ -39,7 +39,6 @@ const CreateNormalPostPage = () => {
             else if (user.role === "services_owner") navigate("/services-owner/marketplace");
             else navigate("/");
         } catch (error) {
-            console.error("Failed to publish post:", error);
             throw error;
         }
     };

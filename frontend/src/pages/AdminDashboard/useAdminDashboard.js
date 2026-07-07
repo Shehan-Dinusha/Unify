@@ -53,7 +53,6 @@ export const useAdminDashboard = () => {
         setModerationData(moderationRes.data);
         setEngagementData(engagementRes.data?.engagement || []);
       } catch (err) {
-        console.error("Dashboard fetch error:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -69,7 +68,6 @@ export const useAdminDashboard = () => {
         const res = await getPlatformGrowth(rangeApiMap[activeRange]);
         setChartData(res.data);
       } catch (err) {
-        console.error("Chart fetch error:", err);
       } finally {
         setChartLoading(false);
       }

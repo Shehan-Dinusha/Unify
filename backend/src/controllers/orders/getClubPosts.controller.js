@@ -1,5 +1,6 @@
 import { ClubProductPost, ClubEventPost, Order } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
+import logger from "../../utils/logger.js";
 
 const resolveUrl = async (img) => {
   if (!img) return img;
@@ -93,7 +94,7 @@ export const getClubPosts = async (req, res) => {
 
     res.status(200).json({ success: true, posts });
   } catch (error) {
-    console.error("[getClubPosts] Error:", error);
+    logger.error("[getClubPosts] Error:", error);
     res.status(500).json({ error: error.message });
   }
 };

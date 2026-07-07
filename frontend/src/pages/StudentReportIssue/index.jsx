@@ -69,7 +69,6 @@ const StudentReportIssue = () => {
         state: { reportId: result.data?.reportId || '', reportType: selectedType, reason: selectedReason },
       });
     } catch (err) {
-      console.error('[StudentReportIssue] Submit failed:', err);
       const msg = err.response?.data?.message || 'Failed to submit report. Please try again.';
       toast.error('Submission Failed', msg);
     } finally {

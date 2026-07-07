@@ -98,7 +98,6 @@ const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
       const updatedData = await editItem(item.id, formData);
       onSave(updatedData); // Pass updated API model back to UI
     } catch (error) {
-      console.error("Failed to update item:", error);
       alert("Failed to update post. Please try again.");
     } finally {
       setIsSubmitting(false);

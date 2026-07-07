@@ -23,7 +23,6 @@ const MyPosts = () => {
             setPosts(data.feed || []);
             setError(null);
         } catch (err) {
-            console.error("Failed to fetch my posts:", err);
             setError("Could not load your posts. Please try again later.");
         } finally {
             setLoading(false);

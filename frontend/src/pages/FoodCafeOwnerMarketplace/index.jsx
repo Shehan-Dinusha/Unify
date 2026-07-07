@@ -24,7 +24,6 @@ const FoodCafeOwnerMarketplace = () => {
             }));
             setPosts(mappedPosts);
         } catch (err) {
-            console.error("Failed to fetch food cafe feed:", err);
         } finally {
             setLoading(false);
         }
@@ -57,7 +56,7 @@ const FoodCafeOwnerMarketplace = () => {
                             <FoodCafeCard
                                 key={`${post.postType || "food"}-${post.id}`}
                                 post={post}
-                                onClick={() => console.log("Post clicked:", post.id)}
+                                onClick={() => {}}
                             />
                         ))
                     ) : (

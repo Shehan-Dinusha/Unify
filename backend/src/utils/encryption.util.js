@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import dotenv from "dotenv";
+import logger from "./logger.js";
 
 dotenv.config();
 
@@ -28,7 +29,7 @@ export const encryptText = (text) => {
   const key = getKey();
   if (!key) {
     // If no key is set or invalid, return plain text (fallback)
-    console.warn("WARNING: CHAT_ENCRYPTION_KEY is missing or invalid. Storing as plain text.");
+    logger.warn("WARNING: CHAT_ENCRYPTION_KEY is missing or invalid. Storing as plain text.");
     return text;
   }
 
@@ -41,7 +42,7 @@ export const encryptText = (text) => {
     
     return `${iv.toString("hex")}:${encrypted}`;
   } catch (error) {
-    console.error("Encryption error:", error);
+    logger.error("Encryption error:", error);
     return text; // Fallback to plain text on error
   }
 };
@@ -82,7 +83,7 @@ export const decryptText = (text) => {
   } catch (error) {
     // Decryption failed (e.g. wrong key, bad data).
     // Return the original so we don't crash, though it might be gibberish.
-    console.error("Decryption error:", error);
+    logger.error("Decryption error:", error);
     return text;
   }
 };

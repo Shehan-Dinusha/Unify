@@ -30,7 +30,6 @@ export const useStudentManagement = () => {
           { value: String(d.flaggedSessions ?? 0), label: 'Flagged Sessions', cardBg: 'bg-gradient-to-br from-state-warning/10 to-transparent' },
         ]);
       } catch (err) {
-        console.error('[StudentManagement] Failed to load stats:', err);
         toast.error('Connection Error', 'Failed to load student stats. Please check your backend.');
       }
     };
@@ -58,7 +57,6 @@ export const useStudentManagement = () => {
         setTotalCount(data.total || 0);
         setTotalPages(Math.ceil((data.total || 0) / PAGE_LIMIT));
       } catch (err) {
-        console.error('[StudentManagement] Failed to load students:', err);
         setError('Failed to connect to the server. Please make sure the backend is running.');
         toast.error('Connection Error', 'Failed to load student directory.');
       } finally {

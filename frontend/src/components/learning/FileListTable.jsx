@@ -111,7 +111,6 @@ const FileListTable = ({
       });
       onRefresh?.();
     } catch (err) {
-      console.error("Failed to edit material", err);
       toast.error("Error", "Failed to edit material");
     }
   };
@@ -121,7 +120,6 @@ const FileListTable = ({
       await learningService.deleteMaterial(fileToDelete.id);
       onRefresh?.();
     } catch (err) {
-      console.error("Failed to delete material", err);
       toast.error("Error", "Failed to delete material");
     }
   };

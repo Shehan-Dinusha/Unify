@@ -34,7 +34,6 @@ const ClubPublicView = ({ profile }) => {
       // Revert on failure
       setIsFollowing(wasFollowing);
       setFollowerCount((prev) => (wasFollowing ? prev + 1 : prev - 1));
-      console.error("Failed to toggle follow status:", err);
       alert(err.response?.data?.message || "Failed to toggle follow");
     }
   };

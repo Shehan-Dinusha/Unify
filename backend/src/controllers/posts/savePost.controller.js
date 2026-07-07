@@ -1,5 +1,6 @@
 import { NormalPost, ClubProductPost, ClubEventPost, Boarding, SavedItem, User, Comment, PostLike } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
+import logger from "../../utils/logger.js";
 
 const resolveImageUrl = async (img) => {
   if (!img) return img;
@@ -142,7 +143,7 @@ export const getSavedPosts = async (req, res) => {
 
     return res.status(200).json({ success: true, savedItems: feedWithInteractions });
   } catch (error) {
-    console.error("Error fetching saved posts:", error);
+    logger.error("Error fetching saved posts:", error);
     res.status(500).json({ error: error.message });
   }
 };

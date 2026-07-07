@@ -54,7 +54,6 @@ const ProductOrderDashboard = () => {
         }
       }
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
     }
@@ -71,7 +70,6 @@ const ProductOrderDashboard = () => {
       }
       fetchData();
     } catch (error) {
-      console.error('Status update failed:', error);
       alert('Failed to update status.');
     }
   };
@@ -91,7 +89,6 @@ const ProductOrderDashboard = () => {
       fetchData();
       alert(`Successfully updated ${targetIds.length} orders to ${bulkTo}`);
     } catch (error) {
-      console.error('Bulk update failed:', error);
       alert('Failed to apply bulk update.');
     }
   };

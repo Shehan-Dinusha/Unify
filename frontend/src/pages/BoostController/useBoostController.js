@@ -38,7 +38,6 @@ export const useBoostController = () => {
                 const newMax = Math.max(0, newLen - visibleCount);
                 if (carouselIndex > newMax) setCarouselIndex(newMax);
             } catch (err) {
-                console.error('Failed to delete package:', err.message);
             } finally {
                 setIsDeleting(false);
             }

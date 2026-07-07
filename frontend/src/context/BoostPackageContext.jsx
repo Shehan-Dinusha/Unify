@@ -23,7 +23,6 @@ export const BoostPackageProvider = ({ children }) => {
             }
         } catch (err) {
             setError(err.message);
-            console.error('Failed to fetch packages:', err.message);
         } finally {
             setLoading(false);
         }
@@ -37,7 +36,6 @@ export const BoostPackageProvider = ({ children }) => {
                 setLogs(response.data.logs);
             }
         } catch (err) {
-            console.error('Failed to fetch logs:', err.message);
         }
     }, []);
 
@@ -49,7 +47,6 @@ export const BoostPackageProvider = ({ children }) => {
                 setStats(response.data.stats);
             }
         } catch (err) {
-            console.error('Failed to fetch boost stats:', err.message);
         }
     }, []);
 

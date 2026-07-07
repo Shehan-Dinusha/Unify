@@ -146,7 +146,6 @@ export const useNotification = () => {
       );
       refreshUnreadCount();
     } catch (err) {
-      console.error('Failed to mark notification as read:', err);
     }
   };
 

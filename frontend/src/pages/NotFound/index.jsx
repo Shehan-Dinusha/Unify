@@ -6,8 +6,6 @@ import Button from "../../components/common/Button";
 
 const NotFound = ({ status, customTitle, customSubtitle, customMessage }) => {
   const error = useRouteError();
-  if (error) console.error(error);
-
   let errorCode = status || error?.status;
 
   let title = customTitle || "Oops!";

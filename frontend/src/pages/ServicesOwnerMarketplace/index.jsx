@@ -24,7 +24,6 @@ const ServicesOwnerMarketplace = () => {
             }));
             setPosts(mappedPosts);
         } catch (err) {
-            console.error("Failed to fetch services feed:", err);
         } finally {
             setLoading(false);
         }
@@ -57,7 +56,7 @@ const ServicesOwnerMarketplace = () => {
                             <FoodCafeCard
                                 key={`${post.postType || "service"}-${post.id}`}
                                 post={post}
-                                onClick={() => console.log("Service clicked:", post.id)}
+                                onClick={() => {}}
                             />
                         ))
                     ) : (

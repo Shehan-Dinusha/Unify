@@ -1,6 +1,7 @@
 import { Order, ClubProductPost, EventBooking, ClubEventPost } from "../../modules/index.js";
 import sequelize from "../../config/database.js";
 import { getFileUrl } from "../../services/s3.service.js";
+import logger from "../../utils/logger.js";
 
 const resolveUrl = async (img) => {
   if (!img) return img;
@@ -109,7 +110,7 @@ export const getClubTopProducts = async (req, res) => {
       data: combined,
     });
   } catch (error) {
-    console.error("[getClubTopProducts] Error:", error);
+    logger.error("[getClubTopProducts] Error:", error);
     res.status(500).json({ error: error.message });
   }
 };

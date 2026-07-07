@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { ClubEventPost, User } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import logger from "../../utils/logger.js";
 
 const resolveImageUrl = async (img) => {
   if (!img) return img;
@@ -74,7 +75,7 @@ export const getEventsToday = async (req, res) => {
 
     res.status(200).json({ success: true, events: processedEvents });
   } catch (error) {
-    console.error("Error fetching events today:", error);
+    logger.error("Error fetching events today:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

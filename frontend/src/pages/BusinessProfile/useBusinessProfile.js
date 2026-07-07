@@ -21,7 +21,6 @@ export const useBusinessProfile = () => {
         const result = await getBusinessProfile(id);
         setBiz(result.data);
       } catch (err) {
-        console.error('[BusinessProfile] Failed to load profile:', err);
         setError('Failed to load business profile. Please check backend.');
         toast.error('Connection Error', 'Could not load business profile.');
       } finally {
@@ -64,7 +63,7 @@ export const useBusinessProfile = () => {
         const result = await getBusinessProfile(id);
         setBiz(result.data);
       } catch (e) {
-        console.error('Failed to refresh business data:', e);
+        toast.error("Error", "Failed to refresh business data");
       }
     } catch (err) {
       const msg = err.message || 'Action failed. Please try again.';

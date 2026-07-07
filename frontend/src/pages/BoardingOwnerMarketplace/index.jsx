@@ -27,7 +27,6 @@ const BoardingOwnerMarketplace = () => {
             }));
             setPosts(mappedPosts);
         } catch (err) {
-            console.error("Failed to fetch boarding feed:", err);
         } finally {
             setLoading(false);
         }

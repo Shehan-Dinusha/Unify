@@ -10,6 +10,7 @@ import {
 } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import logger from "../../utils/logger.js";
 
 const resolveImageUrl = async (img) => {
   if (!img) return img;
@@ -171,7 +172,7 @@ export const getUserPosts = async (req, res) => {
             isSaved = !!saveRecord;
           }
         } catch (err) {
-          console.error("Error fetching interactions for post:", err);
+          logger.error("Error fetching interactions for post:", err);
         }
 
         return {
@@ -186,7 +187,7 @@ export const getUserPosts = async (req, res) => {
 
     res.status(200).json({ success: true, posts: feedWithInteractions });
   } catch (error) {
-    console.error("Error in getUserPosts:", error);
+    logger.error("Error in getUserPosts:", error);
     res.status(500).json({ error: error.message });
   }
 };

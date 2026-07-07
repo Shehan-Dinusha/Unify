@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { NormalPost, User } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import logger from "../../utils/logger.js";
 
 const resolveImageUrl = async (img) => {
   if (!img) return img;
@@ -88,7 +89,7 @@ export const getNewAnnouncements = async (req, res) => {
       .status(200)
       .json({ success: true, announcements: processedAnnouncements });
   } catch (error) {
-    console.error("Error fetching new announcements:", error);
+    logger.error("Error fetching new announcements:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

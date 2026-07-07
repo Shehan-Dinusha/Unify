@@ -240,9 +240,9 @@ export const findMatches = async (item) => {
 export const runMatchingEngine = async (newItem) => {
   try {
     // ── Step 1: Log what item just triggered the engine ───────────────────────
-    console.log(`\n[Matcher] ========== START ==========`);
-    console.log(`[Matcher] Item #${newItem.id} | Type: ${newItem.type} | Title: "${newItem.title}" | UserId: ${newItem.userId}`);
-    console.log(`[Matcher] Location: "${newItem.location}" | Date: ${newItem.date} | THRESHOLD: ${MATCH_THRESHOLD}`);
+    logger.info(`[Matcher] ========== START ==========`);
+    logger.info(`[Matcher] Item #${newItem.id} | Type: ${newItem.type} | Title: "${newItem.title}" | UserId: ${newItem.userId}`);
+    logger.info(`[Matcher] Location: "${newItem.location}" | Date: ${newItem.date} | THRESHOLD: ${MATCH_THRESHOLD}`);
 
     // ── Step 2: Show all candidates the DB returned ───────────────────────────
     const oppositeType = newItem.type === "Lost" ? "Found" : "Lost";
@@ -254,13 +254,13 @@ export const runMatchingEngine = async (newItem) => {
       },
       attributes: ["id", "userId", "title", "location", "date"],
     });
-    console.log(`[Matcher] DB candidates (type=${oppositeType}, status=Active, different user): ${allCandidates.length}`);
+    logger.info(`[Matcher] DB candidates (type=${oppositeType}, status=Active, different user): ${allCandidates.length}`);
     allCandidates.forEach((c) => {
-      console.log(`[Matcher]   Candidate #${c.id}: "${c.title}" | loc="${c.location}" | userId=${c.userId}`);
+      logger.info(`[Matcher]   Candidate #${c.id}: "${c.title}" | loc="${c.location}" | userId=${c.userId}`);
     });
 
     if (allCandidates.length === 0) {
-      console.log(`[Matcher] No candidates found — skipping scoring. Done.\n`);
+      logger.info(`[Matcher] No candidates found — skipping scoring. Done.`);
       return;
     }
 
@@ -276,21 +276,21 @@ export const runMatchingEngine = async (newItem) => {
     );
     const textMap = new Map(textScoresRaw.map((s) => [s.id, s.textScore]));
 
-    console.log(`[Matcher] Per-candidate scores (threshold=${MATCH_THRESHOLD}):`);
+    logger.info(`[Matcher] Per-candidate scores (threshold=${MATCH_THRESHOLD}):`);
     allCandidates.forEach((c) => {
       const textScore = Math.round((textMap.get(c.id) || 0) * 1000) / 1000;
       const final = Math.round((TEXT_WEIGHT * textScore) * 1000) / 1000;
       const aboveThreshold = final >= MATCH_THRESHOLD ? "✓ ABOVE" : "✗ below";
-      console.log(`[Matcher]   #${c.id} "${c.title}": textScore=${textScore} → finalMin=${final} (${aboveThreshold} threshold)`);
+      logger.info(`[Matcher]   #${c.id} "${c.title}": textScore=${textScore} → finalMin=${final} (${aboveThreshold} threshold)`);
     });
 
-    console.log(`[Matcher] Matches above threshold: ${matches.length}`);
+    logger.info(`[Matcher] Matches above threshold: ${matches.length}`);
     matches.forEach((m) => {
-      console.log(`[Matcher]   ✓ Match #${m.item.id} "${m.item.title}": score=${m.score} | text=${m.breakdown.textScore} | loc=${m.breakdown.locScore} | time=${m.breakdown.timeScore}`);
+      logger.info(`[Matcher]   ✓ Match #${m.item.id} "${m.item.title}": score=${m.score} | text=${m.breakdown.textScore} | loc=${m.breakdown.locScore} | time=${m.breakdown.timeScore}`);
     });
 
     if (matches.length === 0) {
-      console.log(`[Matcher] No matches above threshold (${MATCH_THRESHOLD}). Done.\n`);
+      logger.info(`[Matcher] No matches above threshold (${MATCH_THRESHOLD}). Done.`);
       return;
     }
 
@@ -310,7 +310,7 @@ export const runMatchingEngine = async (newItem) => {
           ? newItem.images[0] : null;
 
       // Notify the creator of the NEW item
-      console.log(`[Matcher] Notifying userId=${newItem.userId} | dedupeKey="${dedupeKey}"`);
+      logger.info(`[Matcher] Notifying userId=${newItem.userId} | dedupeKey="${dedupeKey}"`);
       try {
         const n1 = await notifyMatch({
           userId:     newItem.userId,
@@ -320,13 +320,13 @@ export const runMatchingEngine = async (newItem) => {
           score,
           image:      matchedItemThumbnail,
         });
-        console.log(`[Matcher]   → userId=${newItem.userId}: ${n1 ? `CREATED (notifId=${n1.id})` : "SKIPPED (duplicate dedupeKey)"}`);
+        logger.info(`[Matcher]   → userId=${newItem.userId}: ${n1 ? `CREATED (notifId=${n1.id})` : "SKIPPED (duplicate dedupeKey)"}`);
       } catch (e) {
-        console.error(`[Matcher]   → userId=${newItem.userId} FAILED:`, e.message);
+        logger.error(`[Matcher]   → userId=${newItem.userId} FAILED: ${e.message}`);
       }
 
       // Notify the owner of the EXISTING matched item
-      console.log(`[Matcher] Notifying userId=${matchedItem.userId} | dedupeKey="${dedupeKey}"`);
+      logger.info(`[Matcher] Notifying userId=${matchedItem.userId} | dedupeKey="${dedupeKey}"`);
       try {
         const n2 = await notifyMatch({
           userId:     matchedItem.userId,
@@ -336,17 +336,16 @@ export const runMatchingEngine = async (newItem) => {
           score,
           image:      newItemThumbnail,
         });
-        console.log(`[Matcher]   → userId=${matchedItem.userId}: ${n2 ? `CREATED (notifId=${n2.id})` : "SKIPPED (duplicate dedupeKey)"}`);
+        logger.info(`[Matcher]   → userId=${matchedItem.userId}: ${n2 ? `CREATED (notifId=${n2.id})` : "SKIPPED (duplicate dedupeKey)"}`);
       } catch (e) {
-        console.error(`[Matcher]   → userId=${matchedItem.userId} FAILED:`, e.message);
+        logger.error(`[Matcher]   → userId=${matchedItem.userId} FAILED: ${e.message}`);
       }
     }
 
-    console.log(`[Matcher] ========== DONE for item #${newItem.id} ==========\n`);
+    logger.info(`[Matcher] ========== DONE for item #${newItem.id} ==========`);
     logger.info(`[Matcher] Notifications dispatched for item #${newItem.id}`);
   } catch (err) {
-    console.error(`[Matcher] FATAL ERROR for item #${newItem.id}:`, err.message);
-    console.error(err.stack);
-    logger.error(`[Matcher] Engine error for item #${newItem.id}: ${err.message}`);
+    logger.error(`[Matcher] FATAL ERROR for item #${newItem.id}: ${err.message}`);
+    logger.error(err.stack);
   }
 };

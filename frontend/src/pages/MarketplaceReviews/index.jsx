@@ -156,7 +156,6 @@ const MarketplaceReviews = () => {
       const result = await toggleReviewFeedback(reviewId, action);
       return result;
     } catch (error) {
-      console.error(error);
       return null;
     }
   };

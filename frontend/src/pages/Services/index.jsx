@@ -28,7 +28,6 @@ const Services = () => {
                 }));
                 setPosts(mappedPosts);
             } catch (err) {
-                console.error("Failed to fetch services feed:", err);
             } finally {
                 setLoading(false);
             }
@@ -51,7 +50,7 @@ const Services = () => {
                             <FoodCafeCard
                                 key={`${post.postType}-${post.id}`}
                                 post={post}
-                                onClick={() => console.log("Service clicked:", post.id)}
+                                onClick={() => {}}
                             />
                         ))
                     ) : (

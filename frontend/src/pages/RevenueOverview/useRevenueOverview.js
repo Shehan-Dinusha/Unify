@@ -21,7 +21,6 @@ export const useRevenueOverview = () => {
                 setTrajectory(trajRes.data);
                 setBreakdown(breakdownRes.data);
             } catch (err) {
-                console.error('Revenue overview fetch error:', err);
                 setError(err.message);
             } finally {
                 setLoading(false);

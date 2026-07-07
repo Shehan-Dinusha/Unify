@@ -19,7 +19,6 @@ export const SavedPostsProvider = ({ children }) => {
         const { savedItems } = await newsfeedService.getSavedPosts();
         setSavedPosts(savedItems || []);
       } catch (error) {
-        console.error("Failed to fetch saved posts:", error);
       } finally {
         setLoading(false);
       }

@@ -86,7 +86,6 @@ export const useOwnProfile = () => {
       setProfile(mappedProfile);
       refreshCurrentUser();
     } catch (error) {
-      console.error("Error fetching profile:", error);
       toast.error("Error", error.message || "Failed to load profile");
     } finally {
       setLoading(false);

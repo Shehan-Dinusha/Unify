@@ -138,7 +138,6 @@ const CreateProductForm = ({ onCancel, onPublish }) => {
             await postService.createPost("club-product", data);
             onPublish();
         } catch (error) {
-            console.error("Failed to publish product:", error);
             alert(error.error || "Failed to publish product. Please try again.");
         } finally {
             setLoading(false);
