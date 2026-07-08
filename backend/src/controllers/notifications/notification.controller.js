@@ -13,6 +13,7 @@ import {
 } from "../../services/notification.service.js";
 import { formatRelativeDate } from "../../utils/date.js";
 import s3Service from "../../services/s3.service.js";
+import logger from "../../utils/logger.js";
 
 /**
  * GET /notifications
@@ -38,7 +39,7 @@ export const getNotifications = async (req, res) => {
         try {
           signedImage = await s3Service.getFileUrl(signedImage);
         } catch (err) {
-          console.error("Failed to sign notification image URL:", err);
+          logger.error("Failed to sign notification image URL:", err);
         }
       }
 

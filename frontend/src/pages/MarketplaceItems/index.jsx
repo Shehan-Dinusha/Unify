@@ -23,7 +23,6 @@ const MarketplaceItems = () => {
                 const data = await newsfeedService.getMarketplaceItemsToday();
                 setItems(data.items || []);
             } catch (err) {
-                console.error("Failed to fetch marketplace items:", err);
             } finally {
                 setLoading(false);
             }

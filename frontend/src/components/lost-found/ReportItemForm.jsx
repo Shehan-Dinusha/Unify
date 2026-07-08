@@ -78,7 +78,6 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
       onBack(); // Success - return to list view
       window.location.reload(); // Optional: force refresh to grab latest feeds
     } catch (error) {
-      console.error("Error creating post:", error);
       alert("Failed to create post. Please try again.");
     } finally {
       setIsSubmitting(false);

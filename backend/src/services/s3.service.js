@@ -49,7 +49,7 @@ export const uploadFile = async (filePath, originalName, mimeType, folder = "mat
 /**
  * Uploads a file buffer to S3.
  */
-export const uploadBuffer = async (buffer, originalName, mimeType, folder = "general") => {
+export const uploadBuffer = async (buffer, originalName, mimeType, folder = "general", cacheControl = "public, max-age=31536000, immutable") => {
   const fileKey = generateFileKey(folder, originalName);
 
   const command = new PutObjectCommand({
@@ -57,6 +57,7 @@ export const uploadBuffer = async (buffer, originalName, mimeType, folder = "gen
     Key: fileKey,
     Body: buffer,
     ContentType: mimeType,
+    CacheControl: cacheControl,
   });
 
   await s3Client.send(command);
@@ -95,10 +96,14 @@ export const deleteFile = async (fileKey) => {
   await s3Client.send(command);
 };
 
+export const getPublicUrl = (fileKey) =>
+  `https://${process.env.BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
+
 export default {
   uploadFile,
   uploadBuffer,
   getFileUrl,
   deleteFile,
+  getPublicUrl,
 };
 

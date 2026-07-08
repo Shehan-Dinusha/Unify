@@ -36,7 +36,6 @@ const Club = () => {
                 }));
                 setPosts(mappedPosts);
             } catch (err) {
-                console.error("Failed to fetch club feed:", err);
             } finally {
                 setLoading(false);
             }
@@ -55,7 +54,6 @@ const Club = () => {
                 }));
                 setTrendingItems(mappedTrending);
             } catch (err) {
-                console.error("Failed to fetch trending items:", err);
             } finally {
                 setTrendingLoading(false);
             }

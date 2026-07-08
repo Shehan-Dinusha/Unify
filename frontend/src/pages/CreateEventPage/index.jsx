@@ -23,7 +23,6 @@ const CreateEventPage = () => {
                     setIsChecking(false);
                 }
             } catch (error) {
-                console.error("Payment check failed:", error);
                 setCheckError(error.error || "Failed to verify payment setup. Please try again or contact support.");
                 setIsChecking(false);
             }
@@ -97,7 +96,6 @@ const CreateEventPage = () => {
             await postService.createPost("club-event", data);
             navigate("/club-owner/marketplace");
         } catch (error) {
-            console.error("Failed to publish event:", error);
             throw error;
         }
     };

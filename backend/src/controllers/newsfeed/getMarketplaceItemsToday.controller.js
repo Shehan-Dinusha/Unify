@@ -1,36 +1,16 @@
 import { Op } from "sequelize";
 import { ClubProductPost, User } from "../../modules/index.js";
-import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
-
-const resolveImageUrl = async (img) => {
-  if (!img) return img;
-  if (img.includes("X-Amz-Signature")) return img;
-  const s3UrlMatch = img.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
-  if (s3UrlMatch) {
-    try {
-      return await getFileUrl(s3UrlMatch[1]);
-    } catch {
-      return img;
-    }
-  }
-  if (!img.startsWith("http") && !img.startsWith("/")) {
-    try {
-      return await getFileUrl(img);
-    } catch {
-      return img;
-    }
-  }
-  return img;
-};
+import logger from "../../utils/logger.js";
 
 const resolvePostImages = async (post) => {
   const resolved = { ...post };
   if (Array.isArray(resolved.images) && resolved.images.length > 0) {
-    resolved.images = await Promise.all(resolved.images.map(resolveImageUrl));
+    resolved.images = await Promise.all(resolved.images.map(resolveAssetUrl));
   }
   if (resolved.coverImage) {
-    resolved.coverImage = await resolveImageUrl(resolved.coverImage);
+    resolved.coverImage = await resolveAssetUrl(resolved.coverImage);
   }
   // Resolve author avatar
   if (resolved.author?.avatar !== undefined) {
@@ -79,7 +59,7 @@ export const getMarketplaceItemsToday = async (req, res) => {
 
     res.status(200).json({ success: true, items: processedItems });
   } catch (error) {
-    console.error("Error fetching marketplace items today:", error);
+    logger.error("Error fetching marketplace items today:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

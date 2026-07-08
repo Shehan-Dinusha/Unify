@@ -8,46 +8,17 @@ import {
   PostLike,
   SavedItem,
 } from "../../modules/index.js";
-import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
-
-const resolveImageUrl = async (img) => {
-  if (!img) return img;
-
-  let imgPath = img;
-  if (typeof img === "object" && img !== null) {
-    if (img.url) imgPath = img.url;
-    else return imgPath;
-  }
-
-  if (typeof imgPath !== "string") return imgPath;
-
-  if (imgPath.includes("X-Amz-Signature")) return imgPath;
-  const s3UrlMatch = imgPath.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
-  if (s3UrlMatch) {
-    try {
-      return await getFileUrl(s3UrlMatch[1]);
-    } catch {
-      return imgPath;
-    }
-  }
-  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
-    try {
-      return await getFileUrl(imgPath);
-    } catch {
-      return imgPath;
-    }
-  }
-  return imgPath;
-};
+import logger from "../../utils/logger.js";
 
 const resolvePostImages = async (post) => {
   const resolved = { ...post };
   if (Array.isArray(resolved.images) && resolved.images.length > 0) {
-    resolved.images = await Promise.all(resolved.images.map(resolveImageUrl));
+    resolved.images = await Promise.all(resolved.images.map(resolveAssetUrl));
   }
   if (resolved.coverImage) {
-    resolved.coverImage = await resolveImageUrl(resolved.coverImage);
+    resolved.coverImage = await resolveAssetUrl(resolved.coverImage);
   }
   // Resolve author avatar
   if (resolved.author?.avatar !== undefined) {
@@ -171,7 +142,7 @@ export const getUserPosts = async (req, res) => {
             isSaved = !!saveRecord;
           }
         } catch (err) {
-          console.error("Error fetching interactions for post:", err);
+          logger.error("Error fetching interactions for post:", err);
         }
 
         return {
@@ -186,7 +157,7 @@ export const getUserPosts = async (req, res) => {
 
     res.status(200).json({ success: true, posts: feedWithInteractions });
   } catch (error) {
-    console.error("Error in getUserPosts:", error);
+    logger.error("Error in getUserPosts:", error);
     res.status(500).json({ error: error.message });
   }
 };

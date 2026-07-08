@@ -33,7 +33,6 @@ const Marketplace = () => {
                 }));
                 setPopularPosts(mappedPosts);
             } catch (err) {
-                console.error("Failed to fetch popular posts:", err);
             } finally {
                 setLoading(false);
             }

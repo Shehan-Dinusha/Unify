@@ -21,7 +21,6 @@ export const useStudentReportDetail = () => {
         const result = await getMyReportById(id);
         setReport(result.data);
       } catch (err) {
-        console.error('[StudentReportDetail] Failed to load:', err);
         setError('Failed to load report details. Please check the backend.');
         toast.error('Connection Error', 'Failed to load report details.');
       } finally {
