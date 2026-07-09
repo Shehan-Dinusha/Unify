@@ -106,7 +106,13 @@ const SRI_LANKAN_CITIES = [
 
 function studentAddress() {
   const city = SRI_LANKAN_CITIES[randomInt(0, SRI_LANKAN_CITIES.length - 1)];
-  const streets = ["Main Street", "Galle Road", "Temple Road", "Station Road", "Lake Road"];
+  const streets = [
+    "Main Street",
+    "Galle Road",
+    "Temple Road",
+    "Station Road",
+    "Lake Road",
+  ];
   return [
     {
       street: `${randomInt(1, 300)} ${streets[randomInt(0, 4)]}`,
@@ -610,7 +616,7 @@ export const seedUsers = async (req, res) => {
       if (phone) where[Op.or].push({ phone });
       if (where[Op.or].length === 0) return null;
       return await User.findOne({ where });
-    }
+    };
 
     const results = { created: 0, skipped: 0, errors: 0 };
 
@@ -787,7 +793,9 @@ export const seedUsers = async (req, res) => {
     let bizIdx = 0;
     for (const b of FOOD) {
       const hasEmail = Math.random() < 0.5;
-      const email = hasEmail ? `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com` : null;
+      const email = hasEmail
+        ? `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com`
+        : null;
       const phone = hasEmail ? null : sriLankanMobile();
       const isMaleOwner = bizIdx % 2 === 0;
       const ownerFirst = isMaleOwner
@@ -855,7 +863,9 @@ export const seedUsers = async (req, res) => {
     bizIdx = 0;
     for (const b of BOARDING) {
       const hasEmail = Math.random() < 0.5;
-      const email = hasEmail ? `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com` : null;
+      const email = hasEmail
+        ? `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com`
+        : null;
       const phone = hasEmail ? null : sriLankanMobile();
       const isMaleOwner = bizIdx % 2 === 0;
       const ownerFirst = isMaleOwner
@@ -921,7 +931,9 @@ export const seedUsers = async (req, res) => {
     bizIdx = 0;
     for (const b of SELF_EMPLOYED) {
       const hasEmail = Math.random() < 0.5;
-      const email = hasEmail ? `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com` : null;
+      const email = hasEmail
+        ? `${b.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}@gmail.com`
+        : null;
       const phone = hasEmail ? null : sriLankanMobile();
       const isMaleOwner = bizIdx % 2 === 0;
       const ownerFirst = isMaleOwner
