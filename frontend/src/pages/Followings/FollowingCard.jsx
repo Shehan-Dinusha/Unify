@@ -27,7 +27,6 @@ const FollowingCard = ({ following, onUnfollow }) => {
         });
       }
     } catch (e) {
-      console.error('Failed to start chat', e);
     }
   };
 

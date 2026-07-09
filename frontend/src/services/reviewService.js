@@ -10,7 +10,6 @@ export const getTargetReviews = async (targetId) => {
     const response = await api.get(`/reviews/target/${targetId}`);
     return response.data.data; // Return { reviews, summary }
   } catch (error) {
-    console.error("Error fetching target reviews:", error);
     throw error;
   }
 };
@@ -25,7 +24,6 @@ export const submitReview = async (payload) => {
     const response = await api.post("/reviews/submit", payload);
     return response.data.data; // Return the new review object
   } catch (error) {
-    console.error("Error submitting review:", error);
     throw error;
   }
 };
@@ -40,7 +38,6 @@ export const deleteReview = async (reviewId) => {
     const response = await api.delete(`/reviews/${reviewId}`);
     return response.data;
   } catch (error) {
-    console.error("Error deleting review:", error);
     throw error;
   }
 };
@@ -56,7 +53,6 @@ export const toggleReviewFeedback = async (reviewId, action) => {
     const response = await api.post(`/reviews/${reviewId}/feedback`, { action });
     return response.data.data;
   } catch (error) {
-    console.error("Error toggling review feedback:", error);
     throw error;
   }
 };
@@ -69,7 +65,6 @@ export const getMyReviews = async () => {
     const response = await api.get("/reviews/me");
     return response.data.data; // Return { reviews, summary }
   } catch (error) {
-    console.error("Error fetching my reviews:", error);
     throw error;
   }
 };
@@ -82,7 +77,6 @@ export const getReceivedReviews = async () => {
     const response = await api.get("/reviews/received");
     return response.data.data; // Return { reviews, summary }
   } catch (error) {
-    console.error("Error fetching received reviews:", error);
     throw error;
   }
 };
@@ -97,7 +91,6 @@ export const toggleOwnerLike = async (reviewId) => {
     const response = await api.post(`/reviews/${reviewId}/owner-like`);
     return response.data.data;
   } catch (error) {
-    console.error("Error toggling owner like:", error);
     throw error;
   }
 };
@@ -113,7 +106,6 @@ export const replyToReview = async (reviewId, content) => {
     const response = await api.post(`/reviews/${reviewId}/reply`, { content });
     return response.data.data;
   } catch (error) {
-    console.error("Error replying to review:", error);
     throw error;
   }
 };

@@ -16,7 +16,7 @@
 import { LostAndFound } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
 import { findMatches } from "../../services/lostAndFoundMatcher.service.js";
-import s3Service from "../../services/s3.service.js";
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
 
 export const getMatches = catchAsync(async (req, res) => {
   const { id } = req.params;
@@ -44,7 +44,7 @@ export const getMatches = catchAsync(async (req, res) => {
 
       if (Array.isArray(matchedItem.images) && matchedItem.images.length > 0) {
         signedImageUrls = await Promise.all(
-          matchedItem.images.map((key) => s3Service.getFileUrl(key))
+          matchedItem.images.map((key) => resolveAssetUrl(key))
         );
       }
 

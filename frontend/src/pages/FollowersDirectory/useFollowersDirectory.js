@@ -40,7 +40,6 @@ export const useFollowersDirectory = () => {
       setHasMore(data.hasMore);
       setPage(nextPage);
     } catch (err) {
-      console.error("Error loading more followers:", err);
     } finally { setIsLoadingMore(false); }
   };
 

@@ -10,7 +10,6 @@ const CreateNormalPostModal = ({ isOpen, onClose }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Submitting Normal Post:", { description, photos });
         onClose();
     };
 

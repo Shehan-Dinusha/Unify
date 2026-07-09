@@ -41,7 +41,6 @@ const ReportDetail = () => {
                 const result = await fetchReportById(id);
                 setReport(result.data);
             } catch (err) {
-                console.error('[ReportDetail] Failed to load report:', err);
                 setError('Failed to load report details. Please check the backend.');
                 toast.error('Connection Error', 'Failed to load report details.');
             } finally {
@@ -82,7 +81,6 @@ const ReportDetail = () => {
             const refreshed = await fetchReportById(id);
             setReport(refreshed.data);
         } catch (err) {
-            console.error('[ReportDetail] Failed to add note:', err);
             toast.error('Error', 'Failed to add note.');
         }
     };
@@ -111,7 +109,6 @@ const ReportDetail = () => {
                 } catch (_) {}
             }
         } catch (err) {
-            console.error(`[ReportDetail] Action ${type} failed:`, err);
             const errorMsg = err.response?.data?.message || `Failed to process ${type}. Please try again.`;
             toast.error('Action Failed', errorMsg);
             closeModal();
@@ -126,7 +123,7 @@ const ReportDetail = () => {
             const refreshed = await fetchReportById(id);
             setReport(refreshed.data);
         } catch (err) {
-            console.error('[ReportDetail] Failed to refresh:', err);
+            toast.error('Error', 'Failed to refresh report data');
         }
         if (dest === 'dashboard') navigate('/admin');
         else if (dest === 'queue') navigate('/report-moderation');

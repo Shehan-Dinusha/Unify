@@ -67,7 +67,6 @@ const StudentUserProfile = () => {
         const result = await getStudentProfile(id);
         setUser(result.data);
       } catch (err) {
-        console.error('[StudentUserProfile] Failed to load profile:', err);
         setError('Failed to load student profile. Please check backend.');
         toast.error('Connection Error', 'Could not load student profile.');
       } finally {
@@ -125,7 +124,7 @@ const StudentUserProfile = () => {
         const result = await getStudentProfile(id);
         setUser(result.data);
       } catch (e) {
-        console.error('Failed to refresh user data:', e);
+        toast.error("Error", "Failed to refresh user data");
       }
     } catch (error) {
       const msg = error.message || 'Action failed. Please try again.';

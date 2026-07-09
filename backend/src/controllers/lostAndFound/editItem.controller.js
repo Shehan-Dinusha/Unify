@@ -1,6 +1,6 @@
 import { LostAndFound, User, StudentProfile, Degree } from "../../modules/index.js";
 import { sendResponse, catchAsync } from "../../utils/response.js";
-import s3Service from "../../services/s3.service.js";
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
 import { formatRelativeDate } from "../../utils/date.js";
 
 export const editItem = catchAsync(async (req, res, next) => {
@@ -72,7 +72,7 @@ export const editItem = catchAsync(async (req, res, next) => {
   if (updatedItem.images && updatedItem.images.length > 0) {
     signedImageUrls = await Promise.all(
       updatedItem.images.map(async (s3Key) => {
-         return await s3Service.getFileUrl(s3Key);
+         return await resolveAssetUrl(s3Key);
       })
     );
   }

@@ -65,7 +65,6 @@ export const useMyLostAndFound = () => {
         const data = await getMyItems();
         setItems(data);
       } catch (err) {
-        console.error("Failed to fetch my items:", err);
       } finally {
         setIsLoading(false);
       }
@@ -82,7 +81,6 @@ export const useMyLostAndFound = () => {
       formData.append("status", "Resolved");
       await editItem(id, formData);
     } catch (err) {
-      console.error("Failed to resolve item:", err);
     }
   };
 
@@ -115,7 +113,6 @@ export const useMyLostAndFound = () => {
       }
       setDeleteModal({ ...deleteModal, step: "success" });
     } catch (error) {
-      console.error("Failed to delete item:", error);
     }
   };
 

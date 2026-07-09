@@ -39,7 +39,7 @@ export const useBatchRepLearning = () => {
         }
       }
     } catch (err) {
-      console.error("Failed to refresh course structure", err);
+      toast.error("Error", "Failed to refresh course structure");
     }
   };
 
@@ -74,7 +74,7 @@ export const useBatchRepLearning = () => {
           }
         }
       } catch (err) {
-        console.error("Failed to initialize learning dashboard", err);
+        toast.error("Error", "Failed to initialize learning dashboard");
       }
     };
     init();
@@ -98,7 +98,6 @@ export const useBatchRepLearning = () => {
             setAvailableDegrees(details.data.availableDegrees.map((d) => d.name));
           }
         } catch (err) {
-          console.warn("Failed to fetch module details from API, using local state", err);
         }
 
         try {
@@ -111,7 +110,6 @@ export const useBatchRepLearning = () => {
             setSelectedCategory(null);
           }
         } catch (err) {
-          console.warn("Failed to fetch module categories", err);
           setModuleCategories([]);
           setSelectedCategory(null);
         }
@@ -134,7 +132,6 @@ export const useBatchRepLearning = () => {
         const filesRes = await learningService.getMaterialsByCategory(activeModuleId, selectedCategory.id);
         setCategoryFiles(filesRes.data || []);
       } catch (err) {
-        console.warn("Failed to fetch materials", err);
         setCategoryFiles([]);
       }
     };
@@ -150,7 +147,7 @@ export const useBatchRepLearning = () => {
         setActiveModuleDetails(details.data.module);
       }
     } catch (err) {
-      console.error("Failed to refresh module details", err);
+      toast.error("Error", "Failed to refresh module details");
     }
   };
 
@@ -164,7 +161,7 @@ export const useBatchRepLearning = () => {
         setSelectedCategory(apiCategories[0]);
       }
     } catch (err) {
-      console.error(err);
+      toast.error("Error", "Failed to refresh categories");
       setModuleCategories([]);
     }
   };
@@ -175,7 +172,7 @@ export const useBatchRepLearning = () => {
       const filesRes = await learningService.getMaterialsByCategory(activeModuleId, selectedCategory.id);
       setCategoryFiles(filesRes.data || []);
     } catch (err) {
-      console.error(err);
+      toast.error("Error", "Failed to refresh files");
       setCategoryFiles([]);
     }
   };
@@ -239,7 +236,6 @@ export const useBatchRepLearning = () => {
       setActionModuleName(newModule.title);
       setShowSuccessModal(true);
     } catch (err) {
-      console.error("Failed to create module", err);
       const errorMessage = err.response?.data?.message || err.message || "Unknown error";
       toast.error("Error", `Failed to create module: ${errorMessage}`);
     }
@@ -312,7 +308,6 @@ export const useBatchRepLearning = () => {
       setActionModuleName(editedData.title);
       setShowSuccessModal(true);
     } catch (err) {
-      console.error("Failed to edit module", err);
       toast.error("Error", "Failed to edit module");
     }
   };
@@ -332,7 +327,6 @@ export const useBatchRepLearning = () => {
       );
       setShowDeleteModal(true);
     } catch (err) {
-      console.error("Failed to delete module", err);
       toast.error("Error", "Failed to delete module");
     }
   };

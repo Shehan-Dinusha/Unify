@@ -30,17 +30,14 @@ export const useChatSocket = () => {
     });
 
     newSocket.on("connect", () => {
-      console.log("⚡ Chat socket connected:", newSocket.id);
       setIsConnected(true);
     });
 
     newSocket.on("disconnect", (reason) => {
-      console.log("🔌 Chat socket disconnected:", reason);
       setIsConnected(false);
     });
 
-    newSocket.on("connect_error", (err) => {
-      console.error("Socket auth failed:", err.message);
+    newSocket.on("connect_error", () => {
       setIsConnected(false);
     });
 

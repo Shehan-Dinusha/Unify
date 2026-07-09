@@ -40,7 +40,6 @@ export const useActiveBusinesses = () => {
           { value: d.retentionRate || "N/A", title: "Retention Rate", change: `💎 ${d.retentionLabel || "N/A"}`, changeClass: "text-primary-accent", icon: "📈", iconBg: "bg-gradient-to-br from-primary-accent/10 to-transparent" },
         ]);
       } catch (err) {
-        console.error("[ActiveBusinesses] Failed to load stats:", err);
         toast.error("Connection Error", "Failed to load business stats.");
       }
     };
@@ -68,7 +67,6 @@ export const useActiveBusinesses = () => {
         setTotalCount(data.total || 0);
         setTotalPages(Math.ceil((data.total || 0) / PAGE_LIMIT));
       } catch (err) {
-        console.error("[ActiveBusinesses] Failed to load businesses:", err);
         setError("Failed to connect to the server. Please check backend.");
         toast.error("Connection Error", "Failed to load business directory.");
       } finally {

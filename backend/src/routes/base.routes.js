@@ -1,4 +1,5 @@
 import express from "express";
+import { protect, authorize } from "../middlewares/auth.middleware.js";
 import {
   resetDb,
   seedDummyData,
@@ -13,6 +14,9 @@ import {
 } from "../controllers/base/index.js";
 
 const router = express.Router();
+
+// All dev/seed endpoints require admin authentication
+router.use(protect, authorize("Admin"));
 
 // Development/Testing endpoints
 router.post("/reset-db", resetDb);

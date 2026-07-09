@@ -36,7 +36,6 @@ const EditProfilePage = () => {
       const data = await getMyProfile(serviceRole);
       setProfile(data);
     } catch (error) {
-      console.error("Error fetching profile:", error);
       toast.error("Error", error.message || "Failed to load profile");
     } finally {
       setLoading(false);
@@ -114,7 +113,6 @@ const EditProfilePage = () => {
       toast.success("Success", "Profile updated successfully");
       navigate(`/profile?role=${activeRole}`);
     } catch (error) {
-      console.error("Error updating profile:", error);
       toast.error("Error", error.message || "Failed to update profile");
     } finally {
       setSaving(false);

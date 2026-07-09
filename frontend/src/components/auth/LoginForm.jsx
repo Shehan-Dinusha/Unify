@@ -67,9 +67,6 @@ const LoginForm = () => {
       } else if (role === "business") {
         // Redirection based on business category
         const category = data.user.category?.toUpperCase();
-        console.log("ROLE:", role);
-        console.log("CATEGORY FROM BACKEND:", data.user.category);
-        console.log("NORMALIZED CATEGORY:", category);
 
         if (category === "BOARDING") {
           navigate("/boarding-owner/marketplace");

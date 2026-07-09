@@ -1,5 +1,6 @@
 import { User, StudentProfile, UserActivityLog, Faculty, University } from './src/modules/index.js';
 import bcrypt from 'bcryptjs';
+import logger from '../../../utils/logger.js';
 
 async function createStudentUser() {
   try {
@@ -32,7 +33,7 @@ async function createStudentUser() {
     });
 
     if (!created) {
-      console.log('ℹ️ Student User already exists');
+      logger.info('ℹ️ Student User already exists');
       process.exit(0);
     }
 
@@ -82,13 +83,13 @@ async function createStudentUser() {
       }
     ]);
 
-    console.log(`✅ Student User 'Alex Johnson' created successfully with ID: ${user.id}`);
+    logger.info(`✅ Student User 'Alex Johnson' created successfully with ID: ${user.id}`);
     process.exit(0);
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
-      console.error('❌ Validation Error Details:', error.errors.map(e => `${e.path}: ${e.message}`));
+      logger.error('❌ Validation Error Details:', error.errors.map(e => `${e.path}: ${e.message}`));
     } else {
-      console.error('❌ Error:', error.message);
+      logger.error('❌ Error:', error.message);
     }
     process.exit(1);
   }

@@ -27,7 +27,6 @@ export const useLostAndFound = () => {
         const data = await getItems("All");
         setItems(data);
       } catch (err) {
-        console.error("Failed to fetch lost and found items:", err);
       } finally {
         setIsLoading(false);
       }

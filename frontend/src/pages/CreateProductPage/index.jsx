@@ -23,7 +23,6 @@ const CreateProductPage = () => {
                     setIsChecking(false);
                 }
             } catch (error) {
-                console.error("Payment check failed:", error);
                 setCheckError(error.error || "Failed to verify payment setup. Please try again or contact support.");
                 setIsChecking(false);
             }
@@ -84,7 +83,6 @@ const CreateProductPage = () => {
                 <CreateProductForm 
                     onCancel={() => navigate("/club-owner/marketplace")} 
                     onPublish={() => {
-                        console.log("Publishing product...");
                         navigate("/club-owner/marketplace");
                     }} 
                 />
