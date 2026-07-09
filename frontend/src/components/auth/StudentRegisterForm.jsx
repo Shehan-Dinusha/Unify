@@ -4,6 +4,7 @@ import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import { validatePassword } from "../../utils/validation";
+import { register } from "../../services/authService";
 
 const StudentRegisterForm = ({ onNext, onBack }) => {
   const [contact, setContact] = useState("");
@@ -28,7 +29,7 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
       tempErrors.password = "Password is required";
     } else if (!validatePassword(password)) {
       tempErrors.password =
-        "Password must be at least 8 characters and include uppercase, lowercase, and a number";
+        "Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character";
     }
 
     if (!confirmPassword) {
@@ -47,11 +48,15 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await register({
+        email: contact,
+        password,
+        role: "Student",
+        name: contact.split("@")[0], // Temporary name until profile setup
+      });
       onNext(contact);
     } catch (err) {
-      setErrors({ form: "Registration failed. Please try again." });
+      setErrors({ form: err.message });
     } finally {
       setLoading(false);
     }
@@ -129,6 +134,12 @@ const StudentRegisterForm = ({ onNext, onBack }) => {
               icon={Lock}
             />
           </div>
+
+          {errors.form && (
+            <div className="mt-4 p-2 bg-status-error/10 border border-status-error/20 rounded-lg text-status-error text-body-extra-small text-center">
+              {errors.form}
+            </div>
+          )}
 
           <div className="mt-6">
             <Button

@@ -3,20 +3,20 @@ import Card from "../common/Card";
 
 /* ─── Boarding Filters Sidebar ───────────────────────────────── */
 const BoardingFilters = ({ onFilterChange }) => {
-    const [minPrice, setMinPrice] = useState(450);
-    const [maxPrice, setMaxPrice] = useState(1200);
+    const [minPrice, setMinPrice] = useState(5000);
+    const [maxPrice, setMaxPrice] = useState(30000);
     const [gender, setGender] = useState("Any");
 
-    const PRICE_MIN = 100;
-    const PRICE_MAX = 2000;
+    const PRICE_MIN = 0;
+    const PRICE_MAX = 50000;
 
     const genderOptions = ["Any", "Male Only", "Female Only"];
 
     const handleReset = () => {
-        setMinPrice(450);
-        setMaxPrice(1200);
+        setMinPrice(5000);
+        setMaxPrice(30000);
         setGender("Any");
-        onFilterChange?.({ minPrice: 450, maxPrice: 1200, gender: "Any" });
+        onFilterChange?.({ minPrice: 5000, maxPrice: 30000, gender: "Any" });
     };
 
     const handleGenderChange = (val) => {
@@ -25,13 +25,13 @@ const BoardingFilters = ({ onFilterChange }) => {
     };
 
     const handleMinChange = (e) => {
-        const val = Math.min(Number(e.target.value), maxPrice - 50);
+        const val = Math.min(Number(e.target.value), maxPrice - 1000);
         setMinPrice(val);
         onFilterChange?.({ minPrice: val, maxPrice, gender });
     };
 
     const handleMaxChange = (e) => {
-        const val = Math.max(Number(e.target.value), minPrice + 50);
+        const val = Math.max(Number(e.target.value), minPrice + 1000);
         setMaxPrice(val);
         onFilterChange?.({ minPrice, maxPrice: val, gender });
     };
@@ -54,13 +54,13 @@ const BoardingFilters = ({ onFilterChange }) => {
             <Card variant="card" padding="p-md" className="mb-md">
                 <div className="flex items-center justify-between mb-3">
                     <span className="text-body-small-bold text-text-primary">Price Range</span>
-                    <span className="text-[11px] text-text-tertiary">$/month</span>
+                    <span className="text-[11px] text-text-tertiary">Rs./month</span>
                 </div>
 
                 {/* Price labels */}
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-[13px] font-semibold text-text-primary">${minPrice}</span>
-                    <span className="text-[13px] font-semibold text-text-primary">${maxPrice}</span>
+                    <span className="text-[13px] font-semibold text-text-primary">Rs. {minPrice}</span>
+                    <span className="text-[13px] font-semibold text-text-primary">Rs. {maxPrice}</span>
                 </div>
 
                 {/* Range track */}
@@ -80,6 +80,7 @@ const BoardingFilters = ({ onFilterChange }) => {
                         type="range"
                         min={PRICE_MIN}
                         max={PRICE_MAX}
+                        step="500"
                         value={minPrice}
                         onChange={handleMinChange}
                         className="absolute w-full h-full opacity-0 cursor-pointer z-10 dual-range-input "
@@ -89,6 +90,7 @@ const BoardingFilters = ({ onFilterChange }) => {
                         type="range"
                         min={PRICE_MIN}
                         max={PRICE_MAX}
+                        step="500"
                         value={maxPrice}
                         onChange={handleMaxChange}
                         className="absolute w-full h-full opacity-0 cursor-pointer z-20 dual-range-input"

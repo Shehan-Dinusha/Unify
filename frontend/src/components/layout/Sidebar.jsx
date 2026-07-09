@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Rss,
@@ -8,15 +8,18 @@ import {
   Store,
   GraduationCap,
   LayoutDashboard,
-  ShieldAlert,
-  UserX,
-  Zap,
-  UserCheck,
   ShoppingCart,
   ClipboardList,
-  LogOut,
 } from "lucide-react";
 import LogoutModal from "../profile/modals/LogoutModal";
+import {
+  getCurrentUser,
+  logout,
+  refreshCurrentUser,
+} from "../../services/authService";
+import { useNotifications } from "../../context/NotificationContext";
+import { useChat } from "../../context/ChatContext";
+import { useClubOrders } from "../../context/ClubOrderContext";
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({
@@ -85,15 +88,31 @@ const SidebarItem = ({
 };
 
 const UnifiedSidebar = ({
-  user,
+  user: propUser,
   verificationCount,
+  reportCount,
+  suspensionCount,
   isOpen,
   onClose,
   sidebarDisabled = false,
 }) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const [freshUser, setFreshUser] = React.useState(null);
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  const { unreadCount } = useNotifications();
+  const { unreadMessageCount } = useChat();
+  const { unconfirmedOrderCount } = useClubOrders();
+
+  useEffect(() => {
+    refreshCurrentUser().then((updated) => {
+      if (updated) setFreshUser(updated);
+    });
+  }, []);
+
+  // Get user from auth or fallback to prop
+  const authUser = freshUser || getCurrentUser();
+  const user = authUser || propUser || { name: "Guest", role: "student" };
 
   // Configuration Map for different user roles
   const roleConfigs = {
@@ -101,8 +120,39 @@ const UnifiedSidebar = ({
       title: "Student Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
+        {
+          icon: MessageSquare,
+          label: "Message",
+          badge: unreadMessageCount > 0 ? unreadMessageCount : null,
+          path: "/messages",
+        },
+        { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
+        { icon: Store, label: "Marketplace", path: "/marketplace" },
+        { icon: GraduationCap, label: "Learning", path: "/student-learning" },
+      ],
+    },
+    batch_rep: {
+      title: "Batch Rep Dashboard",
+      links: [
+        { icon: Rss, label: "News Feed", path: "/news-feed" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
+        {
+          icon: MessageSquare,
+          label: "Message",
+          badge: unreadMessageCount > 0 ? unreadMessageCount : null,
+          path: "/messages",
+        },
         { icon: PackageSearch, label: "Lost & Found", path: "/lost-and-found" },
         { icon: Store, label: "Marketplace", path: "/marketplace" },
         { icon: GraduationCap, label: "Learning", path: "/learning" },
@@ -124,13 +174,13 @@ const UnifiedSidebar = ({
         {
           iconSrc: "/icon_report_moderation.svg",
           label: "Report Moderation",
-          badge: 3,
+          badge: reportCount > 0 ? reportCount : null,
           path: "/report-moderation",
         },
         {
           iconSrc: "/icon_suspended_users.svg",
           label: "Suspended Users",
-          badge: 3,
+          badge: suspensionCount > 0 ? suspensionCount : null,
           path: "/suspended-users",
           childPaths: ["/suspended-users"],
         },
@@ -142,29 +192,33 @@ const UnifiedSidebar = ({
         {
           iconSrc: "/icon_tab_verified.svg",
           label: "Verification Queue",
-          badge: verificationCount,
+          badge: verificationCount > 0 ? verificationCount : null,
           path: "/verification-queue",
         },
-      ],
-    },
-    business: {
-      title: "Business Dashboard",
-      links: [
-        { icon: Rss, label: "News Feed", path: "/business/news-feed", childPaths: ["/business/boost-post"] },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
-        { icon: ShoppingCart, label: "My Products", path: "/my-products" },
-        { icon: ClipboardList, label: "Order History", path: "/order-history" },
       ],
     },
     club: {
       title: "Clubs & Societies Dashboard",
       links: [
-        { icon: Rss, label: "News Feed", path: "/news-feed" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
-        { icon: MessageSquare, label: "Message", badge: 3, path: "/messages" },
+        { icon: Rss, label: "News Feed", path: "/business/news-feed" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+          alwaysEnabled: true,
+        },
+        {
+          icon: MessageSquare,
+          label: "Message",
+          badge: unreadMessageCount > 0 ? unreadMessageCount : null,
+          path: "/messages",
+        },
+        { icon: Store, label: "Marketplace", path: "/club-owner/marketplace" },
         {
           icon: LayoutDashboard,
           label: "Order Dashboard",
+          badge: unconfirmedOrderCount > 0 ? unconfirmedOrderCount : null,
           path: "/club-owner/dashboard",
         },
       ],
@@ -173,30 +227,64 @@ const UnifiedSidebar = ({
       title: "Boarding Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/boarding-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
       ],
     },
     food_cafe_owner: {
       title: "Food & Cafe Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/food-cafe-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
       ],
     },
-    services_owner: {
+    self_employed: {
       title: "Services Dashboard",
       links: [
         { icon: Rss, label: "News Feed", path: "/services-owner/marketplace" },
-        { icon: Bell, label: "Notification", badge: 3, path: "/notifications" },
+        {
+          icon: Bell,
+          label: "Notification",
+          badge: unreadCount > 0 ? unreadCount : null,
+          path: "/notifications",
+        },
       ],
     },
   };
 
-  const isClub = user.role?.toLowerCase() === "club_society" || user.role?.toLowerCase() === "club";
-  const shouldDisableNav = sidebarDisabled && isClub;
+  const isClub =
+    user.role?.toLowerCase() === "club_society" ||
+    user.role?.toLowerCase() === "club";
+  const isUnverifiedClub = isClub && freshUser?.isVerified === false;
+  const shouldDisableNav = sidebarDisabled || isUnverifiedClub;
 
-  const currentConfig =
-    roleConfigs[user.role.toLowerCase()] || roleConfigs.student;
+  let configKey = user.role?.toLowerCase();
+  if (configKey === "student" && user.isBatchRep) {
+    configKey = "batch_rep";
+  }
+  // Map club_society to club config
+  if (configKey === "club_society") {
+    configKey = "club";
+  }
+
+  // Map generic business role to specific config if category exists
+  if (configKey === "business") {
+    const category = user.category || user.BusinessProfile?.category;
+    if (category === "BOARDING") configKey = "boarding_owner";
+    else if (category === "FOOD") configKey = "food_cafe_owner";
+    else if (category === "SELF_EMPLOYED") configKey = "self_employed";
+  }
+
+  const currentConfig = roleConfigs[configKey] || roleConfigs.student;
 
   const handleNavClick = (path) => {
     if (onClose) onClose();
@@ -244,7 +332,7 @@ const UnifiedSidebar = ({
               <SidebarItem
                 key={index}
                 {...link}
-                disabled={shouldDisableNav}
+                disabled={shouldDisableNav && !link.alwaysEnabled}
                 active={
                   pathname === link.path ||
                   (link.childPaths &&
@@ -267,15 +355,15 @@ const UnifiedSidebar = ({
           />
 
           <div
-            className={`w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md transition-colors group ${
-              shouldDisableNav
-                ? "opacity-40 grayscale-[0.2] pointer-events-none cursor-not-allowed"
-                : "hover:bg-white/10 cursor-pointer"
-            }`}
+            onClick={() => navigate("/profile?role=" + user.role)}
+            className="w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md transition-colors group hover:bg-white/10 cursor-pointer"
           >
             <img
               className="w-10 h-10 rounded-full object-cover border border-white/20 group-hover:border-primary-blue transition-colors"
-              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+              src={
+                user.avatar ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=2666F1&color=fff`
+              }
               alt="Avatar"
             />
             <div className="overflow-hidden">
@@ -283,7 +371,9 @@ const UnifiedSidebar = ({
                 {user.name}
               </h4>
               <p className="text-text-tertiary text-body-extra-small font-normal font-inter uppercase tracking-widest">
-                {user.displayRole || user.role}
+                {user.role?.toLowerCase() === "student"
+                  ? "Student"
+                  : user.displayRole || user.role}
               </p>
             </div>
           </div>
@@ -296,9 +386,7 @@ const UnifiedSidebar = ({
           onClose={() => setShowLogoutModal(false)}
           onConfirm={() => {
             setShowLogoutModal(false);
-            // Mock logout: clear tokens if any and redirect to login
-            console.log("Logging out...");
-            navigate("/login");
+            logout();
           }}
         />
       )}

@@ -1,24 +1,34 @@
-import { FolderOpen, Upload, Edit2, Plus } from "lucide-react";
+import { FolderOpen, Upload, Edit2 } from "lucide-react";
 import Button from "../common/Button";
 import { useState } from "react";
 import UploadMaterialModal from "./UploadMaterialModal";
 import EditModuleModal from "./EditModuleModal";
+import { useToast } from "../common/Toast";
 
 /**
  * Renders the top header for the selected module showing details and access
  */
 const ModuleHeader = ({
-  moduleName = "Programming Fundamentals",
-  moduleCode = "IN1101",
-  semesterName = "Semester 1",
-  degrees = ["Bsc.(Hons) IT", "Bsc.(Hons) AI"],
-  lastUpdated = "2 hours ago",
+  moduleName,
+  moduleCode,
+  semesterName,
+  degrees = [],
+  lastUpdated,
   isPublic = true,
   onEditSave,
   onDelete,
+  moduleId,
+  onMaterialUploaded,
+  availableDegrees = [],
+  primaryDegree,
+  semesters = [],
+  categories = [],
+  creatorDegreeId,
+  userDegreeId,
 }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const toast = useToast();
 
   return (
     <div className="w-full p-4 sm:p-5 bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col gap-3.5">
@@ -80,7 +90,16 @@ const ModuleHeader = ({
             variant="primary"
             size="small"
             className="!bg-indigo-500 hover:!bg-indigo-600 shadow-[0_8.8px_13.2px_-2.6px_rgba(59,130,246,0.30)] !rounded-lg flex items-center gap-2 h-10 !px-3.5"
-            onClick={() => setIsUploadModalOpen(true)}
+            onClick={() => {
+              if (!categories || categories.length === 0) {
+                toast.warning(
+                  "Category Required",
+                  "Please create at least one category before uploading a file.",
+                );
+                return;
+              }
+              setIsUploadModalOpen(true);
+            }}
           >
             <Upload size={14} className="text-white" />
             <span className="text-white font-medium">Upload File</span>
@@ -90,8 +109,12 @@ const ModuleHeader = ({
 
       {/* Access Footer */}
       <div className="w-full pt-3.5 border-t border-gray-700 flex items-center gap-2">
-        <div className="px-2 py-0.5 bg-green-900 rounded flex justify-center items-center">
-          <span className="text-neutral-100 text-xs font-normal font-inter leading-5">
+        <div
+          className={`px-2 py-0.5 ${isPublic ? "bg-green-900" : "bg-red-900/50 outline outline-1 outline-red-800/50"} rounded flex justify-center items-center`}
+        >
+          <span
+            className={`text-xs font-normal font-inter leading-5 ${isPublic ? "text-neutral-100" : "text-red-300"}`}
+          >
             {isPublic ? "Public Access" : "Restricted Access"}
           </span>
         </div>
@@ -106,6 +129,9 @@ const ModuleHeader = ({
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         moduleName={moduleName}
+        moduleId={moduleId}
+        categories={categories}
+        onSuccess={onMaterialUploaded}
       />
 
       <EditModuleModal
@@ -129,6 +155,11 @@ const ModuleHeader = ({
           semesterName,
           degrees,
         }}
+        availableDegrees={availableDegrees}
+        primaryDegree={primaryDegree}
+        semesters={semesters}
+        creatorDegreeId={creatorDegreeId}
+        userDegreeId={userDegreeId}
       />
     </div>
   );

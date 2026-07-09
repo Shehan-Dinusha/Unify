@@ -4,12 +4,6 @@ import Button from "../common/Button";
 import Card from "../common/Card";
 import { Eye, Check } from "lucide-react";
 
-// The backend should pass the list of batches for the current degree program.
-// For example:
-// const mockBatches = [
-//   { id: "b25", short: "'25", name: "Batch 25", colorBg: "bg-orange-900/30", colorText: "text-orange-400" },
-//   ...
-// ];
 const SemesterVisibilityModal = ({
   isOpen,
   onClose,
@@ -17,10 +11,11 @@ const SemesterVisibilityModal = ({
   availableBatches = [],
   currentVisibility = [],
   onSaveVisibility,
+  isSaving,
 }) => {
   const [mounted, setMounted] = useState(false);
   const [batches, setBatches] = useState([]);
-  const [notifyReps, setNotifyReps] = useState(false);
+  const [notifyStudents, setNotifyStudents] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -36,7 +31,7 @@ const SemesterVisibilityModal = ({
         visible: currentVisibility.includes(batch.id),
       }));
       setBatches(initializedBatches);
-      setNotifyReps(false);
+      setNotifyStudents(false);
     }
   }, [isOpen, availableBatches, currentVisibility]);
 
@@ -49,17 +44,14 @@ const SemesterVisibilityModal = ({
   };
 
   const handleSave = () => {
-    // Extract only the IDs of batches that are set to visible
     const visibleBatchIds = batches.filter((b) => b.visible).map((b) => b.id);
 
-    // Pass back the updated visibility arrays and notify preference to backend handler
     if (onSaveVisibility) {
       onSaveVisibility({
         visibleBatchIds,
-        notifyReps,
+        notifyStudents,
       });
     }
-    onClose();
   };
 
   const modalContent = (
@@ -133,27 +125,27 @@ const SemesterVisibilityModal = ({
               )}
             </div>
 
-            {/* Notify Batch Reps checkbox */}
+            {/* Notify Students checkbox */}
             <div
               className="w-full relative border-t border-primary-blue/20 pt-4 flex gap-2 items-start cursor-pointer group shrink-0"
-              onClick={() => setNotifyReps(!notifyReps)}
+              onClick={() => setNotifyStudents(!notifyStudents)}
             >
               <div className="h-5 flex items-center justify-center shrink-0 pt-0.5">
                 <div
-                  className={`w-4 h-4 rounded outline outline-1 outline-offset-[-1px] flex items-center justify-center transition-colors ${notifyReps ? "bg-slate-700 outline-gray-600" : "bg-slate-700 outline-gray-600 group-hover:bg-slate-600"}`}
+                  className={`w-4 h-4 rounded outline outline-1 outline-offset-[-1px] flex items-center justify-center transition-colors ${notifyStudents ? "bg-slate-700 outline-gray-600" : "bg-slate-700 outline-gray-600 group-hover:bg-slate-600"}`}
                 >
-                  {notifyReps && (
+                  {notifyStudents && (
                     <Check size={12} className="text-white" strokeWidth={3} />
                   )}
                 </div>
               </div>
               <div className="flex flex-col">
                 <span className="text-gray-300 text-sm font-bold font-inter leading-5 transition-colors group-hover:text-white">
-                  Notify Batch Representatives
+                  Notify Students
                 </span>
                 <span className="text-gray-400 text-xs font-normal font-inter leading-5 transition-colors group-hover:text-gray-300">
-                  Sends a notification to reps of affected batches about this
-                  change.
+                  Sends a notification to all students enrolled in the affected
+                  batches.
                 </span>
               </div>
             </div>
@@ -165,6 +157,7 @@ const SemesterVisibilityModal = ({
           <Button
             variant="ghost-hoverless"
             onClick={onClose}
+            disabled={isSaving}
             className="w-auto px-4 h-9 bg-gray-800 rounded-2xl flex justify-center items-center text-neutral-100 text-sm font-bold font-inter leading-5 hover:bg-slate-700 transition-colors"
           >
             Cancel
@@ -172,9 +165,10 @@ const SemesterVisibilityModal = ({
           <Button
             variant="primary"
             onClick={handleSave}
-            className="w-auto px-5 h-9 rounded-2xl whitespace-nowrap shadow-[0px_4px_6px_-4px_rgba(43,140,238,0.25)] flex justify-center items-center text-white text-sm font-bold font-inter leading-5"
+            disabled={isSaving}
+            className="w-auto px-5 h-9 rounded-2xl whitespace-nowrap shadow-[0px_4px_6px_-4px_rgba(43,140,238,0.25)] flex justify-center items-center text-white text-sm font-bold font-inter leading-5 disabled:bg-gray-600 disabled:text-gray-400 disabled:shadow-none"
           >
-            Save Changes
+            {isSaving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </Card>

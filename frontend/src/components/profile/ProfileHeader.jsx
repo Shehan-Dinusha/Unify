@@ -1,13 +1,18 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Card from "../common/Card";
+import { Flag } from "lucide-react";
 
 /**
  * ProfileHeader — left-side profile card shown on both owner and public views.
  * Props:
- *  profile: { name, subtitle, badge, description, profileImage }
+ *  profile: { name, subtitle, badge, description, profileImage, id }
+ *  isPublic: boolean - if true, shows public actions like Report
  */
-const ProfileHeader = ({ profile, className = "" }) => {
+const ProfileHeader = ({ profile, isPublic = false, className = "" }) => {
+  const navigate = useNavigate();
   const {
+    id,
     name = "User",
     subtitle = "",
     badge = "",
@@ -18,7 +23,21 @@ const ProfileHeader = ({ profile, className = "" }) => {
 
   const avatarSrc =
     profileImage ||
-    `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2666F1&color=fff`;
+
+  const handleReport = () => {
+    navigate("/student/report-issue", {
+      state: { 
+        postData: { 
+          authorId: id, 
+          author: name,
+          title: `Profile: ${name}`,
+          type: 'user'
+        }, 
+        from: window.location.pathname 
+      },
+    });
+  };
 
   return (
     <Card variant="container" padding="p-4 md:p-md" className={className}>
@@ -50,6 +69,19 @@ const ProfileHeader = ({ profile, className = "" }) => {
           <span className="inline-block px-2.5 py-0.5 md:px-3 md:py-1 rounded-full border border-primary-blue/40 text-primary-blue text-[10px] md:text-body-extra-small-bold bg-primary-blue/10">
             {badge}
           </span>
+        )}
+
+        {/* Public Actions */}
+        {isPublic && (
+          <div className="w-full mt-4 flex flex-col gap-2">
+            <button
+              onClick={handleReport}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-state-error/10 text-state-error border border-state-error/20 hover:bg-state-error/20 transition-all text-[12px] font-bold"
+            >
+              <Flag size={14} />
+              Report Profile
+            </button>
+          </div>
         )}
 
         {/* Description — Removed for all roles as requested */}

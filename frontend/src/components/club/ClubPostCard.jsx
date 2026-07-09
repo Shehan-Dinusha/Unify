@@ -3,6 +3,7 @@ import { Send, Heart, MessageCircle } from "lucide-react";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import { useNavigate } from "react-router-dom";
+import { getAvatarUrl } from "../../utils/formatters";
 
 /* ─── Single pushable action button ─────────────────────────── */
 const ActionBtn = ({ icon: Icon, svgSrc, label, count, showBoth, activeColor = "text-primary", onClick, active, fillActive = false }) => (
@@ -79,7 +80,7 @@ const CommentSection = ({ postComments, onAddComment }) => {
                                     <span className="text-[13px] font-semibold text-text-primary">{c.user}</span>
                                     <span className="text-[11px] text-text-tertiary">{c.time}</span>
                                 </div>
-                                <p className="text-[13px] text-text-secondary leading-relaxed">{c.text}</p>
+                                <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-wrap">{c.text}</p>
                             </div>
                         </div>
                     ))}
@@ -116,10 +117,9 @@ const CommentSection = ({ postComments, onAddComment }) => {
 };
 
 /* ─── Card component ─────────────────────────────────────────── */
-const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick }) => {
+const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick, currentUser }) => {
     const navigate = useNavigate();
 
-    const [boosted, setBoosted] = useState(false);
     const [saved, setSaved] = useState(false);
     const [reported, setReported] = useState(false);
     const [liked, setLiked] = useState(false);
@@ -128,7 +128,6 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
     const [likes, setLikes] = useState(post.stats?.likes ?? 0);
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const toggleBoost = () => { setBoosted(p => !p); };
     const toggleSave = () => setSaved(p => !p);
     const toggleReport = () => setReported(p => !p);
 
@@ -151,8 +150,16 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
             onClick={onCardClick}
         >
             {/* Image */}
-            <div className="relative w-full h-[360px] bg-white/5">
-                <img src={post.image} alt={post.clubName} className="w-full h-full object-cover" />
+            <div className="relative w-full bg-white/5 flex justify-center items-center min-h-[200px] max-h-[500px] overflow-hidden">
+                <img 
+                    src={post.image || "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22400%22%20viewBox%3D%220%200%20800%20400%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fsvg%3E"} 
+                    alt={post.clubName} 
+                    className="w-full h-auto min-h-[200px] object-cover sm:object-contain max-h-[500px]" 
+                    onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22800%22%20height%3D%22400%22%20viewBox%3D%220%200%20800%20400%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Available%3C%2Ftext%3E%3C%2Fsvg%3E";
+                    }}
+                />
 
                 {/* Price pill */}
                 {post.price && (
@@ -168,8 +175,9 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
                 <div className="flex items-center gap-md">
                     <img
                         className="w-11 h-11 rounded-full border border-white/20"
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.clubSeed)}`}
+                        src={getAvatarUrl(post.authorAvatar, post.clubName)}
                         alt="club"
+                        onError={(e) => { e.target.onerror = null; e.target.src = getAvatarUrl(null, post.clubName); }}
                     />
                     <div className="min-w-0">
                         <p className="text-body-medium-bold text-text-primary truncate">{post.clubName}</p>
@@ -179,17 +187,14 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
                     </div>
                 </div>
 
-                {/* Desktop: Always show full */}
-                <p className="hidden md:block mt-md text-body-medium text-text-secondary leading-6">
-                    {post.text}
-                </p>
-
-                {/* Mobile: Truncated text with toggle */}
-                <div className="md:hidden mt-md text-body-medium text-text-secondary leading-6">
-                    <p className={!isExpanded ? "line-clamp-2" : ""}>
-                        {post.text}
+                {/* Description - Unified expandable logic */}
+                <div className="mt-md text-body-medium text-text-secondary leading-6">
+                    <p className="whitespace-pre-wrap">
+                        {post.text && post.text.length > 180 && !isExpanded
+                            ? `${post.text.slice(0, 180).trimEnd()}...`
+                            : post.text}
                     </p>
-                    {post.text && post.text.length > 80 && (
+                    {post.text && post.text.length > 180 && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -229,33 +234,17 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
                         onClick={() => setCommentOpen(o => !o)}
                     />
 
-                    {/* Boost */}
-                    {isOwner && (
+
+                    {/* Save — only visible to students */}
+                    {currentUser?.role === 'STUDENT' && (
                         <ActionBtn
-                            svgSrc="/icon_boost_controller.svg"
-                            label="Boost"
-                            activeColor="text-yellow-400"
-                            active={boosted}
-                            onClick={toggleBoost}
+                            svgSrc="/icon_save_marketplace.svg"
+                            label="Save"
+                            activeColor="text-purple-400"
+                            active={saved}
+                            onClick={toggleSave}
                         />
                     )}
-                    {/* Save */}
-                    <ActionBtn
-                        svgSrc="/icon_save_marketplace.svg"
-                        label="Save"
-                        activeColor="text-purple-400"
-                        active={saved}
-                        onClick={toggleSave}
-                    />
-
-                    {/* Report */}
-                    <ActionBtn
-                        svgSrc="/icon_report_marketplace.svg"
-                        label="Report"
-                        activeColor="text-red-400"
-                        active={reported}
-                        onClick={toggleReport}
-                    />
                 </div>
 
                 {/* ── Comment section (toggles open) ─────────────────── */}
@@ -277,7 +266,7 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
                             variant="primary"
                             size="medium"
                             className="min-w-[160px]"
-                            onClick={() => navigate("/marketplace/club/product")}
+                            onClick={() => navigate(`/marketplace/club/product/${post.postType}/${post.id}`)}
                         >
                             Buy now
                         </Button>

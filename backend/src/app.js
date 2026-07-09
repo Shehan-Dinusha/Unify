@@ -1,41 +1,68 @@
-
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import routes from './routes/index.js';
-import { errorHandler } from './middlewares/error.middleware.js';
-import { sendResponse } from './utils/response.js';
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import { errorHandler } from "./middlewares/error.middleware.js";
+import { authRateLimiter, apiRateLimiter } from "./middlewares/rateLimit.middleware.js";
+import { sendResponse } from "./utils/response.js";
+import apiRoutes from "./routes/index.js";
 
 const app = express();
 
-// Security Middleware
-app.use(helmet());
-app.use(cors());
+// ── Security ──────────────────────────────────────────────────────────────────
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },  // Allow evidence images from :5000 to load on :5173
+  contentSecurityPolicy: false, // Disable CSP to allow inline styles/scripts and cross-origin images
+}));
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      const allowed = (process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:4173")
+        .split(",").map(s => s.trim());
+      if (!origin || allowed.includes(origin)) return cb(null, true);
+      return cb(null, true);
+    },
+    credentials: true,
+  }),
+);
 
-// Logger Middleware
-app.use(morgan('dev'));
+// ── Request Logging ───────────────────────────────────────────────────────────
+app.use(morgan("dev"));
 
-// Body Parser Middleware
-app.use(express.json());
+// ── Body Parsers ──────────────────────────────────────────────────────────────
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      if (req.originalUrl.startsWith("/api/v1/payments/webhook")) {
+        req.rawBody = buf;
+      }
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 
-// Health Check
-app.get('/health', (req, res) => {
-  sendResponse(res, 200, true, 'Server is healthy');
+// ── Root Route ────────────────────────────────────────────────────────────────
+app.get("/", (_req, res) => {
+  sendResponse(res, 200, true, "Welcome to Unify API");
 });
 
-// API Routes
-app.use('/api/v1', routes);
+// ── Health Check ──────────────────────────────────────────────────────────────
+app.get("/health", (_req, res) => {
+  sendResponse(res, 200, true, "Server is healthy");
+});
 
-// 404 Handler
-app.use((req, res, next) => {
-  const error = new Error('Not Found');
+// ── API Routes ────────────────────────────────────────────────────────────────
+app.use("/api/v1/auth", authRateLimiter);
+app.use("/api/v1", apiRateLimiter, apiRoutes);
+
+// ── 404 Handler ───────────────────────────────────────────────────────────────
+app.use((_req, _res, next) => {
+  const error = new Error("Not Found");
   error.statusCode = 404;
   next(error);
 });
 
-// Global Error Handler
+// ── Global Error Handler ──────────────────────────────────────────────────────
 app.use(errorHandler);
 
 export default app;

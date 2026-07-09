@@ -24,12 +24,14 @@ const StudentOwnerView = ({ repStatus = "NOT_SUBMITTED", repReason }) => {
         "Verify as a Batch Representative to access leadership tools.",
       buttonText: "Start Verification",
       iconColor: "text-primary-blue",
+      buttonClass: "border-primary-blue text-primary-blue hover:bg-primary-light active:bg-primary-blue/20",
     },
     PENDING: {
       title: "Verification Pending",
       description: "Your verification document is under review.",
       buttonText: "See Status",
       iconColor: "text-state-warning",
+      buttonClass: "border-state-warning text-state-warning hover:bg-state-warning/10 active:bg-state-warning/20",
     },
     REJECTED: {
       title: "Verification Rejected",
@@ -38,12 +40,22 @@ const StudentOwnerView = ({ repStatus = "NOT_SUBMITTED", repReason }) => {
         "Your request was declined. Please check details and resubmit.",
       buttonText: "See Status",
       iconColor: "text-state-error",
+      buttonClass: "border-state-error text-state-error hover:bg-state-error/10 active:bg-state-error/20",
     },
     APPROVED: {
       title: "Batch Representative",
       description: "Verification complete. You have Rep privileges.",
       buttonText: "View Status",
       iconColor: "text-state-success",
+      buttonClass: "border-state-success text-state-success hover:bg-state-success/10 active:bg-state-success/20",
+    },
+    REMOVED: {
+      title: "Verification Removed",
+      description:
+        repReason || "Your batch rep status has been removed by the administration.",
+      buttonText: "See Details",
+      iconColor: "text-state-error",
+      buttonClass: "border-state-error text-state-error hover:bg-state-error/10 active:bg-state-error/20",
     },
   };
 
@@ -56,7 +68,7 @@ const StudentOwnerView = ({ repStatus = "NOT_SUBMITTED", repReason }) => {
       iconBg: "bg-purple-500/20",
       title: "Saved Posts",
       description: "Access your bookmarked announcements and events.",
-      path: "/news-feed",
+      path: "/my-saved-posts",
     },
     {
       icon: "🛒",
@@ -70,7 +82,7 @@ const StudentOwnerView = ({ repStatus = "NOT_SUBMITTED", repReason }) => {
       iconBg: "bg-orange-500/20",
       title: "Lost & Found",
       description: "Manage items you've posted as lost or found.",
-      path: "/lost-and-found",
+      path: "/my-lost-and-found",
     },
     {
       icon: "👥",
@@ -91,7 +103,7 @@ const StudentOwnerView = ({ repStatus = "NOT_SUBMITTED", repReason }) => {
       iconBg: "bg-blue-500/20",
       title: "My Reports",
       description: "Access your all submitted reports.",
-      path: "/report-moderation",
+      path: "/student/reports",
     },
   ];
 
@@ -117,7 +129,7 @@ const StudentOwnerView = ({ repStatus = "NOT_SUBMITTED", repReason }) => {
           <Button
             variant="outline"
             size="small"
-            className="flex-1 sm:flex-initial text-[12px] md:text-body-small py-1.5 md:py-2"
+            className={`${currentStatus.buttonClass} flex-1 sm:flex-initial text-[12px] md:text-body-small py-1.5 md:py-2`}
             onClick={handleVerificationClick}
           >
             {currentStatus.buttonText}

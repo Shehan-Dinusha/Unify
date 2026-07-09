@@ -1,16 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UnifiedSidebar from "./Sidebar";
 import Header from "./Header";
+import verificationService from "../../services/verificationService";
+import * as reportService from "../../services/reportService";
+import * as suspensionService from "../../services/suspensionService";
 
 const MainLayout = ({
   children,
   user,
   pageTitle,
   headerRight,
-  verificationCount,
   sidebarDisabled = false,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const [reportCount, setReportCount] = useState(0);
+  const [suspensionCount, setSuspensionCount] = useState(0);
+  const [verificationCount, setVerificationCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        if (user?.role === "Admin") {
+          const vResponse = await verificationService.getPendingRequests();
+          if (vResponse.success) {
+            setVerificationCount(vResponse.data?.requests?.length || 0);
+          }
+
+          const rResponse = await reportService.getReportStats();
+          if (rResponse.success) {
+            setReportCount(rResponse.data?.totalPending || 0);
+          }
+
+          const sResponse = await suspensionService.getDashboardStatistics();
+          if (sResponse.success) {
+            setSuspensionCount(sResponse.data?.suspendedAccounts?.count || 0);
+          }
+        }
+      } catch (error) {
+        // Non-admin users or network errors will fail — silently ignore for layout
+      }
+    };
+    fetchCounts();
+  }, [user?.role]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prevState) => !prevState);
@@ -26,6 +58,8 @@ const MainLayout = ({
       <UnifiedSidebar
         user={user}
         verificationCount={verificationCount}
+        reportCount={reportCount}
+        suspensionCount={suspensionCount}
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         sidebarDisabled={sidebarDisabled}

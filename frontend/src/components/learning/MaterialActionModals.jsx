@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, PenTool, AlertTriangle } from "lucide-react";
 import Card from "../common/Card";
+import { ChevronDownIcon } from "../common/Icons";
 
 export const EditMaterialModal = ({ isOpen, onClose, file, categories = [], onSave }) => {
   const [title, setTitle] = useState("");
@@ -62,9 +63,7 @@ export const EditMaterialModal = ({ isOpen, onClose, file, categories = [], onSa
                 ))}
               </select>
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1.5L6 6.5L11 1.5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <ChevronDownIcon className="text-gray-400" strokeWidth="2" />
               </div>
             </div>
           </div>

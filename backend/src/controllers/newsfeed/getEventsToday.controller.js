@@ -1,0 +1,60 @@
+import { Op } from "sequelize";
+import { ClubEventPost, User } from "../../modules/index.js";
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import logger from "../../utils/logger.js";
+
+const resolvePostImages = async (post) => {
+  const resolved = { ...post };
+  if (Array.isArray(resolved.images) && resolved.images.length > 0) {
+    resolved.images = await Promise.all(resolved.images.map(resolveAssetUrl));
+  }
+  if (resolved.coverImage) {
+    resolved.coverImage = await resolveAssetUrl(resolved.coverImage);
+  }
+  // Resolve author avatar
+  if (resolved.author?.avatar !== undefined) {
+    resolved.author = {
+      ...resolved.author,
+      avatar: await resolveAvatarUrl(resolved.author.avatar, resolved.author.name),
+    };
+  }
+  return resolved;
+};
+
+export const getEventsToday = async (req, res) => {
+  try {
+    // Get current date in YYYY-MM-DD format based on server local time
+    const today = new Date();
+    const todayString = today.toLocaleDateString("en-CA"); // Formats as YYYY-MM-DD
+
+    const events = await ClubEventPost.findAll({
+      where: {
+        date: todayString,
+      },
+      include: [
+        {
+          model: User,
+          as: "author",
+          attributes: ["id", "name", "email", "avatar", "role"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      raw: true,
+      nest: true,
+    });
+
+    // Add postType and resolve images
+    const processedEvents = await Promise.all(
+      events.map(async (event) => {
+        const withType = { ...event, postType: "club-event" };
+        return resolvePostImages(withType);
+      }),
+    );
+
+    res.status(200).json({ success: true, events: processedEvents });
+  } catch (error) {
+    logger.error("Error fetching events today:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};

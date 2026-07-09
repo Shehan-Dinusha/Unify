@@ -40,7 +40,7 @@ const LandingHero = () => {
         <Button
           size="large"
           variant="primary"
-          className="w-full sm:w-auto sm:min-w-[220px]"
+          className="w-full sm:w-auto sm:min-w-[220px] "
           onClick={() => navigate("/register")}
         >
           Create Account

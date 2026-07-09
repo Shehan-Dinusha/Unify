@@ -10,7 +10,6 @@ const CreateNormalPostModal = ({ isOpen, onClose }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Submitting Normal Post:", { description, photos });
         onClose();
     };
 
@@ -59,7 +58,7 @@ const CreateNormalPostModal = ({ isOpen, onClose }) => {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="What's delicious today? Describe the taste, ingredients..."
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-text-secondary focus:outline-none focus:border-blue-500/50 min-h-[140px] resize-none text-sm sm:text-base transition-colors"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-text-secondary focus:outline-none focus:border-blue-500/50 min-h-[200px] resize-y text-sm sm:text-base transition-colors"
                         />
                     </div>
 

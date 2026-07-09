@@ -1,0 +1,41 @@
+import { NormalPost } from "../../modules/index.js";
+
+const getUploadedFileUrls = (files) => {
+  if (!files) return [];
+  return files.map((file) => file.location);
+};
+
+export const createNormalPost = async (req, res) => {
+  try {
+    const { description, postType, category: bodyCategory } = req.body;
+
+    let category = bodyCategory || "CLUB";
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    if (postType === "food-cafe") {
+      category = "FOOD";
+    } else if (postType === "service") {
+      category = "SELF_EMPLOYED";
+    } else if (postType === "club") {
+      category = "CLUB";
+    }
+
+
+
+    const images = getUploadedFileUrls(req.files);
+
+    const post = await NormalPost.create({
+      authorId: userId,
+      description,
+      images,
+      category,
+    });
+
+    res.status(201).json({ success: true, post });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

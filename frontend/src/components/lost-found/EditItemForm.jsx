@@ -1,44 +1,107 @@
 import React, { useState, useRef } from "react";
 import { Camera, Trash2 } from "lucide-react";
+import { ChevronDownIcon, SaveIcon } from "../common/Icons";
+import { editItem } from "../../services/lostAndFoundService";
+
+const parseTimeForInput = (timeStr) => {
+  if (!timeStr) return "";
+  if (/^\d{2}:\d{2}$/.test(timeStr)) return timeStr;
+  try {
+    const parts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (parts) {
+      let hours = parseInt(parts[1], 10);
+      const mins = parts[2];
+      const ampm = parts[3].toUpperCase();
+      if (ampm === "PM" && hours < 12) hours += 12;
+      if (ampm === "AM" && hours === 12) hours = 0;
+      return `${hours.toString().padStart(2, "0")}:${mins}`;
+    }
+  } catch(e) {}
+  return timeStr;
+};
 
 const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
   // Local state initialized with item data
   const [title, setTitle] = useState(item.title || "");
   const [description, setDescription] = useState(item.description || "");
-  const [date, setDate] = useState(""); // If we had a specific date in mock data, we'd parse it here
-  const [time, setTime] = useState(""); 
+  const [date, setDate] = useState(item.date || ""); 
+  const [time, setTime] = useState(parseTimeForInput(item.timeOfDay)); 
   const [location, setLocation] = useState(item.location || "");
-  const [status, setStatus] = useState("Active"); // 'Active' or 'Resolved'
+  const [status, setStatus] = useState(item.status || "Active");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Image editing state
-  const [imagePreview, setImagePreview] = useState(item.image);
+  const [existingImages, setExistingImages] = useState(item.images || []);
+  const [newImagePreviews, setNewImagePreviews] = useState([]);
+  const [newFiles, setNewFiles] = useState([]);
   const fileInputRef = useRef(null);
+  
+  const totalImages = existingImages.length + newImagePreviews.length;
 
   const isLost = item.type === "lost";
 
   const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
+    const selectedFiles = Array.from(e.target.files || []);
+    const remainingSlots = 5 - totalImages;
+    const allowedFiles = selectedFiles.slice(0, remainingSlots);
+
+    setNewFiles((prev) => [...prev, ...allowedFiles]);
+
+    allowedFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (ev) => {
-        setImagePreview(ev.target.result);
+        setNewImagePreviews((prev) => [...prev, ev.target.result]);
       };
       reader.readAsDataURL(file);
-    }
+    });
     // reset input so the same file could be selected again if needed
     e.target.value = "";
   };
 
-  const handleSave = () => {
-    // In a real app, we'd pass back the updated object
-    onSave({
-      ...item,
-      title,
-      description,
-      location,
-      status, // e.g., to notify parent if it should be moved to 'Resolved'
-      image: imagePreview
-    });
+  const removeImage = (index) => {
+    if (index < existingImages.length) {
+      setExistingImages((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      const newIdx = index - existingImages.length;
+      setNewImagePreviews((prev) => prev.filter((_, i) => i !== newIdx));
+      setNewFiles((prev) => prev.filter((_, i) => i !== newIdx));
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("location", location);
+      formData.append("status", status);
+      if (date) formData.append("date", date);
+      if (time) {
+        try {
+          const formattedTime = new Date(`1970-01-01T${time}`)
+            .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          formData.append("timeOfDay", formattedTime);
+        } catch (e) {
+          formData.append("timeOfDay", time);
+        }
+      }
+
+      existingImages.forEach(url => {
+        formData.append("existingImages", url);
+      });
+
+      newFiles.forEach(file => {
+        formData.append("images", file);
+      });
+
+      const updatedData = await editItem(item.id, formData);
+      onSave(updatedData); // Pass updated API model back to UI
+    } catch (error) {
+      alert("Failed to update post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -60,36 +123,51 @@ const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
         <div className="flex flex-col gap-5">
           {/* Card: Item Photo */}
           <div className="rounded-2xl border border-white/10 bg-dark-2 p-5 flex flex-col gap-4">
-            <h2 className="text-body-large-bold text-text-primary">Item Photo</h2>
-            <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-white/5 border border-white/5">
-              <img
-                src={imagePreview}
-                alt={title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-body-small-bold text-text-primary hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
-              >
-                <Camera size={16} />
-                Change
-              </button>
+            <h2 className="text-body-large-bold text-text-primary">Item Photos (Max 5)</h2>
+            <div className="flex items-start gap-3 flex-wrap">
+              {/* Dashed "+ Add" square */}
+              {totalImages < 5 && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-[88px] h-[88px] shrink-0 rounded-xl border-2 border-dashed border-white/20 bg-white/5 hover:border-primary-blue/50 hover:bg-white/[0.08] transition-all flex flex-col items-center justify-center gap-1 cursor-pointer"
+                >
+                  <span className="text-2xl leading-none text-text-tertiary">+</span>
+                  <span className="text-body-extra-small text-text-tertiary">
+                    {5 - totalImages} left
+                  </span>
+                </button>
+              )}
+
+              {/* Thumbnails */}
+              {[...existingImages, ...newImagePreviews].map((src, i) => (
+                <div
+                  key={i}
+                  className="relative w-[88px] h-[88px] shrink-0 rounded-xl overflow-hidden"
+                >
+                  <img
+                    src={src}
+                    alt={`Upload ${i + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-dark-1/70 backdrop-blur-sm text-text-primary text-[11px] flex items-center justify-center hover:bg-state-error/80 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/png,image/jpeg"
+                multiple
                 onChange={handleImageChange}
                 className="hidden"
               />
-              <button
-                onClick={() => setImagePreview("")}
-                className="w-[42px] h-[42px] shrink-0 rounded-xl border border-state-error/30 text-state-error hover:bg-state-error/10 flex items-center justify-center transition-colors"
-                title="Remove photo"
-              >
-                <Trash2 size={16} />
-              </button>
             </div>
           </div>
 
@@ -111,9 +189,7 @@ const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
               </select>
               {/* Custom simple chevron */}
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-tertiary">
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <ChevronDownIcon />
               </div>
             </div>
           </div>
@@ -206,14 +282,13 @@ const EditItemForm = ({ item, onSave, onCancel, onDelete }) => {
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-primary-blue hover:brightness-110 text-white text-body-small-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                disabled={isSubmitting}
+                className={`flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-white text-body-small-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
+                  isSubmitting ? "bg-gray-500 cursor-not-allowed" : "bg-primary-blue hover:brightness-110"
+                }`}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16L21 8V19C21 20.1046 20.1046 21 19 21Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M17 21V13H7V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M7 3V8H15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Save Changes
+                <SaveIcon />
+                {isSubmitting ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </div>

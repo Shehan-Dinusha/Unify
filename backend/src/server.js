@@ -1,31 +1,34 @@
-
-import app from './app.js';
-import logger from './utils/logger.js';
-import dotenv from 'dotenv';
-import { Sequelize } from 'sequelize';
-import dbConfig from './config/database.js';
-
-dotenv.config();
+import "dotenv/config";
+import { createServer } from "http";
+import app from "./app.js";
+import logger from "./utils/logger.js";
+import { sequelize } from "./modules/index.js"; // Registers all models + associations
+import { startOtpCleanupJob } from "./jobs/otpCleanup.job.js";
+import { initializeSocket } from "./socket/index.js";
 
 const PORT = process.env.PORT || 5000;
-const env = process.env.NODE_ENV || 'development';
-const config = dbConfig[env];
-
-const sequelize = new Sequelize(config.database, config.username, config.password, config);
+const NODE_ENV = process.env.NODE_ENV || "development";
 
 const startServer = async () => {
   try {
+    // 1. Verify DB connectivity
     await sequelize.authenticate();
-    logger.info('Database connection established successfully.');
-    
-    // Sync models (only for dev, use migrations for production)
-    // await sequelize.sync(); 
+    logger.info("✅ Database connection established successfully.");
 
-    app.listen(PORT, () => {
-      logger.info(`Server running in ${env} mode on port ${PORT}`);
+    // 2. Start background jobs
+    startOtpCleanupJob();
+
+    // 3. Create HTTP server and attach Socket.IO
+    const httpServer = createServer(app);
+    initializeSocket(httpServer);
+
+    // 4. Start HTTP + WebSocket server
+    httpServer.listen(PORT, () => {
+      logger.info(`🚀 Server running in [${NODE_ENV}] mode on port ${PORT}`);
+      logger.info(`🔌 Socket.IO listening on ws://localhost:${PORT}`);
     });
   } catch (error) {
-    logger.error('Unable to connect to the database:', error);
+    logger.error("❌ Unable to start server:", error);
     process.exit(1);
   }
 };

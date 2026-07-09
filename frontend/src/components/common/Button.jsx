@@ -8,6 +8,8 @@ const Button = ({
   iconOnly = false,
   fullWidth = false,
   className = "",
+  iconPosition = "left",
+  loading = false,
   ...props
 }) => {
   // Base styles
@@ -31,6 +33,8 @@ const Button = ({
     ghost: "bg-transparent text-text-secondary hover:bg-white/10",
     "ghost-hoverless":
       "bg-transparent text-text-secondary hover:opacity-80 transition-opacity !overflow-visible",
+    gradient:
+      "bg-gradient-to-r from-primary-blue to-blue-500 text-white shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110",
     danger: "bg-state-error text-white hover:brightness-110",
     dangerOutline:
       "border-2 border-state-error text-state-error hover:bg-state-error/10",
@@ -43,10 +47,22 @@ const Button = ({
   return (
     <button
       className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${widthStyle} ${iconPadding} ${className}`}
+      disabled={loading || props.disabled}
       {...props}
     >
-      {Icon && <Icon className={iconOnly ? "w-6 h-6" : "w-5 h-5"} />}
-      {!iconOnly && children}
+      {loading ? (
+        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      ) : (
+        <>
+          {Icon && iconPosition === "left" && (
+            <Icon className={iconOnly ? "w-6 h-6" : "w-5 h-5"} />
+          )}
+          {!iconOnly && children}
+          {Icon && iconPosition === "right" && (
+            <Icon className={iconOnly ? "w-6 h-6" : "w-5 h-5"} />
+          )}
+        </>
+      )}
     </button>
   );
 };

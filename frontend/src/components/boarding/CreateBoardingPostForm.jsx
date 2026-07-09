@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ImagePlus, MapPin, Wifi, DollarSign, Users, Phone, BedDouble, X, Plus, Edit3, Tag, Calendar, ArrowRight } from "lucide-react";
 import Card from "../common/Card";
+import BoardingPostCard from "./BoardingPostCard";
 
 const CreateBoardingPostForm = ({ onCancel, onPublish }) => {
     const [description, setDescription] = useState("");
@@ -228,67 +229,26 @@ const CreateBoardingPostForm = ({ onCancel, onPublish }) => {
                 {/* ── Right Column: Preview Sidebar ── */}
                 <div className="flex flex-col gap-6 sticky top-4 h-fit min-w-0">
                     <div className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1 px-4">
-                        Post Preview
+                        Feed Preview
                     </div>
 
-                    <Card variant="card" className="bg-[#0B1724]/60 border-white/10 !p-0 overflow-hidden shadow-2xl">
-                        {/* Preview Image */}
-                        <div className="aspect-[4/3] bg-white/5 relative group">
-                            <img
-                                src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800"
-                                alt="Preview"
-                                className="w-full h-full object-cover"
-                            />
-                            {price && (
-                                <div className="absolute bottom-4 left-4 bg-dark-1/70 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 z-10">
-                                    <span className="text-[13px] font-bold text-white">${price}/month</span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Preview Content */}
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <img
-                                        src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex Johnson"
-                                        alt="User"
-                                        className="w-9 h-9 rounded-full border border-white/20"
-                                    />
-                                    <div>
-                                        <p className="text-[13px] font-bold text-white">Business & Organization</p>
-                                        <p className="text-[11px] text-text-tertiary">Just now</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-1 mb-3">
-                                <MapPin size={13} className="text-text-tertiary flex-shrink-0" />
-                                <span className="text-[13px] text-text-tertiary line-clamp-1">
-                                    {location || "Your location will appear here"}
-                                </span>
-                            </div>
-
-                            <p className="text-[14px] text-text-secondary leading-6 mb-4 line-clamp-2 min-h-[48px]">
-                                {description || "Your post description will appear here..."}
-                            </p>
-
-                            <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-white/10">
-                                {amenities.length > 0 ? amenities.slice(0, 3).map((item, idx) => (
-                                    <span key={idx} className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-text-tertiary">
-                                        {item}
-                                    </span>
-                                )) : (
-                                    <span className="text-[11px] text-text-tertiary italic">No amenities specified</span>
-                                )}
-                                {amenities.length > 3 && (
-                                    <span className="inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-text-tertiary">
-                                        +{amenities.length - 3} more
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </Card>
+                    <div className="pointer-events-none">
+                        <BoardingPostCard 
+                            post={{
+                                id: "preview",
+                                author: { name: "Your Name" },
+                                userSeed: "Your Name",
+                                time: "Just now",
+                                location: location || "Your location will appear here",
+                                description: description || "Your post description will appear here...",
+                                gender: "Any",
+                                price: price ? `$${price}/month` : "",
+                                images: ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800"],
+                                stats: { likes: 0 },
+                                comments: []
+                            }}
+                        />
+                    </div>
 
                     {/* Action Buttons */}
                     <div className="flex gap-4 mb-8">

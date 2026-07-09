@@ -17,6 +17,9 @@ const Card = ({
 
     // Glass Container: Lower opacity, subtle 2xl rounding, no heavy shadow
     container: "bg-white/5 backdrop-blur-sm rounded-2xl",
+
+    // Modal Dialog: Standard modal card appearance
+    modal: "w-full bg-white/10 backdrop-blur-md overflow-hidden rounded-2xl outline outline-1 outline-offset-[-1px] outline-white/10 shadow-2xl",
   };
 
   return (
@@ -25,7 +28,7 @@ const Card = ({
       {...props}
     >
       {/* Content wrapper to ensure padding is consistent */}
-      <div className={`${padding} h-full w-full`}>{children}</div>
+      <div className={`${padding} ${overflow} h-full w-full`}>{children}</div>
     </div>
   );
 };

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { X, MapPin, Star, Calendar, Phone, Home, Wifi, ChevronRight } from "lucide-react";
+import { CheckSmallIcon } from "../common/Icons";
+import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import { getAvatarUrl } from "../../utils/formatters";
 
 /**
  * BoardingOverlay Component
@@ -66,17 +69,12 @@ const BoardingOverlay = ({ post, onClose }) => {
 
                 {/* Right Side: Details */}
                 <div className="w-full md:w-1/2 p-6 md:p-10 overflow-y-auto scrollbar-hide flex flex-col gap-6">
-                    {/* Header Info 
+                    {/* Header Info */}
                     <div>
                         <div className="flex items-center justify-between mb-3">
-                            <span className="bg-primary-blue/20 text-primary-blue text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                                AVAILABLE NOW
+                            <span className={`text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${post.slots > 0 ? 'bg-primary-blue/20 text-primary-blue' : 'bg-red-500/20 text-red-500'}`}>
+                                {post.slots > 0 ? 'AVAILABLE NOW' : 'FULL'}
                             </span>
-                            <div className="flex items-center gap-1.5 bg-white/5 px-3 py-1 rounded-full">
-                                <Star size={14} className="fill-yellow-400 text-yellow-400" />
-                                <span className="text-body-small-bold text-text-primary">{post.rating || '4.8'}</span>
-                                <span className="text-body-extra-small text-text-tertiary">({post.reviews || '24'} reviews)</span>
-                            </div>
                         </div>
                         <h2 className="text-heading-small md:text-heading-medium text-text-primary mb-2">
                             {post.title}
@@ -87,7 +85,14 @@ const BoardingOverlay = ({ post, onClose }) => {
                                 {post.location}
                             </p>
                         </div>
-                    </div>*/}
+
+                        {/* Mini Google Map — only when coordinates are stored */}
+                        {post.latitude && post.longitude && (
+                            <div className="mt-4">
+                                <MiniMap lat={parseFloat(post.latitude)} lng={parseFloat(post.longitude)} />
+                            </div>
+                        )}
+                    </div>
 
                     {/* Price Card */}
                     <div className="bg-white/5 border border-white/5 rounded-3xl p-6 flex flex-col">
@@ -102,30 +107,30 @@ const BoardingOverlay = ({ post, onClose }) => {
                     <div className="grid grid-cols-2 gap-3">
                         <InfoItem
                             icon={<Calendar size={18} className="text-text-tertiary" />}
-                            label="AVAILABILITY"
-                            value={post.availability || "Immediate Move-in"}
+                            label="AVAILABLE SLOTS"
+                            value={post.slots > 0 ? `${post.slots} Slots Available` : "No Slots Left"}
                         />
                         <InfoItem
                             icon={<Phone size={18} className="text-text-tertiary" />}
                             label="CONTACT"
-                            value={post.contact || "+1 (555) 012-3456"}
+                            value={post.phone || "Not provided"}
                         />
-                        {/*<InfoItem
+                        <InfoItem
                             icon={<Home size={18} className="text-text-tertiary" />}
                             label="ROOM TYPE"
-                            value={post.roomType || "Single Private"}
-                        />*/}
+                            value={post.roomType || "Not specified"}
+                        />
                         <InfoItem
                             icon={<Wifi size={18} className="text-text-tertiary" />}
                             label="AMENITIES"
-                            value={post.amenities || "WiFi, Desk, AC"}
+                            value={(post.amenities && post.amenities.length) ? post.amenities.join(', ') : "None"}
                         />
                     </div>
 
                     {/* About Section */}
                     <div>
                         <h3 className="text-body-large-bold text-text-primary mb-3">About this place</h3>
-                        <p className="text-body-medium text-text-secondary leading-relaxed">
+                        <p className="text-body-medium text-text-secondary leading-relaxed whitespace-pre-wrap">
                             {post.description}
                         </p>
                     </div>
@@ -137,9 +142,10 @@ const BoardingOverlay = ({ post, onClose }) => {
                         <div className="flex items-center gap-4">
                             <div className="relative">
                                 <img
-                                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.host?.avatar || post.userSeed)}`}
-                                    alt={post.host?.name || post.user}
-                                    className="w-12 h-12 rounded-full border-2 border-primary-blue/30"
+                                    src={getAvatarUrl(post.host?.avatar || post.author?.avatar, post.host?.name || post.author?.name)}
+                                    alt={post.host?.name || post.author?.name || post.user}
+                                    className="w-12 h-12 rounded-full border-2 border-primary-blue/30 object-cover"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = getAvatarUrl(null, post.host?.name || post.author?.name); }}
                                 />
                                 {post.host?.verified && (
                                     <div className="absolute -bottom-1 -right-1 bg-primary-blue rounded-full p-0.5 border-2 border-[#12202E]">
@@ -171,5 +177,55 @@ const InfoItem = ({ icon, label, value }) => (
         <span className="text-body-small-bold text-text-primary">{value}</span>
     </div>
 );
+
+// ── MiniMap ────────────────────────────────────────────────────────────────────
+const MINI_MAP_CONTAINER = { width: "100%", height: "180px", borderRadius: "12px" };
+const MINI_MAP_OPTIONS = {
+    disableDefaultUI: true,
+    gestureHandling: "none",
+    zoomControl: false,
+    styles: [
+        { elementType: "geometry", stylers: [{ color: "#0f172a" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#0f172a" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#64748b" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#1e3a5f" }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#2b5ea7" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#0c2340" }] },
+        { featureType: "poi", elementType: "geometry", stylers: [{ color: "#1e293b" }] },
+    ],
+};
+
+const MiniMap = ({ lat, lng }) => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    const { isLoaded } = useJsApiLoader({
+        googleMapsApiKey: apiKey || "",
+        libraries: [],
+    });
+
+    if (!apiKey || !isLoaded) return null;
+
+    const center = { lat, lng };
+    return (
+        <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-md">
+            <GoogleMap
+                mapContainerStyle={MINI_MAP_CONTAINER}
+                center={center}
+                zoom={15}
+                options={MINI_MAP_OPTIONS}
+            >
+                <Marker position={center} />
+            </GoogleMap>
+            <a
+                href={`https://www.google.com/maps?q=${lat},${lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 py-2 bg-white/5 hover:bg-white/10 transition-colors text-[11px] font-semibold text-primary-blue"
+            >
+                <MapPin size={11} />
+                Open in Google Maps
+            </a>
+        </div>
+    );
+};
 
 export default BoardingOverlay;

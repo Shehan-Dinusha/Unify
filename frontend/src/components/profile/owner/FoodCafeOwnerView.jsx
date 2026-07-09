@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import ProfileHeader from "../ProfileHeader";
 import ProfileDashboardCard from "../ProfileDashboardCard";
 import Button from "../../common/Button";
@@ -13,28 +14,33 @@ const FoodCafeOwnerView = () => {
       icon: "🔖",
       iconBg: "bg-purple-500/20",
       title: "My Posts",
-      description: "View and manage your boarding advertisements and updates.",
+      description: "View and manage your cafe advertisements and updates.",
+      path: "/my-posts",
     },
     {
       icon: "⭐",
       iconBg: "bg-yellow-500/20",
       title: "My Reviews",
-      description: "See feedback and ratings from student tenants.",
+      description: "See feedback and ratings from student diners.",
       path: "/business/reviews",
     },
     {
       icon: "⊞",
       iconBg: "bg-blue-500/20",
       title: "View Boost Packages",
-      description: "Explore packages to promote your boarding listings.",
+      description: "Explore packages to promote your cafe offerings.",
+      path: "/business/boost-post",
     },
     {
       icon: "🚀",
       iconBg: "bg-violet-500/20",
       title: "View Boosted Posts",
       description: "Track boosted posts and their performance.",
+      path: "/my-posts?filter=boosted",
     },
   ];
+
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col gap-4 md:gap-lg text-start">
@@ -47,10 +53,21 @@ const FoodCafeOwnerView = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3 md:gap-md">
-        <Button variant="primary" fullWidth icon={Plus} className="py-2.5 md:py-3 text-[13px] md:text-body-small">
+        <Button
+          variant="primary"
+          fullWidth
+          icon={Plus}
+          className="py-2.5 md:py-3 text-[13px] md:text-body-small"
+          onClick={() => navigate("/food-cafe-owner/create-post")}
+        >
           Create Post
         </Button>
-        <Button variant="outline" fullWidth icon={Zap} className="py-2.5 md:py-3 text-[13px] md:text-body-small">
+        <Button
+          variant="outline"
+          fullWidth
+          icon={Zap}
+          className="py-2.5 md:py-3 text-[13px] md:text-body-small"
+        >
           Boost Post
         </Button>
       </div>

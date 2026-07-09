@@ -1,16 +1,27 @@
 import React, { useState, useRef } from "react";
 import { Upload, Lightbulb } from "lucide-react";
+import { createItem } from "../../services/lostAndFoundService";
 
 const ReportItemForm = ({ type = "lost", onBack }) => {
   const isLost = type === "lost";
   const fileInputRef = useRef(null);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [files, setFiles] = useState([]); // Store actual file objects
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [date, setDate] = useState("");
+  const [timeOfDay, setTimeOfDay] = useState("");
+  const [location, setLocation] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [attempted, setAttempted] = useState(false);
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files || []);
+    const selectedFiles = Array.from(e.target.files || []);
     const remainingSlots = 5 - imagePreviews.length;
-    const allowedFiles = files.slice(0, remainingSlots);
+    const allowedFiles = selectedFiles.slice(0, remainingSlots);
+
+    setFiles((prev) => [...prev, ...allowedFiles]);
 
     allowedFiles.forEach((file) => {
       const reader = new FileReader();
@@ -27,6 +38,50 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
 
   const removeImage = (index) => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!title.trim()) newErrors.title = "Item name is required";
+    if (!description.trim()) newErrors.description = "Description is required";
+    if (!location.trim()) newErrors.location = "Location is required";
+    return newErrors;
+  };
+
+  const handleSubmit = async () => {
+    setAttempted(true);
+    const fieldErrors = validate();
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("type", isLost ? "Lost" : "Found"); // 'lost' or 'found'
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("location", location);
+      if (date) formData.append("date", date);
+      if (timeOfDay) {
+        const formattedTime = new Date(`1970-01-01T${timeOfDay}`)
+          .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+        formData.append("timeOfDay", formattedTime);
+      }
+
+      files.forEach((file) => {
+        formData.append("images", file);
+      });
+
+      await createItem(formData);
+      onBack(); // Success - return to list view
+      window.location.reload(); // Optional: force refresh to grab latest feeds
+    } catch (error) {
+      alert("Failed to create post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -144,14 +199,20 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
 
           {/* What did you... */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-body-small-bold text-text-primary">
+            <label className="text-body-small-bold text-text-primary flex items-center gap-1">
               {isLost ? "What did you lose" : "What did you find?"}
+              <span className="text-state-error text-xs">*</span>
             </label>
             <input
               type="text"
+              value={title}
+              onChange={(e) => { setTitle(e.target.value); if (attempted) setErrors((prev) => ({ ...prev, title: e.target.value.trim() ? undefined : prev.title })); }}
               placeholder="e.g. Student Id"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-body-small text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary-blue/50 transition-colors"
+              className={`w-full bg-white/5 border rounded-xl px-4 py-2.5 text-body-small text-text-primary placeholder:text-text-tertiary outline-none transition-colors ${
+                errors.title ? "border-state-error/60 focus:border-state-error" : "border-white/10 focus:border-primary-blue/50"
+              }`}
             />
+            {errors.title && <span className="text-[11px] text-state-error animate-in fade-in slide-in-from-top-1 duration-200">{errors.title}</span>}
           </div>
 
           {/* Date + Time */}
@@ -163,6 +224,8 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
               <div className="relative">
                 <input
                   type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-body-small text-text-primary outline-none focus:border-primary-blue/50 transition-colors appearance-none [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:filter-none [&::-webkit-calendar-picker-indicator]:invert-[0.8]"
                 />
               </div>
@@ -174,6 +237,8 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
               <div className="relative">
                 <input
                   type="time"
+                  value={timeOfDay}
+                  onChange={(e) => setTimeOfDay(e.target.value)}
                   placeholder="e.g. 10:30 AM"
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-body-small text-text-primary outline-none focus:border-primary-blue/50 transition-colors appearance-none [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:filter-none [&::-webkit-calendar-picker-indicator]:invert-[0.8]"
                 />
@@ -183,36 +248,55 @@ const ReportItemForm = ({ type = "lost", onBack }) => {
 
           {/* Description */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-body-small-bold text-text-primary">
+            <label className="text-body-small-bold text-text-primary flex items-center gap-1">
               Description
+              <span className="text-state-error text-xs">*</span>
             </label>
             <textarea
               rows={4}
               maxLength={500}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-body-small text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary-blue/50 transition-colors resize-none"
+              onChange={(e) => { setDescription(e.target.value); if (attempted) setErrors((prev) => ({ ...prev, description: e.target.value.trim() ? undefined : prev.description })); }}
+              placeholder="Describe any distinguishing features, stickers, scratches, or contents..."
+              className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-body-small text-text-primary placeholder:text-text-tertiary outline-none transition-colors resize-none ${
+                errors.description ? "border-state-error/60 focus:border-state-error" : "border-white/10 focus:border-primary-blue/50"
+              }`}
             />
-            <span className="text-[11px] text-text-tertiary text-right">
-              ({description.length}/500 characters)
-            </span>
+            <div className="flex items-center justify-between">
+              {errors.description ? <span className="text-[11px] text-state-error animate-in fade-in slide-in-from-top-1 duration-200">{errors.description}</span> : <span />}
+              <span className="text-[11px] text-text-tertiary">
+                ({description.length}/500 characters)
+              </span>
+            </div>
           </div>
 
           {/* Location */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-body-small-bold text-text-primary">
+            <label className="text-body-small-bold text-text-primary flex items-center gap-1">
               {isLost ? "Last known location" : "Found location"}
+              <span className="text-state-error text-xs">*</span>
             </label>
             <input
               type="text"
+              value={location}
+              onChange={(e) => { setLocation(e.target.value); if (attempted) setErrors((prev) => ({ ...prev, location: e.target.value.trim() ? undefined : prev.location })); }}
               placeholder="e.g. Library, 1st Floor"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-body-small text-text-primary placeholder:text-text-tertiary outline-none focus:border-primary-blue/50 transition-colors"
+              className={`w-full bg-white/5 border rounded-xl px-4 py-2.5 text-body-small text-text-primary placeholder:text-text-tertiary outline-none transition-colors ${
+                errors.location ? "border-state-error/60 focus:border-state-error" : "border-white/10 focus:border-primary-blue/50"
+              }`}
             />
+            {errors.location && <span className="text-[11px] text-state-error animate-in fade-in slide-in-from-top-1 duration-200">{errors.location}</span>}
           </div>
 
           {/* Upload Post */}
-          <button className="w-full py-3 rounded-xl bg-gradient-to-r from-primary-blue to-[#60A5FA] hover:brightness-110 text-white text-body-medium-bold transition-all active:scale-[0.99] mt-2">
-            Upload Post
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className={`w-full py-3 rounded-xl text-white text-body-medium-bold transition-all active:scale-[0.99] mt-2 ${
+              isSubmitting ? "bg-gray-500 cursor-not-allowed" : "bg-gradient-to-r from-primary-blue to-[#60A5FA] hover:brightness-110"
+            }`}
+          >
+            {isSubmitting ? "Uploading..." : "Upload Post"}
           </button>
         </div>
       </div>

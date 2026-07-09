@@ -1,40 +1,27 @@
-
-import dotenv from 'dotenv';
+import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-export default {
-  development: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    dialect: 'postgres',
-    port: process.env.DB_PORT || 5432,
-    logging: false,
-  },
-  test: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME_TEST || 'unify_test',
-    host: process.env.DB_HOST,
-    dialect: 'postgres',
-    port: process.env.DB_PORT || 5432,
-    logging: false,
-  },
-  production: {
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    host: process.env.DB_HOST,
-    dialect: 'postgres',
-    port: process.env.DB_PORT || 5432,
-    logging: false,
+const sequelize = new Sequelize(
+  process.env.DB_NAME || "Unify",
+  process.env.DB_USER || "postgres",
+  process.env.DB_PASSWORD || "postgres",
+  {
+    host: process.env.DB_HOST || "localhost",
+    port: parseInt(process.env.DB_PORT, 10) || 5432,
+    dialect: "postgres",
+    dialectOptions: process.env.DB_SSL === "true"
+      ? { ssl: { require: true, rejectUnauthorized: false } }
+      : {},
+    logging: process.env.NODE_ENV === "development" ? console.log : false,
     pool: {
-      max: 5,
+      max: 10,
       min: 0,
       acquire: 30000,
-      idle: 10000
-    }
-  }
-};
+      idle: 10000,
+    },
+  },
+);
+
+export default sequelize;

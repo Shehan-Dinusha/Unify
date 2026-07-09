@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Folder, FolderOpen, ChevronRight, Plus, Eye } from "lucide-react";
 import Button from "../common/Button";
 import AddModuleModal from "./AddModuleModal";
 import SemesterVisibilityModal from "./SemesterVisibilityModal";
+import VisibilitySuccessModal from "./VisibilitySuccessModal";
+import * as learningService from "../../services/learningService";
+import { useToast } from "../common/Toast";
 
 /**
  * Renders the left sidebar for Semesters and Modules
@@ -12,18 +15,50 @@ const ModuleSidebar = ({
   activeSemesterId,
   activeModuleId,
   onSelectModule,
+  onAddModule,
+  onRefreshSemesters,
   readOnly = false,
   title,
   className = "",
+  degreeId,
+  availableDegrees = [],
+  primaryDegree,
 }) => {
   const [expandedSemesters, setExpandedSemesters] = useState([
     activeSemesterId,
   ]);
   const [isAddModuleOpen, setIsAddModuleOpen] = useState(false);
   const [visibilitySemester, setVisibilitySemester] = useState(null);
+  const [currentVisibility, setCurrentVisibility] = useState([]);
+  const [availableBatches, setAvailableBatches] = useState([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [lastSavedData, setLastSavedData] = useState(null);
+  const [isSavingVisibility, setIsSavingVisibility] = useState(false);
+  const toast = useToast();
+
+  useEffect(() => {
+    if (activeSemesterId && !expandedSemesters.includes(activeSemesterId)) {
+      setExpandedSemesters([activeSemesterId]);
+    }
+  }, [activeSemesterId]);
 
   const toggleSemester = (id) => {
     setExpandedSemesters((prev) => (prev.includes(id) ? [] : [id]));
+  };
+
+  const handleOpenVisibility = async (e, semester) => {
+    e.stopPropagation();
+    try {
+      const res = await learningService.getSemesterVisibility(degreeId, semester.id);
+      setCurrentVisibility(res?.data?.currentVisibility || []);
+      setAvailableBatches(res?.data?.availableBatches || []);
+      setVisibilitySemester(semester);
+    } catch (err) {
+      toast.error("Error", "Failed to fetch semester visibility");
+      setCurrentVisibility([]);
+      setAvailableBatches([]);
+      setVisibilitySemester(semester);
+    }
   };
 
   return (
@@ -69,10 +104,7 @@ const ModuleSidebar = ({
                   </div>
                   {!readOnly && (
                     <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setVisibilitySemester(semester);
-                      }}
+                      onClick={(e) => handleOpenVisibility(e, semester)}
                       className={`p-1 hover:bg-white/10 rounded-md shrink-0 transition-opacity ${
                         isExpanded
                           ? "opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
@@ -149,51 +181,51 @@ const ModuleSidebar = ({
           // Set only the new semester to be open
           setExpandedSemesters([data.semester]);
         }}
+        availableDegrees={availableDegrees}
+        primaryDegree={primaryDegree}
+        semesters={semesters}
       />
 
       <SemesterVisibilityModal
         isOpen={!!visibilitySemester}
         onClose={() => setVisibilitySemester(null)}
         semesterName={visibilitySemester?.name}
-        availableBatches={[
-          {
-            id: "b25",
-            short: "'25",
-            name: "Batch 25",
-            colorBg: "bg-orange-900/30",
-            colorText: "text-orange-400",
-          },
-          {
-            id: "b24",
-            short: "'24",
-            name: "Batch 24",
-            colorBg: "bg-indigo-900/30",
-            colorText: "text-indigo-400",
-          },
-          {
-            id: "b23",
-            short: "'23",
-            name: "Batch 23",
-            colorBg: "bg-emerald-900/30",
-            colorText: "text-emerald-400",
-          },
-          {
-            id: "b22",
-            short: "'22",
-            name: "Batch 22",
-            colorBg: "bg-indigo-900/30",
-            colorText: "text-indigo-400",
-          },
-        ]}
+        availableBatches={availableBatches}
         // Default visibility is none by default per requirements.
-        currentVisibility={[]}
-        onSaveVisibility={(data) => {
-          console.log(
-            `Saving visibility for ${visibilitySemester?.name}:`,
-            data,
-          );
-          setVisibilitySemester(null);
+        currentVisibility={currentVisibility}
+        onSaveVisibility={async (data) => {
+          setIsSavingVisibility(true);
+          try {
+            await learningService.updateSemesterVisibility(degreeId, visibilitySemester.id, {
+              visibleBatchIds: data.visibleBatchIds,
+              notifyStudents: data.notifyStudents,
+            });
+            setLastSavedData({
+              semesterName: visibilitySemester.name,
+              notifyStudents: data.notifyStudents,
+            });
+            setShowSuccessModal(true);
+          } catch (err) {
+            toast.error("Error", "Failed to update semester visibility");
+            setIsSavingVisibility(false);
+          }
         }}
+        isSaving={isSavingVisibility}
+      />
+
+      <VisibilitySuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          setVisibilitySemester(null);
+          setLastSavedData(null);
+          setIsSavingVisibility(false);
+          if (onRefreshSemesters) {
+            onRefreshSemesters();
+          }
+        }}
+        semesterName={lastSavedData?.semesterName}
+        notifyStudents={lastSavedData?.notifyStudents}
       />
     </div>
   );
