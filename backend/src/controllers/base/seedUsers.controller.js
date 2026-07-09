@@ -604,16 +604,15 @@ export const seedUsers = async (req, res) => {
       facMap[f.name] = { id: f.id, degrees };
     }
 
-    const results = { created: 0, skipped: 0, errors: 0 };
-
-    // ── Helper to find or skip existing user ────────────────────────────────
-    async function findUser(email, phone) {
+    const findUser = async (email, phone) => {
       const where = { [Op.or]: [] };
       if (email) where[Op.or].push({ email });
       if (phone) where[Op.or].push({ phone });
       if (where[Op.or].length === 0) return null;
       return await User.findOne({ where });
     }
+
+    const results = { created: 0, skipped: 0, errors: 0 };
 
     // ── Seed Students ───────────────────────────────────────────────────────
     const studentPlan = [
