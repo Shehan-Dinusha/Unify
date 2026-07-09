@@ -33,6 +33,8 @@ const Button = ({
     ghost: "bg-transparent text-text-secondary hover:bg-white/10",
     "ghost-hoverless":
       "bg-transparent text-text-secondary hover:opacity-80 transition-opacity !overflow-visible",
+    gradient:
+      "bg-gradient-to-r from-primary-blue to-blue-500 text-white shadow-lg shadow-primary-blue/30 hover:shadow-xl hover:shadow-primary-blue/40 hover:brightness-110",
     danger: "bg-state-error text-white hover:brightness-110",
     dangerOutline:
       "border-2 border-state-error text-state-error hover:bg-state-error/10",
@@ -42,7 +44,6 @@ const Button = ({
   const widthStyle = fullWidth ? "w-full" : "";
   const iconPadding = iconOnly ? "px-0 w-12" : "gap-2";
 
-  console.log("Button props:", { ...props, iconPosition, loading });
   return (
     <button
       className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${widthStyle} ${iconPadding} ${className}`}

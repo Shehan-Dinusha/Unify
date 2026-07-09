@@ -73,7 +73,6 @@ const UploadMaterialModal = ({
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
-      console.error("Failed to upload material", err);
       toast.error("Upload Failed", "Failed to upload material. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -208,13 +207,16 @@ const UploadMaterialModal = ({
                 <FileUpload
                   label=""
                   description=""
-                  maxSizeMB={10}
+                  maxSizeMB={100}
                   hideSubtext={true}
                   acceptedTypes={[
                     "application/pdf",
                     "image/png",
                     "image/jpeg",
                     "image/jpg",
+                    "video/mp4",
+                    "video/webm",
+                    "video/ogg",
                   ]}
                   onFileSelect={(file) => setSelectedFile(file)}
                 />

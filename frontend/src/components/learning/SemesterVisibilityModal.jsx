@@ -11,6 +11,7 @@ const SemesterVisibilityModal = ({
   availableBatches = [],
   currentVisibility = [],
   onSaveVisibility,
+  isSaving,
 }) => {
   const [mounted, setMounted] = useState(false);
   const [batches, setBatches] = useState([]);
@@ -43,17 +44,14 @@ const SemesterVisibilityModal = ({
   };
 
   const handleSave = () => {
-    // Extract only the IDs of batches that are set to visible
     const visibleBatchIds = batches.filter((b) => b.visible).map((b) => b.id);
 
-    // Pass back the updated visibility arrays and notify preference to backend handler
     if (onSaveVisibility) {
       onSaveVisibility({
         visibleBatchIds,
         notifyStudents,
       });
     }
-    onClose();
   };
 
   const modalContent = (
@@ -159,6 +157,7 @@ const SemesterVisibilityModal = ({
           <Button
             variant="ghost-hoverless"
             onClick={onClose}
+            disabled={isSaving}
             className="w-auto px-4 h-9 bg-gray-800 rounded-2xl flex justify-center items-center text-neutral-100 text-sm font-bold font-inter leading-5 hover:bg-slate-700 transition-colors"
           >
             Cancel
@@ -166,9 +165,10 @@ const SemesterVisibilityModal = ({
           <Button
             variant="primary"
             onClick={handleSave}
-            className="w-auto px-5 h-9 rounded-2xl whitespace-nowrap shadow-[0px_4px_6px_-4px_rgba(43,140,238,0.25)] flex justify-center items-center text-white text-sm font-bold font-inter leading-5"
+            disabled={isSaving}
+            className="w-auto px-5 h-9 rounded-2xl whitespace-nowrap shadow-[0px_4px_6px_-4px_rgba(43,140,238,0.25)] flex justify-center items-center text-white text-sm font-bold font-inter leading-5 disabled:bg-gray-600 disabled:text-gray-400 disabled:shadow-none"
           >
-            Save Changes
+            {isSaving ? "Saving..." : "Save Changes"}
           </Button>
         </div>
       </Card>

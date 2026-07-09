@@ -17,7 +17,6 @@ export const getItems = async (type = "All") => {
     );
     return response.data.data;
   } catch (error) {
-    console.error("Error fetching items:", error);
     throw error;
   }
 };
@@ -30,7 +29,6 @@ export const getMyItems = async () => {
     const response = await api.get(`/lost-and-found/my-items`);
     return response.data.data;
   } catch (error) {
-    console.error("Error fetching my items:", error);
     throw error;
   }
 };
@@ -45,7 +43,6 @@ export const getItemById = async (id) => {
     const response = await api.get(`/lost-and-found/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error("Error fetching single item:", error);
     throw error;
   }
 };
@@ -64,7 +61,6 @@ export const createItem = async (formData) => {
     });
     return response.data.data;
   } catch (error) {
-    console.error("Error creating item:", error);
     throw error;
   }
 };
@@ -84,7 +80,6 @@ export const editItem = async (id, formData) => {
     });
     return response.data.data;
   } catch (error) {
-    console.error("Error updating item:", error);
     throw error;
   }
 };
@@ -99,7 +94,6 @@ export const deleteItem = async (id) => {
     const response = await api.delete(`/lost-and-found/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error("Error deleting item:", error);
     throw error;
   }
 };
@@ -115,7 +109,6 @@ export const getItemMatches = async (id) => {
     return response.data.data;
   } catch (error) {
     if (error.response?.status === 403) return null; // Not the owner
-    console.error("Error fetching item matches:", error);
     throw error;
   }
 };

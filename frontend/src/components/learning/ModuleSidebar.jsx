@@ -3,6 +3,7 @@ import { Folder, FolderOpen, ChevronRight, Plus, Eye } from "lucide-react";
 import Button from "../common/Button";
 import AddModuleModal from "./AddModuleModal";
 import SemesterVisibilityModal from "./SemesterVisibilityModal";
+import VisibilitySuccessModal from "./VisibilitySuccessModal";
 import * as learningService from "../../services/learningService";
 import { useToast } from "../common/Toast";
 
@@ -30,6 +31,9 @@ const ModuleSidebar = ({
   const [visibilitySemester, setVisibilitySemester] = useState(null);
   const [currentVisibility, setCurrentVisibility] = useState([]);
   const [availableBatches, setAvailableBatches] = useState([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [lastSavedData, setLastSavedData] = useState(null);
+  const [isSavingVisibility, setIsSavingVisibility] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -44,15 +48,16 @@ const ModuleSidebar = ({
 
   const handleOpenVisibility = async (e, semester) => {
     e.stopPropagation();
-    setVisibilitySemester(semester);
     try {
       const res = await learningService.getSemesterVisibility(degreeId, semester.id);
       setCurrentVisibility(res?.data?.currentVisibility || []);
       setAvailableBatches(res?.data?.availableBatches || []);
+      setVisibilitySemester(semester);
     } catch (err) {
-      console.error("Failed to fetch semester visibility", err);
+      toast.error("Error", "Failed to fetch semester visibility");
       setCurrentVisibility([]);
       setAvailableBatches([]);
+      setVisibilitySemester(semester);
     }
   };
 
@@ -189,20 +194,38 @@ const ModuleSidebar = ({
         // Default visibility is none by default per requirements.
         currentVisibility={currentVisibility}
         onSaveVisibility={async (data) => {
+          setIsSavingVisibility(true);
           try {
             await learningService.updateSemesterVisibility(degreeId, visibilitySemester.id, {
               visibleBatchIds: data.visibleBatchIds,
               notifyStudents: data.notifyStudents,
             });
-            setVisibilitySemester(null);
-            if (onRefreshSemesters) {
-              await onRefreshSemesters();
-            }
+            setLastSavedData({
+              semesterName: visibilitySemester.name,
+              notifyStudents: data.notifyStudents,
+            });
+            setShowSuccessModal(true);
           } catch (err) {
-            console.error("Failed to update semester visibility", err);
             toast.error("Error", "Failed to update semester visibility");
+            setIsSavingVisibility(false);
           }
         }}
+        isSaving={isSavingVisibility}
+      />
+
+      <VisibilitySuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          setVisibilitySemester(null);
+          setLastSavedData(null);
+          setIsSavingVisibility(false);
+          if (onRefreshSemesters) {
+            onRefreshSemesters();
+          }
+        }}
+        semesterName={lastSavedData?.semesterName}
+        notifyStudents={lastSavedData?.notifyStudents}
       />
     </div>
   );

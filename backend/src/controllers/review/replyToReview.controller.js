@@ -2,6 +2,7 @@ import { Review } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { formatRelativeDate } from "../../utils/date.js";
+import { notifyReviewReply } from "../../services/notification.service.js";
 
 export const replyToReview = async (req, res, next) => {
   try {
@@ -28,6 +29,14 @@ export const replyToReview = async (req, res, next) => {
     // Update the owner's reply
     review.ownerReply = content.trim();
     await review.save();
+
+    notifyReviewReply({
+      reviewAuthorId: review.reviewerId,
+      actorId: currentUserId,
+      actorName: req.user.name,
+      reviewId: review.id,
+      targetId: review.targetId,
+    });
 
     const dateStr = formatRelativeDate(review.updatedAt);
 

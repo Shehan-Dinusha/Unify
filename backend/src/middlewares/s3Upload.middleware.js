@@ -1,5 +1,6 @@
 import multer from "multer";
 import { uploadBuffer } from "../services/s3.service.js";
+import { isImage, optimizeImage } from "../services/imageOptimizer.service.js";
 
 /**
  * S3-backed Upload Service
@@ -16,6 +17,9 @@ const fileFilter = (req, file, cb) => {
     "image/gif",
     "image/svg+xml",
     "application/pdf",
+    "video/mp4",
+    "video/webm",
+    "video/ogg",
   ];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
@@ -31,7 +35,7 @@ const fileFilter = (req, file, cb) => {
 const s3Upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
 });
 
 /**
@@ -43,10 +47,14 @@ const s3Upload = multer({
 export const s3UploadMiddleware = (folder) => async (req, res, next) => {
   try {
     if (req.file) {
+      let buffer = req.file.buffer;
+      if (isImage(req.file.mimetype)) {
+        buffer = await optimizeImage(buffer, req.file.mimetype);
+      }
       const fileKey = await uploadBuffer(
-        req.file.buffer,
+        buffer,
         req.file.originalname,
-        req.file.mimetype,
+        isImage(req.file.mimetype) ? "image/webp" : req.file.mimetype,
         folder,
       );
       req.file.s3Key = fileKey;
@@ -55,10 +63,14 @@ export const s3UploadMiddleware = (folder) => async (req, res, next) => {
 
     if (req.files && Array.isArray(req.files)) {
       const uploadPromises = req.files.map(async (file) => {
+        let buffer = file.buffer;
+        if (isImage(file.mimetype)) {
+          buffer = await optimizeImage(buffer, file.mimetype);
+        }
         const fileKey = await uploadBuffer(
-          file.buffer,
+          buffer,
           file.originalname,
-          file.mimetype,
+          isImage(file.mimetype) ? "image/webp" : file.mimetype,
           folder,
         );
         file.s3Key = fileKey;
@@ -70,10 +82,14 @@ export const s3UploadMiddleware = (folder) => async (req, res, next) => {
       const keys = Object.keys(req.files);
       for (const key of keys) {
         const uploadPromises = req.files[key].map(async (file) => {
+          let buffer = file.buffer;
+          if (isImage(file.mimetype)) {
+            buffer = await optimizeImage(buffer, file.mimetype);
+          }
           const fileKey = await uploadBuffer(
-            file.buffer,
+            buffer,
             file.originalname,
-            file.mimetype,
+            isImage(file.mimetype) ? "image/webp" : file.mimetype,
             folder,
           );
           file.s3Key = fileKey;

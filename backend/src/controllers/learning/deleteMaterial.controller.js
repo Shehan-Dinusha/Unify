@@ -1,6 +1,7 @@
 import { Material } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import s3Service from "../../services/s3.service.js";
+import logger from "../../utils/logger.js";
 
 export const deleteMaterial = async (req, res) => {
   try {
@@ -18,7 +19,7 @@ export const deleteMaterial = async (req, res) => {
       try {
         await s3Service.deleteFile(fileUrl);
       } catch (s3Error) {
-        console.error("Failed to delete from S3:", s3Error);
+        logger.error("Failed to delete from S3:", s3Error);
       }
     }
 
@@ -26,7 +27,7 @@ export const deleteMaterial = async (req, res) => {
 
     return sendResponse(res, 200, true, "Material deleted successfully", null);
   } catch (error) {
-    console.error("Error deleting material:", error);
+    logger.error("Error deleting material:", error);
     return sendResponse(
       res,
       500,

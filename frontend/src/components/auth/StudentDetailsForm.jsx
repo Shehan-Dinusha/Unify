@@ -110,7 +110,6 @@ const StudentDetailsForm = ({ onNext, initialData, loading }) => {
           );
         }
       } catch (err) {
-        console.error("Failed to load academic metadata:", err);
       } finally {
         setLoadingMeta(false);
       }
@@ -135,7 +134,6 @@ const StudentDetailsForm = ({ onNext, initialData, loading }) => {
           degData.map((d) => ({ value: String(d.id), label: d.name }))
         );
       } catch (err) {
-        console.error("Failed to load degrees:", err);
         setDegrees([]);
       }
     };

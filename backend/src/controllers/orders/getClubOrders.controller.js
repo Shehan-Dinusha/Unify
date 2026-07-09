@@ -1,24 +1,5 @@
 import { Order, User, ClubProductPost } from "../../modules/index.js";
-import { getFileUrl } from "../../services/s3.service.js";
-
-const resolveUrl = async (img) => {
-  if (!img) return img;
-  let imgPath = img;
-  if (typeof img === 'object' && img !== null) {
-    if (img.url) imgPath = img.url;
-    else return imgPath;
-  }
-  if (typeof imgPath !== 'string') return imgPath;
-  if (imgPath.includes("X-Amz-Signature")) return imgPath;
-  const s3Match = imgPath.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
-  if (s3Match) {
-    try { return await getFileUrl(s3Match[1]); } catch { return imgPath; }
-  }
-  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
-    try { return await getFileUrl(imgPath); } catch { return imgPath; }
-  }
-  return imgPath;
-};
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
 
 export const getClubOrders = async (req, res) => {
   try {
@@ -52,7 +33,7 @@ export const getClubOrders = async (req, res) => {
     for (const p of products) {
       const plain = p.toJSON();
       if (Array.isArray(plain.images) && plain.images.length > 0) {
-        plain.images = await Promise.all(plain.images.map(resolveUrl));
+        plain.images = await Promise.all(plain.images.map(resolveAssetUrl));
       }
       productMap[p.id] = plain;
     }

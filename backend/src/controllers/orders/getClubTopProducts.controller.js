@@ -1,25 +1,7 @@
 import { Order, ClubProductPost, EventBooking, ClubEventPost } from "../../modules/index.js";
 import sequelize from "../../config/database.js";
-import { getFileUrl } from "../../services/s3.service.js";
-
-const resolveUrl = async (img) => {
-  if (!img) return img;
-  let imgPath = img;
-  if (typeof img === 'object' && img !== null) {
-    if (img.url) imgPath = img.url;
-    else return imgPath;
-  }
-  if (typeof imgPath !== 'string') return imgPath;
-  if (imgPath.includes("X-Amz-Signature")) return imgPath;
-  const s3Match = imgPath.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
-  if (s3Match) {
-    try { return await getFileUrl(s3Match[1]); } catch { return imgPath; }
-  }
-  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
-    try { return await getFileUrl(imgPath); } catch { return imgPath; }
-  }
-  return imgPath;
-};
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
+import logger from "../../utils/logger.js";
 
 export const getClubTopProducts = async (req, res) => {
   try {
@@ -82,7 +64,7 @@ export const getClubTopProducts = async (req, res) => {
         title: p.clubProduct?.name || "Unknown Product",
         salesCount: parseInt(p.salesCount),
         totalRevenue: parseFloat(p.totalRevenue),
-        image: await resolveUrl(imgKey),
+        image: await resolveAssetUrl(imgKey),
         postType: "club-product"
       };
     }));
@@ -94,7 +76,7 @@ export const getClubTopProducts = async (req, res) => {
         title: e.event?.name || "Unknown Event",
         salesCount: parseInt(e.salesCount),
         totalRevenue: parseFloat(e.totalRevenue),
-        image: await resolveUrl(imgKey),
+        image: await resolveAssetUrl(imgKey),
         postType: "club-event"
       };
     }));
@@ -109,7 +91,7 @@ export const getClubTopProducts = async (req, res) => {
       data: combined,
     });
   } catch (error) {
-    console.error("[getClubTopProducts] Error:", error);
+    logger.error("[getClubTopProducts] Error:", error);
     res.status(500).json({ error: error.message });
   }
 };

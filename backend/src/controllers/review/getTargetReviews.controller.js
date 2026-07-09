@@ -10,6 +10,7 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { formatRelativeDate } from "../../utils/date.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import { calculateReviewSummary } from "../../services/review.service.js";
 
 export const getTargetReviews = async (req, res, next) => {
   try {
@@ -73,32 +74,7 @@ export const getTargetReviews = async (req, res, next) => {
     });
 
     // 1. Calculate Summary Stats
-    const totalReviews = rawReviews.length;
-    let sumRating = 0;
-    const distributionCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-
-    rawReviews.forEach((r) => {
-      sumRating += r.rating;
-      if (distributionCounts[r.rating] !== undefined) {
-        distributionCounts[r.rating]++;
-      }
-    });
-
-    const averageRating = totalReviews > 0 ? sumRating / totalReviews : 0;
-
-    // Format distribution into percentages as expected by frontend
-    const distribution = [5, 4, 3, 2, 1].map((stars) => {
-      const count = distributionCounts[stars];
-      const percentage =
-        totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
-      return { stars, percentage, count };
-    });
-
-    const summary = {
-      averageRating,
-      totalReviews,
-      distribution,
-    };
+    const summary = calculateReviewSummary(rawReviews);
 
     // 2. Format Reviews list for frontend expectations
     const formattedReviews = await Promise.all(

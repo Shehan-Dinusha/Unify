@@ -24,6 +24,8 @@ const VerifiedList = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  const [isRemoving, setIsRemoving] = useState(false);
+
   // States for Removal Modal
   const [showRemovalModal, setShowRemovalModal] = useState(false);
   const [showRemovalSuccessModal, setShowRemovalSuccessModal] = useState(false);
@@ -90,6 +92,8 @@ const VerifiedList = () => {
   };
 
   const handleConfirmRemoval = async (reason, customReason) => {
+    if (isRemoving) return;
+    setIsRemoving(true);
     const finalReason = customReason || reason;
     setVerifiedEntities((prev) =>
       Array.isArray(prev)
@@ -127,6 +131,8 @@ const VerifiedList = () => {
       );
       setShowErrorModal(true);
       fetchVerified();
+    } finally {
+      setIsRemoving(false);
     }
   };
 
@@ -244,7 +250,7 @@ const VerifiedList = () => {
         onConfirm={handleConfirmRemoval}
         clubName={entityToRemove?.name}
         requestType={entityToRemove?.type}
-        loading={loading}
+        loading={isRemoving}
       />
       <VerificationRejectedSuccessModal
         isOpen={showRemovalSuccessModal}

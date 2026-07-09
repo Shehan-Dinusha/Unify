@@ -196,7 +196,6 @@ const CategoryGrid = ({
       await learningService.deleteModuleCategory(id);
       onRefresh?.();
     } catch (err) {
-      console.error("Failed to delete category", err);
       toast.error("Error", "Failed to delete category");
     }
   };
@@ -220,7 +219,7 @@ const CategoryGrid = ({
       onRefresh?.();
       setIsModalOpen(false);
     } catch (err) {
-      console.error("Failed to save category", err);
+      toast.error("Error", "Failed to save category");
       throw err;
     }
   };

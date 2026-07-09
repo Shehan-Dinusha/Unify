@@ -24,7 +24,6 @@ export const getFollowings = async (
     );
     return response.data.data; // Return the { followings, total, hasMore } object
   } catch (error) {
-    console.error("Error fetching followings:", error);
     throw error;
   }
 };
@@ -41,7 +40,6 @@ export const getSingleFollowing = async (offset, sortOrder = "asc") => {
     }
     return null;
   } catch (error) {
-    console.error("Error fetching single following:", error);
     return null;
   }
 };
@@ -56,7 +54,6 @@ export const unfollowOrganization = async (clubId) => {
     const response = await api.post(`/followers/${clubId}/toggle`, {});
     return response.data;
   } catch (error) {
-    console.error("Error toggling follow status:", error);
     throw error;
   }
 };
@@ -79,7 +76,6 @@ export const getClubFollowers = async (page = 1, limit = 14) => {
     );
     return response.data.data; // Return the { followers, total, hasMore } object
   } catch (error) {
-    console.error("Error fetching club followers:", error);
     throw error;
   }
 };
@@ -93,7 +89,6 @@ export const getPublicFollowers = async (userId, page = 1, limit = 20) => {
     const response = await api.get(`/followers/${userId}/followers?${params.toString()}`);
     return response.data.data;
   } catch (error) {
-    console.error("Error fetching public followers:", error);
     throw error;
   }
 };

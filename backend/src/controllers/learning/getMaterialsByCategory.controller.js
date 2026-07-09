@@ -8,6 +8,7 @@ import { sendResponse } from "../../utils/response.js";
 import { formatRelativeDate } from "../../utils/date.js";
 import s3Service from "../../services/s3.service.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import logger from "../../utils/logger.js";
 
 export const getMaterialsByCategory = async (req, res) => {
   try {
@@ -25,14 +26,11 @@ export const getMaterialsByCategory = async (req, res) => {
       return sendResponse(res, 404, false, "Category not found", null);
     }
 
-    const include = [];
-    if (req.user?.role !== "Student") {
-      include.push({
-        model: User,
-        as: "uploader",
-        attributes: ["name", "avatar"],
-      });
-    }
+    const include = [{
+      model: User,
+      as: "uploader",
+      attributes: ["name", "avatar"],
+    }];
 
     const materials = await Material.findAll({
       where: {
@@ -55,7 +53,7 @@ export const getMaterialsByCategory = async (req, res) => {
           try {
              fileUrl = await s3Service.getFileUrl(fileUrl);
           } catch(e) {
-             console.error("Failed to generate presigned URL for", rest.url, e);
+             logger.error("Failed to generate presigned URL for", rest.url, e);
           }
         }
 
@@ -85,7 +83,7 @@ export const getMaterialsByCategory = async (req, res) => {
       formattedMaterials,
     );
   } catch (error) {
-    console.error("Error fetching materials:", error);
+    logger.error("Error fetching materials:", error);
     return sendResponse(
       res,
       500,

@@ -1,5 +1,6 @@
 import { User, BusinessProfile, Wallet, UserActivityLog, BoostCampaign } from './src/modules/index.js';
 import bcrypt from 'bcryptjs';
+import logger from '../../../utils/logger.js';
 
 async function createBusinessUser() {
   try {
@@ -20,7 +21,7 @@ async function createBusinessUser() {
     });
 
     if (!created) {
-      console.log('ℹ️ Business User already exists');
+      logger.info('ℹ️ Business User already exists');
       process.exit(0);
     }
 
@@ -81,13 +82,13 @@ async function createBusinessUser() {
       paymentStatus: 'completed'
     });
 
-    console.log(`✅ Business User 'Coffee House' created successfully with ID: ${user.id}`);
+    logger.info(`✅ Business User 'Coffee House' created successfully with ID: ${user.id}`);
     process.exit(0);
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
-      console.error('❌ Validation Error Details:', error.errors.map(e => `${e.path}: ${e.message}`));
+      logger.error('❌ Validation Error Details:', error.errors.map(e => `${e.path}: ${e.message}`));
     } else {
-      console.error('❌ Error:', error.message);
+      logger.error('❌ Error:', error.message);
     }
     process.exit(1);
   }

@@ -15,6 +15,7 @@ import {
 import sequelize from '../../config/database.js';
 import bcrypt from 'bcryptjs';
 import moment from 'moment';
+import logger from "../../utils/logger.js";
 
 async function seedAdminData() {
   try {
@@ -43,7 +44,7 @@ async function seedAdminData() {
       faculties[name] = fac;
     }
 
-    console.log('✅ Universities & Faculties seeded');
+    logger.info('✅ Universities & Faculties seeded');
 
     // ═══════════════════════════════════════════════════════════════════════
     // STEP 2: Admin User (for AdminLog entries)
@@ -62,7 +63,7 @@ async function seedAdminData() {
       }
     });
 
-    console.log(`✅ Admin User seeded (ID: ${adminUser.id})`);
+    logger.info(`✅ Admin User seeded (ID: ${adminUser.id})`);
 
     // ═══════════════════════════════════════════════════════════════════════
     // STEP 3: Student Users (matching frontend mockStudentProfiles)
@@ -239,7 +240,7 @@ async function seedAdminData() {
         );
       }
 
-      console.log(`  ✅ Student '${s.user.name}' synced (Faculty: ${s.profile.facultyName})`);
+      logger.info(`  ✅ Student '${s.user.name}' synced (Faculty: ${s.profile.facultyName})`);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -469,14 +470,14 @@ async function seedAdminData() {
         await UserActivityLog.bulkCreate(b.activityLogs.map(log => ({ ...log, userId: user.id })));
       }
 
-      console.log(`  ✅ Business synced: ${b.user.name} (${b.profile.category})`);
+      logger.info(`  ✅ Business synced: ${b.user.name} (${b.profile.category})`);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
     // STEP 4.5: Boost Packages
     // ═══════════════════════════════════════════════════════════════════════
 
-    console.log('Seeding boost packages...');
+    logger.info('Seeding boost packages...');
     await BoostPackage.bulkCreate([
       { id: 'Premium', name: 'Premium Pack', price: 50000, durationValue: 30, durationUnit: 'Days', status: 'live' },
       { id: 'Standard', name: 'Standard Pack', price: 20000, durationValue: 14, durationUnit: 'Days', status: 'live' },
@@ -487,7 +488,7 @@ async function seedAdminData() {
     // STEP 5: Business Analytics (Transactions & Campaigns)
     // ═══════════════════════════════════════════════════════════════════════
 
-    console.log('Seeding business analytics data...');
+    logger.info('Seeding business analytics data...');
     const coffee = await User.findOne({ where: { email: 'coffee@house.lk' } });
     if (coffee) {
       const wallet = await Wallet.findOne({ where: { userId: coffee.id } });
@@ -528,14 +529,14 @@ async function seedAdminData() {
           }
         ]);
       }
-      console.log(`  ✅ Business analytics seeded for Coffee House`);
+      logger.info(`  ✅ Business analytics seeded for Coffee House`);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
     // STEP 6: Student Activity Stats (Posts, Comments, Reports)
     // ═══════════════════════════════════════════════════════════════════════
 
-    console.log('Seeding student activity stats...');
+    logger.info('Seeding student activity stats...');
     const alex = await User.findOne({ where: { email: 'alex.j@unify.com' } });
     if (alex) {
       // Clean up old mock data first if re-running
@@ -598,14 +599,14 @@ async function seedAdminData() {
           priority: 'High'
         }
       ]);
-      console.log(`  ✅ Activity stats seeded for Alex Johnson (1240 Posts, 3500 Comments, 2 Reports)`);
+      logger.info(`  ✅ Activity stats seeded for Alex Johnson (1240 Posts, 3500 Comments, 2 Reports)`);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
     // STEP 6: Transactions (for Business Stats)
     // ═══════════════════════════════════════════════════════════════════════
 
-    console.log('Seeding transactions...');
+    logger.info('Seeding transactions...');
     const businesses = await User.findAll({ where: { role: 'Business' } });
     const wallets = await Wallet.findAll({ where: { userId: businesses.map(b => b.id) } });
 
@@ -640,16 +641,16 @@ async function seedAdminData() {
 
     await Transaction.destroy({ where: {} }); // Clear old transactions for clean stats
     await Transaction.bulkCreate(transactions);
-    console.log(`  ✅ ${transactions.length} Transactions seeded for businesses`);
+    logger.info(`  ✅ ${transactions.length} Transactions seeded for businesses`);
 
-    console.log('\n🎉 All admin management seed data created successfully!');
+    logger.info('\n🎉 All admin management seed data created successfully!');
     process.exit(0);
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
-      console.error('❌ Validation Error:', error.errors.map(e => `${e.path}: ${e.message}`));
+      logger.error('❌ Validation Error:', error.errors.map(e => `${e.path}: ${e.message}`));
     } else {
-      console.error('❌ Error:', error.message);
-      console.error(error.stack);
+      logger.error('❌ Error:', error.message);
+      logger.error(error.stack);
     }
     process.exit(1);
   }

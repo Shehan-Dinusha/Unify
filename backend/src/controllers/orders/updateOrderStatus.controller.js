@@ -1,4 +1,11 @@
 import { Order } from "../../modules/index.js";
+import { notifyUser } from "../../services/notification.service.js";
+
+const STATUS_NOTIFICATION_CONTENT = {
+  "Seller Confirmed": "Your order has been confirmed.",
+  "Ready for Pickup": "Your order is ready for pickup.",
+  "Order Completed": "Your order has been completed.",
+};
 
 export const updateOrderStatus = async (req, res) => {
   try {
@@ -17,7 +24,11 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized to update this order." });
     }
 
-    let timeline = order.timeline || [];
+    if (order.status === status) {
+      return res.status(200).json({ success: true, order });
+    }
+
+    let timeline = Array.isArray(order.timeline) ? [...order.timeline] : order.timeline || [];
     if (typeof timeline === "string") {
       try {
         timeline = JSON.parse(timeline);
@@ -37,6 +48,19 @@ export const updateOrderStatus = async (req, res) => {
       status,
       timeline,
     });
+
+    const notificationContent = STATUS_NOTIFICATION_CONTENT[status];
+    if (notificationContent) {
+      await notifyUser({
+        userId: order.buyerId,
+        actorId: parseInt(sellerId, 10),
+        type: "General",
+        title: `Order ${order.orderId} status updated`,
+        content: notificationContent,
+        referenceId: order.id,
+        referenceType: "Order",
+      });
+    }
 
     res.status(200).json({ success: true, order });
   } catch (error) {
