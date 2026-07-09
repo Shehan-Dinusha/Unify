@@ -62,7 +62,6 @@ const BatchRepTeam = ({ degreeId, currentUserId }) => {
           setTeamMembers(mappedReps);
         }
       } catch (error) {
-        console.error("Failed to fetch batch reps", error);
         // Fallback to empty if fails
         setTeamMembers([]);
       } finally {

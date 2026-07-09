@@ -24,7 +24,6 @@ export const useStudentSubmittedReports = () => {
         const result = await getMyReports({ status: statusFilter, category: categoryFilter, search: searchQuery });
         setReports(result.data?.reports || []);
       } catch (err) {
-        console.error('[StudentSubmittedReports] Failed to load:', err);
         setError('Failed to connect to the server. Please make sure the backend is running.');
         toast.error('Connection Error', 'Failed to load your reports.');
       } finally {

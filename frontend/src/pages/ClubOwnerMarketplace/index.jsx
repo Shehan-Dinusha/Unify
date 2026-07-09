@@ -38,7 +38,6 @@ const ClubOwnerMarketplace = () => {
             }));
             setPosts(mappedPosts);
         } catch (err) {
-            console.error("Failed to fetch club owner feed:", err);
         } finally {
             setLoading(false);
         }
@@ -57,7 +56,6 @@ const ClubOwnerMarketplace = () => {
             }));
             setTrendingItems(mappedTrending);
         } catch (err) {
-            console.error("Failed to fetch trending items:", err);
         } finally {
             setTrendingLoading(false);
         }
@@ -78,7 +76,7 @@ const ClubOwnerMarketplace = () => {
             </button>
             <button
                 className="p-2 relative flex items-center justify-center shrink-0 hover:bg-white/5 rounded-full transition-colors"
-                onClick={() => console.log("Search")}
+                onClick={() => {}}
             >
                 <img
                     src="/icon_search.svg"

@@ -196,7 +196,6 @@ const PostCard = ({
       await newsfeedService.toggleLike(postType, postId);
     } catch (err) {
       // Revert on failure
-      console.error("Failed to toggle like:", err);
       setIsLiked(wasLiked);
       setLikeCount(wasLiked ? likeCount : likeCount - 1);
     }
@@ -211,7 +210,6 @@ const PostCard = ({
     try {
       await newsfeedService.toggleSave(postType, postId);
     } catch (err) {
-      console.error("Failed to toggle save:", err);
       setIsSaved(wasSaved);
       if (post) toggleSavePost(post); // revert context too
     }
@@ -237,7 +235,6 @@ const PostCard = ({
         setPostComments(fetchedComments);
         setCommentCount(fetchedComments.length);
       } catch (err) {
-        console.error("Failed to fetch comments:", err);
       } finally {
         setLoadingComments(false);
       }
@@ -274,7 +271,6 @@ const PostCard = ({
         );
       }
     } catch (err) {
-      console.error("Failed to add comment:", err);
       // Remove temp comment on failure
       setPostComments((prev) => prev.filter((c) => c.id !== tempComment.id));
       setCommentCount((c) => c - 1);
@@ -293,7 +289,6 @@ const PostCard = ({
       await postService.deletePost(postType, postId);
       if (onPostUpdate) onPostUpdate();
     } catch (err) {
-      console.error("Failed to delete post:", err);
       alert(err.error || "Failed to delete post. Please try again.");
     }
   };
@@ -303,7 +298,7 @@ const PostCard = ({
     if (profileId) {
       reportNavigate(`/profile/${profileId}`);
     } else {
-      console.warn("No profile ID found to navigate to.");
+
     }
   };
 

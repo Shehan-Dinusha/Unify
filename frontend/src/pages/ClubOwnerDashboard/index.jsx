@@ -71,7 +71,6 @@ const ClubOwnerDashboard = () => {
           setClubPosts(normalized);
         }
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
       }
@@ -91,7 +90,6 @@ const ClubOwnerDashboard = () => {
         const onboardRes = await orderService.onboardClub();
         if (onboardRes.url) window.location.href = onboardRes.url;
       } else {
-        console.error('Failed to get wallet link:', error);
         alert(error.error || 'Could not open wallet. Please try again later.');
       }
     }

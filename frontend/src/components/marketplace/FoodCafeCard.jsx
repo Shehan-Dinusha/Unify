@@ -225,7 +225,6 @@ const FoodCafeCard = ({ post, onClick }) => {
         try {
             await newsfeedService.toggleLike(postType, postId);
         } catch (err) {
-            console.error("Failed to toggle like:", err);
             setLiked(wasLiked);
             setLikes(wasLiked ? likes : likes - 1);
         }
@@ -239,7 +238,6 @@ const FoodCafeCard = ({ post, onClick }) => {
         try {
             await newsfeedService.toggleSave(postType, postId);
         } catch (err) {
-            console.error("Failed to toggle save:", err);
             setSaved(wasSaved);
             if (post) toggleSavePost(post);
         }
@@ -264,7 +262,6 @@ const FoodCafeCard = ({ post, onClick }) => {
                 setPostComments(fetchedComments);
                 setCommentCount(fetchedComments.length);
             } catch (err) {
-                console.error("Failed to fetch comments:", err);
             } finally {
                 setLoadingComments(false);
             }
@@ -299,7 +296,6 @@ const FoodCafeCard = ({ post, onClick }) => {
                 );
             }
         } catch (err) {
-            console.error("Failed to add comment:", err);
             setPostComments((prev) => prev.filter((c) => c.id !== tempComment.id));
             setCommentCount((c) => c - 1);
         }

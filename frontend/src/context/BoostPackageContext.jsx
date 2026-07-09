@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import * as boostAPI from '../services/boostService';
+import { getCurrentUser, isAuthenticated } from '../services/authService';
 
 const BoostPackageContext = createContext();
 
@@ -23,7 +24,6 @@ export const BoostPackageProvider = ({ children }) => {
             }
         } catch (err) {
             setError(err.message);
-            console.error('Failed to fetch packages:', err.message);
         } finally {
             setLoading(false);
         }
@@ -37,7 +37,6 @@ export const BoostPackageProvider = ({ children }) => {
                 setLogs(response.data.logs);
             }
         } catch (err) {
-            console.error('Failed to fetch logs:', err.message);
         }
     }, []);
 
@@ -49,16 +48,19 @@ export const BoostPackageProvider = ({ children }) => {
                 setStats(response.data.stats);
             }
         } catch (err) {
-            console.error('Failed to fetch boost stats:', err.message);
         }
     }, []);
 
     // ── Load all data on mount ─────────────────────────────────────────
     useEffect(() => {
-        if (!localStorage.getItem("token")) return;
+        if (!isAuthenticated()) return;
+        const user = getCurrentUser();
+        const isAdmin = user?.role === "Admin";
         fetchPackages();
-        fetchLogs();
-        fetchStats();
+        if (isAdmin) {
+            fetchLogs();
+            fetchStats();
+        }
     }, [fetchPackages, fetchLogs, fetchStats]);
 
     // ── Add Package (calls API) ────────────────────────────────────────

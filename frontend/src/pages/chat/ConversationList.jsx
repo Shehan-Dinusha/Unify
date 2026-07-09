@@ -99,7 +99,7 @@ const ConversationList = ({
         ) : (
           tabFilteredList.map((chat) => (
             <ConversationItem
-              key={chat.id}
+              key={`conv-${chat.id}`}
               chat={chat}
               isActive={activeChatId === chat.id}
               onSelect={onSelectContact}

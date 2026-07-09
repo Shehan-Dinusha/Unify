@@ -34,7 +34,6 @@ const SecurityPage = () => {
         const data = await getMyProfile(backendRole);
         setProfile(data);
       } catch (error) {
-        console.error("Error fetching profile for security page:", error);
       } finally {
         setLoadingProfile(false);
       }
@@ -89,7 +88,6 @@ const SecurityPage = () => {
       setConfirmPassword("");
       navigate(`/profile?role=${activeRole}`);
     } catch (error) {
-      console.error("Error changing password:", error);
       setErrors({ currentPassword: error.message || "Failed to update password" });
       toast.error("Error", error.message || "Failed to update password");
     } finally {

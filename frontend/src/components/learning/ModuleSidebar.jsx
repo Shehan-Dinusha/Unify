@@ -54,7 +54,7 @@ const ModuleSidebar = ({
       setAvailableBatches(res?.data?.availableBatches || []);
       setVisibilitySemester(semester);
     } catch (err) {
-      console.error("Failed to fetch semester visibility", err);
+      toast.error("Error", "Failed to fetch semester visibility");
       setCurrentVisibility([]);
       setAvailableBatches([]);
       setVisibilitySemester(semester);
@@ -206,7 +206,6 @@ const ModuleSidebar = ({
             });
             setShowSuccessModal(true);
           } catch (err) {
-            console.error("Failed to update semester visibility", err);
             toast.error("Error", "Failed to update semester visibility");
             setIsSavingVisibility(false);
           }

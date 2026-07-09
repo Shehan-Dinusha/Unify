@@ -52,7 +52,6 @@ const BoostAnalytics = () => {
           setInteractions(Array.isArray(interactionsRes.value.data) ? interactionsRes.value.data : []);
         }
       } catch (err) {
-        console.error('[BoostAnalytics] Failed to load:', err);
         setError('Failed to load analytics. Please check the backend.');
       } finally {
         setLoading(false);

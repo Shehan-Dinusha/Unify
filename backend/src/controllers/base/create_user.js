@@ -1,4 +1,5 @@
 import User from './src/modules/User.model.js';
+import logger from '../../../utils/logger.js';
 
 async function createTestUser() {
   try {
@@ -15,13 +16,13 @@ async function createTestUser() {
     });
 
     if (created) {
-      console.log('✅ Test User created successfully with ID: 1');
+      logger.info('✅ Test User created successfully with ID: 1');
     } else {
-      console.log('ℹ️ Test User already exists with ID: 1');
+      logger.info('ℹ️ Test User already exists with ID: 1');
     }
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error creating user:', error.message);
+    logger.error('❌ Error creating user:', error.message);
     process.exit(1);
   }
 }

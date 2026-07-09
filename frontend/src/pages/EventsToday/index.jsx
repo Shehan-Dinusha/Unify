@@ -23,7 +23,6 @@ const EventsToday = () => {
                 const data = await newsfeedService.getEventsToday();
                 setEvents(data.events || []);
             } catch (err) {
-                console.error("Failed to fetch events:", err);
             } finally {
                 setLoading(false);
             }

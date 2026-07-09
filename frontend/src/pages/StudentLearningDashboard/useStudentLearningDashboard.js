@@ -49,7 +49,6 @@ export const useStudentLearningDashboard = () => {
           }
         }
       } catch (err) {
-        console.error("Failed to fetch student course structure", err);
       } finally {
         setIsLoading(false);
       }

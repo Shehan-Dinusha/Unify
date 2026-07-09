@@ -1,32 +1,14 @@
 import { NormalPost, ClubProductPost, ClubEventPost, Boarding, SavedItem, User, Comment, PostLike } from "../../modules/index.js";
-import { getFileUrl } from "../../services/s3.service.js";
-
-const resolveImageUrl = async (img) => {
-  if (!img) return img;
-  let imgPath = img;
-  if (typeof img === "object" && img !== null) {
-    if (img.url) imgPath = img.url;
-    else return imgPath;
-  }
-  if (typeof imgPath !== "string") return imgPath;
-  if (imgPath.includes("X-Amz-Signature")) return imgPath;
-  const s3UrlMatch = imgPath.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
-  if (s3UrlMatch) {
-    try { return await getFileUrl(s3UrlMatch[1]); } catch { return imgPath; }
-  }
-  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
-    try { return await getFileUrl(imgPath); } catch { return imgPath; }
-  }
-  return imgPath;
-};
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
+import logger from "../../utils/logger.js";
 
 const resolvePostImages = async (post) => {
   const resolved = { ...post };
   if (Array.isArray(resolved.images) && resolved.images.length > 0) {
-    resolved.images = await Promise.all(resolved.images.map(resolveImageUrl));
+    resolved.images = await Promise.all(resolved.images.map(resolveAssetUrl));
   }
   if (resolved.coverImage) {
-    resolved.coverImage = await resolveImageUrl(resolved.coverImage);
+    resolved.coverImage = await resolveAssetUrl(resolved.coverImage);
   }
   return resolved;
 };
@@ -142,7 +124,7 @@ export const getSavedPosts = async (req, res) => {
 
     return res.status(200).json({ success: true, savedItems: feedWithInteractions });
   } catch (error) {
-    console.error("Error fetching saved posts:", error);
+    logger.error("Error fetching saved posts:", error);
     res.status(500).json({ error: error.message });
   }
 };

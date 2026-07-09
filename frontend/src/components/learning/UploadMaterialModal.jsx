@@ -73,7 +73,6 @@ const UploadMaterialModal = ({
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
-      console.error("Failed to upload material", err);
       toast.error("Upload Failed", "Failed to upload material. Please try again.");
     } finally {
       setIsSubmitting(false);

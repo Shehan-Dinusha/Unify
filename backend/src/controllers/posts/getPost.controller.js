@@ -5,54 +5,11 @@ import {
   Boarding,
   User,
 } from "../../modules/index.js";
-import { getFileUrl } from "../../services/s3.service.js";
-
-/**
- * Converts an image value (S3 key, private S3 URL, or legacy local path) to
- * a presigned URL. Falls back to the original value for non-S3 paths.
- */
-const resolveImageUrl = async (img) => {
-  if (!img) return img;
-
-  let imgPath = img;
-  // Handle case where img is stored as a JSON object (e.g. { url: "..." } from ClubEventPost)
-  if (typeof img === "object" && img !== null) {
-    if (img.url) imgPath = img.url;
-    else return imgPath;
-  }
-
-  if (typeof imgPath !== "string") return imgPath;
-
-  // Already a presigned URL (contains X-Amz-Signature) — pass through
-  if (imgPath.includes("X-Amz-Signature")) return imgPath;
-
-  // Full private S3 URL like https://bucket.s3.region.amazonaws.com/key
-  const s3UrlPattern = /https?:\/\/[^/]+\.amazonaws\.com\/(.+)/;
-  const s3UrlMatch = imgPath.match(s3UrlPattern);
-  if (s3UrlMatch) {
-    try {
-      return await getFileUrl(s3UrlMatch[1]);
-    } catch {
-      return imgPath;
-    }
-  }
-
-  // Raw S3 object key (no protocol prefix, e.g. "posts/products/abc123.webp")
-  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
-    try {
-      return await getFileUrl(imgPath);
-    } catch {
-      return imgPath;
-    }
-  }
-
-  // Local path or anything else — return as-is
-  return imgPath;
-};
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
 
 const resolveImages = async (images) => {
   if (!Array.isArray(images) || images.length === 0) return images;
-  return Promise.all(images.map(resolveImageUrl));
+  return Promise.all(images.map(resolveAssetUrl));
 };
 
 const getModelConfig = (type) => {
@@ -112,7 +69,7 @@ export const getPost = async (req, res) => {
       postData.images = await resolveImages(postData.images);
     }
     if (postData.coverImage) {
-      postData.coverImage = await resolveImageUrl(postData.coverImage);
+      postData.coverImage = await resolveAssetUrl(postData.coverImage);
     }
 
     res.status(200).json({ success: true, post: postData });

@@ -70,7 +70,6 @@ const BatchRepVerification = () => {
         }
       }
     } catch (error) {
-      console.error("Error fetching status:", error);
       setErrorMessage(
         error.response?.data?.message || "Failed to load verification status.",
       );

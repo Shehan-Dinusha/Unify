@@ -5,6 +5,7 @@ import {
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import s3Service from "../../services/s3.service.js";
+import logger from "../../utils/logger.js";
 
 export const uploadMaterial = async (req, res) => {
   try {
@@ -86,7 +87,7 @@ export const uploadMaterial = async (req, res) => {
       responseData,
     );
   } catch (error) {
-    console.error("Error uploading material:", error);
+    logger.error("Error uploading material:", error);
     return sendResponse(
       res,
       500,

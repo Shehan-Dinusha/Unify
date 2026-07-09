@@ -58,7 +58,6 @@ const ChatInput = ({ onSendMessage, onStartTyping, onStopTyping }) => {
             uploadedAttachments = res.data; // Array of { key, name, type, size, isImage }
           }
         } catch (err) {
-          console.error("File upload failed:", err);
           setUploading(false);
           return;
         } finally {

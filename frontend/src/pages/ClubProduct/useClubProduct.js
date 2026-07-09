@@ -30,7 +30,6 @@ export const useClubProduct = () => {
                 if (data.post.sizes?.length > 0) setActiveSize(data.post.sizes[0]);
                 if (data.post.tiers?.length > 0) setActiveTier(data.post.tiers[0].name);
             } catch (err) {
-                console.error('Failed to fetch product:', err);
                 setError('Product not found or has been removed.');
             } finally {
                 setLoading(false);

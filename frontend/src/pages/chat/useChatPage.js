@@ -65,7 +65,6 @@ const useChatPage = () => {
           mergeConversations(res.data);
         }
       } catch (err) {
-        console.error('Failed to fetch conversations:', err);
       } finally {
         setLoading(false);
       }
@@ -252,7 +251,6 @@ const useChatPage = () => {
           setSearchResults(filtered);
         }
       } catch (err) {
-        console.error('Search error:', err);
       }
     }, 300);
 
@@ -310,7 +308,6 @@ const useChatPage = () => {
             setSearchResults([]);
           }
         } catch (err) {
-          console.error('Create conversation error:', err);
         }
       } else {
         setConversations((prev) =>
@@ -353,7 +350,7 @@ const useChatPage = () => {
               }));
             }
           })
-          .catch((err) => console.error('Fetch messages error:', err))
+          .catch((err) => undefined)
           .finally(() => setMessagesLoading(false));
       }
     }
@@ -422,7 +419,6 @@ const useChatPage = () => {
           return next;
         });
       } catch (err) {
-        console.error('Delete conversation error:', err);
       }
     },
     [],
@@ -455,7 +451,6 @@ const useChatPage = () => {
         }
         return false;
       } catch (err) {
-        console.error('Load older messages error:', err);
         return false;
       }
     },
