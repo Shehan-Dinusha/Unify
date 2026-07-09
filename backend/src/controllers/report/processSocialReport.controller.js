@@ -79,7 +79,7 @@ export const processSocialReport = async (req, res, next) => {
         await report.save();
         break;
 
-      case 'delete_post':
+      case 'delete_post': {
         if (isStudentReport) {
           const entityId = parseInt(report.reportedEntityId);
           if (!isNumericId(report.reportedEntityId)) {
@@ -108,8 +108,9 @@ export const processSocialReport = async (req, res, next) => {
         appendNote(`Action Taken: Deleted ${entityLabel}.${notes ? ' Notes: ' + notes : ''}`);
         await report.save();
         break;
+      }
 
-      case 'suspend_user':
+      case 'suspend_user': {
         let targetUserId = null;
         
         if (isStudentReport) {
@@ -157,6 +158,7 @@ export const processSocialReport = async (req, res, next) => {
         appendNote(`Action Taken: Suspended User (${userToSuspend.name}). Reason: ${reason || 'Violation of guidelines'}.${notes ? ' Notes: ' + notes : ''}`);
         await report.save();
         break;
+      }
 
       case 'add_note':
         if (!notes || !notes.trim()) return sendResponse(res, 400, false, 'Note content is required');
@@ -196,3 +198,4 @@ export const processSocialReport = async (req, res, next) => {
     next(error);
   }
 };
+
