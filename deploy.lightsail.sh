@@ -61,6 +61,8 @@ fi
 
 if [ "$NEEDS_LETSENCRYPT" -eq 1 ]; then
   echo "Requesting or replacing Let's Encrypt certificate..."
+  rm -f ./ssl/live/unify-social.app/fullchain.pem ./ssl/live/unify-social.app/privkey.pem
+  rm -rf ./ssl/archive/unify-social.app ./ssl/renewal/unify-social.app.conf
   docker compose -f docker-compose.lightsail.yml run --rm --entrypoint "" \
     certbot /bin/sh -c "
       certbot certonly --webroot -w /var/www/certbot \
