@@ -18,10 +18,13 @@ export const searchChatUsers = async (req, res) => {
       return sendResponse(res, 200, true, "Search results", []);
     }
 
+    // Cross-role only: Students see Clubs, Clubs see Students
+    const targetRole = req.user.role === "Student" ? "Club" : "Student";
+
     const users = await User.findAll({
       where: {
         id: { [Op.ne]: userId },
-        role: { [Op.in]: ["Student", "Club"] },
+        role: targetRole,
         status: "Active",
         name: { [Op.iLike]: `%${q.trim()}%` },
       },

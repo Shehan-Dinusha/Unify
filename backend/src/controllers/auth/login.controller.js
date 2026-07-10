@@ -1,9 +1,11 @@
 import bcrypt from "bcryptjs";
-import { User, StudentProfile, BusinessProfile, ClubProfile } from "../../modules/index.js";
+import { User } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { generateTokens } from "./auth.utils.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import { getRoleProfileData } from "../../services/roleProfile.service.js";
+import { normalizePhone } from "../../utils/phone.util.js";
 
 /**
  * @desc    Login user
@@ -16,12 +18,12 @@ export const login = async (req, res) => {
     let searchCriteria;
     if (identifier) {
       if (identifier.includes("@")) {
-        searchCriteria = { email: identifier };
+        searchCriteria = { email: identifier.trim() };
       } else {
-        searchCriteria = { phone: identifier };
+        searchCriteria = { phone: normalizePhone(identifier) };
       }
     } else {
-      searchCriteria = email ? { email } : { phone };
+      searchCriteria = email ? { email: email.trim() } : { phone: normalizePhone(phone) };
     }
 
     // Find user
@@ -38,17 +40,7 @@ export const login = async (req, res) => {
     const { accessToken, refreshToken } = await generateTokens(user);
     const avatar = await resolveAvatarUrl(user.avatar, user.name);
 
-    let profileData = {};
-    if (user.role === "Student") {
-      const studentProfile = await StudentProfile.findOne({ where: { userId: user.id } });
-      if (studentProfile) profileData = { isBatchRep: studentProfile.isBatchRep };
-    } else if (user.role === "Business") {
-      const businessProfile = await BusinessProfile.findOne({ where: { userId: user.id } });
-      if (businessProfile) profileData = { category: businessProfile.category };
-    } else if (user.role === "Club") {
-      const clubProfile = await ClubProfile.findOne({ where: { userId: user.id } });
-      if (clubProfile) profileData = { stripeAccountId: clubProfile.stripeAccountId };
-    }
+    const profileData = await getRoleProfileData(user);
 
     return sendResponse(res, 200, true, "Login successful", {
       accessToken,
