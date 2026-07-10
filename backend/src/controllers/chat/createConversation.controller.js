@@ -26,8 +26,10 @@ export const createConversation = async (req, res) => {
       return sendResponse(res, 404, false, "User not found");
     }
 
-    if (!["Student", "Club"].includes(targetUser.role)) {
-      return sendResponse(res, 400, false, "Cannot start a conversation with this user");
+    // Cross-role only: Students can only chat with Clubs and vice versa
+    const allowedTargetRole = req.user.role === "Student" ? "Club" : "Student";
+    if (targetUser.role !== allowedTargetRole) {
+      return sendResponse(res, 400, false, "Conversations are only allowed between Students and Clubs");
     }
 
     if (targetUser.status === "Suspended") {
