@@ -1,6 +1,7 @@
 import React from "react";
 import LandingLayout from "../../components/layout/LandingLayout";
 import { Check } from "lucide-react";
+import { useBoostPackages } from "../../context/BoostPackageContext";
 
 const PricingCard = ({
   title,
@@ -69,6 +70,13 @@ const PricingCard = ({
 };
 
 const PricingPage = () => {
+  const { packages, fetchPackages } = useBoostPackages();
+
+  React.useEffect(() => {
+    // Fetch packages for all visitors (public route support)
+    fetchPackages();
+  }, [fetchPackages]);
+
   const plans = [
     {
       title: "Starter",
@@ -105,6 +113,18 @@ const PricingPage = () => {
     },
   ];
 
+  const displayedPlans = packages && packages.length > 0
+    ? packages.map(pkg => ({
+        title: pkg.name,
+        price: parseFloat(pkg.price).toFixed(0),
+        duration: `${pkg.durationValue} ${pkg.durationUnit}`,
+        description: pkg.description,
+        features: pkg.features || [],
+        isPopular: pkg.badge === "Most Popular" || pkg.name === "Growth",
+        bestValue: pkg.badge === "Best Value" || pkg.name === "Dominate"
+      }))
+    : plans;
+
   return (
     <LandingLayout>
       <section className="w-full flex flex-col items-center text-center mt-10 mb-20 relative">
@@ -123,7 +143,7 @@ const PricingPage = () => {
 
         {/* Pricing Cards Grid */}
         <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-[1050px] z-10 px-4">
-          {plans.map((plan, index) => (
+          {displayedPlans.map((plan, index) => (
             <PricingCard key={index} {...plan} />
           ))}
         </div>
