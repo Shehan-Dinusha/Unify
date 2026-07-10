@@ -620,8 +620,6 @@ export const seedUsers = async (req, res) => {
 
     const results = { created: 0, skipped: 0, errors: 0 };
 
-    const results = { created: 0, skipped: 0, errors: 0 };
-
     // ── Seed Students ───────────────────────────────────────────────────────
     const studentPlan = [
       {
