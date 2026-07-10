@@ -1,8 +1,6 @@
 services:
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ${BACKEND_IMAGE}
     container_name: unify-backend
     restart: always
     expose:
@@ -14,12 +12,7 @@ services:
       - unify-network
 
   server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL}
-        VITE_GOOGLE_MAPS_API_KEY: ${VITE_GOOGLE_MAPS_API_KEY}
+    image: ${SERVER_IMAGE}
     container_name: unify-server
     restart: always
     ports:
@@ -36,20 +29,15 @@ services:
   certbot:
     image: certbot/certbot
     container_name: unify-certbot
+    restart: always
     volumes:
       - ./ssl:/etc/letsencrypt
       - certbot-www:/var/www/certbot
     entrypoint: >
       /bin/sh -c '
-        if [ ! -d /etc/letsencrypt/live/unify-social.app ]; then
-          certbot certonly --webroot -w /var/www/certbot
-            -d unify-social.app -d api.unify-social.app
-            --email admin@unify-social.app --agree-tos --non-interactive
-            --register-unsafely-without-email || true
-        fi
         trap exit TERM
         while :; do
-          certbot renew --deploy-hook "kill -s HUP 1"
+          certbot renew --webroot -w /var/www/certbot --deploy-hook "echo certbot-renewed"
           sleep 12h & wait $${!}
         done
       '
