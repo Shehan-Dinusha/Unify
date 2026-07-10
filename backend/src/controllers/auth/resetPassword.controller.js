@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { User, OTP } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { normalizePhone } from "../../utils/phone.util.js";
 
 /**
  * @desc    Reset Password (using OTP)
@@ -11,7 +12,8 @@ import logger from "../../utils/logger.js";
 export const resetPassword = async (req, res) => {
   try {
     const { email, phone, otp, password } = req.body;
-    const whereClause = email ? { email } : { phone };
+    const normalizedPhone = phone ? normalizePhone(phone) : null;
+    const whereClause = email ? { email } : { phone: normalizedPhone };
 
     const otpRecord = await OTP.findOne({
       where: { ...whereClause, code: otp, type: "PASSWORD_RESET", isUsed: false },

@@ -1,5 +1,6 @@
 import { body, oneOf } from "express-validator";
 import { ROLES } from "../utils/constants.js";
+import { normalizePhone } from "../utils/phone.util.js";
 
 export const registerValidator = [
   body("name")
@@ -38,6 +39,7 @@ export const registerValidator = [
   body("phone")
     .optional()
     .trim()
+    .customSanitizer((value) => normalizePhone(value))
     .isMobilePhone()
     .withMessage("Invalid phone number format"),
 
@@ -60,7 +62,10 @@ export const verifyOTPValidator = [
   oneOf(
     [
       body("email").isEmail().withMessage("Invalid email format"),
-      body("phone").notEmpty().withMessage("Phone number is required"),
+      body("phone")
+        .notEmpty()
+        .withMessage("Phone number is required")
+        .customSanitizer((value) => normalizePhone(value)),
     ],
     { message: "Either email or phone number is required" },
   ),
@@ -75,9 +80,14 @@ export const verifyOTPValidator = [
 export const loginValidator = [
   oneOf(
     [
-      body("identifier").notEmpty().withMessage("Email or phone number is required"),
+      body("identifier")
+        .notEmpty()
+        .withMessage("Email or phone number is required")
+        .customSanitizer((value) => (value && !value.includes("@") ? normalizePhone(value) : value)),
       body("email").isEmail(),
-      body("phone").notEmpty(),
+      body("phone")
+        .notEmpty()
+        .customSanitizer((value) => normalizePhone(value)),
     ],
     { message: "Email or phone number is required" }
   ),
@@ -88,7 +98,10 @@ export const resendOTPValidator = [
   oneOf(
     [
       body("email").isEmail().withMessage("Invalid email format"),
-      body("phone").notEmpty().withMessage("Phone number is required"),
+      body("phone")
+        .notEmpty()
+        .withMessage("Phone number is required")
+        .customSanitizer((value) => normalizePhone(value)),
     ],
     { message: "Either email or phone number is required" },
   ),
@@ -98,7 +111,10 @@ export const forgotPasswordValidator = [
   oneOf(
     [
       body("email").isEmail().withMessage("Invalid email format"),
-      body("phone").notEmpty().withMessage("Phone number is required"),
+      body("phone")
+        .notEmpty()
+        .withMessage("Phone number is required")
+        .customSanitizer((value) => normalizePhone(value)),
     ],
     { message: "Either a valid email or phone number is required" },
   ),
@@ -108,7 +124,10 @@ export const verifyResetOTPValidator = [
   oneOf(
     [
       body("email").isEmail().withMessage("Invalid email format"),
-      body("phone").notEmpty().withMessage("Phone number is required"),
+      body("phone")
+        .notEmpty()
+        .withMessage("Phone number is required")
+        .customSanitizer((value) => normalizePhone(value)),
     ],
     { message: "Either a valid email or phone number is required" },
   ),
@@ -124,7 +143,10 @@ export const resetPasswordValidator = [
   oneOf(
     [
       body("email").isEmail().withMessage("Invalid email format"),
-      body("phone").notEmpty().withMessage("Phone number is required"),
+      body("phone")
+        .notEmpty()
+        .withMessage("Phone number is required")
+        .customSanitizer((value) => normalizePhone(value)),
     ],
     { message: "Either a valid email or phone number is required" },
   ),

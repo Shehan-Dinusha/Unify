@@ -4,6 +4,7 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { sendPasswordResetOTP } from "../../services/email.service.js";
 import { sendSMSOTP } from "../../services/sms.service.js";
+import { normalizePhone } from "../../utils/phone.util.js";
 
 /**
  * @desc    Forgot Password (OTP-based)
@@ -13,7 +14,8 @@ import { sendSMSOTP } from "../../services/sms.service.js";
 export const forgotPassword = async (req, res) => {
   try {
     const { email, phone } = req.body;
-    const whereClause = email ? { email } : { phone };
+    const normalizedPhone = phone ? normalizePhone(phone) : null;
+    const whereClause = email ? { email } : { phone: normalizedPhone };
 
     const user = await User.findOne({ where: whereClause });
 
@@ -43,8 +45,8 @@ export const forgotPassword = async (req, res) => {
     // Send via the appropriate channel
     if (email) {
       await sendPasswordResetOTP(email, otpCode);
-    } else {
-      await sendSMSOTP(phone, otpCode);
+    } else if (normalizedPhone) {
+      await sendSMSOTP(normalizedPhone, otpCode);
     }
 
     return sendResponse(res, 200, true, "Password reset code sent successfully");
