@@ -50,14 +50,26 @@ if ! docker compose -f docker-compose.lightsail.yml exec -T backend node -e "fet
   exit 1
 fi
 
-if [ ! -d ./ssl/live/unify-social.app ]; then
-  echo "Requesting initial Let's Encrypt certificate..."
+CERT_FILE=./ssl/live/unify-social.app/fullchain.pem
+NEEDS_LETSENCRYPT=0
+
+if [ ! -f "$CERT_FILE" ]; then
+  NEEDS_LETSENCRYPT=1
+elif ! openssl x509 -in "$CERT_FILE" -noout -issuer 2>/dev/null | grep -qi "Let's Encrypt"; then
+  NEEDS_LETSENCRYPT=1
+fi
+
+if [ "$NEEDS_LETSENCRYPT" -eq 1 ]; then
+  echo "Requesting or replacing Let's Encrypt certificate..."
+  sudo rm -f ./ssl/live/unify-social.app/fullchain.pem ./ssl/live/unify-social.app/privkey.pem
+  sudo rm -rf ./ssl/archive/unify-social.app ./ssl/renewal/unify-social.app.conf
   docker compose -f docker-compose.lightsail.yml run --rm --entrypoint "" \
     certbot /bin/sh -c "
       certbot certonly --webroot -w /var/www/certbot \
+        --cert-name unify-social.app \
         -d unify-social.app -d api.unify-social.app \
         --email admin@unify-social.app --agree-tos --non-interactive \
-        --register-unsafely-without-email || true
+        --register-unsafely-without-email --force-renewal || true
     "
   docker compose -f docker-compose.lightsail.yml exec -T server nginx -s reload 2>/dev/null || true
 fi
