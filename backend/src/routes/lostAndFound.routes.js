@@ -6,7 +6,8 @@ import {
   getLostFoundItemsQueryValidator,
   getLostFoundItemDetailsValidator,
   editLostFoundItemValidator,     
-  deleteLostFoundItemValidator  
+  deleteLostFoundItemValidator,
+  claimLostFoundItemValidator
 } from "../validators/lostAndFound.validator.js";
 import {
   createItem,
@@ -15,7 +16,8 @@ import {
   getMyItems,
   editItem,
   deleteItem,
-  getMatches
+  getMatches,
+  claimItem
 } from "../controllers/lostAndFound/index.js";
 import { protect } from "../middlewares/auth.middleware.js";
 
@@ -77,6 +79,13 @@ router.delete(
   deleteLostFoundItemValidator, 
   validateRequest, 
   deleteItem
+);
+// 7. Claim an item
+router.post(
+  "/:id/claim",
+  claimLostFoundItemValidator,
+  validateRequest,
+  claimItem
 );
 
 export default router;

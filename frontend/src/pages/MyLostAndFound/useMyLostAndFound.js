@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useToast } from "../../components/common/Toast";
 import { getCurrentUser } from "../../services/authService";
 import { getMyItems, deleteItem, editItem } from "../../services/lostAndFoundService";
 
@@ -7,6 +8,7 @@ export const FILTERS = ["All", "Lost Items", "Found Items", "Resolved"];
 
 export const useMyLostAndFound = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const currentUser = getCurrentUser();
   const [activeFilter, setActiveFilter] = useState("All");
   const [items, setItems] = useState([]);
@@ -113,6 +115,7 @@ export const useMyLostAndFound = () => {
       }
       setDeleteModal({ ...deleteModal, step: "success" });
     } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete post.");
     }
   };
 
