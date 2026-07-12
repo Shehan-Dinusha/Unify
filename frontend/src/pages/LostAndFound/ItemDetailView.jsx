@@ -1,12 +1,14 @@
 import { useState } from "react";
 import {
   MapPin, Clock, Calendar, Lightbulb,
-  Bookmark, Flag, FileText, CheckCircle,
+  FileText, CheckCircle,
 } from "lucide-react";
+import ClaimItemModal from "../../components/lost-found/ClaimItemModal";
 
 const ItemDetailView = ({ item, matches, onSelectMatch }) => {
   const isLost = item.type === "lost";
   const [activeImage, setActiveImage] = useState(0);
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-5 w-full max-w-5xl mx-auto px-2 sm:px-0">
@@ -93,10 +95,6 @@ const ItemDetailView = ({ item, matches, onSelectMatch }) => {
                 <h1 className="text-heading-small text-text-primary">{item.title}</h1>
                 <span className="text-body-extra-small text-text-tertiary">Post ID: {item.postId}</span>
               </div>
-              <div className="flex items-center gap-2 shrink-0 mt-1">
-                <button className="text-text-tertiary hover:text-text-primary transition-colors"><Bookmark size={18} /></button>
-                <button className="text-text-tertiary hover:text-state-error transition-colors"><Flag size={18} /></button>
-              </div>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -124,7 +122,7 @@ const ItemDetailView = ({ item, matches, onSelectMatch }) => {
             </div>
           </div>
 
-          <div className="mt-auto rounded-2xl border border-white/10 bg-dark-2 p-3.5 flex flex-col gap-2">
+          <div className="rounded-2xl border border-white/10 bg-dark-2 p-3.5 flex flex-col gap-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">
               {isLost ? "Lost By" : "Found By"}
             </span>
@@ -145,12 +143,23 @@ const ItemDetailView = ({ item, matches, onSelectMatch }) => {
             </div>
           </div>
 
-          <button className="w-full py-3.5 rounded-xl text-white text-body-medium-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 bg-primary-blue hover:brightness-110">
+          <button 
+            onClick={() => setIsClaimModalOpen(true)}
+            className="w-full py-3.5 rounded-xl text-white text-body-medium-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 bg-primary-blue hover:brightness-110"
+          >
             <CheckCircle size={18} />
             {isLost ? "I Found This" : "Claim This Item"}
           </button>
         </div>
       </div>
+
+      {isClaimModalOpen && (
+        <ClaimItemModal
+          item={item}
+          onClose={() => setIsClaimModalOpen(false)}
+          onSuccess={() => setIsClaimModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

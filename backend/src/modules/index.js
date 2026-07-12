@@ -22,6 +22,7 @@ import PostLike from "./PostLike.model.js";
 import Boarding from "./Boarding.model.js";
 import LostAndFound from "./LostAndFound.model.js";
 import MarketplaceItem from "./MarketplaceItem.model.js";
+import ClaimRequest from "./ClaimRequest.model.js";
 import Semester from "./Semester.model.js";
 import AcademicModule from "./AcademicModule.model.js";
 import ModuleCategory from "./ModuleCategory.model.js";
@@ -224,13 +225,38 @@ User.hasMany(Boarding, {
 });
 Boarding.belongsTo(User, { foreignKey: "hostId", as: "host" });
 
-// --- Lost & Found ---
+// ---// LostAndFound <-> User
 User.hasMany(LostAndFound, {
   foreignKey: "userId",
   as: "lostAndFounds",
   onDelete: "CASCADE",
 });
-LostAndFound.belongsTo(User, { foreignKey: "userId", as: "user" });
+LostAndFound.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+// LostAndFound <-> ClaimRequest
+LostAndFound.hasMany(ClaimRequest, {
+  foreignKey: "itemId",
+  as: "claims",
+  onDelete: "CASCADE",
+});
+ClaimRequest.belongsTo(LostAndFound, {
+  foreignKey: "itemId",
+  as: "item",
+});
+
+// User <-> ClaimRequest
+User.hasMany(ClaimRequest, {
+  foreignKey: "claimantId",
+  as: "claims",
+  onDelete: "CASCADE",
+});
+ClaimRequest.belongsTo(User, {
+  foreignKey: "claimantId",
+  as: "claimant",
+});
 
 // --- Marketplace ---
 MarketplaceItem.belongsTo(User, { foreignKey: "sellerId", as: "seller" });
@@ -655,4 +681,5 @@ export {
   OTP,
   UserSuspension,
   UserSuspensionHistory,
+  ClaimRequest,
 };
