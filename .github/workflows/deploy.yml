@@ -10,10 +10,6 @@ permissions:
   contents: read
   packages: write
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   lint:
     runs-on: ubuntu-latest
