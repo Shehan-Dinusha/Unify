@@ -3,6 +3,7 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { generateTokens } from "./auth.utils.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import { normalizePhone } from "../../utils/phone.util.js";
 
 /**
  * @desc    Verify OTP (Registration)
@@ -11,10 +12,11 @@ import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 export const verifyOTP = async (req, res) => {
   try {
     const { email, phone, otp } = req.body;
+    const normalizedPhone = phone ? normalizePhone(phone) : null;
 
     const otpRecord = await OTP.findOne({
       where: {
-        ...(email ? { email } : { phone }),
+        ...(email ? { email } : { phone: normalizedPhone }),
         type: "REGISTRATION",
         isUsed: false,
       },
@@ -30,7 +32,7 @@ export const verifyOTP = async (req, res) => {
     await otpRecord.destroy(); // Remove immediately — no longer needed after verification
 
 
-    const user = await User.findOne({ where: email ? { email } : { phone } });
+    const user = await User.findOne({ where: email ? { email } : { phone: normalizedPhone } });
     if (user) {
       user.isVerified = true;
       await user.save();

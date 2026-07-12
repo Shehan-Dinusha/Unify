@@ -4,6 +4,7 @@ import app from "./app.js";
 import logger from "./utils/logger.js";
 import { sequelize } from "./modules/index.js"; // Registers all models + associations
 import { startOtpCleanupJob } from "./jobs/otpCleanup.job.js";
+import { startConversationCleanupJob } from "./jobs/conversationCleanup.job.js";
 import { initializeSocket } from "./socket/index.js";
 
 const PORT = process.env.PORT || 5000;
@@ -17,6 +18,7 @@ const startServer = async () => {
 
     // 2. Start background jobs
     startOtpCleanupJob();
+    startConversationCleanupJob();
 
     // 3. Create HTTP server and attach Socket.IO
     const httpServer = createServer(app);

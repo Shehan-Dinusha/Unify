@@ -34,7 +34,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,jpg,jpeg,webp}"],
-        navigateFallback: "/offline.html",
+        navigateFallback: "/index.html",
         runtimeCaching: [
           {
             urlPattern: /^https?:\/\/.*\.s3\.amazonaws\.com\/.*/i,

@@ -53,6 +53,11 @@ const Conversation = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    scheduledDeletionAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null,
+    },
   },
   {
     tableName: "conversations",

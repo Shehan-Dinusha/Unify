@@ -3,7 +3,7 @@ import Card from '../../components/common/Card';
 import {
   ReplyAvatar, LikeAvatar, MatchIcon, VerificationIcon, SemesterIcon,
   ReviewStarAvatar, ReviewReplyAvatar, ReviewFeedbackAvatar,
-  ReviewFeedbackNotHelpfulAvatar, FollowerAvatar, OrderIcon,
+  ReviewFeedbackNotHelpfulAvatar, FollowerAvatar, OrderIcon, ClaimAvatar,
 } from './NotificationIcons';
 
 const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
@@ -19,6 +19,9 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
         if (notification.referenceType === 'Semester') return <SemesterIcon />;
         if (notification.referenceType === 'Follower') return <FollowerAvatar avatar={avatar} />;
         if (notification.referenceType === 'Order') return <OrderIcon />;
+        if (notification.referenceType === 'LostAndFound' && notification.title?.includes('your item')) {
+          return <ClaimAvatar avatar={avatar} />;
+        }
         if (notification.referenceType === 'Review') {
           switch (notification.reviewAction) {
             case 'reply': return <ReviewReplyAvatar avatar={avatar} />;
@@ -38,7 +41,7 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
   };
 
   const renderTitle = () => {
-    if (type === 'reply' || type === 'like' || notification.referenceType === 'Review' || notification.referenceType === 'ReviewFeedback' || notification.referenceType === 'Follower' || notification.referenceType === 'Verification') {
+    if (type === 'reply' || type === 'like' || notification.referenceType === 'Review' || notification.referenceType === 'ReviewFeedback' || notification.referenceType === 'Follower' || notification.referenceType === 'Verification' || (notification.referenceType === 'LostAndFound' && notification.title?.includes('your item'))) {
       const words = title.split(' ');
       if (words.length >= 2) {
         return (

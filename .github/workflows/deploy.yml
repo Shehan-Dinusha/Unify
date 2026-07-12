@@ -4,7 +4,11 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [dev, main]
+
+permissions:
+  contents: read
+  packages: write
 
 permissions:
   contents: read
@@ -45,6 +49,9 @@ jobs:
     if: github.ref == 'refs/heads/main'
     needs: [lint, test]
     runs-on: ubuntu-latest
+    env:
+      BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/unify-backend:${{ github.sha }}
+      SERVER_IMAGE: ghcr.io/${{ github.repository_owner }}/unify-server:${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
       - name: Prepare image names

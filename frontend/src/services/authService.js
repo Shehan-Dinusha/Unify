@@ -13,7 +13,8 @@ const handleError = (error) => {
 
 const setAuthData = (data) => {
   if (data.accessToken) localStorage.setItem("token", data.accessToken);
-  if (data.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
+  if (data.refreshToken)
+    localStorage.setItem("refreshToken", data.refreshToken);
   if (data.user) {
     localStorage.setItem("user", JSON.stringify(data.user));
   }
@@ -96,7 +97,7 @@ export const refreshCurrentUser = async () => {
     if (!currentUser) return null;
 
     const role = currentUser.role?.toLowerCase();
-    
+
     // Admins do not have a specific profile endpoint
     if (role === "admin") {
       return currentUser;
@@ -115,7 +116,8 @@ export const refreshCurrentUser = async () => {
 
     if (role === "student") {
       updatedUser.isBatchRep = profile.isBatchRep || false;
-      updatedUser.repVerificationStatus = profile.repVerificationStatus || "NOT_SUBMITTED";
+      updatedUser.repVerificationStatus =
+        profile.repVerificationStatus || "NOT_SUBMITTED";
     }
 
     if (role === "business" || role === "club") {
@@ -134,11 +136,10 @@ export const refreshCurrentUser = async () => {
 };
 
 export const logout = () => {
-
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("user");
-  window.location.href = "/login";
+  window.dispatchEvent(new Event("auth-changed"));
 };
 
 export const getCurrentUser = () => {

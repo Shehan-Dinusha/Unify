@@ -55,3 +55,17 @@ export const deleteLostFoundItemValidator = [
     .notEmpty().withMessage("Item ID is required")
     .isInt().withMessage("Item ID must be an integer"),
 ];
+
+export const claimLostFoundItemValidator = [
+  param("id")
+    .notEmpty().withMessage("Item ID is required")
+    .isInt().withMessage("Item ID must be an integer"),
+  body("contactNumber")
+    .trim()
+    .notEmpty().withMessage("Contact number is required")
+    .isString().withMessage("Contact number must be a string"),
+  body("description")
+    .trim()
+    .notEmpty().withMessage("Description is required")
+    .isString().withMessage("Description must be a string"),
+];

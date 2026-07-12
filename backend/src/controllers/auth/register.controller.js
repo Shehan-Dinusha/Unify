@@ -6,6 +6,7 @@ import logger from "../../utils/logger.js";
 import { Op } from "sequelize";
 import { sendEmailOTP } from "../../services/email.service.js";
 import { sendSMSOTP } from "../../services/sms.service.js";
+import { normalizePhone } from "../../utils/phone.util.js";
 
 /**
  * @desc    Register a new user
@@ -14,12 +15,13 @@ import { sendSMSOTP } from "../../services/sms.service.js";
 export const register = async (req, res) => {
   try {
     const { name, email, phone, password, role } = req.body;
+    const normalizedPhone = phone ? normalizePhone(phone) : null;
 
     const existingUser = await User.findOne({
       where: {
         [Op.or]: [
           ...(email ? [{ email }] : []),
-          ...(phone ? [{ phone }] : []),
+          ...(normalizedPhone ? [{ phone: normalizedPhone }] : []),
         ],
       },
     });
@@ -35,7 +37,7 @@ export const register = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      phone,
+      phone: normalizedPhone,
       passwordHash,
       role,
       isVerified: false,
@@ -46,7 +48,7 @@ export const register = async (req, res) => {
 
     await OTP.create({
       email,
-      phone,
+      phone: normalizedPhone,
       code: otpCode,
       expiresAt,
       type: "REGISTRATION",
@@ -54,8 +56,8 @@ export const register = async (req, res) => {
 
     if (email) {
       await sendEmailOTP(email, otpCode);
-    } else if (phone) {
-      await sendSMSOTP(phone, otpCode);
+    } else if (normalizedPhone) {
+      await sendSMSOTP(normalizedPhone, otpCode);
     }
 
     return sendResponse(res, 201, true, "Registration successful. Please verify your account with the OTP sent.", {
