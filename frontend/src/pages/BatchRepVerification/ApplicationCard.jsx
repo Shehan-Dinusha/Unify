@@ -9,7 +9,7 @@ const ApplicationCard = ({ submittedFile, status, formatFileSize, onPreview }) =
         </span>
         <div className="flex items-center gap-1">
           {(status === "pending" || status === "approved") && (
-            <Clock className="w-3 h-3 text-amber-400" />
+            <Clock className={`w-3 h-3 ${status === "approved" ? "text-green-400" : "text-amber-400"}`} />
           )}
           {(status === "declined" || status === "removed") && (
             <AlertCircle className="w-3 h-3 text-red-400" />

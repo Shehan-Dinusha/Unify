@@ -14,19 +14,23 @@ const BatchRepLearningDashboard = () => {
   const {
     currentUserId,
     semesters,
-    activeSemesterId, setActiveSemesterId,
-    activeModuleId, setActiveModuleId,
+    activeSemesterId,
+    setActiveSemesterId,
+    activeModuleId,
+    setActiveModuleId,
     degreeName,
     degreeId,
     facultyName,
-    selectedCategory, setSelectedCategory,
+    selectedCategory,
+    setSelectedCategory,
     moduleCategories,
     categoryFiles,
     activeModuleData,
     activeSemesterInfo,
     availableDegrees,
     isLoadingDetails,
-    showSuccessModal, setShowSuccessModal,
+    showSuccessModal,
+    setShowSuccessModal,
     showDeleteModal,
     actionModuleName,
     sidebarUser,
@@ -60,7 +64,7 @@ const BatchRepLearningDashboard = () => {
         <div className="w-full flex flex-col lg:flex-row items-start gap-5 mb-5">
           <div className="w-full lg:w-60 shrink-0 lg:sticky lg:top-[28px] z-10 flex flex-col gap-2">
             <ModuleSidebar
-              title={degreeName}
+              title="Module Structure"
               semesters={semesters}
               activeSemesterId={activeSemesterId}
               activeModuleId={activeModuleId}
@@ -110,7 +114,9 @@ const BatchRepLearningDashboard = () => {
                 <FileListTable
                   activeModuleId={activeModuleId}
                   categoryId={selectedCategory?.id}
-                  categoryName={selectedCategory ? selectedCategory.title : "All Files"}
+                  categoryName={
+                    selectedCategory ? selectedCategory.title : "All Files"
+                  }
                   categories={moduleCategories}
                   files={categoryFiles}
                   onRefresh={handleMaterialChanged}
