@@ -17,7 +17,7 @@ export const normalizePhone = (phone) => {
   if (!phone || typeof phone !== "string") return phone;
 
   // Remove spaces, dashes, parentheses
-  let cleaned = phone.replace(/[\s\-\(\)]/g, "");
+  let cleaned = phone.replace(/[\s\-()]/g, "");
 
   // Convert 0094 prefix to +94
   if (cleaned.startsWith("0094")) {
