@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X, MapPin, Star, Calendar, Phone, Home, Wifi, ChevronRight } from "lucide-react";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import { getAvatarUrl } from "../../utils/formatters";
 
 /**
  * BoardingOverlay Component
@@ -140,9 +141,10 @@ const BoardingOverlay = ({ post, onClose }) => {
                         <div className="flex items-center gap-4">
                             <div className="relative">
                                 <img
-                                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.host?.avatar || post.userSeed)}`}
-                                    alt={post.host?.name || post.user}
-                                    className="w-12 h-12 rounded-full border-2 border-primary-blue/30"
+                                    src={getAvatarUrl(post.host?.avatar || post.author?.avatar, post.host?.name || post.author?.name)}
+                                    alt={post.host?.name || post.author?.name || post.user}
+                                    className="w-12 h-12 rounded-full border-2 border-primary-blue/30 object-cover"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = getAvatarUrl(null, post.host?.name || post.author?.name); }}
                                 />
                                 {post.host?.verified && (
                                     <div className="absolute -bottom-1 -right-1 bg-primary-blue rounded-full p-0.5 border-2 border-[#12202E]">

@@ -28,6 +28,7 @@ const ClubOwnerMarketplace = () => {
                 image: getImageUrl(post.coverImage || post.images?.[0] || post.image),
                 clubName: post.author?.name || "Your Club",
                 clubSeed: post.author?.name || "club",
+                authorAvatar: post.author?.avatar,
                 time: formatTimeAgo(post.createdAt),
                 category: post.category || (post.postType === "club-event" ? "Event" : "Product"),
                 text: post.description,

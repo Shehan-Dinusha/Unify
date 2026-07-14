@@ -3,6 +3,7 @@ import { Send, Heart, MessageCircle } from "lucide-react";
 import Card from "../common/Card";
 import Button from "../common/Button";
 import { useNavigate } from "react-router-dom";
+import { getAvatarUrl } from "../../utils/formatters";
 
 /* ─── Single pushable action button ─────────────────────────── */
 const ActionBtn = ({ icon: Icon, svgSrc, label, count, showBoth, activeColor = "text-primary", onClick, active, fillActive = false }) => (
@@ -116,7 +117,7 @@ const CommentSection = ({ postComments, onAddComment }) => {
 };
 
 /* ─── Card component ─────────────────────────────────────────── */
-const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick }) => {
+const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick, currentUser }) => {
     const navigate = useNavigate();
 
     const [saved, setSaved] = useState(false);
@@ -174,8 +175,9 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
                 <div className="flex items-center gap-md">
                     <img
                         className="w-11 h-11 rounded-full border border-white/20"
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(post.clubSeed)}`}
+                        src={getAvatarUrl(post.authorAvatar, post.clubName)}
                         alt="club"
+                        onError={(e) => { e.target.onerror = null; e.target.src = getAvatarUrl(null, post.clubName); }}
                     />
                     <div className="min-w-0">
                         <p className="text-body-medium-bold text-text-primary truncate">{post.clubName}</p>
@@ -185,17 +187,14 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
                     </div>
                 </div>
 
-                {/* Desktop: Always show full */}
-                <p className="hidden md:block mt-md text-body-medium text-text-secondary leading-6 whitespace-pre-wrap">
-                    {post.text}
-                </p>
-
-                {/* Mobile: Truncated text with toggle */}
-                <div className="md:hidden mt-md text-body-medium text-text-secondary leading-6">
-                    <p className={`${!isExpanded ? "line-clamp-2" : ""} whitespace-pre-wrap`}>
-                        {post.text}
+                {/* Description - Unified expandable logic */}
+                <div className="mt-md text-body-medium text-text-secondary leading-6">
+                    <p className="whitespace-pre-wrap">
+                        {post.text && post.text.length > 180 && !isExpanded
+                            ? `${post.text.slice(0, 180).trimEnd()}...`
+                            : post.text}
                     </p>
-                    {post.text && post.text.length > 80 && (
+                    {post.text && post.text.length > 180 && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -236,23 +235,16 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick 
                     />
 
 
-                    {/* Save */}
-                    <ActionBtn
-                        svgSrc="/icon_save_marketplace.svg"
-                        label="Save"
-                        activeColor="text-purple-400"
-                        active={saved}
-                        onClick={toggleSave}
-                    />
-
-                    {/* Report */}
-                    <ActionBtn
-                        svgSrc="/icon_report_marketplace.svg"
-                        label="Report"
-                        activeColor="text-red-400"
-                        active={reported}
-                        onClick={toggleReport}
-                    />
+                    {/* Save — only visible to students */}
+                    {currentUser?.role === 'STUDENT' && (
+                        <ActionBtn
+                            svgSrc="/icon_save_marketplace.svg"
+                            label="Save"
+                            activeColor="text-purple-400"
+                            active={saved}
+                            onClick={toggleSave}
+                        />
+                    )}
                 </div>
 
                 {/* ── Comment section (toggles open) ─────────────────── */}

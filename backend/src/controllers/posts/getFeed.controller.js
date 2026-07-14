@@ -1,5 +1,6 @@
 import { NormalPost, ClubProductPost, ClubEventPost, Boarding, User, Comment, PostLike, SavedItem } from "../../modules/index.js";
 import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 import boostService from "../../services/boost.service.js";
 
 const resolveImageUrl = async (img) => {
@@ -40,6 +41,20 @@ const resolvePostImages = async (post) => {
   }
   if (resolved.coverImage) {
     resolved.coverImage = await resolveImageUrl(resolved.coverImage);
+  }
+  // Resolve author avatar
+  if (resolved.author?.avatar !== undefined) {
+    resolved.author = {
+      ...resolved.author,
+      avatar: await resolveAvatarUrl(resolved.author.avatar, resolved.author.name),
+    };
+  }
+  // Resolve host avatar (Boarding posts use 'host')
+  if (resolved.host?.avatar !== undefined) {
+    resolved.host = {
+      ...resolved.host,
+      avatar: await resolveAvatarUrl(resolved.host.avatar, resolved.host.name),
+    };
   }
   return resolved;
 };

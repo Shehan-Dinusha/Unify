@@ -56,7 +56,7 @@ const VerificationIcon = () => (
 
 /* --- Main Notification Card --- */
 const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
-  const { type, title, content, time, isUnread, avatar, avatars, image } = notification;
+  const { type, title, content, time, isUnread, avatar, image } = notification;
 
   // Render correct icon/avatar
   const renderIcon = () => {

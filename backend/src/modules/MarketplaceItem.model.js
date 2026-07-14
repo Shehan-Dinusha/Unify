@@ -45,6 +45,10 @@ const MarketplaceItem = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    commentsCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   },
   {
     tableName: "marketplace_items",

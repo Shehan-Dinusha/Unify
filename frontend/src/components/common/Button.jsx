@@ -8,6 +8,8 @@ const Button = ({
   iconOnly = false,
   fullWidth = false,
   className = "",
+  iconPosition = "left",
+  loading = false,
   ...props
 }) => {
   // Base styles
@@ -40,13 +42,26 @@ const Button = ({
   const widthStyle = fullWidth ? "w-full" : "";
   const iconPadding = iconOnly ? "px-0 w-12" : "gap-2";
 
+  console.log("Button props:", { ...props, iconPosition, loading });
   return (
     <button
       className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${widthStyle} ${iconPadding} ${className}`}
+      disabled={loading || props.disabled}
       {...props}
     >
-      {Icon && <Icon className={iconOnly ? "w-6 h-6" : "w-5 h-5"} />}
-      {!iconOnly && children}
+      {loading ? (
+        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      ) : (
+        <>
+          {Icon && iconPosition === "left" && (
+            <Icon className={iconOnly ? "w-6 h-6" : "w-5 h-5"} />
+          )}
+          {!iconOnly && children}
+          {Icon && iconPosition === "right" && (
+            <Icon className={iconOnly ? "w-6 h-6" : "w-5 h-5"} />
+          )}
+        </>
+      )}
     </button>
   );
 };

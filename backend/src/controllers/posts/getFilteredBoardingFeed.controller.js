@@ -1,6 +1,7 @@
 import { Boarding, User, Comment, PostLike, SavedItem } from "../../modules/index.js";
 import { Op } from "sequelize";
 import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 const resolveImageUrl = async (imgPath) => {
   if (!imgPath) return imgPath;
@@ -20,6 +21,13 @@ const resolvePostImages = async (post) => {
   const resolved = { ...post };
   if (Array.isArray(resolved.images) && resolved.images.length > 0) {
     resolved.images = await Promise.all(resolved.images.map(resolveImageUrl));
+  }
+  // Resolve the author (host) avatar — this is the profile picture shown on the post card
+  if (resolved.author?.avatar !== undefined) {
+    resolved.author = {
+      ...resolved.author,
+      avatar: await resolveAvatarUrl(resolved.author.avatar, resolved.author.name),
+    };
   }
   return resolved;
 };

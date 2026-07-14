@@ -305,8 +305,9 @@ const ClubProduct = () => {
                                     <Button
                                         variant="primary"
                                         size="large"
-                                        className="flex-1 min-w-0 md:min-w-[260px] justify-center"
+                                        className="flex-1 min-w-0 md:min-w-[260px] justify-center !bg-white !text-black"
                                         onClick={() => {
+                                            console.log("still not place in the database");
                                             const finalPrice = activeTier ? post.tiers.find(t => t.name === activeTier)?.price : post.price;
                                             navigate("/marketplace/club/checkout", {
                                                 state: {
