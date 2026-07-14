@@ -4,6 +4,7 @@ import {
   ReplyAvatar, LikeAvatar, MatchIcon, VerificationIcon, SemesterIcon,
   ReviewStarAvatar, ReviewReplyAvatar, ReviewFeedbackAvatar,
   ReviewFeedbackNotHelpfulAvatar, FollowerAvatar, OrderIcon, ClaimAvatar,
+  WarningIcon, SuspensionIcon, AdminIcon
 } from './NotificationIcons';
 
 const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
@@ -16,6 +17,9 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
       case 'match': return <MatchIcon />;
       case 'verification': return <VerificationIcon />;
       default:
+        if (notification.referenceType === 'Warning') return <WarningIcon />;
+        if (notification.referenceType === 'Suspension') return <SuspensionIcon />;
+        if (['Reactivation', 'Report', 'ContentRemoval', 'ForceLogout'].includes(notification.referenceType)) return <AdminIcon />;
         if (notification.referenceType === 'Semester') return <SemesterIcon />;
         if (notification.referenceType === 'Follower') return <FollowerAvatar avatar={avatar} />;
         if (notification.referenceType === 'Order') return <OrderIcon />;
