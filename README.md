@@ -106,6 +106,26 @@ frontend/
 ├── src/
 │   ├── components/     # Reusable UI components (layout, ui, etc.)
 │   ├── pages/          # Full page views mapped to routes (e.g., Dashboards, Profiles)
+
+## ☁️ Production Deployment (AWS Lightsail)
+
+The production CI/CD pipeline builds Docker images in GitHub Actions, pushes them to GHCR, and Lightsail only pulls prebuilt images.
+
+Required GitHub repository secrets:
+
+- `EC2_HOST`: Lightsail instance public host/IP.
+- `EC2_SSH_KEY`: Private SSH key for `ubuntu` user.
+- `GHCR_USERNAME`: GitHub username (or machine user) that can access GHCR packages.
+- `GHCR_PUSH_TOKEN`: Token with `write:packages` + `read:packages` for GitHub Actions image push.
+- `GHCR_PULL_TOKEN`: Read-only token with `read:packages` for Lightsail image pull.
+- `VITE_API_URL`: Frontend build API base URL.
+- `VITE_GOOGLE_MAPS_API_KEY`: Frontend build Google Maps key.
+
+Production deploy uses:
+
+- `docker-compose.lightsail.yml`
+- `deploy.lightsail.sh`
+
 │   ├── chat/           # Chat-specific components and logic
 │   ├── profile/        # Profile management components
 │   ├── App.jsx         # Main React application component

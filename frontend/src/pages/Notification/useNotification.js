@@ -146,7 +146,6 @@ export const useNotification = () => {
       );
       refreshUnreadCount();
     } catch (err) {
-      console.error('Failed to mark notification as read:', err);
     }
   };
 
@@ -157,6 +156,8 @@ export const useNotification = () => {
       navigate('/student-learning');
     } else if (referenceType === 'Follower') {
       navigate('/club/followers');
+    } else if (referenceType === 'Order') {
+      navigate(`/order-details/${referenceId}`);
     } else if (referenceType === 'Verification') {
       const role = authUser?.role;
       if (role === 'Club') {

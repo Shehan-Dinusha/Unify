@@ -74,6 +74,23 @@ function generateFeaturesFromConfig(config, durationValue, durationUnit) {
   return features;
 }
 
+//─── VALID STATUS TRANSITIONS ───────────────────────────────────────
+const VALID_TRANSITIONS = {
+  Pending: ['Active', 'Cancelled'],
+  Active: ['Paused', 'Completed', 'Cancelled'],
+  Paused: ['Active', 'Cancelled'],
+  Completed: [],
+  Cancelled: [],
+};
+
+function validateStatusTransition(currentStatus, newStatus) {
+  const allowed = VALID_TRANSITIONS[currentStatus] || [];
+  if (!allowed.includes(newStatus)) {
+    return { valid: false, message: `Cannot transition from '${currentStatus}' to '${newStatus}'.` };
+  }
+  return { valid: true };
+}
+
 //Handles all business logic for boost packages, purchases, and logs.
 class BoostService {
   // ── ID Generators ────────────────────────────────────────────────────────
@@ -852,3 +869,4 @@ class BoostService {
 }
 
 export default new BoostService();
+export { VALID_TRANSITIONS, validateStatusTransition, generateFeaturesFromConfig };

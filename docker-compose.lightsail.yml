@@ -1,0 +1,52 @@
+services:
+  backend:
+    image: ${BACKEND_IMAGE}
+    container_name: unify-backend
+    restart: always
+    expose:
+      - "5000"
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+    networks:
+      - unify-network
+
+  server:
+    image: ${SERVER_IMAGE}
+    container_name: unify-server
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ssl:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    depends_on:
+      - backend
+    networks:
+      - unify-network
+
+  certbot:
+    image: certbot/certbot
+    container_name: unify-certbot
+    restart: always
+    volumes:
+      - ./ssl:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    entrypoint: >
+      /bin/sh -c '
+        trap exit TERM
+        while :; do
+          certbot renew --webroot -w /var/www/certbot --deploy-hook "echo certbot-renewed"
+          sleep 12h & wait $${!}
+        done
+      '
+    depends_on:
+      - server
+
+networks:
+  unify-network:
+    driver: bridge
+
+volumes:
+  certbot-www:

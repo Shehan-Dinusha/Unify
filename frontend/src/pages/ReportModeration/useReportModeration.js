@@ -25,7 +25,6 @@ export const useReportModeration = () => {
                     { icon: 'ShieldCheck', iconBg: 'bg-state-success/20', iconColor: 'text-state-success', value: String(d.resolvedToday ?? 0), label: 'Resolved Today', cardBg: 'bg-gradient-to-br from-state-success/10 to-transparent' },
                 ]);
             } catch (err) {
-                console.error('[ReportModeration] Failed to load stats:', err);
                 toast.error('Connection Error', 'Failed to load report stats. Please check your backend.');
             }
         };
@@ -43,7 +42,6 @@ export const useReportModeration = () => {
                 });
                 setReports(result.data || []);
             } catch (err) {
-                console.error('[ReportModeration] Failed to load reports:', err);
                 setError('Failed to connect to the server. Please make sure the backend is running.');
                 toast.error('Connection Error', 'Failed to load report queue.');
             } finally {

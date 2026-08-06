@@ -177,7 +177,6 @@ const BoardingPostCard = ({ post, onClick }) => {
         try {
             await newsfeedService.toggleLike(postType, postId);
         } catch (err) {
-            console.error("Failed to toggle like:", err);
             setLiked(wasLiked);
             setLikes(wasLiked ? likes : Math.max(0, likes - 1));
         }
@@ -191,7 +190,6 @@ const BoardingPostCard = ({ post, onClick }) => {
         try {
             await newsfeedService.toggleSave(postType, postId);
         } catch (err) {
-            console.error("Failed to toggle save:", err);
             setSaved(wasSaved);
             if (post) toggleSavePost(post);
         }
@@ -216,7 +214,6 @@ const BoardingPostCard = ({ post, onClick }) => {
                 setPostComments(fetchedComments);
                 setCommentCount(fetchedComments.length);
             } catch (err) {
-                console.error("Failed to fetch comments:", err);
             } finally {
                 setLoadingComments(false);
             }
@@ -251,7 +248,6 @@ const BoardingPostCard = ({ post, onClick }) => {
                 );
             }
         } catch (err) {
-            console.error("Failed to add comment:", err);
             setPostComments((prev) => prev.filter((c) => c.id !== tempComment.id));
             setCommentCount((c) => Math.max(0, c - 1));
         }

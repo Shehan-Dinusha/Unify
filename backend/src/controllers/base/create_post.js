@@ -1,4 +1,5 @@
 import Post from './src/modules/Post.model.js';
+import logger from '../../../utils/logger.js';
 
 async function createTestPost() {
   try {
@@ -16,9 +17,9 @@ async function createTestPost() {
     });
 
     if (created) {
-      console.log('✅ Test Post created successfully with ID: 1');
+      logger.info('✅ Test Post created successfully with ID: 1');
     } else {
-      console.log('ℹ️ Test Post already exists with ID: 1');
+      logger.info('ℹ️ Test Post already exists with ID: 1');
     }
 
     // Create a second post for additional testing
@@ -36,14 +37,14 @@ async function createTestPost() {
     });
 
     if (created2) {
-      console.log('✅ Test Post created successfully with ID: 2');
+      logger.info('✅ Test Post created successfully with ID: 2');
     } else {
-      console.log('ℹ️ Test Post already exists with ID: 2');
+      logger.info('ℹ️ Test Post already exists with ID: 2');
     }
 
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error creating post:', error.message);
+    logger.error('❌ Error creating post:', error.message);
     process.exit(1);
   }
 }

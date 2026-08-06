@@ -16,7 +16,6 @@ const ItemDetailViewWrapper = ({ id, onBack, onSelectMatch }) => {
         const matchData = await getItemMatches(id).catch(() => null);
         setMatches(matchData?.matches || null);
       } catch (error) {
-        console.error("Failed to fetch item details", error);
       } finally {
         setLoading(false);
       }

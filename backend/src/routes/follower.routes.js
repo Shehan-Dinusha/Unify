@@ -10,6 +10,7 @@ import {
   toggleFollowValidator,
   getFollowersValidator,
   getFollowingValidator,
+  getPublicFollowersValidator,
 } from "../validators/follower.validator.js";
 
 const router = express.Router();
@@ -41,6 +42,12 @@ router.post(
 );
 
 // Publicly viewable endpoint
-router.get("/:userId/followers", protect, getPublicFollowers);
+router.get(
+  "/:userId/followers",
+  protect,
+  getPublicFollowersValidator,
+  validateRequest,
+  getPublicFollowers,
+);
 
 export default router;

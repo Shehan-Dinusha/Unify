@@ -5,3 +5,4 @@ export * from "./getMyItems.controller.js";
 export * from "./editItem.controller.js";
 export * from "./deleteItem.controller.js";
 export * from "./getMatches.controller.js";
+export * from "./claimItem.controller.js";

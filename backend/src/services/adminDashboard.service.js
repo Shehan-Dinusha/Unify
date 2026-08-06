@@ -707,6 +707,30 @@ export const getRevenueBreakdown = async () => {
   return result;
 };
 
+// ─── Pure Helper Functions (extracted from controllers for testability) ──────
+
+export function formatStudentForDirectory(user, faculty) {
+  return {
+    id: user.id,
+    name: user.name,
+    status: user.status,
+    faculty: faculty?.name || 'Unknown',
+    lastActive: user.lastActive ? moment(user.lastActive).fromNow() : 'Never',
+  };
+}
+
+export function isStatusChangeRedundant(currentStatus, targetStatus) {
+  return currentStatus === targetStatus;
+}
+
+export function canForceLogout(isOnline) {
+  return isOnline === true;
+}
+
+export function canSendWarning(userStatus) {
+  return userStatus !== 'Suspended';
+}
+
 export default {
   getDashboardStats,
   getPlatformGrowth,

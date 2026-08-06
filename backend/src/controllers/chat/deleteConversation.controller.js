@@ -31,9 +31,10 @@ export const deleteConversation = async (req, res) => {
 
     // Check if both participants have deleted the conversation
     if (conversation.deletedByParticipantOne && conversation.deletedByParticipantTwo) {
-      // Hard-delete all messages and the conversation
-      await Message.destroy({ where: { conversationId } });
-      await conversation.destroy();
+      // Schedule for permanent deletion after retention period
+      const retentionDays = parseInt(process.env.CONVERSATION_RETENTION_DAYS, 10) || 30;
+      conversation.scheduledDeletionAt = new Date(Date.now() + retentionDays * 24 * 60 * 60 * 1000);
+      await conversation.save();
     } else {
       // Otherwise just save the updated flag
       await conversation.save();

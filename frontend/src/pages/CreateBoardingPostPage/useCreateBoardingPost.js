@@ -99,7 +99,6 @@ export const useCreateBoardingPost = () => {
       await postService.createPost("boarding", data);
       navigate("/boarding-owner/marketplace");
     } catch (error) {
-      console.error("Failed to publish boarding post:", error);
       alert(error.message || "Failed to publish boarding post. Please try again.");
     } finally {
       setLoading(false);

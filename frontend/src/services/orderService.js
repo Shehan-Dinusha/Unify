@@ -151,6 +151,7 @@ const orderService = {
   updateOrderStatus: async (orderId, statusData) => {
     try {
       const response = await api.patch(`/orders/${orderId}/status`, statusData);
+      window.dispatchEvent(new Event("club-orders-updated"));
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -178,6 +179,7 @@ const orderService = {
         orderIds,
         status,
       });
+      window.dispatchEvent(new Event("club-orders-updated"));
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

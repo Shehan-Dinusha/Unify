@@ -44,7 +44,6 @@ const Button = ({
   const widthStyle = fullWidth ? "w-full" : "";
   const iconPadding = iconOnly ? "px-0 w-12" : "gap-2";
 
-  console.log("Button props:", { ...props, iconPosition, loading });
   return (
     <button
       className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${widthStyle} ${iconPadding} ${className}`}

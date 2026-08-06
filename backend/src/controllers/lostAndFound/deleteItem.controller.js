@@ -5,9 +5,9 @@ import s3Service from "../../services/s3.service.js";
 export const deleteItem = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
-  //if (!req.user) return sendResponse(res, 401, false, "Unauthorized");
-   // for testing
-  const userId = 1; // test user
+  if (!req.user) return sendResponse(res, 401, false, "Unauthorized");
+  
+  const userId = req.user.id;
 
 
 
@@ -19,7 +19,7 @@ export const deleteItem = catchAsync(async (req, res, next) => {
 
   // Security Check: Only original poster can delete
   if (item.userId !== userId) {
-    return sendResponse(res, 403, false, "You do not have permission to delete this item.");
+    return sendResponse(res, 403, false, `You do not have permission to delete this item. (item.userId: ${item.userId} vs req.user.id: ${userId})`);
   }
 
   // 1. Delete all associated images from S3 Bucket

@@ -1,46 +1,15 @@
 import { NormalPost, ClubProductPost, ClubEventPost, Boarding, User, Comment, PostLike, SavedItem } from "../../modules/index.js";
-import { getFileUrl } from "../../services/s3.service.js";
+import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 import boostService from "../../services/boost.service.js";
-
-const resolveImageUrl = async (img) => {
-  if (!img) return img;
-
-  let imgPath = img;
-  // Handle case where img is stored as a JSON object (e.g. { url: "..." } from ClubEventPost)
-  if (typeof img === "object" && img !== null) {
-    if (img.url) imgPath = img.url;
-    else return imgPath;
-  }
-
-  if (typeof imgPath !== "string") return imgPath;
-
-  if (imgPath.includes("X-Amz-Signature")) return imgPath;
-  const s3UrlMatch = imgPath.match(/https?:\/\/[^/]+\.amazonaws\.com\/(.+)/);
-  if (s3UrlMatch) {
-    try {
-      return await getFileUrl(s3UrlMatch[1]);
-    } catch {
-      return imgPath;
-    }
-  }
-  if (!imgPath.startsWith("http") && !imgPath.startsWith("/")) {
-    try {
-      return await getFileUrl(imgPath);
-    } catch {
-      return imgPath;
-    }
-  }
-  return imgPath;
-};
 
 const resolvePostImages = async (post) => {
   const resolved = { ...post };
   if (Array.isArray(resolved.images) && resolved.images.length > 0) {
-    resolved.images = await Promise.all(resolved.images.map(resolveImageUrl));
+    resolved.images = await Promise.all(resolved.images.map(resolveAssetUrl));
   }
   if (resolved.coverImage) {
-    resolved.coverImage = await resolveImageUrl(resolved.coverImage);
+    resolved.coverImage = await resolveAssetUrl(resolved.coverImage);
   }
   // Resolve author avatar
   if (resolved.author?.avatar !== undefined) {

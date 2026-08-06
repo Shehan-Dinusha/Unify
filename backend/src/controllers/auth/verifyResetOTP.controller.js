@@ -1,6 +1,7 @@
 import { OTP } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
+import { normalizePhone } from "../../utils/phone.util.js";
 
 /**
  * @desc    Verify Reset OTP
@@ -10,7 +11,8 @@ import logger from "../../utils/logger.js";
 export const verifyResetOTP = async (req, res) => {
   try {
     const { email, phone, otp } = req.body;
-    const whereClause = email ? { email } : { phone };
+    const normalizedPhone = phone ? normalizePhone(phone) : null;
+    const whereClause = email ? { email } : { phone: normalizedPhone };
 
     const otpRecord = await OTP.findOne({
       where: { ...whereClause, code: otp, type: "PASSWORD_RESET", isUsed: false },

@@ -19,6 +19,7 @@ import {
 } from "../../services/authService";
 import { useNotifications } from "../../context/NotificationContext";
 import { useChat } from "../../context/ChatContext";
+import { useClubOrders } from "../../context/ClubOrderContext";
 
 // Sub-component for individual Nav Items
 const SidebarItem = ({
@@ -101,6 +102,7 @@ const UnifiedSidebar = ({
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
   const { unreadCount } = useNotifications();
   const { unreadMessageCount } = useChat();
+  const { unconfirmedOrderCount } = useClubOrders();
 
   useEffect(() => {
     refreshCurrentUser().then((updated) => {
@@ -216,6 +218,7 @@ const UnifiedSidebar = ({
         {
           icon: LayoutDashboard,
           label: "Order Dashboard",
+          badge: unconfirmedOrderCount > 0 ? unconfirmedOrderCount : null,
           path: "/club-owner/dashboard",
         },
       ],
@@ -384,6 +387,7 @@ const UnifiedSidebar = ({
           onConfirm={() => {
             setShowLogoutModal(false);
             logout();
+            navigate("/login", { replace: true });
           }}
         />
       )}

@@ -33,7 +33,6 @@ export const useFollowings = () => {
         setErrorStatus(err.response.status);
       } else {
         setError('Failed to load followings. Please try again later.');
-        console.error('Error fetching followings:', err);
       }
     } finally {
       setIsLoading(false);
@@ -50,7 +49,6 @@ export const useFollowings = () => {
       setHasMore(data.hasMore);
       setPage(nextPage);
     } catch (err) {
-      console.error('Error loading more followings:', err);
     } finally {
       setIsLoadingMore(false);
     }
@@ -67,7 +65,6 @@ export const useFollowings = () => {
       setHasMore(data.hasMore);
       setPage(1);
     } catch (err) {
-      console.error('Error updating sort:', err);
     } finally {
       setIsLoading(false);
     }
