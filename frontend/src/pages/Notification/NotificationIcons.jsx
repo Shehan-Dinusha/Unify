@@ -1,6 +1,23 @@
 import React from 'react';
-import { CornerUpLeft, Heart, Search, ShieldCheck, BookOpen, Star, MessageSquare, ThumbsUp, ThumbsDown, UserPlus, PackageCheck, PackageSearch } from 'lucide-react';
+import { CornerUpLeft, Heart, Search, ShieldCheck, BookOpen, Star, MessageSquare, ThumbsUp, ThumbsDown, UserPlus, PackageCheck, PackageSearch, AlertTriangle, Ban, Info } from 'lucide-react';
 
+export const WarningIcon = () => (
+  <div className="w-10 h-10 shrink-0 rounded-full bg-yellow-500/10 flex items-center justify-center">
+    <AlertTriangle size={18} className="text-yellow-500" />
+  </div>
+);
+
+export const SuspensionIcon = () => (
+  <div className="w-10 h-10 shrink-0 rounded-full bg-state-error/10 flex items-center justify-center">
+    <Ban size={18} className="text-state-error" />
+  </div>
+);
+
+export const AdminIcon = () => (
+  <div className="w-10 h-10 shrink-0 rounded-full bg-primary-blue/10 flex items-center justify-center">
+    <Info size={18} className="text-primary-blue" />
+  </div>
+);
 export const ReplyAvatar = ({ avatar }) => (
   <div className="relative w-10 h-10 shrink-0">
     <img src={avatar} alt="Reply" className="w-full h-full rounded-full object-cover" />

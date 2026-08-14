@@ -36,6 +36,10 @@ export const formatTimeAgo = (date) => {
  */
 export const getImageUrl = (path) => {
   if (!path) return "/placeholder-post.jpg";
+
+  if (Array.isArray(path)) {
+    path = path[0];
+  }
   
   // Handle JSON object paths (e.g., from ClubEventPost coverImage)
   if (typeof path === "object") {
@@ -47,7 +51,9 @@ export const getImageUrl = (path) => {
   // Fallback if somehow path is still not a string
   if (typeof path !== "string") return "/placeholder-post.jpg";
 
-  if (path.startsWith("http")) return path;
+  if (path.startsWith("http") || path.startsWith("blob:") || path.startsWith("data:")) {
+    return path;
+  }
   
   const baseURL = import.meta.env.VITE_API_URL?.replace("/api/v1", "") || "http://localhost:5000";
   return `${baseURL}${path.startsWith("/") ? "" : "/"}${path}`;

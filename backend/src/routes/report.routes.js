@@ -8,7 +8,7 @@ import {
   updateReportSchema, 
   withdrawReportSchema 
 } from '../validators/report.validator.js';
-import { protect } from '../middlewares/auth.middleware.js';
+import { protect, authorize } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
@@ -39,12 +39,16 @@ router.get(
 //Admin moderation queue
 router.get(
   '/admin/queue',
+  protect,
+  authorize('Admin'),
   ReportController.getReportQueue
 );
 
 //Admin statistics
 router.get(
   '/admin/statistics',
+  protect,
+  authorize('Admin'),
   ReportController.getStatistics
 );
 
@@ -55,18 +59,24 @@ router.get(
 //Social moderation dashboard stats
 router.get(
   '/social/stats',
+  protect,
+  authorize('Admin'),
   ReportController.getSocialReportStats
 );
 
 //Social moderation queue
 router.get(
   '/social/queue',
+  protect,
+  authorize('Admin'),
   ReportController.getSocialReportQueue
 );
 
 //Get specific social report details
 router.get(
   '/social/:id',
+  protect,
+  authorize('Admin'),
   [param('id').notEmpty().withMessage('Report ID is required')],
   validate,
   ReportController.getSocialReportById
@@ -75,6 +85,8 @@ router.get(
 //Process social report
 router.put(
   '/social/:id',
+  protect,
+  authorize('Admin'),
   updateReportSchema,
   validate,
   ReportController.processSocialReport
@@ -96,6 +108,8 @@ router.get(
 //Update report status/priority
 router.put(
   '/:id',
+  protect,
+  authorize('Admin'),
   updateReportSchema,
   validate,
   ReportController.updateReport

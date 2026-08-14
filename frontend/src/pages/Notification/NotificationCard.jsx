@@ -4,6 +4,7 @@ import {
   ReplyAvatar, LikeAvatar, MatchIcon, VerificationIcon, SemesterIcon,
   ReviewStarAvatar, ReviewReplyAvatar, ReviewFeedbackAvatar,
   ReviewFeedbackNotHelpfulAvatar, FollowerAvatar, OrderIcon, ClaimAvatar,
+  WarningIcon, SuspensionIcon, AdminIcon
 } from './NotificationIcons';
 
 const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
@@ -16,6 +17,9 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
       case 'match': return <MatchIcon />;
       case 'verification': return <VerificationIcon />;
       default:
+        if (notification.referenceType === 'Warning') return <WarningIcon />;
+        if (notification.referenceType === 'Suspension') return <SuspensionIcon />;
+        if (['Reactivation', 'Report', 'ContentRemoval', 'ForceLogout'].includes(notification.referenceType)) return <AdminIcon />;
         if (notification.referenceType === 'Semester') return <SemesterIcon />;
         if (notification.referenceType === 'Follower') return <FollowerAvatar avatar={avatar} />;
         if (notification.referenceType === 'Order') return <OrderIcon />;
@@ -41,7 +45,17 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
   };
 
   const renderTitle = () => {
-    if (type === 'reply' || type === 'like' || notification.referenceType === 'Review' || notification.referenceType === 'ReviewFeedback' || notification.referenceType === 'Follower' || notification.referenceType === 'Verification' || (notification.referenceType === 'LostAndFound' && notification.title?.includes('your item'))) {
+    if (notification.referenceType === 'Warning') {
+      return <span className="text-yellow-500">{title}</span>;
+    }
+    if (['Suspension', 'ForceLogout', 'ContentRemoval'].includes(notification.referenceType)) {
+      return <span className="text-state-error">{title}</span>;
+    }
+    if (notification.referenceType === 'Reactivation') {
+      return <span className="text-state-success">{title}</span>;
+    }
+
+    if (type === 'reply' || type === 'like' || ['Review', 'ReviewFeedback', 'Follower', 'Verification', 'Report'].includes(notification.referenceType) || (notification.referenceType === 'LostAndFound' && notification.title?.includes('your item'))) {
       const words = title.split(' ');
       if (words.length >= 2) {
         return (

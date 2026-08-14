@@ -122,6 +122,16 @@ export const notifyLike = async ({
  * @param {string} params.commentText  - The comment content (truncated)
  * @param {number} params.commentId    - The comment ID
  */
+/**
+ * Truncate a comment to 80 characters for use in notification content.
+ * Exported for unit testing.
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+export const truncateComment = (text) =>
+  text.length > 80 ? `${text.substring(0, 80)}...` : text;
+
 export const notifyComment = async ({
   postOwnerId,
   actorId,
@@ -131,10 +141,7 @@ export const notifyComment = async ({
   commentText,
   commentId,
 }) => {
-  const truncated =
-    commentText.length > 80
-      ? `${commentText.substring(0, 80)}...`
-      : commentText;
+  const truncated = truncateComment(commentText);
 
   return notifyUser({
     userId: postOwnerId,
@@ -230,7 +237,7 @@ export const notifyOwnerLikeReview = async ({ reviewAuthorId, actorId, actorName
   });
 };
 
-const buildReviewFeedbackTitle = (users, action) => {
+export const buildReviewFeedbackTitle = (users, action) => {
   const actionText = action === "helpful"
     ? "found your review helpful"
     : "found your review not helpful";
@@ -320,7 +327,7 @@ export const removeReviewFeedbackFromNotification = async ({ reviewAuthorId, act
 
 // ── Follower Notification Helpers ─────────────────────────────────────────────
 
-const buildFollowerTitle = (followers) => {
+export const buildFollowerTitle = (followers) => {
   if (followers.length === 1) {
     return `${followers[0].name} started following you`;
   }

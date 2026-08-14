@@ -1,4 +1,5 @@
 import UserSuspensionService from "../../services/userSuspension.service.js";
+import { notifyUser } from "../../services/notification.service.js";
 
 export const reactivateUser = async (req, res, next) => {
   try {
@@ -21,6 +22,18 @@ export const reactivateUser = async (req, res, next) => {
     }
 
     const data = await UserSuspensionService.reactivateUser(userId, req.body, adminId);
+
+    // ── Notify the reactivated user ────────────────────────────────────
+    notifyUser({
+      userId: data.userId,
+      actorId: adminId,
+      type: "General",
+      title: "Account Reactivated 🎉",
+      content: `Your account (Case: ${data.caseReference}) has been reactivated. You can now access all platform features again. Welcome back!`,
+      referenceId: data.userId,
+      referenceType: "Reactivation",
+      dedupeKey: `admin:reactivate:${data.userId}:${Date.now()}`,
+    }).catch(() => {});
 
     res.status(200).json({
       success: true,
