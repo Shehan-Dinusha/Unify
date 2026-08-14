@@ -6,7 +6,6 @@ import {
   StudentReport,
   Comment,
   MarketplaceItem,
-  Boarding,
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
@@ -119,7 +118,7 @@ export const processSocialReport = async (req, res, next) => {
         }
         break;
 
-      case "resolve":
+      case "resolve": {
         report.status = "Resolved";
         if (isStudentReport) report.resolvedAt = new Date();
         appendNote(`Resolution: ${notes || "Marked as resolved by admin"}`);
@@ -147,6 +146,7 @@ export const processSocialReport = async (req, res, next) => {
           }
         }
         break;
+      }
 
       case "delete_post": {
         let contentAuthorId = null;
