@@ -7,6 +7,7 @@ import {
   getLostFoundItemsQueryValidator,
   editLostFoundItemValidator,
   deleteLostFoundItemValidator,
+  claimLostFoundItemValidator,
 } from '../../src/validators/lostAndFound.validator.js';
 
 const getError = async (schemaArray, data) => {
@@ -108,5 +109,70 @@ describe('editLostFoundItemValidator', () => {
 describe('deleteLostFoundItemValidator', () => {
   it('accepts valid param', async () => {
     assert.equal(await getErrorWithParams(deleteLostFoundItemValidator, { id: '7' }), null);
+  });
+});
+
+// ── claimLostFoundItemValidator ───────────────────────────────────────────────
+
+describe('claimLostFoundItemValidator', () => {
+  const validParams = { id: '7' };
+  const validBody = { contactNumber: '0771234567', description: 'I think this is mine, blue cover' };
+
+  it('accepts a valid claim with all fields', async () => {
+    assert.equal(await getErrorWithParams(claimLostFoundItemValidator, validParams, validBody), null);
+  });
+
+  it('rejects missing contactNumber', async () => {
+    const err = await getErrorWithParams(
+      claimLostFoundItemValidator,
+      validParams,
+      { description: 'Mine' }
+    );
+    assert.ok(err, 'Expected an error for missing contactNumber');
+  });
+
+  it('rejects empty contactNumber', async () => {
+    const err = await getErrorWithParams(
+      claimLostFoundItemValidator,
+      validParams,
+      { ...validBody, contactNumber: '' }
+    );
+    assert.ok(err, 'Expected an error for empty contactNumber');
+  });
+
+  it('rejects missing description', async () => {
+    const err = await getErrorWithParams(
+      claimLostFoundItemValidator,
+      validParams,
+      { contactNumber: '0771234567' }
+    );
+    assert.ok(err, 'Expected an error for missing description');
+  });
+
+  it('rejects empty description', async () => {
+    const err = await getErrorWithParams(
+      claimLostFoundItemValidator,
+      validParams,
+      { ...validBody, description: '' }
+    );
+    assert.ok(err, 'Expected an error for empty description');
+  });
+
+  it('rejects non-integer item id', async () => {
+    const err = await getErrorWithParams(
+      claimLostFoundItemValidator,
+      { id: 'abc' },
+      validBody
+    );
+    assert.ok(err, 'Expected an error for non-integer item id');
+  });
+
+  it('rejects missing item id param', async () => {
+    const err = await getErrorWithParams(
+      claimLostFoundItemValidator,
+      {},
+      validBody
+    );
+    assert.ok(err, 'Expected an error for missing item id');
   });
 });

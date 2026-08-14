@@ -285,10 +285,12 @@ const BoardingPostCard = ({ post, onClick }) => {
                 </div>
 
                 {/* Location */}
-                <div className="flex items-center gap-1 mb-2">
-                    <MapPin size={13} className="text-text-tertiary flex-shrink-0" />
-                    <span className="text-[13px] text-text-tertiary line-clamp-1">{post.location}</span>
-                </div>
+                {post.location && !/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(post.location.trim()) && (
+                    <div className="flex items-center gap-1 mb-2">
+                        <MapPin size={13} className="text-text-tertiary flex-shrink-0" />
+                        <span className="text-[13px] text-text-tertiary line-clamp-1">{post.location}</span>
+                    </div>
+                )}
 
                 {/* Description */}
                 <div className="text-body-medium text-text-secondary leading-6 mb-1">

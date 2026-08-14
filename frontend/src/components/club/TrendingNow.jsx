@@ -3,7 +3,7 @@ import Card from "../common/Card";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
-const TrendingNow = ({ items, loading = false }) => {
+const TrendingNow = ({ items, loading = false, clickable = true }) => {
     const navigate = useNavigate();
 
     return (
@@ -20,8 +20,8 @@ const TrendingNow = ({ items, loading = false }) => {
                         {items.map((it) => (
                             <div 
                                 key={`${it.postType}-${it.id}`} 
-                                onClick={() => navigate(`/marketplace/club/product/${it.postType}/${it.id}`)}
-                                className="flex items-center gap-md p-2 -mx-2 rounded-xl cursor-pointer hover:bg-white/5 transition-colors"
+                                onClick={clickable ? () => navigate(`/marketplace/club/product/${it.postType}/${it.id}`) : undefined}
+                                className={`flex items-center gap-md p-2 -mx-2 rounded-xl transition-colors ${clickable ? "cursor-pointer hover:bg-white/5" : "cursor-default"}`}
                             >
                                 <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 bg-white/5 shrink-0">
                                     <img src={it.image} alt={it.title} className="w-full h-full object-cover" />

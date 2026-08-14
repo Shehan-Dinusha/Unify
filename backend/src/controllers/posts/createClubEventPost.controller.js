@@ -29,7 +29,10 @@ export const createClubEventPost = async (req, res) => {
     }
 
     const files = req.files || [];
-    const coverImage = files.length > 0 ? { url: files[0].location } : null;
+    const uploadedFileUrls = getUploadedFileUrls(files);
+    const coverImage = uploadedFileUrls.length > 0
+      ? uploadedFileUrls.map((url) => ({ url }))
+      : null;
 
 
     let tiers = req.body.tiers || req.body.tickets;
