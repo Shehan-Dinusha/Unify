@@ -25,7 +25,7 @@ export const useClubProduct = () => {
                 setLoading(true);
                 const data = await postService.getPost(type, id);
                 setPost(data.post);
-                if (data.post.images?.length > 0) setActiveImg(0);
+                if (data.post.images?.length > 0 || data.post.coverImage) setActiveImg(0);
                 if (data.post.colors?.length > 0) setActiveColor(data.post.colors[0].id);
                 if (data.post.sizes?.length > 0) setActiveSize(data.post.sizes[0]);
                 if (data.post.tiers?.length > 0) setActiveTier(data.post.tiers[0].name);
@@ -43,7 +43,8 @@ export const useClubProduct = () => {
             return post.images.map((img, idx) => ({ id: idx, src: getImageUrl(img), alt: post.name }));
         }
         if (post?.coverImage) {
-            return [{ id: 0, src: getImageUrl(post.coverImage), alt: post.name }];
+            const coverImages = Array.isArray(post.coverImage) ? post.coverImage : [post.coverImage];
+            return coverImages.map((img, idx) => ({ id: idx, src: getImageUrl(img), alt: post.name }));
         }
         return [];
     }, [post]);

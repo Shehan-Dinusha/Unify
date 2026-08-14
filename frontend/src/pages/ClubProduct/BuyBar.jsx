@@ -18,7 +18,7 @@ const BuyBar = ({ qty, onQtyChange, onBuy, pickupNote }) => (
                     </button>
                 </div>
 
-                <Button variant="primary" size="large" className="flex-1 min-w-0 md:min-w-[260px] justify-center !bg-white !text-black" onClick={onBuy}>
+                <Button variant="primary" size="large" className="flex-1 min-w-0 md:min-w-[260px] justify-center !bg-primary-blue !text-white" onClick={onBuy}>
                     Buy Now
                 </Button>
             </div>

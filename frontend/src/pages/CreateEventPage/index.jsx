@@ -73,7 +73,7 @@ const CreateEventPage = () => {
         );
     }
 
-    const handlePublish = async (eventData, coverImage) => {
+    const handlePublish = async (eventData, images) => {
         try {
             const data = new FormData();
             data.append("name", eventData.name);
@@ -86,9 +86,11 @@ const CreateEventPage = () => {
             // If the form has tiers, we can pass them
             data.append("tickets", JSON.stringify(eventData.tickets || []));
             
-            if (coverImage?.file) {
-                data.append("coverImage", coverImage.file);
-            }
+            images.forEach(img => {
+                if (img.file) {
+                    data.append("coverImage", img.file);
+                }
+            });
 
             // Use real userId
             data.append("userId", user.id);
