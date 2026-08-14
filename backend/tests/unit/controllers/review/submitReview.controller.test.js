@@ -2,7 +2,7 @@ import { describe, it, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import { mockRes, mockNext } from "../../../helpers/testUtils.js";
 import { submitReview } from "../../../../src/controllers/review/submitReview.controller.js";
-import { Review, User } from "../../../../src/modules/index.js";
+import { Notification, Review, User } from "../../../../src/modules/index.js";
 
 afterEach(() => {
   mock.restoreAll();
@@ -44,7 +44,10 @@ describe("submitReview", () => {
     await submitReview(req, res, next);
 
     assert.equal(res.getStatusCode(), 403);
-    assert.match(res.getBody().message, /Only Students and Clubs can submit reviews/i);
+    assert.match(
+      res.getBody().message,
+      /Only Students and Clubs can submit reviews/i,
+    );
   });
 
   it("returns 404 if the target user does not exist", async () => {
@@ -64,7 +67,9 @@ describe("submitReview", () => {
   });
 
   it("returns 400 if the target is not a Business account", async () => {
-    mock.method(User, "findByPk", async (id) => (id === 1 ? reviewer : { id: 2, role: "Student" }));
+    mock.method(User, "findByPk", async (id) =>
+      id === 1 ? reviewer : { id: 2, role: "Student" },
+    );
 
     const req = {
       user: { id: 1, name: "Alice" },
@@ -76,11 +81,16 @@ describe("submitReview", () => {
     await submitReview(req, res, next);
 
     assert.equal(res.getStatusCode(), 400);
-    assert.match(res.getBody().message, /Reviews can only be given to Business accounts/i);
+    assert.match(
+      res.getBody().message,
+      /Reviews can only be given to Business accounts/i,
+    );
   });
 
   it("returns 400 if the reviewer already reviewed the target", async () => {
-    mock.method(User, "findByPk", async (id) => (id === 1 ? reviewer : businessTarget));
+    mock.method(User, "findByPk", async (id) =>
+      id === 1 ? reviewer : businessTarget,
+    );
     mock.method(Review, "findOne", async () => ({ id: 9 }));
 
     const req = {
@@ -97,10 +107,16 @@ describe("submitReview", () => {
   });
 
   it("returns 201 and creates the review with defaults", async () => {
-    mock.method(User, "findByPk", async (id) => (id === 1 ? reviewer : businessTarget));
+    mock.method(User, "findByPk", async (id) =>
+      id === 1 ? reviewer : businessTarget,
+    );
     mock.method(Review, "findOne", async () => null);
     const createFn = mock.fn(async (data) => ({ id: 10, ...data }));
     mock.method(Review, "create", createFn);
+    const notifyFindOne = mock.fn(async () => null);
+    const notifyCreate = mock.fn(async () => ({}));
+    mock.method(Notification, "findOne", notifyFindOne);
+    mock.method(Notification, "create", notifyCreate);
 
     const req = {
       user: { id: 1, name: "Alice" },
@@ -119,14 +135,35 @@ describe("submitReview", () => {
     assert.equal(args.rating, 4);
     assert.equal(args.content, "");
     assert.equal(args.isAnonymous, false);
+    assert.equal(notifyFindOne.mock.calls.length, 1);
+    assert.deepEqual(notifyFindOne.mock.calls[0].arguments[0], {
+      where: { dedupeKey: "review:10" },
+    });
+    assert.equal(notifyCreate.mock.calls.length, 1);
+    assert.deepEqual(notifyCreate.mock.calls[0].arguments[0], {
+      userId: 2,
+      actorId: 1,
+      type: "General",
+      title: "Alice reviewed your business",
+      content: null,
+      referenceId: 10,
+      referenceType: "Review",
+      dedupeKey: "review:10",
+      image: null,
+    });
     assert.equal(next.called, false);
   });
 
   it("returns 201 and stores content and anonymity flags", async () => {
-    mock.method(User, "findByPk", async (id) => (id === 1 ? reviewer : businessTarget));
+    mock.method(User, "findByPk", async (id) =>
+      id === 1 ? reviewer : businessTarget,
+    );
     mock.method(Review, "findOne", async () => null);
     const createFn = mock.fn(async (data) => ({ id: 11, ...data }));
     mock.method(Review, "create", createFn);
+    const notifyCreate = mock.fn(async () => ({}));
+    mock.method(Notification, "findOne", async () => null);
+    mock.method(Notification, "create", notifyCreate);
 
     const req = {
       user: { id: 1, name: "Alice" },
@@ -141,6 +178,8 @@ describe("submitReview", () => {
     const args = createFn.mock.calls[0].arguments[0];
     assert.equal(args.content, "Meh");
     assert.equal(args.isAnonymous, true);
+    assert.equal(notifyCreate.mock.calls.length, 1);
+    assert.equal(notifyCreate.mock.calls[0].arguments[0].content, '"Meh"');
   });
 
   it("forwards unexpected errors to next", async () => {
