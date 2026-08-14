@@ -13,28 +13,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { validationResult } from 'express-validator';
+import { getError, getErrorWithQuery } from '../helpers/testUtils.js';
 import {
   createPackageValidator,
   updatePackageValidator,
   purchaseBoostValidator,
   logsQueryValidator,
 } from '../../src/validators/boost.validator.js';
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const getError = async (schemaArray, data) => {
-  const req = { body: data, params: {}, query: {} };
-  for (const v of schemaArray) await v.run(req);
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(', ');
-};
-
-const getQueryError = async (schemaArray, data) => {
-  const req = { body: {}, params: {}, query: data };
-  for (const v of schemaArray) await v.run(req);
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(', ');
-};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // createPackageValidator
@@ -399,50 +384,50 @@ describe('purchaseBoostValidator', () => {
 
 describe('logsQueryValidator', () => {
   it('accepts empty query', async () => {
-    assert.equal(await getQueryError(logsQueryValidator, {}), null);
+    assert.equal(await getErrorWithQuery(logsQueryValidator, {}), null);
   });
 
   it('accepts valid params', async () => {
-    assert.equal(await getQueryError(logsQueryValidator, { page: '2', limit: '10', type: 'package_added' }), null);
+    assert.equal(await getErrorWithQuery(logsQueryValidator, { page: '2', limit: '10', type: 'package_added' }), null);
   });
 
   it('accepts all valid log types', async () => {
     for (const type of ['package_added', 'package_updated', 'package_deleted']) {
-      const err = await getQueryError(logsQueryValidator, { type });
+      const err = await getErrorWithQuery(logsQueryValidator, { type });
       assert.equal(err, null, `Expected type '${type}' to be valid`);
     }
   });
 
   it('rejects limit over 100', async () => {
-    const err = await getQueryError(logsQueryValidator, { limit: '999' });
+    const err = await getErrorWithQuery(logsQueryValidator, { limit: '999' });
     assert.notEqual(err, null);
   });
 
   it('rejects limit of 0', async () => {
-    const err = await getQueryError(logsQueryValidator, { limit: '0' });
+    const err = await getErrorWithQuery(logsQueryValidator, { limit: '0' });
     assert.notEqual(err, null);
   });
 
   it('rejects negative limit', async () => {
-    const err = await getQueryError(logsQueryValidator, { limit: '-5' });
+    const err = await getErrorWithQuery(logsQueryValidator, { limit: '-5' });
     assert.notEqual(err, null);
   });
 
   it('rejects invalid type', async () => {
-    const err = await getQueryError(logsQueryValidator, { type: 'invalid' });
+    const err = await getErrorWithQuery(logsQueryValidator, { type: 'invalid' });
     assert.notEqual(err, null);
   });
 
   it('rejects page=0', async () => {
-    const err = await getQueryError(logsQueryValidator, { page: '0' });
+    const err = await getErrorWithQuery(logsQueryValidator, { page: '0' });
     assert.notEqual(err, null);
   });
 
   it('accepts limit at boundary: 1', async () => {
-    assert.equal(await getQueryError(logsQueryValidator, { limit: '1' }), null);
+    assert.equal(await getErrorWithQuery(logsQueryValidator, { limit: '1' }), null);
   });
 
   it('accepts limit at boundary: 100', async () => {
-    assert.equal(await getQueryError(logsQueryValidator, { limit: '100' }), null);
+    assert.equal(await getErrorWithQuery(logsQueryValidator, { limit: '100' }), null);
   });
 });

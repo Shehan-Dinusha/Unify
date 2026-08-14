@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { validationResult } from 'express-validator';
+import { getError } from '../helpers/testUtils.js';
 import {
   registerValidator,
   loginValidator,
@@ -10,15 +10,6 @@ import {
   verifyResetOTPValidator,
   resetPasswordValidator,
 } from '../../src/validators/auth.validator.js';
-
-const getError = async (schemaArray, data) => {
-  const req = { body: data };
-  for (const validation of schemaArray) {
-    await validation.run(req);
-  }
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(", ");
-};
 
 describe('registerValidator', () => {
   const validStudent = {

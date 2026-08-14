@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { validationResult } from 'express-validator';
+import { getError, getErrorWithParams } from '../helpers/testUtils.js';
 import {
   createNormalPostValidator,
   createClubProductPostValidator,
@@ -9,24 +9,6 @@ import {
   postParamsValidator,
   commentValidator,
 } from '../../src/validators/post.validator.js';
-
-const getError = async (schemaArray, data) => {
-  const req = { body: data, params: {} };
-  for (const validation of schemaArray) {
-    await validation.run(req);
-  }
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(", ");
-};
-
-const getErrorWithParams = async (schemaArray, params, body) => {
-  const req = { body: body || {}, params, query: {} };
-  for (const validation of schemaArray) {
-    await validation.run(req);
-  }
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(", ");
-};
 
 describe('createNormalPostValidator', () => {
   const valid = { description: 'Hello world', postType: 'club' };

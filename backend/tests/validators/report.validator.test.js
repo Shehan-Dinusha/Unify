@@ -11,28 +11,12 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { validationResult } from 'express-validator';
+import { getError, getErrorWithParams } from '../helpers/testUtils.js';
 import {
   createReportSchema,
   updateReportSchema,
   withdrawReportSchema,
 } from '../../src/validators/report.validator.js';
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const getError = async (schemaArray, data) => {
-  const req = { body: data, params: {}, query: {} };
-  for (const v of schemaArray) await v.run(req);
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(', ');
-};
-
-const getErrorWithParams = async (schemaArray, params, body = {}) => {
-  const req = { body, params, query: {} };
-  for (const v of schemaArray) await v.run(req);
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(', ');
-};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // createReportSchema

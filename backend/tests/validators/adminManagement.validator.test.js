@@ -14,6 +14,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { validationResult } from 'express-validator';
+import { getError, getErrorWithQuery } from '../helpers/testUtils.js';
 import {
   studentDirectoryValidator,
   businessDirectoryValidator,
@@ -22,66 +23,50 @@ import {
   sendWarningValidator,
 } from '../../src/validators/adminManagement.validator.js';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const getError = async (schemaArray, data, params = {}) => {
-  const req = { body: data, params, query: {} };
-  for (const v of schemaArray) await v.run(req);
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(', ');
-};
-
-const getQueryError = async (schemaArray, query) => {
-  const req = { body: {}, params: {}, query };
-  for (const v of schemaArray) await v.run(req);
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(', ');
-};
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // studentDirectoryValidator
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe('studentDirectoryValidator', () => {
   it('accepts empty query (no filters)', async () => {
-    assert.equal(await getQueryError(studentDirectoryValidator, {}), null);
+    assert.equal(await getErrorWithQuery(studentDirectoryValidator, {}), null);
   });
 
   it('accepts valid status filter: Active', async () => {
-    assert.equal(await getQueryError(studentDirectoryValidator, { status: 'Active' }), null);
+    assert.equal(await getErrorWithQuery(studentDirectoryValidator, { status: 'Active' }), null);
   });
 
   it('accepts valid status filter: Suspended', async () => {
-    assert.equal(await getQueryError(studentDirectoryValidator, { status: 'Suspended' }), null);
+    assert.equal(await getErrorWithQuery(studentDirectoryValidator, { status: 'Suspended' }), null);
   });
 
   it('accepts status filter: all', async () => {
-    assert.equal(await getQueryError(studentDirectoryValidator, { status: 'all' }), null);
+    assert.equal(await getErrorWithQuery(studentDirectoryValidator, { status: 'all' }), null);
   });
 
   it('accepts lowercase status: active', async () => {
-    assert.equal(await getQueryError(studentDirectoryValidator, { status: 'active' }), null);
+    assert.equal(await getErrorWithQuery(studentDirectoryValidator, { status: 'active' }), null);
   });
 
   it('accepts lowercase status: suspended', async () => {
-    assert.equal(await getQueryError(studentDirectoryValidator, { status: 'suspended' }), null);
+    assert.equal(await getErrorWithQuery(studentDirectoryValidator, { status: 'suspended' }), null);
   });
 
   it('rejects invalid status', async () => {
-    const err = await getQueryError(studentDirectoryValidator, { status: 'Banned' });
+    const err = await getErrorWithQuery(studentDirectoryValidator, { status: 'Banned' });
     assert.match(err, /Invalid status/);
   });
 
   it('accepts faculty filter', async () => {
-    assert.equal(await getQueryError(studentDirectoryValidator, { faculty: 'Engineering' }), null);
+    assert.equal(await getErrorWithQuery(studentDirectoryValidator, { faculty: 'Engineering' }), null);
   });
 
   it('accepts search query', async () => {
-    assert.equal(await getQueryError(studentDirectoryValidator, { search: 'john' }), null);
+    assert.equal(await getErrorWithQuery(studentDirectoryValidator, { search: 'john' }), null);
   });
 
   it('accepts combined filters', async () => {
-    assert.equal(await getQueryError(studentDirectoryValidator, {
+    assert.equal(await getErrorWithQuery(studentDirectoryValidator, {
       status: 'Active', faculty: 'IT', search: 'smith'
     }), null);
   });
@@ -93,32 +78,32 @@ describe('studentDirectoryValidator', () => {
 
 describe('businessDirectoryValidator', () => {
   it('accepts empty query', async () => {
-    assert.equal(await getQueryError(businessDirectoryValidator, {}), null);
+    assert.equal(await getErrorWithQuery(businessDirectoryValidator, {}), null);
   });
 
   it('accepts valid status: Active', async () => {
-    assert.equal(await getQueryError(businessDirectoryValidator, { status: 'Active' }), null);
+    assert.equal(await getErrorWithQuery(businessDirectoryValidator, { status: 'Active' }), null);
   });
 
   it('accepts status: all', async () => {
-    assert.equal(await getQueryError(businessDirectoryValidator, { status: 'all' }), null);
+    assert.equal(await getErrorWithQuery(businessDirectoryValidator, { status: 'all' }), null);
   });
 
   it('rejects invalid status', async () => {
-    const err = await getQueryError(businessDirectoryValidator, { status: 'Deleted' });
+    const err = await getErrorWithQuery(businessDirectoryValidator, { status: 'Deleted' });
     assert.match(err, /Invalid status/);
   });
 
   it('accepts category filter', async () => {
-    assert.equal(await getQueryError(businessDirectoryValidator, { category: 'Food & Cafe' }), null);
+    assert.equal(await getErrorWithQuery(businessDirectoryValidator, { category: 'Food & Cafe' }), null);
   });
 
   it('accepts search query', async () => {
-    assert.equal(await getQueryError(businessDirectoryValidator, { search: 'pizza' }), null);
+    assert.equal(await getErrorWithQuery(businessDirectoryValidator, { search: 'pizza' }), null);
   });
 
   it('accepts combined filters', async () => {
-    assert.equal(await getQueryError(businessDirectoryValidator, {
+    assert.equal(await getErrorWithQuery(businessDirectoryValidator, {
       status: 'Suspended', category: 'Boarding', search: 'near campus'
     }), null);
   });
