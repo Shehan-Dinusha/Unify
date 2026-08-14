@@ -57,6 +57,7 @@ describe('updateStudentReputation', () => {
   it('clamps the score so it never drops below zero', async () => {
     const profile = makeProfile({ reputationScore: 20 });
     mock.method(StudentProfile, 'findOne', async () => profile);
+    mock.method(User, 'findByPk', async () => null);
 
     const result = await updateStudentReputation(5, 'WARNING_RECEIVED');
 
