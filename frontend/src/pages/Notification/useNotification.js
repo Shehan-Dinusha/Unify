@@ -177,6 +177,8 @@ export const useNotification = () => {
           navigate('/business/reviews');
         }
       }
+    } else if (referenceType === 'Report') {
+      navigate(`/student/reports/${referenceId}`);
     } else {
       navigate('/news-feed', { state: { targetPostId: referenceId, targetPostType: referenceType } });
     }

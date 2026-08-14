@@ -18,7 +18,9 @@ export const updateStudentReputation = async (userId, actionType) => {
       'MATERIAL_DOWNLOAD': 5,
       'RELIABLE_BUYER_FEEDBACK': 15,
       'VIOLATION_DELETED': -50,
-      'FAKE_REPORT_SPAM': -20
+      'FAKE_REPORT_SPAM': -20,
+      'ACCOUNT_SUSPENDED': -50,
+      'WARNING_RECEIVED': -30
     };
 
     const points = POINT_MAP[actionType] || 0;
