@@ -387,6 +387,7 @@ const UnifiedSidebar = ({
           onConfirm={() => {
             setShowLogoutModal(false);
             logout();
+            navigate("/login", { replace: true });
           }}
         />
       )}

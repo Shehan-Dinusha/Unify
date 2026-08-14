@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import React, { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react';
 import { CheckCircle2, AlertTriangle, X, Info } from 'lucide-react';
 
 // ─── Toast Context ──────────────────────────────────────────────────────────
@@ -52,20 +52,50 @@ const COLORS = {
 const Toast = ({ id, type = 'info', title, message, duration = 4000, onRemove }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const colors = COLORS[type] || COLORS.info;
   const Icon = ICONS[type] || Info;
 
-  useEffect(() => {
-    requestAnimationFrame(() => setIsVisible(true));
-    const timer = setTimeout(() => {
+  const remainingRef = useRef(duration);
+  const timerRef = useRef(null);
+  const startTimeRef = useRef(null);
+  const pausedAtRef = useRef(null);
+
+  const startTimer = useCallback((ms) => {
+    clearTimeout(timerRef.current);
+    startTimeRef.current = Date.now();
+    timerRef.current = setTimeout(() => {
       setIsExiting(true);
       setTimeout(() => onRemove(id), 300);
-    }, duration);
-    return () => clearTimeout(timer);
-  }, [id, duration, onRemove]);
+    }, ms);
+  }, [id, onRemove]);
+
+  useEffect(() => {
+    requestAnimationFrame(() => setIsVisible(true));
+    startTimer(duration);
+    return () => clearTimeout(timerRef.current);
+  }, [id, duration, startTimer]);
+
+  const handleMouseEnter = () => {
+    clearTimeout(timerRef.current);
+    const elapsed = Date.now() - startTimeRef.current;
+    remainingRef.current = Math.max(remainingRef.current - elapsed, 0);
+    pausedAtRef.current = Date.now();
+    setIsPaused(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (pausedAtRef.current !== null) {
+      const pauseDuration = Date.now() - pausedAtRef.current;
+      pausedAtRef.current = null;
+    }
+    startTimer(remainingRef.current);
+    setIsPaused(false);
+  };
 
   const handleClose = () => {
+    clearTimeout(timerRef.current);
     setIsExiting(true);
     setTimeout(() => onRemove(id), 300);
   };
@@ -78,6 +108,8 @@ const Toast = ({ id, type = 'info', title, message, duration = 4000, onRemove })
         ${colors.bg} ${colors.border}
         ${isVisible && !isExiting ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}
       `}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <div className="p-4 flex items-start gap-3">
         <div className={`shrink-0 mt-0.5 ${colors.icon}`}>
@@ -95,7 +127,10 @@ const Toast = ({ id, type = 'info', title, message, duration = 4000, onRemove })
       <div className="h-0.5 bg-white/5">
         <div
           className={`h-full ${colors.bar} transition-all ease-linear`}
-          style={{ animation: `shrink ${duration}ms linear forwards` }}
+          style={{
+            animation: `shrink ${duration}ms linear forwards`,
+            animationPlayState: isPaused ? 'paused' : 'running',
+          }}
         />
       </div>
       <style>{`
