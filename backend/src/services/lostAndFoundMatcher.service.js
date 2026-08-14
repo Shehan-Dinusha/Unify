@@ -63,7 +63,7 @@ const TIME_WEIGHT = 0.15;
  * @param {string|null} locB
  * @returns {number} Score in [0, 1]
  */
-const computeLocationSimilarity = (locA, locB) => {
+export const computeLocationSimilarity = (locA, locB) => {
   if (!locA || !locB) return 0;
 
   // Use a lower minimum token length (2) for locations so short labels
@@ -128,7 +128,7 @@ const computeLocationSimilarity = (locA, locB) => {
  * @param {string|Date|null} dateB
  * @returns {number} Score in [0.05, 1.0]
  */
-const computeTimeRelevance = (dateA, dateB) => {
+export const computeTimeRelevance = (dateA, dateB) => {
   if (!dateA || !dateB) return 0.1; // neutral score when dates are missing
 
   const msA = new Date(dateA).getTime();

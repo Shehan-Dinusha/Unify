@@ -11,7 +11,10 @@
     "migrate:undo": "npx sequelize-cli db:migrate:undo --options-path .sequelizerc.cjs",
     "seed": "npx sequelize-cli db:seed:all --options-path .sequelizerc.cjs",
     "seed:undo": "npx sequelize-cli db:seed:undo:all --options-path .sequelizerc.cjs",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "node --test tests/unit/services/*.test.js tests/validators/*.test.js",
+    "test:services": "node --test tests/unit/services/*.test.js",
+    "test:validators": "node --test tests/validators/*.test.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.400.0",
