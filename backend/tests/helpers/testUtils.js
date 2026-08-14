@@ -12,9 +12,10 @@ import { validationResult } from 'express-validator';
 /**
  * Runs an express-validator schema array against a fake request body
  * and returns null if valid, or a joined error string if invalid.
+ * Pass an optional `params` object to also populate route params.
  */
-export const getError = async (schemaArray, data) => {
-  const req = { body: data, params: {}, query: {} };
+export const getError = async (schemaArray, data, params = {}) => {
+  const req = { body: data, params, query: {} };
   for (const validation of schemaArray) {
     await validation.run(req);
   }
@@ -78,6 +79,8 @@ export const mockReq = (overrides = {}) => ({
  * status() and json(). After the controller runs, inspect:
  *   res._status  — the HTTP status code
  *   res._json    — the JSON payload
+ *   res.getStatusCode() — the HTTP status code
+ *   res.getBody()       — the JSON payload
  */
 export const mockRes = () => {
   const res = {
@@ -91,6 +94,8 @@ export const mockRes = () => {
       res._json = data;
       return res;
     },
+    getStatusCode: () => res._status,
+    getBody: () => res._json,
   };
   return res;
 };
@@ -109,4 +114,25 @@ export const mockNext = () => {
   fn.called = false;
   fn.error = null;
   return fn;
+};
+
+/**
+ * Runs a catchAsync-wrapped controller and resolves once it settles.
+ * catchAsync's wrapper returns undefined (it fire-and-forgets via .catch(next)),
+ * so the controller must be awaited by hooking res.json and next().
+ */
+export const runController = (controller, req, res, next) => {
+  return new Promise((resolve) => {
+    const origJson = res.json.bind(res);
+    res.json = (data) => {
+      origJson(data);
+      resolve();
+      return res;
+    };
+    const newNext = (err) => {
+      next(err);
+      resolve();
+    };
+    controller(req, res, newNext);
+  });
 };
