@@ -98,6 +98,7 @@ const ClubOwnerView = ({
       iconBg: "bg-blue-500/20",
       title: "View Boost Packages",
       description: "Explore packages to promote your listings.",
+      path: "/business/boost-post",
       disabled: !isApproved,
     },
     {
@@ -113,6 +114,7 @@ const ClubOwnerView = ({
       iconBg: "bg-violet-500/20",
       title: "View Boosted Posts",
       description: "Track boosted posts and their performance.",
+      path: "/my-posts?filter=boosted",
       disabled: !isApproved,
     },
   ];
@@ -176,6 +178,7 @@ const ClubOwnerView = ({
           icon={Zap}
           className="py-2.5 md:py-3"
           disabled={!isApproved}
+          onClick={() => navigate("/business/boost-post")}
         >
           Boost Post
         </Button>

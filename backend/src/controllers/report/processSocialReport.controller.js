@@ -6,11 +6,12 @@ import {
   StudentReport,
   Comment,
   MarketplaceItem,
-  Boarding,
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import UserSuspensionService from "../../services/userSuspension.service.js";
+import { notifyUser } from "../../services/notification.service.js";
+import { updateStudentReputation } from "../../services/reputation.service.js";
 
 //Handles all admin actions from ReportDetail.jsx.
 export const processSocialReport = async (req, res, next) => {
@@ -91,16 +92,65 @@ export const processSocialReport = async (req, res, next) => {
           `Dismiss Reason: ${reason}${notes ? ". Notes: " + notes : ""}`,
         );
         await report.save();
+
+        if (reason && (reason.toLowerCase().includes('fake') || reason.toLowerCase().includes('spam') || reason.toLowerCase().includes('false'))) {
+          const reporterId = isStudentReport ? report.studentId : report.reporterId;
+          if (reporterId) {
+            await updateStudentReputation(reporterId, 'FAKE_REPORT_SPAM');
+          }
+        }
+
+        // ── Notify the reporter that their report was dismissed ─────────
+        {
+          const reporterId = isStudentReport ? report.studentId : report.reporterId;
+          if (reporterId) {
+            notifyUser({
+              userId: reporterId,
+              actorId: adminId,
+              type: "General",
+              title: "Report Update: Reviewed",
+              content: `Your report (ID: ${id}) has been reviewed and dismissed. Reason: ${reason}`,
+              referenceId: report.id,
+              referenceType: "Report",
+              dedupeKey: `admin:report-dismiss:social:${report.id}`,
+            }).catch(() => {});
+          }
+        }
         break;
 
-      case "resolve":
+      case "resolve": {
         report.status = "Resolved";
         if (isStudentReport) report.resolvedAt = new Date();
         appendNote(`Resolution: ${notes || "Marked as resolved by admin"}`);
         await report.save();
+
+        const resolveReporterId = isStudentReport ? report.studentId : report.reporterId;
+        if (resolveReporterId) {
+          await updateStudentReputation(resolveReporterId, 'REPORT_RESOLVED');
+        }
+
+        // ── Notify the reporter that their report was resolved ──────────
+        {
+          const reporterId = isStudentReport ? report.studentId : report.reporterId;
+          if (reporterId) {
+            notifyUser({
+              userId: reporterId,
+              actorId: adminId,
+              type: "General",
+              title: "Report Update: Resolved ✅",
+              content: `Your report (ID: ${id}) has been resolved. ${notes || "Thank you for helping keep the community safe."}`,
+              referenceId: report.id,
+              referenceType: "Report",
+              dedupeKey: `admin:report-resolve:social:${report.id}`,
+            }).catch(() => {});
+          }
+        }
         break;
+      }
 
       case "delete_post": {
+        let contentAuthorId = null;
+
         if (isStudentReport) {
           const entityId = parseInt(report.reportedEntityId);
           if (!isNumericId(report.reportedEntityId)) {
@@ -116,18 +166,46 @@ export const processSocialReport = async (req, res, next) => {
             // Try Post table first
             let post = await Post.findByPk(entityId);
             if (post) {
+              contentAuthorId = post.authorId;
               await post.destroy();
             } else {
               // Try MarketplaceItem table next
               const item = await MarketplaceItem.findByPk(entityId);
-              if (item) await item.destroy();
+              if (item) {
+                contentAuthorId = item.sellerId;
+                await item.destroy();
+              }
             }
           } else if (report.reportType === "comment") {
             const comment = await Comment.findByPk(entityId);
-            if (comment) await comment.destroy();
+            if (comment) {
+              contentAuthorId = comment.userId;
+              await comment.destroy();
+            }
           }
         } else if (report.post) {
+          contentAuthorId = report.post.authorId;
           await report.post.destroy();
+        }
+
+        if (contentAuthorId) {
+          await updateStudentReputation(contentAuthorId, 'VIOLATION_DELETED');
+        }
+
+        // ── Notify content author that their content was removed ────────
+        if (contentAuthorId) {
+          const entityLabel =
+            report.reportType === "comment" ? "comment" : "post";
+          notifyUser({
+            userId: contentAuthorId,
+            actorId: adminId,
+            type: "General",
+            title: "Content Removed",
+            content: `Your ${entityLabel} has been removed by a moderator for violating community guidelines. Please review our policies to avoid further action.`,
+            referenceId: contentAuthorId,
+            referenceType: "ContentRemoval",
+            dedupeKey: `admin:content-delete:social:${report.id}:${Date.now()}`,
+          }).catch(() => {});
         }
 
         const entityLabel =
@@ -196,6 +274,18 @@ export const processSocialReport = async (req, res, next) => {
           },
           adminId,
         );
+
+        // ── Notify the suspended user ──────────────────────────────────
+        notifyUser({
+          userId: targetUserId,
+          actorId: adminId,
+          type: "General",
+          title: "Account Suspended",
+          content: `Your account has been suspended due to a report investigation. Reason: ${reason || "Violation of platform guidelines"}. Please contact support if you have questions.`,
+          referenceId: targetUserId,
+          referenceType: "Suspension",
+          dedupeKey: `admin:suspend:social:${targetUserId}:${Date.now()}`,
+        }).catch(() => {});
 
         appendNote(
           `Action Taken: Suspended User (${userToSuspend.name}). Reason: ${reason || "Violation of guidelines"}.${notes ? " Notes: " + notes : ""}`,

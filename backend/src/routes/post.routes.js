@@ -55,13 +55,13 @@ router.post(
   createClubProductPost
 );
 
-// Create Club Event Post (Supports one cover image)
+// Create Club Event Post (Supports multiple event images)
 router.post(
   "/club-event",
   protect,
   authorize("Club"),
   requireClubVerification,
-  uploadToS3({ type: "array", fieldName: "coverImage", folder: "posts/events", maxCount: 1 }),
+  uploadToS3({ type: "array", fieldName: "coverImage", folder: "posts/events", maxCount: 10 }),
   createClubEventPostValidator,
   validate,
   createClubEventPost

@@ -116,7 +116,7 @@ const ClubOwnerMarketplace = () => {
 
                 {/* Trending */}
                 <div className="hidden xl:block sticky top-0 h-fit">
-                    <TrendingNow items={trendingItems} loading={trendingLoading} />
+                    <TrendingNow items={trendingItems} loading={trendingLoading} clickable={false} />
                 </div>
             </div>
 

@@ -16,6 +16,7 @@ import UserSuspensionService from '../../services/userSuspension.service.js';
 import logger from '../../utils/logger.js';
 import moment from 'moment';
 import { resolveAvatarUrl } from '../../utils/avatarUrl.util.js';
+import { notifyUser } from '../../services/notification.service.js';
 
 //Retrieves the business directory with filtering and search.
 export const getBusinessDirectory = async (req, res, next) => {
@@ -434,6 +435,31 @@ export const updateBusinessStatus = async (req, res, next) => {
     } else {
       user.status = status;
       await user.save();
+    }
+
+    // ── Send in-app notification to the business/club owner ──────────
+    if (status === 'Suspended') {
+      notifyUser({
+        userId: parseInt(id),
+        actorId: adminId,
+        type: 'General',
+        title: 'Account Suspended',
+        content: `Your business account has been suspended. Reason: ${reason || suspensionCategory || 'Policy violation'}. If you believe this is an error, please contact support.`,
+        referenceId: parseInt(id),
+        referenceType: 'Suspension',
+        dedupeKey: `admin:suspend:${id}:${Date.now()}`,
+      }).catch(() => {});
+    } else if (status === 'Active') {
+      notifyUser({
+        userId: parseInt(id),
+        actorId: adminId,
+        type: 'General',
+        title: 'Account Reactivated 🎉',
+        content: 'Your business account has been reactivated. You can now access all platform features again. Welcome back!',
+        referenceId: parseInt(id),
+        referenceType: 'Reactivation',
+        dedupeKey: `admin:reactivate:${id}:${Date.now()}`,
+      }).catch(() => {});
     }
 
     return sendResponse(res, 200, true, `Business status updated to ${status}`, { status: user.status });
