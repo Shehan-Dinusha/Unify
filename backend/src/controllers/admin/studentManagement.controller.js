@@ -14,6 +14,8 @@ import logger from "../../utils/logger.js";
 import moment from "moment";
 import UserSuspensionService from "../../services/userSuspension.service.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
+import { notifyUser } from "../../services/notification.service.js";
+import { updateStudentReputation } from "../../services/reputation.service.js";
 
 //Retrieves the student directory with filtering and search.
 export const getStudentDirectory = async (req, res, next) => {
@@ -367,6 +369,31 @@ export const updateStudentStatus = async (req, res, next) => {
       );
     }
 
+    // ── Send in-app notification to the student ──────────────────────
+    if (status === "Suspended") {
+      notifyUser({
+        userId: parseInt(id),
+        actorId: adminId,
+        type: "General",
+        title: "Account Suspended",
+        content: `Your account has been suspended. Reason: ${reason || suspensionCategory || "Policy violation"}. If you believe this is an error, please contact support.`,
+        referenceId: parseInt(id),
+        referenceType: "Suspension",
+        dedupeKey: `admin:suspend:${id}:${Date.now()}`,
+      }).catch(() => {});
+    } else if (status === "Active") {
+      notifyUser({
+        userId: parseInt(id),
+        actorId: adminId,
+        type: "General",
+        title: "Account Reactivated 🎉",
+        content: "Your account has been reactivated. You can now access all platform features again. Welcome back!",
+        referenceId: parseInt(id),
+        referenceType: "Reactivation",
+        dedupeKey: `admin:reactivate:${id}:${Date.now()}`,
+      }).catch(() => {});
+    }
+
     return sendResponse(res, 200, true, `Student status updated to ${status}`, {
       status: status,
     });
@@ -446,6 +473,18 @@ export const forceLogout = async (req, res, next) => {
       targetUserId: id,
     });
 
+    // ── Notify student about forced logout ────────────────────────────
+    notifyUser({
+      userId: parseInt(id),
+      actorId: adminId,
+      type: "General",
+      title: "Session Terminated",
+      content: "Your session was terminated by an administrator. If you did not expect this, please contact support.",
+      referenceId: parseInt(id),
+      referenceType: "ForceLogout",
+      dedupeKey: `admin:logout:${id}:${Date.now()}`,
+    }).catch(() => {});
+
     return sendResponse(
       res,
       200,
@@ -484,7 +523,6 @@ export const sendStudentWarning = async (req, res, next) => {
       );
     }
 
-    // Logic would typically involve creating a notification record
     logger.info(
       `Admin ${adminId} sent warning to user ${id}: ${category} - ${severity}`,
     );
@@ -503,6 +541,20 @@ export const sendStudentWarning = async (req, res, next) => {
       targetUserId: id,
       severity: "Medium",
     });
+
+    await updateStudentReputation(parseInt(id), 'WARNING_RECEIVED');
+
+    // ── Send in-app warning notification to the student ───────────────
+    notifyUser({
+      userId: parseInt(id),
+      actorId: adminId,
+      type: "General",
+      title: `⚠️ Warning: ${category}`,
+      content: `You have received a ${severity || "Medium"} severity warning. ${message || "Please review the community guidelines to avoid further action."}`,
+      referenceId: parseInt(id),
+      referenceType: "Warning",
+      dedupeKey: `admin:warning:${id}:${Date.now()}`,
+    }).catch(() => {});
 
     return sendResponse(res, 200, true, "Warning sent to student successfully");
   } catch (error) {

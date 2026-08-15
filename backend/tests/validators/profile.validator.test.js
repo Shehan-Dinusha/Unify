@@ -1,16 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { validationResult } from 'express-validator';
+import { getError } from '../helpers/testUtils.js';
 import { clubProfileValidator } from '../../src/validators/profile.validator.js';
-
-const getError = async (schemaArray, data) => {
-  const req = { body: data };
-  for (const validation of schemaArray) {
-    await validation.run(req);
-  }
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(", ");
-};
 
 // Note: studentProfileValidator and businessProfileValidator have async custom()
 // validators that call Sequelize findByPk() — they require a DB connection and

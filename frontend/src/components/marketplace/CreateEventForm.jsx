@@ -1,6 +1,6 @@
 import {
-    ImagePlus, MapPin, Calendar, Clock, ChevronRight,
-    LayoutGrid, Edit3, Info, Loader2, ChevronDown
+    ImagePlus, MapPin, Calendar, Clock,
+    LayoutGrid, Edit3, Loader2, ChevronDown, Trash2
 } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import Card from "../common/Card";
@@ -65,7 +65,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
     });
 
     const [loading, setLoading] = useState(false);
-    const [coverImage, setCoverImage] = useState(null);
+    const [images, setImages] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef(null);
     const datePickerRef = useRef(null);
@@ -77,14 +77,22 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
     const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
     const minutes = ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"];
 
-    const handleFile = (files) => {
-        const file = files[0];
-        if (file && file.type.startsWith('image/')) {
-            setCoverImage({
+    const handleFiles = (files) => {
+        const newImages = Array.from(files)
+            .filter(file => file.type.startsWith('image/'))
+            .map(file => ({
+                id: Date.now() + Math.random(),
                 url: URL.createObjectURL(file),
                 file
-            });
+            }));
+
+        if (newImages.length > 0) {
+            setImages(prev => [...prev, ...newImages]);
         }
+    };
+
+    const removeImage = (id) => {
+        setImages(prev => prev.filter(img => img.id !== id));
     };
 
     const daysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
@@ -135,7 +143,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                 }))
             };
 
-            await onPublish(eventPayload, coverImage);
+            await onPublish(eventPayload, images);
         } catch (error) {
             alert(error.error || "Failed to publish event. Please try again.");
         } finally {
@@ -168,30 +176,32 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                         </div>
 
                         <div className="flex flex-col gap-6">
-                            {/* Cover Image */}
+                            {/* Event Images */}
                             <div>
                                 <label className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2 block">
-                                    Event Cover Image
+                                    Event Images
                                 </label>
+                                <div className="grid grid-cols-3 gap-4">
                                 <div
                                     onClick={() => fileInputRef.current?.click()}
                                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                                     onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
-                                    onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFile(e.dataTransfer.files); }}
-                                    className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-colors cursor-pointer group ${isDragging ? 'border-primary-blue bg-primary-blue/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
+                                    onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFiles(e.dataTransfer.files); }}
+                                    className={`aspect-square border-2 border-dashed rounded-2xl flex flex-col items-center justify-center p-4 transition-colors cursor-pointer group ${isDragging ? 'border-primary-blue bg-primary-blue/10' : 'border-white/10 bg-white/5 hover:bg-white/10'}`}
                                 >
                                     <input
                                         type="file"
                                         ref={fileInputRef}
                                         className="hidden"
+                                        multiple
                                         accept="image/*"
-                                        onChange={(e) => handleFile(e.target.files)}
+                                        onChange={(e) => handleFiles(e.target.files)}
                                     />
-                                    {coverImage ? (
+                                    {false ? (
                                         <div className="w-full relative rounded-lg overflow-hidden group">
-                                            <img src={coverImage.url} alt="Cover" className="max-h-32 mx-auto object-cover" />
+                                            <img src={images[0].url} alt="Event" className="max-h-32 mx-auto object-cover" />
                                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <button onClick={(e) => { e.stopPropagation(); setCoverImage(null); }} className="text-red-400 font-bold text-xs bg-red-400/20 px-3 py-1.5 rounded-lg border border-red-400/30">Replace Image</button>
+                                                <button onClick={(e) => { e.stopPropagation(); setImages([]); }} className="text-red-400 font-bold text-xs bg-red-400/20 px-3 py-1.5 rounded-lg border border-red-400/30">Remove Images</button>
                                             </div>
                                         </div>
                                     ) : (
@@ -207,6 +217,21 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                             </p>
                                         </>
                                     )}
+                                </div>
+                                {images.map((img) => (
+                                    <div key={img.id} className="relative aspect-square rounded-2xl overflow-hidden group">
+                                        <img src={img.url} alt="Event" className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(img.id)}
+                                                className="p-2 bg-red-500/20 text-red-500 rounded-lg backdrop-blur-md"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
                                 </div>
                             </div>
 
@@ -437,7 +462,7 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                 clubSeed: "Your Club Name",
                                 time: "Just now",
                                 category: "Event",
-                                image: coverImage?.url || "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22300%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Provided%3C%2Ftext%3E%3C%2Fsvg%3E",
+                                image: images[0]?.url || "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22300%22%20viewBox%3D%220%200%20400%20300%22%3E%3Crect%20width%3D%22400%22%20height%3D%22300%22%20fill%3D%22rgba(255,255,255,0.05)%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20font-family%3D%22sans-serif%22%20font-size%3D%2214px%22%20fill%3D%22%2394A3B8%22%3ENo%20Image%20Provided%3C%2Ftext%3E%3C%2Fsvg%3E",
                                 price: tiers.find(t => t.enabled)?.isFree ? "Free" : tiers.find(t => t.enabled)?.price ? `Rs.${tiers.find(t => t.enabled).price}` : "Free",
                                 text: `${formData.name ? `Event: ${formData.name}\n` : ""}${formData.date ? `Date: ${formData.date}${formData.time ? ` @ ${formData.time}` : ''}\n` : ""}${formData.location ? `Location: ${formData.location}\n` : ""}\n${formData.description || "Your event description will appear here..."}`,
                                 postType: "club-event",

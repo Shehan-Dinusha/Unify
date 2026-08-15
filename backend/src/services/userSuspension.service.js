@@ -12,6 +12,7 @@ import {
   sequelize 
 } from "../modules/index.js";
 import { resolveAvatarUrl } from "../utils/avatarUrl.util.js";
+import { updateStudentReputation } from "./reputation.service.js";
 
 class UserSuspensionService {
   async generateCaseReference() {
@@ -124,6 +125,11 @@ class UserSuspensionService {
       const clubProfile = (!studentProfile && !businessProfile) ? await ClubProfile.findOne({ where: { userId }, transaction }) : null;
 
       await transaction.commit();
+
+      if (studentProfile) {
+        // Execute this outside transaction so it doesn't block or rollback the main logic if it fails
+        await updateStudentReputation(userId, 'ACCOUNT_SUSPENDED');
+      }
 
       let entityId = null;
       if (studentProfile) entityId = studentProfile.registrationNumber;
