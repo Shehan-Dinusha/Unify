@@ -325,6 +325,10 @@ export const useBatchRepLearning = () => {
             : [],
         })),
       );
+      setActiveModuleDetails(null);
+      setActiveModuleId(null);
+      setSelectedCategory(null);
+      setCategoryFiles([]);
       setShowDeleteModal(true);
     } catch (err) {
       toast.error("Error", "Failed to delete module");
