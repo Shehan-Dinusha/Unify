@@ -34,6 +34,7 @@ const ModuleSidebar = ({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [lastSavedData, setLastSavedData] = useState(null);
   const [isSavingVisibility, setIsSavingVisibility] = useState(false);
+  const [isLoadingVisibility, setIsLoadingVisibility] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -48,16 +49,19 @@ const ModuleSidebar = ({
 
   const handleOpenVisibility = async (e, semester) => {
     e.stopPropagation();
+    if (isLoadingVisibility) return;
+    setVisibilitySemester(semester);
+    setCurrentVisibility([]);
+    setAvailableBatches([]);
+    setIsLoadingVisibility(true);
     try {
       const res = await learningService.getSemesterVisibility(degreeId, semester.id);
       setCurrentVisibility(res?.data?.currentVisibility || []);
       setAvailableBatches(res?.data?.availableBatches || []);
-      setVisibilitySemester(semester);
     } catch (err) {
       toast.error("Error", "Failed to fetch semester visibility");
-      setCurrentVisibility([]);
-      setAvailableBatches([]);
-      setVisibilitySemester(semester);
+    } finally {
+      setIsLoadingVisibility(false);
     }
   };
 
@@ -211,6 +215,7 @@ const ModuleSidebar = ({
           }
         }}
         isSaving={isSavingVisibility}
+        isLoading={isLoadingVisibility}
       />
 
       <VisibilitySuccessModal

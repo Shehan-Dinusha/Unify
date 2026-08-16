@@ -13,6 +13,7 @@ import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
 import FileUpload from "../../components/common/FileUpload";
 import DocumentPreviewModal from "../../components/common/DocumentPreviewModal";
+import { getCurrentUser } from "../../services/authService";
 import verificationService from "../../services/verificationService";
 import {
   ActionErrorModal,
@@ -26,13 +27,16 @@ import RevokeModal from "./RevokeModal";
 
 const BatchRepVerification = () => {
   const navigate = useNavigate();
-  const [submissionStatus, setSubmissionStatus] = useState("idle");
+  const [submissionStatus, setSubmissionStatus] = useState(
+    getCurrentUser()?.repVerificationStatus === "APPROVED" ? "approved" : "idle",
+  );
   const [submittedFile, setSubmittedFile] = useState(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showRevokeModal, setShowRevokeModal] = useState(false);
   const [previewDocument, setPreviewDocument] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [declineReason, setDeclineReason] = useState("");
   const [approvedRole, setApprovedRole] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -76,6 +80,7 @@ const BatchRepVerification = () => {
       setShowErrorModal(true);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   };
 
@@ -218,6 +223,19 @@ const BatchRepVerification = () => {
   };
 
   const config = getStatusConfig();
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 to-slate-800 relative overflow-hidden flex items-center justify-center font-inter p-4">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-800/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="z-10 flex items-center gap-3 text-gray-400">
+          <span className="w-5 h-5 border-2 border-gray-500 border-t-white rounded-full animate-spin" />
+          <span className="text-sm font-bold">Loading verification status...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 to-slate-800 relative overflow-hidden flex items-center justify-center font-inter p-4">
