@@ -2,6 +2,7 @@ import { OTP } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { normalizePhone } from "../../utils/phone.util.js";
+import { phoneWhere } from "../../utils/phoneWhere.util.js";
 
 /**
  * @desc    Verify Reset OTP
@@ -24,20 +25,9 @@ export const verifyResetOTP = async (req, res) => {
       return sendResponse(res, 400, false, "Invalid or expired reset code");
     }
 
-    return sendResponse(
-      res,
-      200,
-      true,
-      "Reset code verified successfully. You can now reset your password.",
-    );
+    return sendResponse(res, 200, true, "Reset code verified successfully. You can now reset your password.");
   } catch (error) {
     logger.error("Verify Reset OTP Error:", error);
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Internal Server Error",
-      error.message,
-    );
+    return sendResponse(res, 500, false, "Internal Server Error", error.message);
   }
 };
