@@ -3,7 +3,6 @@ import crypto from "crypto";
 import { User, OTP } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
-import { Op, Sequelize } from "sequelize";
 import { sendEmailOTP } from "../../services/email.service.js";
 import { sendSMSOTP } from "../../services/sms.service.js";
 import { normalizePhone } from "../../utils/phone.util.js";
@@ -27,8 +26,14 @@ export const register = async (req, res) => {
       : null;
 
     if (existingUser) {
-      const identifier = existingUser.email === email ? "email" : "phone number";
-      return sendResponse(res, 400, false, `User already exists with this ${identifier}`);
+      const identifier =
+        existingUser.email === email ? "email" : "phone number";
+      return sendResponse(
+        res,
+        400,
+        false,
+        `User already exists with this ${identifier}`,
+      );
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -60,13 +65,25 @@ export const register = async (req, res) => {
       await sendSMSOTP(normalizedPhone, otpCode);
     }
 
-    return sendResponse(res, 201, true, "Registration successful. Please verify your account with the OTP sent.", {
-      userId: user.id,
-      email: user.email,
-      phone: user.phone,
-    });
+    return sendResponse(
+      res,
+      201,
+      true,
+      "Registration successful. Please verify your account with the OTP sent.",
+      {
+        userId: user.id,
+        email: user.email,
+        phone: user.phone,
+      },
+    );
   } catch (error) {
     logger.error("Register Error:", error);
-    return sendResponse(res, 500, false, "Internal Server Error", error.message);
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Internal Server Error",
+      error.message,
+    );
   }
 };
