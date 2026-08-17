@@ -3,10 +3,11 @@ import crypto from "crypto";
 import { User, OTP } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { sendEmailOTP } from "../../services/email.service.js";
 import { sendSMSOTP } from "../../services/sms.service.js";
 import { normalizePhone } from "../../utils/phone.util.js";
+import { phoneWhere } from "../../utils/phoneWhere.util.js";
 
 /**
  * @desc    Register a new user
@@ -17,14 +18,13 @@ export const register = async (req, res) => {
     const { name, email, phone, password, role } = req.body;
     const normalizedPhone = phone ? normalizePhone(phone) : null;
 
-    const existingUser = await User.findOne({
-      where: {
-        [Op.or]: [
-          ...(email ? [{ email }] : []),
-          ...(normalizedPhone ? [{ phone: normalizedPhone }] : []),
-        ],
-      },
-    });
+    const orConditions = [];
+    if (email) orConditions.push({ email });
+    if (normalizedPhone) orConditions.push(phoneWhere(phone));
+
+    const existingUser = orConditions.length
+      ? await User.findOne({ where: { [Op.or]: orConditions } })
+      : null;
 
     if (existingUser) {
       const identifier = existingUser.email === email ? "email" : "phone number";
