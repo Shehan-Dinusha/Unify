@@ -2,6 +2,7 @@ import { OTP } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { normalizePhone } from "../../utils/phone.util.js";
+import { phoneWhere } from "../../utils/phoneWhere.util.js";
 
 /**
  * @desc    Verify Reset OTP
@@ -12,10 +13,11 @@ export const verifyResetOTP = async (req, res) => {
   try {
     const { email, phone, otp } = req.body;
     const normalizedPhone = phone ? normalizePhone(phone) : null;
-    const whereClause = email ? { email } : { phone: normalizedPhone };
+    // Plain object for OTP queries (OTPs are stored with normalized phones)
+    const otpWhere = email ? { email } : { phone: normalizedPhone };
 
     const otpRecord = await OTP.findOne({
-      where: { ...whereClause, code: otp, type: "PASSWORD_RESET", isUsed: false },
+      where: { ...otpWhere, code: otp, type: "PASSWORD_RESET", isUsed: false },
       order: [["createdAt", "DESC"]],
     });
 

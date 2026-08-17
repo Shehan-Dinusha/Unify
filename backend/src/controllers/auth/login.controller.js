@@ -5,7 +5,7 @@ import logger from "../../utils/logger.js";
 import { generateTokens } from "./auth.utils.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 import { getRoleProfileData } from "../../services/roleProfile.service.js";
-import { normalizePhone } from "../../utils/phone.util.js";
+import { phoneWhere } from "../../utils/phoneWhere.util.js";
 
 /**
  * @desc    Login user
@@ -20,10 +20,10 @@ export const login = async (req, res) => {
       if (identifier.includes("@")) {
         searchCriteria = { email: identifier.trim() };
       } else {
-        searchCriteria = { phone: normalizePhone(identifier) };
+        searchCriteria = phoneWhere(identifier);
       }
     } else {
-      searchCriteria = email ? { email: email.trim() } : { phone: normalizePhone(phone) };
+      searchCriteria = email ? { email: email.trim() } : phoneWhere(phone);
     }
 
     // Find user

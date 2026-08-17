@@ -3,6 +3,7 @@ import { User, OTP } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { normalizePhone } from "../../utils/phone.util.js";
+import { phoneWhere } from "../../utils/phoneWhere.util.js";
 
 /**
  * @desc    Reset Password (using OTP)
@@ -13,17 +14,20 @@ export const resetPassword = async (req, res) => {
   try {
     const { email, phone, otp, password } = req.body;
     const normalizedPhone = phone ? normalizePhone(phone) : null;
-    const whereClause = email ? { email } : { phone: normalizedPhone };
+    // Space-insensitive lookup for the Users table
+    const userWhere = email ? { email } : phoneWhere(phone);
+    // Plain object for OTP queries (OTPs are stored with normalized phones)
+    const otpWhere = email ? { email } : { phone: normalizedPhone };
 
     const otpRecord = await OTP.findOne({
-      where: { ...whereClause, code: otp, type: "PASSWORD_RESET", isUsed: false },
+      where: { ...otpWhere, code: otp, type: "PASSWORD_RESET", isUsed: false },
     });
 
     if (!otpRecord || new Date() > otpRecord.expiresAt) {
       return sendResponse(res, 400, false, "Invalid or expired reset code");
     }
 
-    const user = await User.findOne({ where: whereClause });
+    const user = await User.findOne({ where: userWhere });
     if (!user) return sendResponse(res, 404, false, "User not found");
 
     const salt = await bcrypt.genSalt(10);

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { mockRes } from "../../../helpers/testUtils.js";
 import { login } from "../../../../src/controllers/auth/login.controller.js";
 import { User, StudentProfile } from "../../../../src/modules/index.js";
+import { phoneWhere } from "../../../../src/utils/phoneWhere.util.js";
 
 process.env.JWT_SECRET = "test_secret";
 
@@ -139,7 +140,7 @@ describe("login", () => {
     await login(req, res);
 
     assert.equal(res.getStatusCode(), 200);
-    assert.deepEqual(findOne.mock.calls[0].arguments[0].where, { phone: "+94771234567" });
+    assert.deepEqual(findOne.mock.calls[0].arguments[0].where, phoneWhere("0771234567"));
   });
 
   it("returns 500 on unexpected error", async () => {
