@@ -145,6 +145,8 @@ describe('getEventsToday Controller', () => {
 describe('getNewAnnouncements Controller', () => {
   it('returns 200 with announcements list', async () => {
     mock.method(NormalPost, 'findAll', async () => [makeAnnouncement()]);
+    mock.method(ClubEventPost, 'findAll', async () => []);
+    mock.method(ClubProductPost, 'findAll', async () => []);
 
     const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
@@ -159,6 +161,8 @@ describe('getNewAnnouncements Controller', () => {
 
   it('tags GENERAL category posts as postType "normal"', async () => {
     mock.method(NormalPost, 'findAll', async () => [makeAnnouncement({ category: 'GENERAL' })]);
+    mock.method(ClubEventPost, 'findAll', async () => []);
+    mock.method(ClubProductPost, 'findAll', async () => []);
 
     const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
@@ -168,30 +172,42 @@ describe('getNewAnnouncements Controller', () => {
     assert.equal(res._json.announcements[0].postType, 'normal');
   });
 
-  it('tags FOOD category posts as postType "food-cafe"', async () => {
-    mock.method(NormalPost, 'findAll', async () => [makeAnnouncement({ category: 'FOOD' })]);
+  it('tags all NormalPost announcements as postType "normal"', async () => {
+    mock.method(NormalPost, 'findAll', async () => [makeAnnouncement(), makeAnnouncement({ id: 2, title: 'Post 2' })]);
+    mock.method(ClubEventPost, 'findAll', async () => []);
+    mock.method(ClubProductPost, 'findAll', async () => []);
 
     const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
     const res = mockRes();
     await getNewAnnouncements({}, res);
 
-    assert.equal(res._json.announcements[0].postType, 'food-cafe');
+    for (const a of res._json.announcements) {
+      assert.equal(a.postType, 'normal');
+    }
   });
 
-  it('tags SELF_EMPLOYED category posts as postType "services"', async () => {
-    mock.method(NormalPost, 'findAll', async () => [makeAnnouncement({ category: 'SELF_EMPLOYED' })]);
+  it('combines normal posts, event posts, and product posts into announcements', async () => {
+    mock.method(NormalPost, 'findAll', async () => [makeAnnouncement()]);
+    mock.method(ClubEventPost, 'findAll', async () => [makeEvent()]);
+    mock.method(ClubProductPost, 'findAll', async () => [makeProduct()]);
 
     const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
     const res = mockRes();
     await getNewAnnouncements({}, res);
 
-    assert.equal(res._json.announcements[0].postType, 'services');
+    assert.equal(res._json.announcements.length, 3);
+    const types = res._json.announcements.map((a) => a.postType);
+    assert.ok(types.includes('normal'));
+    assert.ok(types.includes('club-event'));
+    assert.ok(types.includes('club-product'));
   });
 
   it('returns 200 with empty array when no announcements today', async () => {
     mock.method(NormalPost, 'findAll', async () => []);
+    mock.method(ClubEventPost, 'findAll', async () => []);
+    mock.method(ClubProductPost, 'findAll', async () => []);
 
     const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
@@ -204,6 +220,7 @@ describe('getNewAnnouncements Controller', () => {
 
   it('returns 500 when the DB throws', async () => {
     mock.method(NormalPost, 'findAll', async () => { throw new Error('Sequelize error'); });
+    // ClubEventPost/ClubProductPost don't need mocking — Promise.all rejects on first throw
 
     const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
@@ -212,6 +229,36 @@ describe('getNewAnnouncements Controller', () => {
 
     assert.equal(res._status, 500);
     assert.equal(res._json.success, false);
+  });
+
+  it('includes club-event posts in announcements', async () => {
+    mock.method(NormalPost, 'findAll', async () => []);
+    mock.method(ClubEventPost, 'findAll', async () => [makeEvent()]);
+    mock.method(ClubProductPost, 'findAll', async () => []);
+
+    const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
+
+    const res = mockRes();
+    await getNewAnnouncements({}, res);
+
+    assert.equal(res._status, 200);
+    assert.equal(res._json.announcements.length, 1);
+    assert.equal(res._json.announcements[0].postType, 'club-event');
+  });
+
+  it('includes club-product posts in announcements', async () => {
+    mock.method(NormalPost, 'findAll', async () => []);
+    mock.method(ClubEventPost, 'findAll', async () => []);
+    mock.method(ClubProductPost, 'findAll', async () => [makeProduct()]);
+
+    const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
+
+    const res = mockRes();
+    await getNewAnnouncements({}, res);
+
+    assert.equal(res._status, 200);
+    assert.equal(res._json.announcements.length, 1);
+    assert.equal(res._json.announcements[0].postType, 'club-product');
   });
 });
 
