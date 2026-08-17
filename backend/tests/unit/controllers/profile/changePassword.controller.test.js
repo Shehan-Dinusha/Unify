@@ -1,33 +1,15 @@
 import { describe, it, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import bcrypt from "bcryptjs";
-import { User } from "../../../src/modules/index.js";
-import { changePassword } from "../../../src/controllers/profile/changePassword.controller.js";
+import { mockRes } from "../../../helpers/testUtils.js";
+import { User } from "../../../../src/modules/index.js";
+import { changePassword } from "../../../../src/controllers/profile/changePassword.controller.js";
 
 afterEach(() => {
   mock.restoreAll();
 });
 
-/**
- * Helper to create a mock Express response.
- */
-const createRes = () => {
-  let statusCode;
-  let body;
-  const res = {
-    status(code) {
-      statusCode = code;
-      return res;
-    },
-    json(data) {
-      body = data;
-      return res;
-    },
-    getStatusCode: () => statusCode,
-    getBody: () => body,
-  };
-  return res;
-};
+const createRes = mockRes;
 
 describe("changePassword", () => {
   it("returns 404 when user is not found", async () => {

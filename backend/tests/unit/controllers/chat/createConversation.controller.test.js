@@ -1,32 +1,14 @@
 import { describe, it, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
-import { User, Conversation } from "../../../src/modules/index.js";
-import { createConversation } from "../../../src/controllers/chat/createConversation.controller.js";
+import { mockRes } from "../../../helpers/testUtils.js";
+import { User, Conversation } from "../../../../src/modules/index.js";
+import { createConversation } from "../../../../src/controllers/chat/createConversation.controller.js";
 
 afterEach(() => {
   mock.restoreAll();
 });
 
-/**
- * Helper to create a mock Express response.
- */
-const createRes = () => {
-  let statusCode;
-  let body;
-  const res = {
-    status(code) {
-      statusCode = code;
-      return res;
-    },
-    json(data) {
-      body = data;
-      return res;
-    },
-    getStatusCode: () => statusCode,
-    getBody: () => body,
-  };
-  return res;
-};
+const createRes = mockRes;
 
 describe("createConversation", () => {
   it("returns 400 when trying to chat with yourself", async () => {

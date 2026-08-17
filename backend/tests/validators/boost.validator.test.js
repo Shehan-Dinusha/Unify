@@ -10,51 +10,41 @@
  * Run: node --test tests/validators/boost.validator.test.js
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { validationResult } from 'express-validator';
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import { validationResult } from "express-validator";
+import { getError, getErrorWithQuery } from "../helpers/testUtils.js";
 import {
   createPackageValidator,
   updatePackageValidator,
   purchaseBoostValidator,
   logsQueryValidator,
-} from '../../src/validators/boost.validator.js';
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const getError = async (schemaArray, data) => {
-  const req = { body: data, params: {}, query: {} };
-  for (const v of schemaArray) await v.run(req);
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(', ');
-};
-
-const getQueryError = async (schemaArray, data) => {
-  const req = { body: {}, params: {}, query: data };
-  for (const v of schemaArray) await v.run(req);
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(', ');
-};
+} from "../../src/validators/boost.validator.js";
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // createPackageValidator
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('createPackageValidator — Core Fields', () => {
-  const valid = { name: 'Gold Boost', price: 49.99, durationValue: 7, durationUnit: 'Days' };
+describe("createPackageValidator — Core Fields", () => {
+  const valid = {
+    name: "Gold Boost",
+    price: 49.99,
+    durationValue: 7,
+    durationUnit: "Days",
+  };
 
   // ── Happy paths ────────────────────────────────────────────────────────────
 
-  it('accepts valid package', async () => {
+  it("accepts valid package", async () => {
     assert.equal(await getError(createPackageValidator, valid), null);
   });
 
-  it('accepts with all optional fields', async () => {
+  it("accepts with all optional fields", async () => {
     const err = await getError(createPackageValidator, {
       ...valid,
-      description: 'Great package',
-      badge: 'Most Popular',
-      features: ['Priority Feed', 'Analytics'],
+      description: "Great package",
+      badge: "Most Popular",
+      features: ["Priority Feed", "Analytics"],
       boostConfig: { feedPriority: 1, visibilityMultiplier: 3 },
     });
     assert.equal(err, null);
@@ -62,101 +52,156 @@ describe('createPackageValidator — Core Fields', () => {
 
   // ── name ──────────────────────────────────────────────────────────────────
 
-  it('rejects missing name', async () => {
-    const err = await getError(createPackageValidator, { price: 1000, durationValue: 7, durationUnit: 'Days' });
-    assert.match(err, /name/i);
+  it("rejects missing name", async () => {
+    const err = await getError(createPackageValidator, {
+      price: 1000,
+      durationValue: 7,
+      durationUnit: "Days",
+    });
+    assert.match(err, /Package name is required\./i);
   });
 
-  it('rejects empty/whitespace name', async () => {
-    const err = await getError(createPackageValidator, { ...valid, name: '   ' });
+  it("rejects empty/whitespace name", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      name: "   ",
+    });
     assert.notEqual(err, null);
   });
 
-  it('rejects name over 100 chars', async () => {
-    const err = await getError(createPackageValidator, { ...valid, name: 'x'.repeat(101) });
+  it("rejects name over 100 chars", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      name: "x".repeat(101),
+    });
     assert.notEqual(err, null);
   });
 
-  it('accepts name at exactly 100 chars', async () => {
-    const err = await getError(createPackageValidator, { ...valid, name: 'x'.repeat(100) });
+  it("accepts name at exactly 100 chars", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      name: "x".repeat(100),
+    });
     assert.equal(err, null);
   });
 
   // ── price ─────────────────────────────────────────────────────────────────
 
-  it('rejects zero price', async () => {
+  it("rejects zero price", async () => {
     const err = await getError(createPackageValidator, { ...valid, price: 0 });
-    assert.match(err, /positive/);
+    assert.match(err, /Price must be a positive number\./i);
   });
 
-  it('rejects negative price', async () => {
-    const err = await getError(createPackageValidator, { ...valid, price: -10 });
-    assert.match(err, /positive/);
+  it("rejects negative price", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      price: -10,
+    });
+    assert.match(err, /Price must be a positive number\./i);
   });
 
-  it('rejects non-numeric price', async () => {
-    const err = await getError(createPackageValidator, { ...valid, price: 'free' });
+  it("rejects non-numeric price", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      price: "free",
+    });
     assert.notEqual(err, null);
   });
 
-  it('accepts decimal price', async () => {
-    const err = await getError(createPackageValidator, { ...valid, price: 0.01 });
+  it("accepts decimal price", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      price: 0.01,
+    });
     assert.equal(err, null);
   });
 
   // ── durationValue ─────────────────────────────────────────────────────────
 
-  it('rejects non-integer durationValue', async () => {
-    const err = await getError(createPackageValidator, { ...valid, durationValue: 1.5 });
-    assert.match(err, /integer/);
+  it("rejects non-integer durationValue", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      durationValue: 1.5,
+    });
+    assert.match(err, /Duration value must be a positive integer\./i);
   });
 
-  it('rejects zero durationValue', async () => {
-    const err = await getError(createPackageValidator, { ...valid, durationValue: 0 });
+  it("rejects zero durationValue", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      durationValue: 0,
+    });
     assert.notEqual(err, null);
   });
 
-  it('rejects negative durationValue', async () => {
-    const err = await getError(createPackageValidator, { ...valid, durationValue: -1 });
+  it("rejects negative durationValue", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      durationValue: -1,
+    });
     assert.notEqual(err, null);
   });
 
   // ── durationUnit ──────────────────────────────────────────────────────────
 
-  it('rejects invalid durationUnit', async () => {
-    const err = await getError(createPackageValidator, { ...valid, durationUnit: 'Years' });
-    assert.match(err, /Hours|Days|Weeks/);
+  it("rejects invalid durationUnit", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      durationUnit: "Years",
+    });
+    assert.match(err, /Duration unit must be one of: Hours, Days, Weeks\./i);
   });
 
-  it('accepts Hours', async () => {
-    assert.equal(await getError(createPackageValidator, { ...valid, durationUnit: 'Hours' }), null);
+  it("accepts Hours", async () => {
+    assert.equal(
+      await getError(createPackageValidator, {
+        ...valid,
+        durationUnit: "Hours",
+      }),
+      null,
+    );
   });
 
-  it('accepts Weeks', async () => {
-    assert.equal(await getError(createPackageValidator, { ...valid, durationUnit: 'Weeks' }), null);
+  it("accepts Weeks", async () => {
+    assert.equal(
+      await getError(createPackageValidator, {
+        ...valid,
+        durationUnit: "Weeks",
+      }),
+      null,
+    );
   });
 
   // ── description ───────────────────────────────────────────────────────────
 
-  it('rejects description over 500 chars', async () => {
-    const err = await getError(createPackageValidator, { ...valid, description: 'x'.repeat(501) });
+  it("rejects description over 500 chars", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      description: "x".repeat(501),
+    });
     assert.notEqual(err, null);
   });
 
-  it('accepts description at exactly 500 chars', async () => {
-    const err = await getError(createPackageValidator, { ...valid, description: 'x'.repeat(500) });
+  it("accepts description at exactly 500 chars", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      description: "x".repeat(500),
+    });
     assert.equal(err, null);
   });
 
   // ── badge ─────────────────────────────────────────────────────────────────
 
-  it('rejects invalid badge', async () => {
-    const err = await getError(createPackageValidator, { ...valid, badge: 'Cheapest' });
+  it("rejects invalid badge", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      badge: "Cheapest",
+    });
     assert.notEqual(err, null);
   });
 
-  it('accepts all valid badges', async () => {
-    for (const badge of ['No Badge', 'Most Popular', 'Premium', 'Best Value']) {
+  it("accepts all valid badges", async () => {
+    for (const badge of ["No Badge", "Most Popular", "Premium", "Best Value"]) {
       const err = await getError(createPackageValidator, { ...valid, badge });
       assert.equal(err, null, `Expected badge '${badge}' to be valid`);
     }
@@ -164,129 +209,155 @@ describe('createPackageValidator — Core Fields', () => {
 
   // ── features ──────────────────────────────────────────────────────────────
 
-  it('accepts empty features array', async () => {
-    assert.equal(await getError(createPackageValidator, { ...valid, features: [] }), null);
+  it("accepts empty features array", async () => {
+    assert.equal(
+      await getError(createPackageValidator, { ...valid, features: [] }),
+      null,
+    );
   });
 
-  it('rejects non-string features', async () => {
-    const err = await getError(createPackageValidator, { ...valid, features: [123] });
+  it("rejects non-string features", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      features: [123],
+    });
     assert.notEqual(err, null);
   });
 
-  it('rejects non-array features', async () => {
-    const err = await getError(createPackageValidator, { ...valid, features: 'Priority Feed' });
+  it("rejects non-array features", async () => {
+    const err = await getError(createPackageValidator, {
+      ...valid,
+      features: "Priority Feed",
+    });
     assert.notEqual(err, null);
   });
 });
 
-describe('createPackageValidator — boostConfig Nested Fields', () => {
-  const valid = { name: 'Gold Boost', price: 49.99, durationValue: 7, durationUnit: 'Days' };
+describe("createPackageValidator — boostConfig Nested Fields", () => {
+  const valid = {
+    name: "Gold Boost",
+    price: 49.99,
+    durationValue: 7,
+    durationUnit: "Days",
+  };
 
   // ── feedPriority ──────────────────────────────────────────────────────────
 
-  it('accepts feedPriority=1 (highest)', async () => {
+  it("accepts feedPriority=1 (highest)", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: { feedPriority: 1 },
+      ...valid,
+      boostConfig: { feedPriority: 1 },
     });
     assert.equal(err, null);
   });
 
-  it('accepts feedPriority=10 (lowest)', async () => {
+  it("accepts feedPriority=10 (lowest)", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: { feedPriority: 10 },
+      ...valid,
+      boostConfig: { feedPriority: 10 },
     });
     assert.equal(err, null);
   });
 
-  it('rejects feedPriority=0 (below minimum)', async () => {
+  it("rejects feedPriority=0 (below minimum)", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: { feedPriority: 0 },
+      ...valid,
+      boostConfig: { feedPriority: 0 },
     });
     assert.notEqual(err, null);
   });
 
-  it('rejects feedPriority=11 (above maximum)', async () => {
+  it("rejects feedPriority=11 (above maximum)", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: { feedPriority: 11 },
+      ...valid,
+      boostConfig: { feedPriority: 11 },
     });
     assert.notEqual(err, null);
   });
 
   // ── visibilityMultiplier ──────────────────────────────────────────────────
 
-  it('accepts visibilityMultiplier=1 (minimum)', async () => {
+  it("accepts visibilityMultiplier=1 (minimum)", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: { visibilityMultiplier: 1 },
+      ...valid,
+      boostConfig: { visibilityMultiplier: 1 },
     });
     assert.equal(err, null);
   });
 
-  it('accepts visibilityMultiplier=5 (maximum)', async () => {
+  it("accepts visibilityMultiplier=5 (maximum)", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: { visibilityMultiplier: 5 },
+      ...valid,
+      boostConfig: { visibilityMultiplier: 5 },
     });
     assert.equal(err, null);
   });
 
-  it('rejects visibilityMultiplier=0', async () => {
+  it("rejects visibilityMultiplier=0", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: { visibilityMultiplier: 0 },
+      ...valid,
+      boostConfig: { visibilityMultiplier: 0 },
     });
     assert.notEqual(err, null);
   });
 
-  it('rejects visibilityMultiplier=6', async () => {
+  it("rejects visibilityMultiplier=6", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: { visibilityMultiplier: 6 },
+      ...valid,
+      boostConfig: { visibilityMultiplier: 6 },
     });
     assert.notEqual(err, null);
   });
 
   // ── highlightStyle ────────────────────────────────────────────────────────
 
-  it('accepts all valid highlight styles', async () => {
-    for (const style of ['none', 'subtle', 'blue', 'gold']) {
+  it("accepts all valid highlight styles", async () => {
+    for (const style of ["none", "subtle", "blue", "gold"]) {
       const err = await getError(createPackageValidator, {
-        ...valid, boostConfig: { highlightStyle: style },
+        ...valid,
+        boostConfig: { highlightStyle: style },
       });
       assert.equal(err, null, `Expected style '${style}' to be valid`);
     }
   });
 
-  it('rejects invalid highlight style', async () => {
+  it("rejects invalid highlight style", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: { highlightStyle: 'rainbow' },
+      ...valid,
+      boostConfig: { highlightStyle: "rainbow" },
     });
-    assert.match(err, /Invalid highlight style/);
+    assert.match(err, /Invalid highlight style\./i);
   });
 
   // ── autoRefreshHours ──────────────────────────────────────────────────────
 
-  it('accepts all valid autoRefreshHours values', async () => {
+  it("accepts all valid autoRefreshHours values", async () => {
     for (const hours of [0, 6, 12, 24]) {
       const err = await getError(createPackageValidator, {
-        ...valid, boostConfig: { autoRefreshHours: hours },
+        ...valid,
+        boostConfig: { autoRefreshHours: hours },
       });
       assert.equal(err, null, `Expected autoRefreshHours=${hours} to be valid`);
     }
   });
 
-  it('rejects invalid autoRefreshHours', async () => {
+  it("rejects invalid autoRefreshHours", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: { autoRefreshHours: 3 },
+      ...valid,
+      boostConfig: { autoRefreshHours: 3 },
     });
-    assert.match(err, /Auto-refresh hours/);
+    assert.match(err, /Auto-refresh hours must be 0, 6, 12, or 24\./i);
   });
 
   // ── Full config ───────────────────────────────────────────────────────────
 
-  it('accepts full boostConfig with all fields', async () => {
+  it("accepts full boostConfig with all fields", async () => {
     const err = await getError(createPackageValidator, {
       ...valid,
       boostConfig: {
         feedPriority: 1,
         visibilityMultiplier: 5,
-        highlightStyle: 'gold',
+        highlightStyle: "gold",
         crossCategoryReach: true,
         analyticsAccess: true,
         autoRefreshHours: 6,
@@ -295,11 +366,12 @@ describe('createPackageValidator — boostConfig Nested Fields', () => {
     assert.equal(err, null);
   });
 
-  it('rejects non-object boostConfig', async () => {
+  it("rejects non-object boostConfig", async () => {
     const err = await getError(createPackageValidator, {
-      ...valid, boostConfig: 'invalid',
+      ...valid,
+      boostConfig: "invalid",
     });
-    assert.match(err, /object/i);
+    assert.match(err, /Boost config must be an object\./i);
   });
 });
 
@@ -307,48 +379,51 @@ describe('createPackageValidator — boostConfig Nested Fields', () => {
 // updatePackageValidator
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('updatePackageValidator', () => {
-  it('accepts partial update (name only)', async () => {
-    assert.equal(await getError(updatePackageValidator, { name: 'New Name' }), null);
+describe("updatePackageValidator", () => {
+  it("accepts partial update (name only)", async () => {
+    assert.equal(
+      await getError(updatePackageValidator, { name: "New Name" }),
+      null,
+    );
   });
 
-  it('accepts empty object (no changes)', async () => {
+  it("accepts empty object (no changes)", async () => {
     assert.equal(await getError(updatePackageValidator, {}), null);
   });
 
-  it('rejects negative price', async () => {
+  it("rejects negative price", async () => {
     const err = await getError(updatePackageValidator, { price: -5 });
-    assert.match(err, /positive/);
+    assert.match(err, /Price must be a positive number\./i);
   });
 
-  it('rejects invalid badge', async () => {
-    const err = await getError(updatePackageValidator, { badge: 'Cheapest' });
+  it("rejects invalid badge", async () => {
+    const err = await getError(updatePackageValidator, { badge: "Cheapest" });
     assert.notEqual(err, null);
   });
 
-  it('accepts partial boostConfig update', async () => {
+  it("accepts partial boostConfig update", async () => {
     const err = await getError(updatePackageValidator, {
       boostConfig: { feedPriority: 3 },
     });
     assert.equal(err, null);
   });
 
-  it('rejects boostConfig with invalid feedPriority', async () => {
+  it("rejects boostConfig with invalid feedPriority", async () => {
     const err = await getError(updatePackageValidator, {
       boostConfig: { feedPriority: 99 },
     });
     assert.notEqual(err, null);
   });
 
-  it('accepts update with all fields at once', async () => {
+  it("accepts update with all fields at once", async () => {
     const err = await getError(updatePackageValidator, {
-      name: 'Platinum',
+      name: "Platinum",
       price: 199.99,
       durationValue: 30,
-      durationUnit: 'Days',
-      badge: 'Premium',
-      description: 'Top-tier package',
-      boostConfig: { feedPriority: 1, highlightStyle: 'gold' },
+      durationUnit: "Days",
+      badge: "Premium",
+      description: "Top-tier package",
+      boostConfig: { feedPriority: 1, highlightStyle: "gold" },
     });
     assert.equal(err, null);
   });
@@ -358,37 +433,55 @@ describe('updatePackageValidator', () => {
 // purchaseBoostValidator
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('purchaseBoostValidator', () => {
-  it('accepts valid purchase', async () => {
-    assert.equal(await getError(purchaseBoostValidator, { packageId: 'pkg_1' }), null);
+describe("purchaseBoostValidator", () => {
+  it("accepts valid purchase", async () => {
+    assert.equal(
+      await getError(purchaseBoostValidator, { packageId: "pkg_1" }),
+      null,
+    );
   });
 
-  it('accepts with optional postId', async () => {
-    assert.equal(await getError(purchaseBoostValidator, { packageId: 'pkg_1', postId: 42 }), null);
+  it("accepts with optional postId", async () => {
+    assert.equal(
+      await getError(purchaseBoostValidator, {
+        packageId: "pkg_1",
+        postId: 42,
+      }),
+      null,
+    );
   });
 
-  it('rejects missing packageId', async () => {
+  it("rejects missing packageId", async () => {
     const err = await getError(purchaseBoostValidator, {});
-    assert.match(err, /package/i);
+    assert.match(err, /Package ID is required\./i);
   });
 
-  it('rejects empty packageId', async () => {
-    const err = await getError(purchaseBoostValidator, { packageId: '' });
+  it("rejects empty packageId", async () => {
+    const err = await getError(purchaseBoostValidator, { packageId: "" });
     assert.notEqual(err, null);
   });
 
-  it('rejects negative postId', async () => {
-    const err = await getError(purchaseBoostValidator, { packageId: 'pkg_1', postId: -1 });
+  it("rejects negative postId", async () => {
+    const err = await getError(purchaseBoostValidator, {
+      packageId: "pkg_1",
+      postId: -1,
+    });
     assert.notEqual(err, null);
   });
 
-  it('rejects zero postId', async () => {
-    const err = await getError(purchaseBoostValidator, { packageId: 'pkg_1', postId: 0 });
+  it("rejects zero postId", async () => {
+    const err = await getError(purchaseBoostValidator, {
+      packageId: "pkg_1",
+      postId: 0,
+    });
     assert.notEqual(err, null);
   });
 
-  it('rejects float postId', async () => {
-    const err = await getError(purchaseBoostValidator, { packageId: 'pkg_1', postId: 1.5 });
+  it("rejects float postId", async () => {
+    const err = await getError(purchaseBoostValidator, {
+      packageId: "pkg_1",
+      postId: 1.5,
+    });
     assert.notEqual(err, null);
   });
 });
@@ -397,52 +490,71 @@ describe('purchaseBoostValidator', () => {
 // logsQueryValidator
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('logsQueryValidator', () => {
-  it('accepts empty query', async () => {
-    assert.equal(await getQueryError(logsQueryValidator, {}), null);
+describe("logsQueryValidator", () => {
+  it("accepts empty query", async () => {
+    assert.equal(await getErrorWithQuery(logsQueryValidator, {}), null);
   });
 
-  it('accepts valid params', async () => {
-    assert.equal(await getQueryError(logsQueryValidator, { page: '2', limit: '10', type: 'package_added' }), null);
+  it("accepts valid params", async () => {
+    assert.equal(
+      await getErrorWithQuery(logsQueryValidator, {
+        page: "2",
+        limit: "10",
+        type: "package_added",
+      }),
+      null,
+    );
   });
 
-  it('accepts all valid log types', async () => {
-    for (const type of ['package_added', 'package_updated', 'package_deleted']) {
-      const err = await getQueryError(logsQueryValidator, { type });
+  it("accepts all valid log types", async () => {
+    for (const type of [
+      "package_added",
+      "package_updated",
+      "package_deleted",
+    ]) {
+      const err = await getErrorWithQuery(logsQueryValidator, { type });
       assert.equal(err, null, `Expected type '${type}' to be valid`);
     }
   });
 
-  it('rejects limit over 100', async () => {
-    const err = await getQueryError(logsQueryValidator, { limit: '999' });
+  it("rejects limit over 100", async () => {
+    const err = await getErrorWithQuery(logsQueryValidator, { limit: "999" });
     assert.notEqual(err, null);
   });
 
-  it('rejects limit of 0', async () => {
-    const err = await getQueryError(logsQueryValidator, { limit: '0' });
+  it("rejects limit of 0", async () => {
+    const err = await getErrorWithQuery(logsQueryValidator, { limit: "0" });
     assert.notEqual(err, null);
   });
 
-  it('rejects negative limit', async () => {
-    const err = await getQueryError(logsQueryValidator, { limit: '-5' });
+  it("rejects negative limit", async () => {
+    const err = await getErrorWithQuery(logsQueryValidator, { limit: "-5" });
     assert.notEqual(err, null);
   });
 
-  it('rejects invalid type', async () => {
-    const err = await getQueryError(logsQueryValidator, { type: 'invalid' });
+  it("rejects invalid type", async () => {
+    const err = await getErrorWithQuery(logsQueryValidator, {
+      type: "invalid",
+    });
     assert.notEqual(err, null);
   });
 
-  it('rejects page=0', async () => {
-    const err = await getQueryError(logsQueryValidator, { page: '0' });
+  it("rejects page=0", async () => {
+    const err = await getErrorWithQuery(logsQueryValidator, { page: "0" });
     assert.notEqual(err, null);
   });
 
-  it('accepts limit at boundary: 1', async () => {
-    assert.equal(await getQueryError(logsQueryValidator, { limit: '1' }), null);
+  it("accepts limit at boundary: 1", async () => {
+    assert.equal(
+      await getErrorWithQuery(logsQueryValidator, { limit: "1" }),
+      null,
+    );
   });
 
-  it('accepts limit at boundary: 100', async () => {
-    assert.equal(await getQueryError(logsQueryValidator, { limit: '100' }), null);
+  it("accepts limit at boundary: 100", async () => {
+    assert.equal(
+      await getErrorWithQuery(logsQueryValidator, { limit: "100" }),
+      null,
+    );
   });
 });

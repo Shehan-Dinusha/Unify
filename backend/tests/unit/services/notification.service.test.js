@@ -150,13 +150,35 @@ describe('Match score percentage text', () => {
   });
 });
 
-// ── truncateComment (re-tested here in notification context) ──────────────────
+// ── truncateComment (notification content) ────────────────────────────────────
 
 describe('truncateComment (notification content)', () => {
+  it('returns short text unchanged', () => {
+    assert.equal(truncateComment('Nice post!'), 'Nice post!');
+  });
+
   it('wraps result in quotes as notification content', () => {
     const truncated = truncateComment('Great post!');
     const content = `"${truncated}"`;
     assert.equal(content, '"Great post!"');
+  });
+
+  it('returns text of exactly 80 characters unchanged', () => {
+    const exact80 = 'A'.repeat(80);
+    assert.equal(truncateComment(exact80), exact80);
+  });
+
+  it('truncates text of 81 characters to 80 + "..."', () => {
+    const text81 = 'A'.repeat(81);
+    const result = truncateComment(text81);
+    assert.equal(result, 'A'.repeat(80) + '...');
+  });
+
+  it('truncates long text correctly', () => {
+    const longText = 'B'.repeat(200);
+    const result = truncateComment(longText);
+    assert.equal(result.length, 83); // 80 chars + "..."
+    assert.ok(result.endsWith('...'));
   });
 
   it('truncated + quoted content still ends with "..."', () => {
@@ -165,5 +187,14 @@ describe('truncateComment (notification content)', () => {
     assert.ok(content.includes('...'));
     assert.ok(content.startsWith('"'));
     assert.ok(content.endsWith('"'));
+  });
+
+  it('returns empty string unchanged', () => {
+    assert.equal(truncateComment(''), '');
+  });
+
+  it('does not add ellipsis for text shorter than 80 chars', () => {
+    const short = 'Hello world, this is a comment.';
+    assert.ok(!truncateComment(short).includes('...'));
   });
 });

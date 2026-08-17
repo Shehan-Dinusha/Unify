@@ -14,11 +14,11 @@
 
 import { describe, it, mock, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mockRes, mockNext } from '../../helpers/testUtils.js';
+import { mockRes, mockNext } from '../../../helpers/testUtils.js';
 
 // We test the controller logic by importing the real controllers
 // and mocking the Sequelize models they depend on.
-import * as models from '../../../src/modules/index.js';
+import * as models from '../../../../src/modules/index.js';
 
 // ─── Automatic Mock Cleanup ─────────────────────────────────────────────────
 afterEach(() => {
@@ -42,7 +42,7 @@ describe('getStudentStats Controller', () => {
     mock.method(models.StudentReport, 'count', async () => 3);
 
     // Import after mocking
-    const { getStudentStats } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { getStudentStats } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {};
     const res = mockRes();
@@ -62,7 +62,7 @@ describe('getStudentStats Controller', () => {
       throw new Error('DB connection refused');
     });
 
-    const { getStudentStats } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { getStudentStats } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {};
     const res = mockRes();
@@ -83,7 +83,7 @@ describe('getStudentProfile Controller', () => {
   it('returns 404 when student not found', async () => {
     mock.method(models.User, 'findOne', async () => null);
 
-    const { getStudentProfile } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { getStudentProfile } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = { params: { id: '99999' } };
     const res = mockRes();
@@ -121,7 +121,7 @@ describe('getStudentProfile Controller', () => {
     mock.method(models.StudentReport, 'count', async () => 0);
     mock.method(models.UserActivityLog, 'findAll', async () => []);
 
-    const { getStudentProfile } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { getStudentProfile } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = { params: { id: '1' } };
     const res = mockRes();
@@ -146,7 +146,7 @@ describe('getStudentProfile Controller', () => {
       throw new Error('DB timeout');
     });
 
-    const { getStudentProfile } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { getStudentProfile } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = { params: { id: '1' } };
     const res = mockRes();
@@ -165,7 +165,7 @@ describe('getStudentProfile Controller', () => {
 
 describe('updateStudentStatus Controller', () => {
   it('returns 401 when admin is not authenticated', async () => {
-    const { updateStudentStatus } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { updateStudentStatus } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -185,7 +185,7 @@ describe('updateStudentStatus Controller', () => {
   it('returns 404 when student not found', async () => {
     mock.method(models.User, 'findByPk', async () => null);
 
-    const { updateStudentStatus } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { updateStudentStatus } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '99999' },
@@ -206,7 +206,7 @@ describe('updateStudentStatus Controller', () => {
       id: 1, role: 'Business', status: 'Active',
     }));
 
-    const { updateStudentStatus } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { updateStudentStatus } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -226,7 +226,7 @@ describe('updateStudentStatus Controller', () => {
       id: 1, role: 'Student', status: 'Active',
     }));
 
-    const { updateStudentStatus } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { updateStudentStatus } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -248,11 +248,11 @@ describe('updateStudentStatus Controller', () => {
     }));
 
     // Mock the suspension service (imported dynamically by the controller)
-    const UserSuspensionService = (await import('../../../src/services/userSuspension.service.js')).default;
+    const UserSuspensionService = (await import('../../../../src/services/userSuspension.service.js')).default;
     mock.method(UserSuspensionService, 'createSuspension', async () => ({}));
     mock.method(models.AdminLog, 'create', async () => ({}));
 
-    const { updateStudentStatus } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { updateStudentStatus } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -276,11 +276,11 @@ describe('updateStudentStatus Controller', () => {
     };
     mock.method(models.User, 'findByPk', async () => mockUser);
 
-    const UserSuspensionService = (await import('../../../src/services/userSuspension.service.js')).default;
+    const UserSuspensionService = (await import('../../../../src/services/userSuspension.service.js')).default;
     mock.method(UserSuspensionService, 'reactivateUser', async () => ({}));
     mock.method(models.AdminLog, 'create', async () => ({}));
 
-    const { updateStudentStatus } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { updateStudentStatus } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -302,7 +302,7 @@ describe('updateStudentStatus Controller', () => {
       throw new Error('DB connection failed');
     });
 
-    const { updateStudentStatus } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { updateStudentStatus } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -325,7 +325,7 @@ describe('updateStudentStatus Controller', () => {
 
 describe('addStudentNote Controller', () => {
   it('returns 401 when admin is not authenticated', async () => {
-    const { addStudentNote } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { addStudentNote } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -343,7 +343,7 @@ describe('addStudentNote Controller', () => {
   it('returns 404 when student profile not found', async () => {
     mock.method(models.StudentProfile, 'findOne', async () => null);
 
-    const { addStudentNote } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { addStudentNote } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '99999' },
@@ -366,7 +366,7 @@ describe('addStudentNote Controller', () => {
     };
     mock.method(models.StudentProfile, 'findOne', async () => mockProfile);
 
-    const { addStudentNote } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { addStudentNote } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -392,7 +392,7 @@ describe('addStudentNote Controller', () => {
     };
     mock.method(models.StudentProfile, 'findOne', async () => mockProfile);
 
-    const { addStudentNote } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { addStudentNote } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -413,7 +413,7 @@ describe('addStudentNote Controller', () => {
       throw new Error('DB write failed');
     });
 
-    const { addStudentNote } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { addStudentNote } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -436,7 +436,7 @@ describe('addStudentNote Controller', () => {
 
 describe('forceLogout Controller', () => {
   it('returns 401 when admin is not authenticated', async () => {
-    const { forceLogout } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { forceLogout } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = { params: { id: '1' }, user: null };
     const res = mockRes();
@@ -450,7 +450,7 @@ describe('forceLogout Controller', () => {
   it('returns 404 when student not found', async () => {
     mock.method(models.User, 'findByPk', async () => null);
 
-    const { forceLogout } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { forceLogout } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = { params: { id: '99999' }, user: { id: 1 } };
     const res = mockRes();
@@ -466,7 +466,7 @@ describe('forceLogout Controller', () => {
       id: 1, role: 'Business', isOnline: true,
     }));
 
-    const { forceLogout } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { forceLogout } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = { params: { id: '1' }, user: { id: 99 } };
     const res = mockRes();
@@ -482,7 +482,7 @@ describe('forceLogout Controller', () => {
       id: 1, role: 'Student', isOnline: false,
     }));
 
-    const { forceLogout } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { forceLogout } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = { params: { id: '1' }, user: { id: 99 } };
     const res = mockRes();
@@ -502,7 +502,7 @@ describe('forceLogout Controller', () => {
     mock.method(models.User, 'findByPk', async () => mockUser);
     mock.method(models.AdminLog, 'create', async () => ({}));
 
-    const { forceLogout } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { forceLogout } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = { params: { id: '1' }, user: { id: 99 } };
     const res = mockRes();
@@ -520,7 +520,7 @@ describe('forceLogout Controller', () => {
       throw new Error('DB read failed');
     });
 
-    const { forceLogout } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { forceLogout } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = { params: { id: '1' }, user: { id: 99 } };
     const res = mockRes();
@@ -539,7 +539,7 @@ describe('forceLogout Controller', () => {
 
 describe('sendStudentWarning Controller', () => {
   it('returns 401 when admin is not authenticated', async () => {
-    const { sendStudentWarning } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { sendStudentWarning } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -557,7 +557,7 @@ describe('sendStudentWarning Controller', () => {
   it('returns 404 when student not found', async () => {
     mock.method(models.User, 'findByPk', async () => null);
 
-    const { sendStudentWarning } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { sendStudentWarning } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '99999' },
@@ -577,7 +577,7 @@ describe('sendStudentWarning Controller', () => {
       id: 1, role: 'Student', status: 'Suspended',
     }));
 
-    const { sendStudentWarning } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { sendStudentWarning } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -600,10 +600,10 @@ describe('sendStudentWarning Controller', () => {
     mock.method(models.AdminLog, 'create', async () => ({}));
 
     // Mock reputation service
-    const { updateStudentReputation } = await import('../../../src/services/reputation.service.js');
+    const { updateStudentReputation } = await import('../../../../src/services/reputation.service.js');
     mock.method({ updateStudentReputation }, 'updateStudentReputation', async () => ({}));
 
-    const { sendStudentWarning } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { sendStudentWarning } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -625,7 +625,7 @@ describe('sendStudentWarning Controller', () => {
       throw new Error('Service unavailable');
     });
 
-    const { sendStudentWarning } = await import('../../../src/controllers/admin/studentManagement.controller.js');
+    const { sendStudentWarning } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
 
     const req = {
       params: { id: '1' },

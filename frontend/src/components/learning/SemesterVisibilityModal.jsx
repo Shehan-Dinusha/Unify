@@ -12,6 +12,7 @@ const SemesterVisibilityModal = ({
   currentVisibility = [],
   onSaveVisibility,
   isSaving,
+  isLoading = false,
 }) => {
   const [mounted, setMounted] = useState(false);
   const [batches, setBatches] = useState([]);
@@ -79,7 +80,12 @@ const SemesterVisibilityModal = ({
 
             {/* Batches config */}
             <div className="w-full flex flex-col gap-3 flex-1 overflow-y-auto custom-scrollbar pr-2 mb-2 sm:max-h-[40vh] min-h-[100px]">
-              {batches.length > 0 ? (
+              {isLoading ? (
+                <div className="flex items-center justify-center py-6 text-gray-400 text-sm font-inter gap-2">
+                  <span className="w-4 h-4 border-2 border-gray-500 border-t-white rounded-full animate-spin shrink-0" />
+                  Loading batches...
+                </div>
+              ) : batches.length > 0 ? (
                 batches.map((batch) => (
                   <div
                     key={batch.id}

@@ -12,10 +12,10 @@
 
 import { describe, it, mock, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mockRes, mockNext } from '../../helpers/testUtils.js';
-import BoostCampaign from '../../../src/modules/BoostCampaign.model.js';
-import BoostPackage from '../../../src/modules/BoostPackage.model.js';
-import boostService from '../../../src/services/boost.service.js';
+import { mockRes, mockNext } from '../../../helpers/testUtils.js';
+import BoostCampaign from '../../../../src/modules/BoostCampaign.model.js';
+import BoostPackage from '../../../../src/modules/BoostPackage.model.js';
+import boostService from '../../../../src/services/boost.service.js';
 
 // ─── Automatic Mock Cleanup ─────────────────────────────────────────────────
 afterEach(() => {
@@ -28,7 +28,7 @@ afterEach(() => {
 
 describe('createCampaign Controller', () => {
   it('returns 401 when user is not authenticated', async () => {
-    const { createCampaign } = await import('../../../src/controllers/boost/createCampaign.controller.js');
+    const { createCampaign } = await import('../../../../src/controllers/boost/createCampaign.controller.js');
 
     const req = { user: null, body: { postId: 1, packageId: 'PKG-1' } };
     const res = mockRes();
@@ -41,7 +41,7 @@ describe('createCampaign Controller', () => {
   });
 
   it('returns 400 when postId is missing', async () => {
-    const { createCampaign } = await import('../../../src/controllers/boost/createCampaign.controller.js');
+    const { createCampaign } = await import('../../../../src/controllers/boost/createCampaign.controller.js');
 
     const req = { user: { id: 1 }, body: { packageId: 'PKG-1' } };
     const res = mockRes();
@@ -54,7 +54,7 @@ describe('createCampaign Controller', () => {
   });
 
   it('returns 400 when packageId is missing', async () => {
-    const { createCampaign } = await import('../../../src/controllers/boost/createCampaign.controller.js');
+    const { createCampaign } = await import('../../../../src/controllers/boost/createCampaign.controller.js');
 
     const req = { user: { id: 1 }, body: { postId: 1 } };
     const res = mockRes();
@@ -69,7 +69,7 @@ describe('createCampaign Controller', () => {
   it('returns 404 when package is not found', async () => {
     mock.method(BoostPackage, 'findByPk', async () => null);
 
-    const { createCampaign } = await import('../../../src/controllers/boost/createCampaign.controller.js');
+    const { createCampaign } = await import('../../../../src/controllers/boost/createCampaign.controller.js');
 
     const req = { user: { id: 1 }, body: { postId: 1, packageId: 'PKG-NONEXIST' } };
     const res = mockRes();
@@ -86,7 +86,7 @@ describe('createCampaign Controller', () => {
       id: 'PKG-1', status: 'archived', price: 100, durationValue: 7, durationUnit: 'Days',
     }));
 
-    const { createCampaign } = await import('../../../src/controllers/boost/createCampaign.controller.js');
+    const { createCampaign } = await import('../../../../src/controllers/boost/createCampaign.controller.js');
 
     const req = { user: { id: 1 }, body: { postId: 1, packageId: 'PKG-1' } };
     const res = mockRes();
@@ -106,7 +106,7 @@ describe('createCampaign Controller', () => {
       id: 1, status: 'Active',
     }));
 
-    const { createCampaign } = await import('../../../src/controllers/boost/createCampaign.controller.js');
+    const { createCampaign } = await import('../../../../src/controllers/boost/createCampaign.controller.js');
 
     const req = { user: { id: 1 }, body: { postId: 42, packageId: 'PKG-1' } };
     const res = mockRes();
@@ -142,7 +142,7 @@ describe('createCampaign Controller', () => {
       endDate: data.endDate,
     }));
 
-    const { createCampaign } = await import('../../../src/controllers/boost/createCampaign.controller.js');
+    const { createCampaign } = await import('../../../../src/controllers/boost/createCampaign.controller.js');
 
     const req = {
       user: { id: 1 },
@@ -172,7 +172,7 @@ describe('createCampaign Controller', () => {
       throw new Error('Connection refused');
     });
 
-    const { createCampaign } = await import('../../../src/controllers/boost/createCampaign.controller.js');
+    const { createCampaign } = await import('../../../../src/controllers/boost/createCampaign.controller.js');
 
     const req = { user: { id: 1 }, body: { postId: 1, packageId: 'PKG-1' } };
     const res = mockRes();
@@ -191,7 +191,7 @@ describe('createCampaign Controller', () => {
 
 describe('getCampaigns Controller', () => {
   it('returns 401 when user is not authenticated', async () => {
-    const { getCampaigns } = await import('../../../src/controllers/boost/getCampaigns.controller.js');
+    const { getCampaigns } = await import('../../../../src/controllers/boost/getCampaigns.controller.js');
 
     const req = { user: null, query: {} };
     const res = mockRes();
@@ -211,7 +211,7 @@ describe('getCampaigns Controller', () => {
       ],
     }));
 
-    const { getCampaigns } = await import('../../../src/controllers/boost/getCampaigns.controller.js');
+    const { getCampaigns } = await import('../../../../src/controllers/boost/getCampaigns.controller.js');
 
     const req = { user: { id: 1 }, query: {} };
     const res = mockRes();
@@ -230,7 +230,7 @@ describe('getCampaigns Controller', () => {
       count: 0, rows: [],
     }));
 
-    const { getCampaigns } = await import('../../../src/controllers/boost/getCampaigns.controller.js');
+    const { getCampaigns } = await import('../../../../src/controllers/boost/getCampaigns.controller.js');
 
     const req = { user: { id: 1 }, query: {} };
     const res = mockRes();
@@ -247,7 +247,7 @@ describe('getCampaigns Controller', () => {
       throw new Error('Query timeout');
     });
 
-    const { getCampaigns } = await import('../../../src/controllers/boost/getCampaigns.controller.js');
+    const { getCampaigns } = await import('../../../../src/controllers/boost/getCampaigns.controller.js');
 
     const req = { user: { id: 1 }, query: {} };
     const res = mockRes();
@@ -266,7 +266,7 @@ describe('getCampaigns Controller', () => {
 
 describe('updateCampaignStatus Controller', () => {
   it('returns 401 when user is not authenticated', async () => {
-    const { updateCampaignStatus } = await import('../../../src/controllers/boost/updateCampaignStatus.controller.js');
+    const { updateCampaignStatus } = await import('../../../../src/controllers/boost/updateCampaignStatus.controller.js');
 
     const req = { params: { id: '1' }, body: { status: 'Active' }, user: null };
     const res = mockRes();
@@ -278,7 +278,7 @@ describe('updateCampaignStatus Controller', () => {
   });
 
   it('returns 400 for invalid status value', async () => {
-    const { updateCampaignStatus } = await import('../../../src/controllers/boost/updateCampaignStatus.controller.js');
+    const { updateCampaignStatus } = await import('../../../../src/controllers/boost/updateCampaignStatus.controller.js');
 
     const req = { params: { id: '1' }, body: { status: 'Running' }, user: { id: 1 } };
     const res = mockRes();
@@ -291,7 +291,7 @@ describe('updateCampaignStatus Controller', () => {
   });
 
   it('returns 400 for missing status', async () => {
-    const { updateCampaignStatus } = await import('../../../src/controllers/boost/updateCampaignStatus.controller.js');
+    const { updateCampaignStatus } = await import('../../../../src/controllers/boost/updateCampaignStatus.controller.js');
 
     const req = { params: { id: '1' }, body: {}, user: { id: 1 } };
     const res = mockRes();
@@ -305,7 +305,7 @@ describe('updateCampaignStatus Controller', () => {
   it('returns 404 when campaign not found', async () => {
     mock.method(BoostCampaign, 'findOne', async () => null);
 
-    const { updateCampaignStatus } = await import('../../../src/controllers/boost/updateCampaignStatus.controller.js');
+    const { updateCampaignStatus } = await import('../../../../src/controllers/boost/updateCampaignStatus.controller.js');
 
     const req = { params: { id: '99999' }, body: { status: 'Active' }, user: { id: 1 } };
     const res = mockRes();
@@ -321,7 +321,7 @@ describe('updateCampaignStatus Controller', () => {
       id: 1, userId: 1, status: 'Completed', campaignId: '#Campaign-1234-A',
     }));
 
-    const { updateCampaignStatus } = await import('../../../src/controllers/boost/updateCampaignStatus.controller.js');
+    const { updateCampaignStatus } = await import('../../../../src/controllers/boost/updateCampaignStatus.controller.js');
 
     const req = { params: { id: '1' }, body: { status: 'Active' }, user: { id: 1 } };
     const res = mockRes();
@@ -338,7 +338,7 @@ describe('updateCampaignStatus Controller', () => {
       id: 1, userId: 5, status: 'Pending', campaignId: '#Campaign-1234-A',
     }));
 
-    const { updateCampaignStatus } = await import('../../../src/controllers/boost/updateCampaignStatus.controller.js');
+    const { updateCampaignStatus } = await import('../../../../src/controllers/boost/updateCampaignStatus.controller.js');
 
     // User 1 tries to activate campaign owned by user 5
     const req = { params: { id: '1' }, body: { status: 'Active' }, user: { id: 1 } };
@@ -359,7 +359,7 @@ describe('updateCampaignStatus Controller', () => {
     };
     mock.method(BoostCampaign, 'findOne', async () => campaign);
 
-    const { updateCampaignStatus } = await import('../../../src/controllers/boost/updateCampaignStatus.controller.js');
+    const { updateCampaignStatus } = await import('../../../../src/controllers/boost/updateCampaignStatus.controller.js');
 
     const req = { params: { id: '1' }, body: { status: 'Active' }, user: { id: 1 } };
     const res = mockRes();
@@ -382,7 +382,7 @@ describe('updateCampaignStatus Controller', () => {
     };
     mock.method(BoostCampaign, 'findOne', async () => campaign);
 
-    const { updateCampaignStatus } = await import('../../../src/controllers/boost/updateCampaignStatus.controller.js');
+    const { updateCampaignStatus } = await import('../../../../src/controllers/boost/updateCampaignStatus.controller.js');
 
     const req = { params: { id: '1' }, body: { status: 'Paused' }, user: { id: 1 } };
     const res = mockRes();
@@ -399,7 +399,7 @@ describe('updateCampaignStatus Controller', () => {
       throw new Error('DB connection lost');
     });
 
-    const { updateCampaignStatus } = await import('../../../src/controllers/boost/updateCampaignStatus.controller.js');
+    const { updateCampaignStatus } = await import('../../../../src/controllers/boost/updateCampaignStatus.controller.js');
 
     const req = { params: { id: '1' }, body: { status: 'Active' }, user: { id: 1 } };
     const res = mockRes();
@@ -427,7 +427,7 @@ describe('getAdminStats Controller (Boost)', () => {
       avgDurationDays: 7.5,
     }));
 
-    const { getAdminStats } = await import('../../../src/controllers/boost/getAdminStats.controller.js');
+    const { getAdminStats } = await import('../../../../src/controllers/boost/getAdminStats.controller.js');
 
     const req = {};
     const res = mockRes();
@@ -448,7 +448,7 @@ describe('getAdminStats Controller (Boost)', () => {
       throw new Error('DB error');
     });
 
-    const { getAdminStats } = await import('../../../src/controllers/boost/getAdminStats.controller.js');
+    const { getAdminStats } = await import('../../../../src/controllers/boost/getAdminStats.controller.js');
 
     const req = {};
     const res = mockRes();

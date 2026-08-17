@@ -14,8 +14,8 @@
 
 import { describe, it, mock, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mockRes, mockNext } from '../../helpers/testUtils.js';
-import StudentReport from '../../../src/modules/StudentReport.model.js';
+import { mockRes, mockNext } from '../../../helpers/testUtils.js';
+import StudentReport from '../../../../src/modules/StudentReport.model.js';
 
 // ─── Automatic Mock Cleanup ─────────────────────────────────────────────────
 afterEach(() => {
@@ -28,7 +28,7 @@ afterEach(() => {
 
 describe('createReport Controller', () => {
   it('returns 401 when student is not authenticated', async () => {
-    const { createReport } = await import('../../../src/controllers/report/createReport.controller.js');
+    const { createReport } = await import('../../../../src/controllers/report/createReport.controller.js');
 
     const req = { user: null, body: { reportType: 'post', category: 'spam', reportedEntityId: '42' } };
     const res = mockRes();
@@ -46,7 +46,7 @@ describe('createReport Controller', () => {
       id: 1, status: 'Pending Review',
     }));
 
-    const { createReport } = await import('../../../src/controllers/report/createReport.controller.js');
+    const { createReport } = await import('../../../../src/controllers/report/createReport.controller.js');
 
     const req = {
       user: { id: 10 },
@@ -69,7 +69,7 @@ describe('createReport Controller', () => {
       id: 1, reportId: data.reportId, status: data.status,
     }));
 
-    const { createReport } = await import('../../../src/controllers/report/createReport.controller.js');
+    const { createReport } = await import('../../../../src/controllers/report/createReport.controller.js');
 
     const req = {
       user: { id: 10 },
@@ -100,7 +100,7 @@ describe('createReport Controller', () => {
       return { id: 2, reportId: data.reportId, status: data.status };
     });
 
-    const { createReport } = await import('../../../src/controllers/report/createReport.controller.js');
+    const { createReport } = await import('../../../../src/controllers/report/createReport.controller.js');
 
     const req = {
       user: { id: 10 },
@@ -128,7 +128,7 @@ describe('createReport Controller', () => {
       return { id: 3, reportId: data.reportId, status: data.status };
     });
 
-    const { createReport } = await import('../../../src/controllers/report/createReport.controller.js');
+    const { createReport } = await import('../../../../src/controllers/report/createReport.controller.js');
 
     const req = {
       user: { id: 10 },
@@ -148,7 +148,7 @@ describe('createReport Controller', () => {
       throw new Error('Connection refused');
     });
 
-    const { createReport } = await import('../../../src/controllers/report/createReport.controller.js');
+    const { createReport } = await import('../../../../src/controllers/report/createReport.controller.js');
 
     const req = {
       user: { id: 10 },
@@ -171,7 +171,7 @@ describe('createReport Controller', () => {
 
 describe('getStudentReports Controller', () => {
   it('returns 401 when student is not authenticated', async () => {
-    const { getStudentReports } = await import('../../../src/controllers/report/getStudentReports.controller.js');
+    const { getStudentReports } = await import('../../../../src/controllers/report/getStudentReports.controller.js');
 
     const req = { user: null, query: {} };
     const res = mockRes();
@@ -192,7 +192,7 @@ describe('getStudentReports Controller', () => {
       }],
     }));
 
-    const { getStudentReports } = await import('../../../src/controllers/report/getStudentReports.controller.js');
+    const { getStudentReports } = await import('../../../../src/controllers/report/getStudentReports.controller.js');
 
     const req = { user: { id: 10 }, query: {} };
     const res = mockRes();
@@ -211,7 +211,7 @@ describe('getStudentReports Controller', () => {
       count: 0, rows: [],
     }));
 
-    const { getStudentReports } = await import('../../../src/controllers/report/getStudentReports.controller.js');
+    const { getStudentReports } = await import('../../../../src/controllers/report/getStudentReports.controller.js');
 
     const req = { user: { id: 10 }, query: {} };
     const res = mockRes();
@@ -229,7 +229,7 @@ describe('getStudentReports Controller', () => {
       throw new Error('Query timeout');
     });
 
-    const { getStudentReports } = await import('../../../src/controllers/report/getStudentReports.controller.js');
+    const { getStudentReports } = await import('../../../../src/controllers/report/getStudentReports.controller.js');
 
     const req = { user: { id: 10 }, query: {} };
     const res = mockRes();
@@ -248,7 +248,7 @@ describe('getStudentReports Controller', () => {
 
 describe('withdrawReport Controller', () => {
   it('returns 401 when student is not authenticated', async () => {
-    const { withdrawReport } = await import('../../../src/controllers/report/withdrawReport.controller.js');
+    const { withdrawReport } = await import('../../../../src/controllers/report/withdrawReport.controller.js');
 
     const req = { params: { id: '1' }, body: { withdrawalReason: 'Resolved privately' }, user: null };
     const res = mockRes();
@@ -260,7 +260,7 @@ describe('withdrawReport Controller', () => {
   });
 
   it('returns 400 for withdrawal reason too short (< 5 chars)', async () => {
-    const { withdrawReport } = await import('../../../src/controllers/report/withdrawReport.controller.js');
+    const { withdrawReport } = await import('../../../../src/controllers/report/withdrawReport.controller.js');
 
     const req = { params: { id: '1' }, body: { withdrawalReason: 'Ok' }, user: { id: 10 } };
     const res = mockRes();
@@ -273,7 +273,7 @@ describe('withdrawReport Controller', () => {
   });
 
   it('returns 400 for withdrawal reason too long (> 500 chars)', async () => {
-    const { withdrawReport } = await import('../../../src/controllers/report/withdrawReport.controller.js');
+    const { withdrawReport } = await import('../../../../src/controllers/report/withdrawReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -292,7 +292,7 @@ describe('withdrawReport Controller', () => {
   it('returns 404 when report not found', async () => {
     mock.method(StudentReport, 'findOne', async () => null);
 
-    const { withdrawReport } = await import('../../../src/controllers/report/withdrawReport.controller.js');
+    const { withdrawReport } = await import('../../../../src/controllers/report/withdrawReport.controller.js');
 
     const req = {
       params: { id: '99999' },
@@ -313,7 +313,7 @@ describe('withdrawReport Controller', () => {
       id: 1, status: 'Withdrawn', studentId: 10,
     }));
 
-    const { withdrawReport } = await import('../../../src/controllers/report/withdrawReport.controller.js');
+    const { withdrawReport } = await import('../../../../src/controllers/report/withdrawReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -334,7 +334,7 @@ describe('withdrawReport Controller', () => {
       id: 1, status: 'Resolved', studentId: 10,
     }));
 
-    const { withdrawReport } = await import('../../../src/controllers/report/withdrawReport.controller.js');
+    const { withdrawReport } = await import('../../../../src/controllers/report/withdrawReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -357,7 +357,7 @@ describe('withdrawReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { withdrawReport } = await import('../../../src/controllers/report/withdrawReport.controller.js');
+    const { withdrawReport } = await import('../../../../src/controllers/report/withdrawReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -380,7 +380,7 @@ describe('withdrawReport Controller', () => {
       throw new Error('DB connection lost');
     });
 
-    const { withdrawReport } = await import('../../../src/controllers/report/withdrawReport.controller.js');
+    const { withdrawReport } = await import('../../../../src/controllers/report/withdrawReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -405,7 +405,7 @@ describe('updateReport Controller', () => {
   it('returns 404 when report not found', async () => {
     mock.method(StudentReport, 'findOne', async () => null);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '99999' },
@@ -426,7 +426,7 @@ describe('updateReport Controller', () => {
       id: 1, status: 'Withdrawn',
     }));
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -447,7 +447,7 @@ describe('updateReport Controller', () => {
       id: 1, status: 'Resolved',
     }));
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -468,7 +468,7 @@ describe('updateReport Controller', () => {
       id: 1, status: 'Dismissed',
     }));
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -492,7 +492,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -515,7 +515,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -544,7 +544,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -573,7 +573,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -596,7 +596,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -618,7 +618,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -645,7 +645,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -670,7 +670,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -694,7 +694,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -718,7 +718,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -742,7 +742,7 @@ describe('updateReport Controller', () => {
     };
     mock.method(StudentReport, 'findOne', async () => mockReport);
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -765,7 +765,7 @@ describe('updateReport Controller', () => {
       throw new Error('Database unavailable');
     });
 
-    const { updateReport } = await import('../../../src/controllers/report/updateReport.controller.js');
+    const { updateReport } = await import('../../../../src/controllers/report/updateReport.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -795,7 +795,7 @@ describe('getReportQueue Controller', () => {
       ],
     }));
 
-    const { getReportQueue } = await import('../../../src/controllers/report/getReportQueue.controller.js');
+    const { getReportQueue } = await import('../../../../src/controllers/report/getReportQueue.controller.js');
 
     const req = { query: {} };
     const res = mockRes();
@@ -814,7 +814,7 @@ describe('getReportQueue Controller', () => {
       count: 0, rows: [],
     }));
 
-    const { getReportQueue } = await import('../../../src/controllers/report/getReportQueue.controller.js');
+    const { getReportQueue } = await import('../../../../src/controllers/report/getReportQueue.controller.js');
 
     const req = { query: {} };
     const res = mockRes();
@@ -831,7 +831,7 @@ describe('getReportQueue Controller', () => {
       throw new Error('Query failed');
     });
 
-    const { getReportQueue } = await import('../../../src/controllers/report/getReportQueue.controller.js');
+    const { getReportQueue } = await import('../../../../src/controllers/report/getReportQueue.controller.js');
 
     const req = { query: {} };
     const res = mockRes();
@@ -863,7 +863,7 @@ describe('getStatistics Controller', () => {
       { category: 'harassment', count: '20' },
     ]);
 
-    const { getStatistics } = await import('../../../src/controllers/report/getStatistics.controller.js');
+    const { getStatistics } = await import('../../../../src/controllers/report/getStatistics.controller.js');
 
     const req = {};
     const res = mockRes();
@@ -885,7 +885,7 @@ describe('getStatistics Controller', () => {
       throw new Error('Aggregation failed');
     });
 
-    const { getStatistics } = await import('../../../src/controllers/report/getStatistics.controller.js');
+    const { getStatistics } = await import('../../../../src/controllers/report/getStatistics.controller.js');
 
     const req = {};
     const res = mockRes();

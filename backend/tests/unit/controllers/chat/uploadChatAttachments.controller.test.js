@@ -1,27 +1,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { uploadChatAttachments } from "../../../src/controllers/chat/uploadChatAttachments.controller.js";
+import { mockRes } from "../../../helpers/testUtils.js";
+import { uploadChatAttachments } from "../../../../src/controllers/chat/uploadChatAttachments.controller.js";
 
-/**
- * Helper to create a mock Express response.
- */
-const createRes = () => {
-  let statusCode;
-  let body;
-  const res = {
-    status(code) {
-      statusCode = code;
-      return res;
-    },
-    json(data) {
-      body = data;
-      return res;
-    },
-    getStatusCode: () => statusCode,
-    getBody: () => body,
-  };
-  return res;
-};
+const createRes = mockRes;
 
 describe("uploadChatAttachments", () => {
   it("returns 400 when req.files is undefined", async () => {
