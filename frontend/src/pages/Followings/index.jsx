@@ -4,7 +4,6 @@ import MainLayout from '../../components/layout/MainLayout';
 import LoadMoreButton from '../../components/common/LoadMoreButton';
 import { useFollowings } from './useFollowings';
 import FollowingCard from './FollowingCard';
-import FollowingCardSkeleton from './FollowingCardSkeleton';
 import SortDropdown from './SortDropdown';
 import NotFound from '../NotFound';
 
@@ -64,10 +63,9 @@ const Followings = () => {
         )}
 
         {isLoading ? (
-          <div className="flex flex-col gap-4 pb-10 w-full flex-1" aria-busy="true">
-            {[1, 2, 3, 4].map((i) => (
-              <FollowingCardSkeleton key={i} />
-            ))}
+          <div className="flex-1 flex justify-center items-center py-20">
+            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+            <span className="ml-3 text-slate-400 font-inter">Loading followings...</span>
           </div>
         ) : (
           <div className="flex flex-col gap-4 pb-10 w-full flex-1">

@@ -1,12 +1,11 @@
 import React from 'react';
-import { Plus, AlertTriangle } from 'lucide-react';
+import { Plus, AlertTriangle, Loader2 } from 'lucide-react';
 import MainLayout from '../../components/layout/MainLayout';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import { getCurrentUser } from '../../services/authService';
 import { useBoostController } from './useBoostController';
 import BoostStatsCards from './BoostStatsCards';
-import BoostControllerSkeleton from './BoostControllerSkeleton';
 import PackageCarousel from './PackageCarousel';
 import ConfigurationLogs from './ConfigurationLogs';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -56,8 +55,9 @@ const BoostController = () => {
                 <BoostStatsCards statTiles={statTiles} />
 
                 {loading && packages.length === 0 && (
-                    <div aria-busy="true">
-                        <BoostControllerSkeleton />
+                    <div className="flex items-center justify-center py-xl">
+                        <Loader2 size={32} className="text-primary-blue animate-spin" />
+                        <span className="ml-3 text-body-small text-text-secondary font-inter">Loading packages...</span>
                     </div>
                 )}
 
