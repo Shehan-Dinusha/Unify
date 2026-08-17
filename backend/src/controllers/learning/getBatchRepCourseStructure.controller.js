@@ -49,13 +49,6 @@ export const getBatchRepCourseStructure = async (req, res, next) => {
 
     const formattedSemesters = await Promise.all(
       semesters.map(async (sem) => {
-        const dbConfigCount = await SemesterVisibility.count({
-          where: {
-            semesterId: sem.id,
-            degreeId: parseInt(degreeId, 10),
-          },
-        });
-
         const visibilityCount = await SemesterVisibility.count({
           where: {
             semesterId: sem.id,
@@ -66,7 +59,7 @@ export const getBatchRepCourseStructure = async (req, res, next) => {
         return {
           id: sem.id,
           name: sem.name,
-          isPublic: dbConfigCount === 0 || visibilityCount > 0,
+          isPublic: visibilityCount > 0,
           modules: sem.modules.map((mod) => ({
             id: mod.id,
             code: mod.code,

@@ -3,6 +3,7 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { updateStudentReputation } from "../../services/reputation.service.js";
 import UserSuspensionService from "../../services/userSuspension.service.js";
+import { notifyUser } from "../../services/notification.service.js";
 
 //Handle admin updates to a report's status, priority, and notes.
 export const updateReport = async (req, res, next) => {
@@ -46,6 +47,17 @@ export const updateReport = async (req, res, next) => {
           if (reason && (reason.toLowerCase().includes('fake') || reason.toLowerCase().includes('spam') || reason.toLowerCase().includes('false'))) {
             await updateStudentReputation(report.studentId, 'FAKE_REPORT_SPAM');
           }
+          // Notify reporter that their report was reviewed and dismissed
+          notifyUser({
+            userId: report.studentId,
+            actorId: req.user?.id,
+            type: 'General',
+            title: 'Report Update: Reviewed',
+            content: `Your report (ID: ${report.reportId || id}) has been reviewed and dismissed. Reason: ${reason}`,
+            referenceId: report.id,
+            referenceType: 'Report',
+            dedupeKey: `admin:report-dismiss:${report.id}`,
+          }).catch(() => {});
           break;
 
         case 'resolve':
@@ -53,6 +65,17 @@ export const updateReport = async (req, res, next) => {
           appendNote(`Resolution: ${notes || 'Marked as resolved by admin'}`);
           report.resolvedAt = new Date();
           await updateStudentReputation(report.studentId, 'REPORT_RESOLVED');
+          // Notify reporter that their report was resolved
+          notifyUser({
+            userId: report.studentId,
+            actorId: req.user?.id,
+            type: 'General',
+            title: 'Report Update: Resolved ✅',
+            content: `Your report (ID: ${report.reportId || id}) has been resolved. ${notes || 'Thank you for helping keep the community safe.'}`,
+            referenceId: report.id,
+            referenceType: 'Report',
+            dedupeKey: `admin:report-resolve:${report.id}`,
+          }).catch(() => {});
           break;
 
         case 'delete_post':
@@ -61,6 +84,17 @@ export const updateReport = async (req, res, next) => {
             const Post = (await import("../../modules/Post.model.js")).default;
             const post = await Post.findByPk(report.reportedEntityId);
             if (post) {
+               // Notify post author that their content was removed
+               notifyUser({
+                 userId: post.authorId,
+                 actorId: req.user?.id,
+                 type: 'General',
+                 title: 'Content Removed',
+                 content: 'Your post has been removed by a moderator for violating community guidelines. Please review our policies to avoid further action.',
+                 referenceId: post.id,
+                 referenceType: 'ContentRemoval',
+                 dedupeKey: `admin:content-delete:${post.id}:${Date.now()}`,
+               }).catch(() => {});
                await updateStudentReputation(post.authorId, 'VIOLATION_DELETED');
                await post.destroy().catch(err => logger.warn('Failed to delete post: ' + err));
             }
@@ -85,6 +119,17 @@ export const updateReport = async (req, res, next) => {
               effectiveDate: new Date(),
               adminNotes: `Suspended via Student Report Management for report ID ${id}. ${notes || ''}`
             }, adminId);
+            // Notify the suspended user
+            notifyUser({
+              userId: parseInt(report.reportedEntityId),
+              actorId: adminId,
+              type: 'General',
+              title: 'Account Suspended',
+              content: `Your account has been suspended due to a report investigation. Reason: ${reason || 'Violation of platform guidelines'}. Please contact support if you have questions.`,
+              referenceId: parseInt(report.reportedEntityId),
+              referenceType: 'Suspension',
+              dedupeKey: `admin:suspend:${report.reportedEntityId}:${Date.now()}`,
+            }).catch(() => {});
           }
           // Keep status as In Progress — admin can still resolve/dismiss
           if (report.status === 'Pending Review') report.status = 'In Progress';

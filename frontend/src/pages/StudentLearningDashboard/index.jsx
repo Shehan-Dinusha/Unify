@@ -11,7 +11,7 @@ const StudentLearningDashboard = () => {
   const {
     sidebarUser, semesters, activeSemesterId, activeModuleId,
     facultyName, degreeName, batchName, moduleCategories, selectedCategory, setSelectedCategory,
-    categoryFiles, isLoading, activeModuleData, handleSelectModule,
+    categoryFiles, isLoading, activeModuleData, activeSemesterInfo, handleSelectModule,
   } = useStudentLearningDashboard();
 
   return (
