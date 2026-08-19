@@ -3,13 +3,14 @@ import assert from "node:assert/strict";
 import bcrypt from "bcryptjs";
 import { mockRes } from "../../../helpers/testUtils.js";
 import { login } from "../../../../src/controllers/auth/login.controller.js";
-import { User, StudentProfile } from "../../../../src/modules/index.js";
+import { User, StudentProfile, UserSession } from "../../../../src/modules/index.js";
 import { phoneWhere } from "../../../../src/utils/phoneWhere.util.js";
 
 process.env.JWT_SECRET = "test_secret";
 
 beforeEach(() => {
   process.env.JWT_SECRET = "test_secret";
+  mock.method(UserSession, "create", async () => ({}));
 });
 
 afterEach(() => {
@@ -95,7 +96,7 @@ describe("login", () => {
     assert.match(res.getBody().message, /Invalid credentials/i);
   });
 
-  it("returns 200 with tokens and role profile data on success", async () => {
+  it("returns 200 with tokens, profile data and hasProfile: true when profile exists", async () => {
     mock.method(User, "findOne", async () => makeUser());
     mock.method(bcrypt, "compare", async () => true);
     mock.method(StudentProfile, "findOne", async () => ({ isBatchRep: true }));
@@ -111,6 +112,21 @@ describe("login", () => {
     assert.ok(res.getBody().data.refreshToken);
     assert.equal(res.getBody().data.user.role, "Student");
     assert.equal(res.getBody().data.user.isBatchRep, true);
+    assert.equal(res.getBody().data.user.hasProfile, true);
+  });
+
+  it("returns hasProfile: false when verified user has no profile record", async () => {
+    mock.method(User, "findOne", async () => makeUser());
+    mock.method(bcrypt, "compare", async () => true);
+    mock.method(StudentProfile, "findOne", async () => null);
+
+    const req = { body: { email: "alice@example.com", password: "secret123" } };
+    const res = createRes();
+
+    await login(req, res);
+
+    assert.equal(res.getStatusCode(), 200);
+    assert.equal(res.getBody().data.user.hasProfile, false);
   });
 
   it("supports identifier-based login with an email", async () => {

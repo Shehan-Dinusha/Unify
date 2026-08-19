@@ -4,7 +4,7 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { generateTokens } from "./auth.utils.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
-import { getRoleProfileData } from "../../services/roleProfile.service.js";
+import { getRoleProfileData, checkUserProfileExists } from "../../services/roleProfile.service.js";
 import { phoneWhere } from "../../utils/phoneWhere.util.js";
 
 /**
@@ -41,11 +41,21 @@ export const login = async (req, res) => {
     const avatar = await resolveAvatarUrl(user.avatar, user.name);
 
     const profileData = await getRoleProfileData(user);
+    const hasProfile = await checkUserProfileExists(user);
 
     return sendResponse(res, 200, true, "Login successful", {
       accessToken,
       refreshToken,
-      user: { id: user.id, email: user.email, phone: user.phone, name: user.name, role: user.role, avatar, ...profileData },
+      user: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        name: user.name,
+        role: user.role,
+        avatar,
+        hasProfile,
+        ...profileData,
+      },
     });
   } catch (error) {
     logger.error("Login Error:", error);
