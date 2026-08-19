@@ -2,7 +2,7 @@ import { describe, it, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import bcrypt from "bcryptjs";
 import { mockRes } from "../../../helpers/testUtils.js";
-import { User } from "../../../../src/modules/index.js";
+import { User, UserSession } from "../../../../src/modules/index.js";
 import { deleteAccount } from "../../../../src/controllers/profile/deleteAccount.controller.js";
 
 afterEach(() => {
@@ -68,12 +68,14 @@ describe("deleteAccount", () => {
     const password = "CorrectPassword!";
     const passwordHash = await bcrypt.hash(password, 10);
     const updateFn = mock.fn(async () => {});
+    const destroyFn = mock.fn(async () => {});
 
     mock.method(User, "findByPk", async () => ({
       id: 1,
       passwordHash,
       update: updateFn,
     }));
+    mock.method(UserSession, "destroy", destroyFn);
 
     const req = {
       user: { id: 1 },
@@ -87,6 +89,8 @@ describe("deleteAccount", () => {
     assert.equal(res.getBody().success, true);
     assert.match(res.getBody().message, /deleted/i);
     assert.equal(updateFn.mock.calls.length, 1);
+    assert.equal(destroyFn.mock.calls.length, 1);
+    assert.deepEqual(destroyFn.mock.calls[0].arguments[0], { where: { userId: 1 } });
 
     // Verify the anonymization data passed to update()
     const updateArg = updateFn.mock.calls[0].arguments[0];
@@ -95,7 +99,6 @@ describe("deleteAccount", () => {
     assert.equal(updateArg.phone, null);
     assert.equal(updateArg.avatar, null);
     assert.equal(updateArg.status, "Deleted");
-    assert.equal(updateArg.refreshToken, null);
     assert.equal(updateArg.isOnline, false);
   });
 
