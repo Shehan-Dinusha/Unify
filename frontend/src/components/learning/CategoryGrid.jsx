@@ -170,6 +170,7 @@ const CategoryGrid = ({
   selectedCategoryId,
   activeModuleId,
   onRefresh,
+  isLoading = false,
 }) => {
   const [categories, setCategories] = useState(initialCategories);
   const toast = useToast();
@@ -240,26 +241,42 @@ const CategoryGrid = ({
   return (
     <>
       <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
-        {categories.map((cat, idx) => (
-          <CategoryCard
-            key={cat.id}
-            category={cat}
-            colorIdx={idx}
-            isSelected={cat.id === selectedCategoryId}
-            onEdit={handleOpenEdit}
-            onDelete={handleDelete}
-            onClick={() => onCategoryClick?.(cat)}
-          />
-        ))}
+        {isLoading ? (
+          [1, 2, 3, 4].map((i) => (
+            <div
+              key={`skeleton-${i}`}
+              className="w-full h-[84px] p-2.5 sm:p-3.5 rounded-xl bg-slate-800 outline outline-1 outline-slate-700 flex items-start gap-2.5 sm:gap-3.5"
+            >
+              <div className="w-9 h-9 rounded-lg bg-white/5 animate-pulse shrink-0" />
+              <div className="flex flex-col gap-2 flex-1 pt-1">
+                <div className="h-3 w-24 bg-white/5 animate-pulse rounded" />
+                <div className="h-2.5 w-16 bg-white/5 animate-pulse rounded" />
+              </div>
+            </div>
+          ))
+        ) : (
+          <>
+            {categories.map((cat, idx) => (
+              <CategoryCard
+                key={cat.id}
+                category={cat}
+                colorIdx={idx}
+                isSelected={cat.id === selectedCategoryId}
+                onEdit={handleOpenEdit}
+                onDelete={handleDelete}
+                onClick={() => onCategoryClick?.(cat)}
+              />
+            ))}
 
-        {/* Placeholders (up to 8 total items) */}
-        {Array.from({ length: Math.max(0, 8 - categories.length) }).map(
-          (_, idx) => (
-            <AddCategoryPlaceholder
-              key={`placeholder-${idx}`}
-              onClick={handleOpenCreate}
-            />
-          ),
+            {Array.from({ length: Math.max(0, 8 - categories.length) }).map(
+              (_, idx) => (
+                <AddCategoryPlaceholder
+                  key={`placeholder-${idx}`}
+                  onClick={handleOpenCreate}
+                />
+              ),
+            )}
+          </>
         )}
       </div>
 

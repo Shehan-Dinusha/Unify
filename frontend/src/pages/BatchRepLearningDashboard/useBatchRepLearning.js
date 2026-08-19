@@ -22,6 +22,7 @@ export const useBatchRepLearning = () => {
   const [availableDegrees, setAvailableDegrees] = useState([]);
   const [availableDegreesObjs, setAvailableDegreesObjs] = useState([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [actionModuleName, setActionModuleName] = useState("");
@@ -44,6 +45,7 @@ export const useBatchRepLearning = () => {
   };
 
   useEffect(() => {
+    setIsLoadingDetails(true);
     const init = async () => {
       try {
         const profileRes = await getMyProfile("student");
@@ -75,6 +77,8 @@ export const useBatchRepLearning = () => {
         }
       } catch (err) {
         toast.error("Error", "Failed to initialize learning dashboard");
+      } finally {
+        setIsLoadingDetails(false);
       }
     };
     init();
@@ -86,6 +90,7 @@ export const useBatchRepLearning = () => {
     setActiveModuleDetails(null);
     setSelectedCategory(null);
     setCategoryFiles([]);
+    setModuleCategories([]);
 
     const fetchModuleData = async () => {
       setIsLoadingDetails(true);
@@ -127,12 +132,15 @@ export const useBatchRepLearning = () => {
       return;
     }
 
+    setIsLoadingFiles(true);
     const fetchFiles = async () => {
       try {
         const filesRes = await learningService.getMaterialsByCategory(activeModuleId, selectedCategory.id);
         setCategoryFiles(filesRes.data || []);
       } catch (err) {
         setCategoryFiles([]);
+      } finally {
+        setIsLoadingFiles(false);
       }
     };
 
@@ -176,6 +184,16 @@ export const useBatchRepLearning = () => {
     }
   };
 
+  const refreshCategoryCounts = async () => {
+    if (!activeModuleId) return;
+    try {
+      const catsRes = await learningService.getModuleCategories(activeModuleId);
+      setModuleCategories(catsRes.data?.categories || []);
+    } catch {
+      // silent — non-critical
+    }
+  };
+
   const handleCategoryChanged = async () => {
     await refreshCategories();
     await refreshCourseStructure();
@@ -193,9 +211,11 @@ export const useBatchRepLearning = () => {
   };
 
   const handleMaterialChanged = async () => {
-    await refreshCategories();
-    await refreshActiveModule();
-    await refreshFiles();
+    await Promise.all([
+      refreshCategoryCounts(),
+      refreshFiles(),
+      refreshActiveModule(),
+    ]);
   };
 
   const activeSemesterInfo = semesters.find(
@@ -390,6 +410,7 @@ export const useBatchRepLearning = () => {
     activeSemesterInfo,
     availableDegrees,
     isLoadingDetails,
+    isLoadingFiles,
     showSuccessModal, setShowSuccessModal,
     showDeleteModal,
     actionModuleName,

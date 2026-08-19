@@ -10,6 +10,60 @@ import { useBatchRepLearning } from "./useBatchRepLearning";
 import BreadcrumbHeader from "./BreadcrumbHeader";
 import EmptyLearningState from "./EmptyLearningState";
 
+const ModuleLoadingSkeleton = () => (
+  <div className="w-full flex flex-col gap-5">
+    <div className="w-full h-16 bg-slate-800 rounded-xl outline outline-1 outline-slate-700 px-5 py-4 flex items-center gap-4">
+      <div className="h-5 w-32 bg-white/5 animate-pulse rounded" />
+      <div className="h-4 w-16 bg-white/5 animate-pulse rounded" />
+      <div className="flex-1" />
+      <div className="h-8 w-20 bg-white/5 animate-pulse rounded-lg" />
+      <div className="h-8 w-8 bg-white/5 animate-pulse rounded-lg" />
+    </div>
+    <div className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+      {[1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          className="w-full h-[84px] p-2.5 sm:p-3.5 rounded-xl bg-slate-800 outline outline-1 outline-slate-700 flex items-start gap-2.5 sm:gap-3.5"
+        >
+          <div className="w-9 h-9 rounded-lg bg-white/5 animate-pulse shrink-0" />
+          <div className="flex flex-col gap-2 flex-1 pt-1">
+            <div className="h-3 w-24 bg-white/5 animate-pulse rounded" />
+            <div className="h-2.5 w-16 bg-white/5 animate-pulse rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+    <div className="w-full bg-slate-800 rounded-xl outline outline-1 outline-slate-700 flex flex-col overflow-hidden">
+      <div className="h-12 px-5 py-3 border-b border-gray-700 flex items-center">
+        <div className="h-4 w-40 bg-white/5 animate-pulse rounded" />
+      </div>
+      <div className="bg-gray-800/50 flex px-5 py-3 gap-8">
+        <div className="h-3 w-12 bg-white/5 animate-pulse rounded" />
+        <div className="h-3 w-24 bg-white/5 animate-pulse rounded" />
+        <div className="h-3 w-28 bg-white/5 animate-pulse rounded" />
+      </div>
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="w-full h-20 px-5 flex items-center border-t border-gray-700">
+          <div className="w-80 flex items-center gap-3.5 pr-4">
+            <div className="w-10 h-10 rounded-lg bg-white/5 animate-pulse shrink-0" />
+            <div className="flex flex-col gap-1.5">
+              <div className="h-3 w-36 bg-white/5 animate-pulse rounded" />
+              <div className="h-2.5 w-16 bg-white/5 animate-pulse rounded" />
+            </div>
+          </div>
+          <div className="w-40 flex items-center gap-2 pr-4">
+            <div className="w-6 h-6 rounded-full bg-white/5 animate-pulse shrink-0" />
+            <div className="h-2.5 w-20 bg-white/5 animate-pulse rounded" />
+          </div>
+          <div className="flex-1">
+            <div className="h-2.5 w-24 bg-white/5 animate-pulse rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const BatchRepLearningDashboard = () => {
   const {
     currentUserId,
@@ -41,6 +95,7 @@ const BatchRepLearningDashboard = () => {
     refreshCourseStructure,
     handleCategoryChanged,
     handleMaterialChanged,
+    isLoadingFiles,
   } = useBatchRepLearning();
 
   const hasAnyModule = semesters.some((sem) => sem.modules?.length > 0);
@@ -79,7 +134,9 @@ const BatchRepLearningDashboard = () => {
           </div>
 
           <div className="flex-1 w-full flex flex-col items-start gap-5 min-w-0">
-            {activeModuleData ? (
+            {isLoadingDetails ? (
+              <ModuleLoadingSkeleton />
+            ) : activeModuleData ? (
               <>
                 <ModuleHeader
                   moduleName={activeModuleData?.name}
@@ -111,6 +168,7 @@ const BatchRepLearningDashboard = () => {
                   selectedCategoryId={selectedCategory?.id}
                   onCategoryClick={setSelectedCategory}
                   onRefresh={handleCategoryChanged}
+                  isLoading={isLoadingDetails}
                 />
                 <FileListTable
                   activeModuleId={activeModuleId}
@@ -120,6 +178,7 @@ const BatchRepLearningDashboard = () => {
                   }
                   categories={moduleCategories}
                   files={categoryFiles}
+                  isLoadingFiles={isLoadingFiles}
                   onRefresh={handleMaterialChanged}
                 />
               </>
