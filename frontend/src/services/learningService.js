@@ -40,8 +40,10 @@ export const deleteModuleCategory = async (categoryId) => {
   return response.data;
 };
 
-export const uploadMaterial = async (moduleId, formData) => {
-  const response = await api.post(`/learning/modules/${moduleId}/materials`, formData);
+export const uploadMaterial = async (moduleId, formData, { onUploadProgress } = {}) => {
+  const response = await api.post(`/learning/modules/${moduleId}/materials`, formData, {
+    onUploadProgress,
+  });
   return response.data;
 };
 

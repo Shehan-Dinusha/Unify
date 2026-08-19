@@ -92,6 +92,8 @@ const FileListTable = ({
   files: initialFiles = [],
   isLoadingFiles = false,
   onRefresh,
+  onDeleteFile,
+  onRenameFile,
 }) => {
   const [files, setFiles] = useState(initialFiles);
   const [editingFile, setEditingFile] = useState(null);
@@ -106,6 +108,7 @@ const FileListTable = ({
 
   const handleEditSave = async (updatedFile) => {
     try {
+      onRenameFile?.(updatedFile.id, updatedFile.name, updatedFile.categoryId);
       await learningService.editMaterial(updatedFile.id, {
         title: updatedFile.name,
         categoryId: updatedFile.categoryId,
@@ -113,15 +116,18 @@ const FileListTable = ({
       onRefresh?.();
     } catch (err) {
       toast.error("Error", "Failed to edit material");
+      onRefresh?.();
     }
   };
 
   const handleDeleteConfirm = async (fileToDelete) => {
     try {
+      onDeleteFile?.(fileToDelete.id);
       await learningService.deleteMaterial(fileToDelete.id);
       onRefresh?.();
     } catch (err) {
       toast.error("Error", "Failed to delete material");
+      onRefresh?.();
     }
   };
   return (

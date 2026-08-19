@@ -171,6 +171,9 @@ const CategoryGrid = ({
   activeModuleId,
   onRefresh,
   isLoading = false,
+  onDeleteCategory,
+  onRenameCategory,
+  onCreateCategory,
 }) => {
   const [categories, setCategories] = useState(initialCategories);
   const toast = useToast();
@@ -205,11 +208,13 @@ const CategoryGrid = ({
     if (!categoryToDelete) return;
     setIsDeleting(true);
     try {
+      onDeleteCategory?.(categoryToDelete.id);
       await learningService.deleteModuleCategory(categoryToDelete.id);
       setCategoryToDelete(null);
       onRefresh?.();
     } catch (err) {
       toast.error("Error", "Failed to delete category");
+      onRefresh?.();
     } finally {
       setIsDeleting(false);
     }
@@ -221,11 +226,19 @@ const CategoryGrid = ({
         if (!activeModuleId) {
           throw new Error("No active module selected");
         }
+        const tempId = `temp-${Date.now()}`;
+        onCreateCategory?.({
+          id: tempId,
+          title: categoryData.title,
+          iconName: categoryData.iconName,
+          fileCount: 0,
+        });
         await learningService.createModuleCategory(activeModuleId, {
           title: categoryData.title,
           iconName: categoryData.iconName,
         });
       } else {
+        onRenameCategory?.(categoryData.id, categoryData.title, categoryData.iconName);
         await learningService.updateModuleCategory(categoryData.id, {
           title: categoryData.title,
           iconName: categoryData.iconName,
@@ -234,6 +247,7 @@ const CategoryGrid = ({
       onRefresh?.();
       setIsModalOpen(false);
     } catch (err) {
+      onRefresh?.();
       throw err;
     }
   };

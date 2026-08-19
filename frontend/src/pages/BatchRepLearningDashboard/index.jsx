@@ -96,6 +96,11 @@ const BatchRepLearningDashboard = () => {
     handleCategoryChanged,
     handleMaterialChanged,
     isLoadingFiles,
+    optimisticDeleteFile,
+    optimisticRenameFile,
+    optimisticDeleteCategory,
+    optimisticRenameCategory,
+    optimisticCreateCategory,
   } = useBatchRepLearning();
 
   const hasAnyModule = semesters.some((sem) => sem.modules?.length > 0);
@@ -169,6 +174,9 @@ const BatchRepLearningDashboard = () => {
                   onCategoryClick={setSelectedCategory}
                   onRefresh={handleCategoryChanged}
                   isLoading={isLoadingDetails}
+                  onDeleteCategory={optimisticDeleteCategory}
+                  onRenameCategory={optimisticRenameCategory}
+                  onCreateCategory={optimisticCreateCategory}
                 />
                 <FileListTable
                   activeModuleId={activeModuleId}
@@ -180,6 +188,8 @@ const BatchRepLearningDashboard = () => {
                   files={categoryFiles}
                   isLoadingFiles={isLoadingFiles}
                   onRefresh={handleMaterialChanged}
+                  onDeleteFile={optimisticDeleteFile}
+                  onRenameFile={optimisticRenameFile}
                 />
               </>
             ) : (

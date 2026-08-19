@@ -218,6 +218,40 @@ export const useBatchRepLearning = () => {
     ]);
   };
 
+  const optimisticDeleteFile = (fileId) => {
+    setCategoryFiles((prev) => prev.filter((f) => f.id !== fileId));
+  };
+
+  const optimisticRenameFile = (fileId, newName, newCategoryId) => {
+    setCategoryFiles((prev) =>
+      prev.map((f) =>
+        f.id === fileId ? { ...f, name: newName, categoryId: newCategoryId } : f,
+      ),
+    );
+  };
+
+  const optimisticDeleteCategory = (categoryId) => {
+    setModuleCategories((prev) => {
+      const next = prev.filter((c) => c.id !== categoryId);
+      if (selectedCategory?.id === categoryId) {
+        setSelectedCategory(next.length > 0 ? next[0] : null);
+      }
+      return next;
+    });
+  };
+
+  const optimisticRenameCategory = (categoryId, newTitle, newIconName) => {
+    setModuleCategories((prev) =>
+      prev.map((c) =>
+        c.id === categoryId ? { ...c, title: newTitle, iconName: newIconName } : c,
+      ),
+    );
+  };
+
+  const optimisticCreateCategory = (tempCategory) => {
+    setModuleCategories((prev) => [...prev, tempCategory]);
+  };
+
   const activeSemesterInfo = semesters.find(
     (sem) => sem.modules && sem.modules.some((mod) => String(mod.id) === String(activeModuleId)),
   );
@@ -422,5 +456,10 @@ export const useBatchRepLearning = () => {
     refreshCourseStructure,
     handleCategoryChanged,
     handleMaterialChanged,
+    optimisticDeleteFile,
+    optimisticRenameFile,
+    optimisticDeleteCategory,
+    optimisticRenameCategory,
+    optimisticCreateCategory,
   };
 };

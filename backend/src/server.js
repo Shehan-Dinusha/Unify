@@ -22,6 +22,7 @@ const startServer = async () => {
 
     // 3. Create HTTP server and attach Socket.IO
     const httpServer = createServer(app);
+    httpServer.timeout = 300000; // 5 minutes for large file uploads
     initializeSocket(httpServer);
 
     // 4. Start HTTP + WebSocket server
