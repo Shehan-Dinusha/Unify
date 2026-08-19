@@ -252,6 +252,77 @@ export const useBatchRepLearning = () => {
     setModuleCategories((prev) => [...prev, tempCategory]);
   };
 
+  const optimisticCreateModule = (moduleData, semesterId) => {
+    const tempId = `temp-mod-${Date.now()}`;
+    setSemesters((prev) =>
+      prev.map((sem) => {
+        if (String(sem.id) === String(semesterId)) {
+          return {
+            ...sem,
+            modules: [
+              ...(sem.modules || []),
+              { id: tempId, name: moduleData.title, code: moduleData.code, degrees: moduleData.visibility },
+            ],
+          };
+        }
+        return sem;
+      }),
+    );
+    return tempId;
+  };
+
+  const optimisticEditModule = (moduleId, updates) => {
+    setSemesters((prevSemesters) => {
+      let updated = prevSemesters.map((sem) => ({
+        ...sem,
+        modules: sem.modules ? sem.modules.filter((mod) => String(mod.id) !== String(moduleId)) : [],
+      }));
+      updated = updated.map((sem) => {
+        if (sem.name === updates.semester || sem.id === updates.semester) {
+          return {
+            ...sem,
+            modules: [
+              ...(sem.modules || []),
+              { id: moduleId, name: updates.title, code: updates.code, degrees: updates.visibility },
+            ],
+          };
+        }
+        return sem;
+      });
+      return updated;
+    });
+  };
+
+  const optimisticDeleteModule = (moduleId) => {
+    setSemesters((prev) =>
+      prev.map((sem) => ({
+        ...sem,
+        modules: sem.modules ? sem.modules.filter((mod) => String(mod.id) !== String(moduleId)) : [],
+      })),
+    );
+    setActiveModuleDetails(null);
+    setActiveModuleId(null);
+    setSelectedCategory(null);
+    setCategoryFiles([]);
+  };
+
+  const optimisticAddFile = (fileData) => {
+    setCategoryFiles((prev) => [...prev, fileData]);
+    setModuleCategories((prev) =>
+      prev.map((c) =>
+        c.id === fileData.categoryId ? { ...c, fileCount: (c.fileCount || 0) + 1 } : c,
+      ),
+    );
+  };
+
+  const optimisticUpdateVisibility = (semesterId, visibilityData) => {
+    setSemesters((prev) =>
+      prev.map((sem) =>
+        String(sem.id) === String(semesterId) ? { ...sem, visibility: visibilityData } : sem,
+      ),
+    );
+  };
+
   const activeSemesterInfo = semesters.find(
     (sem) => sem.modules && sem.modules.some((mod) => String(mod.id) === String(activeModuleId)),
   );
@@ -260,6 +331,7 @@ export const useBatchRepLearning = () => {
     activeSemesterInfo?.modules.find((mod) => String(mod.id) === String(activeModuleId));
 
   const handleAddModule = async (newModule) => {
+    const tempId = optimisticCreateModule(newModule, newModule.semester);
     try {
       const visibilityIds = newModule.visibility
         .map((degreeName) => {
@@ -283,15 +355,11 @@ export const useBatchRepLearning = () => {
           if (String(sem.id) === String(newModule.semester)) {
             return {
               ...sem,
-              modules: [
-                ...(sem.modules || []),
-                {
-                  id: createdModule?.id || `mod-${Date.now()}`,
-                  name: newModule.title,
-                  code: newModule.code,
-                  degrees: newModule.visibility,
-                },
-              ],
+              modules: (sem.modules || []).map((m) =>
+                m.id === tempId
+                  ? { ...m, id: createdModule?.id || tempId }
+                  : m,
+              ),
             };
           }
           return sem;
@@ -305,12 +373,19 @@ export const useBatchRepLearning = () => {
       setActionModuleName(newModule.title);
       setShowSuccessModal(true);
     } catch (err) {
+      setSemesters((prev) =>
+        prev.map((sem) => ({
+          ...sem,
+          modules: (sem.modules || []).filter((m) => m.id !== tempId),
+        })),
+      );
       const errorMessage = err.response?.data?.message || err.message || "Unknown error";
       toast.error("Error", `Failed to create module: ${errorMessage}`);
     }
   };
 
   const handleEditModule = async (editedData) => {
+    optimisticEditModule(activeModuleId, editedData);
     try {
       const selectedSemester = semesters.find(
         (s) => s.name === editedData.semester || s.id === editedData.semester,
@@ -333,35 +408,6 @@ export const useBatchRepLearning = () => {
         visibility: visibilityIds,
       });
 
-      setSemesters((prevSemesters) => {
-        let updatedSemesters = prevSemesters.map((sem) => ({
-          ...sem,
-          modules: sem.modules
-            ? sem.modules.filter((mod) => String(mod.id) !== String(activeModuleId))
-            : [],
-        }));
-
-        updatedSemesters = updatedSemesters.map((sem) => {
-          if (sem.name === editedData.semester || sem.id === editedData.semester) {
-            return {
-              ...sem,
-              modules: [
-                ...(sem.modules || []),
-                {
-                  id: activeModuleId,
-                  name: editedData.title,
-                  code: editedData.code,
-                  degrees: editedData.visibility,
-                },
-              ],
-            };
-          }
-          return sem;
-        });
-
-        return updatedSemesters;
-      });
-
       setActiveModuleDetails((prev) =>
         prev ? {
           ...prev,
@@ -377,29 +423,20 @@ export const useBatchRepLearning = () => {
       setActionModuleName(editedData.title);
       setShowSuccessModal(true);
     } catch (err) {
+      await refreshCourseStructure();
       toast.error("Error", "Failed to edit module");
     }
   };
 
   const handleDeleteModule = async () => {
+    const moduleName = activeModuleData?.name || "Module";
+    optimisticDeleteModule(activeModuleId);
     try {
       await learningService.deleteModule(activeModuleId);
-
-      setActionModuleName(activeModuleData?.name || "Module");
-      setSemesters((prevSemesters) =>
-        prevSemesters.map((sem) => ({
-          ...sem,
-          modules: sem.modules
-            ? sem.modules.filter((mod) => String(mod.id) !== String(activeModuleId))
-            : [],
-        })),
-      );
-      setActiveModuleDetails(null);
-      setActiveModuleId(null);
-      setSelectedCategory(null);
-      setCategoryFiles([]);
+      setActionModuleName(moduleName);
       setShowDeleteModal(true);
     } catch (err) {
+      await refreshCourseStructure();
       toast.error("Error", "Failed to delete module");
     }
   };
@@ -461,5 +498,10 @@ export const useBatchRepLearning = () => {
     optimisticDeleteCategory,
     optimisticRenameCategory,
     optimisticCreateCategory,
+    optimisticCreateModule,
+    optimisticEditModule,
+    optimisticDeleteModule,
+    optimisticAddFile,
+    optimisticUpdateVisibility,
   };
 };

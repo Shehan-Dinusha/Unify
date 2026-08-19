@@ -101,6 +101,11 @@ const BatchRepLearningDashboard = () => {
     optimisticDeleteCategory,
     optimisticRenameCategory,
     optimisticCreateCategory,
+    optimisticCreateModule,
+    optimisticEditModule,
+    optimisticDeleteModule,
+    optimisticAddFile,
+    optimisticUpdateVisibility,
   } = useBatchRepLearning();
 
   const hasAnyModule = semesters.some((sem) => sem.modules?.length > 0);
@@ -132,6 +137,7 @@ const BatchRepLearningDashboard = () => {
               onSelectModule={setActiveModuleId}
               onAddModule={handleAddModule}
               onRefreshSemesters={refreshCourseStructure}
+              onOptimisticVisibility={optimisticUpdateVisibility}
               degreeId={degreeId}
               availableDegrees={availableDegrees}
               primaryDegree={degreeName}
@@ -164,6 +170,7 @@ const BatchRepLearningDashboard = () => {
                   moduleId={activeModuleId}
                   categories={moduleCategories}
                   onMaterialUploaded={handleMaterialChanged}
+                  onOptimisticAddFile={optimisticAddFile}
                 />
 
                 <CategoryGrid

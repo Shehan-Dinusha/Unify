@@ -19,6 +19,7 @@ const UploadMaterialModal = ({
   moduleId,
   categories = [],
   onSuccess,
+  onOptimisticAddFile,
 }) => {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -75,11 +76,14 @@ const UploadMaterialModal = ({
         formData.append("linkUrl", linkUrl);
       }
 
-      await learningService.uploadMaterial(moduleId, formData, {
+      const uploadRes = await learningService.uploadMaterial(moduleId, formData, {
         onUploadProgress: (e) => {
           if (e.total) setUploadProgress(Math.round((e.loaded / e.total) * 100));
         },
       });
+      if (uploadRes?.data && onOptimisticAddFile) {
+        onOptimisticAddFile(uploadRes.data);
+      }
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
