@@ -164,6 +164,49 @@ describe("protect middleware", () => {
     assert.equal(res.getStatusCode(), 401);
     assert.equal(nextCalled, false);
   });
+
+  it("returns 503 when database throws a Sequelize connection error (e.g. SequelizeHostNotFoundError / ENOTFOUND)", async () => {
+    const token = jwt.sign({ id: 1 }, TEST_SECRET, { expiresIn: "15m" });
+    const req = { headers: { authorization: `Bearer ${token}` } };
+    const res = createRes();
+    let nextCalled = false;
+
+    const dbError = new Error("getaddrinfo ENOTFOUND database-1.cj6ue8k8cg0v.eu-north-1.rds.amazonaws.com");
+    dbError.name = "SequelizeHostNotFoundError";
+    dbError.code = "ENOTFOUND";
+
+    mock.method(User, "findByPk", async () => {
+      throw dbError;
+    });
+
+    await protect(req, res, () => { nextCalled = true; });
+
+    assert.equal(res.getStatusCode(), 503);
+    assert.equal(res.getBody().success, false);
+    assert.match(res.getBody().message, /service temporarily unavailable/i);
+    assert.equal(nextCalled, false);
+  });
+
+  it("returns 503 when database throws ECONNREFUSED network error", async () => {
+    const token = jwt.sign({ id: 1 }, TEST_SECRET, { expiresIn: "15m" });
+    const req = { headers: { authorization: `Bearer ${token}` } };
+    const res = createRes();
+    let nextCalled = false;
+
+    const netError = new Error("connect ECONNREFUSED 127.0.0.1:5432");
+    netError.code = "ECONNREFUSED";
+
+    mock.method(User, "findByPk", async () => {
+      throw netError;
+    });
+
+    await protect(req, res, () => { nextCalled = true; });
+
+    assert.equal(res.getStatusCode(), 503);
+    assert.equal(res.getBody().success, false);
+    assert.match(res.getBody().message, /service temporarily unavailable/i);
+    assert.equal(nextCalled, false);
+  });
 });
 
 describe("authorize middleware", () => {

@@ -108,12 +108,19 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         isRefreshing = false;
 
-        // If refresh fails, log out
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
-        if (window.location.pathname !== "/login") {
-          window.location.href = "/login";
+        // Only force logout when the refresh endpoint explicitly rejected the
+        // refresh token with 401 (invalid/revoked/expired session).
+        // Server errors (500/503) or network failures mean the backend is
+        // temporarily unreachable — the user's credentials are still valid,
+        // so we must NOT wipe them.
+        const status = refreshError.response?.status;
+        if (status === 401) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("user");
+          if (window.location.pathname !== "/login") {
+            window.location.href = "/login";
+          }
         }
         return Promise.reject(refreshError);
       }
