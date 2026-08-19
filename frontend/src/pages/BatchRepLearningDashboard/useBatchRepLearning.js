@@ -157,13 +157,28 @@ export const useBatchRepLearning = () => {
       const catsRes = await learningService.getModuleCategories(activeModuleId);
       const apiCategories = catsRes.data?.categories || [];
       setModuleCategories(apiCategories);
-      if (!selectedCategory && apiCategories.length > 0) {
+
+      if (apiCategories.length === 0) {
+        setSelectedCategory(null);
+      } else if (!selectedCategory) {
         setSelectedCategory(apiCategories[0]);
+      } else {
+        const updatedSelected = apiCategories.find((c) => c.id === selectedCategory.id);
+        if (updatedSelected) {
+          setSelectedCategory(updatedSelected);
+        } else {
+          setSelectedCategory(apiCategories[0]);
+        }
       }
     } catch (err) {
       toast.error("Error", "Failed to refresh categories");
       setModuleCategories([]);
     }
+  };
+
+  const handleCategoryChanged = async () => {
+    await refreshCategories();
+    await refreshCourseStructure();
   };
 
   const refreshFiles = async () => {
@@ -384,6 +399,7 @@ export const useBatchRepLearning = () => {
     handleDeleteModule,
     closeDeleteModal,
     refreshCourseStructure,
+    handleCategoryChanged,
     handleMaterialChanged,
   };
 };

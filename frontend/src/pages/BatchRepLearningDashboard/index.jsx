@@ -39,6 +39,7 @@ const BatchRepLearningDashboard = () => {
     handleDeleteModule,
     closeDeleteModal,
     refreshCourseStructure,
+    handleCategoryChanged,
     handleMaterialChanged,
   } = useBatchRepLearning();
 
@@ -109,7 +110,7 @@ const BatchRepLearningDashboard = () => {
                   initialCategories={moduleCategories}
                   selectedCategoryId={selectedCategory?.id}
                   onCategoryClick={setSelectedCategory}
-                  onRefresh={refreshCourseStructure}
+                  onRefresh={handleCategoryChanged}
                 />
                 <FileListTable
                   activeModuleId={activeModuleId}
