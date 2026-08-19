@@ -500,6 +500,7 @@ describe('forceLogout Controller', () => {
       save: mock.fn(async () => {}),
     };
     mock.method(models.User, 'findByPk', async () => mockUser);
+    mock.method(models.UserSession, 'update', async () => [1]);
     mock.method(models.AdminLog, 'create', async () => ({}));
 
     const { forceLogout } = await import('../../../../src/controllers/admin/studentManagement.controller.js');
