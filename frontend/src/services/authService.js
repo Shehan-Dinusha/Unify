@@ -135,11 +135,20 @@ export const refreshCurrentUser = async () => {
   }
 };
 
-export const logout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("user");
-  window.dispatchEvent(new Event("auth-changed"));
+export const logout = async () => {
+  try {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (refreshToken) {
+      await api.post("/auth/logout", { refreshToken });
+    }
+  } catch {
+    // Ignore network error on logout
+  } finally {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+    window.dispatchEvent(new Event("auth-changed"));
+  }
 };
 
 export const getCurrentUser = () => {

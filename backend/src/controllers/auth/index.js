@@ -2,6 +2,7 @@ export * from "./register.controller.js";
 export * from "./verifyOTP.controller.js";
 export * from "./login.controller.js";
 export * from "./refreshToken.controller.js";
+export * from "./logout.controller.js";
 export * from "./resendOTP.controller.js";
 export * from "./forgotPassword.controller.js";
 export * from "./verifyResetOTP.controller.js";

@@ -3,14 +3,14 @@ import crypto from "crypto";
 import { User, OTP } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
-import { Op, Sequelize } from "sequelize";
+import { Op } from "sequelize";
 import { sendEmailOTP } from "../../services/email.service.js";
 import { sendSMSOTP } from "../../services/sms.service.js";
 import { normalizePhone } from "../../utils/phone.util.js";
 import { phoneWhere } from "../../utils/phoneWhere.util.js";
 
 /**
- * @desc    Register a new user
+ * @desc    Register a new user or resume an unverified registration
  * @route   POST /api/auth/register
  */
 export const register = async (req, res) => {
@@ -27,10 +27,59 @@ export const register = async (req, res) => {
       : null;
 
     if (existingUser) {
-      const identifier = existingUser.email === email ? "email" : "phone number";
-      return sendResponse(res, 400, false, `User already exists with this ${identifier}`);
+      if (existingUser.isVerified) {
+        const identifier = existingUser.email === email ? "email" : "phone number";
+        return sendResponse(res, 400, false, `User already exists with this ${identifier}`);
+      }
+
+      // Existing unverified user: resume registration, update details & generate fresh OTP (no duplicate user row)
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(password, salt);
+
+      if (name) existingUser.name = name;
+      existingUser.passwordHash = passwordHash;
+      if (role) existingUser.role = role;
+      if (email) existingUser.email = email;
+      if (normalizedPhone) existingUser.phone = normalizedPhone;
+      await existingUser.save();
+
+      // Invalidate previous unused registration OTPs for this identifier
+      await OTP.update(
+        { isUsed: true },
+        {
+          where: {
+            ...(email ? { email } : { phone: normalizedPhone }),
+            type: "REGISTRATION",
+            isUsed: false,
+          },
+        }
+      );
+
+      const otpCode = crypto.randomInt(100000, 999999).toString();
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+      await OTP.create({
+        email,
+        phone: normalizedPhone,
+        code: otpCode,
+        expiresAt,
+        type: "REGISTRATION",
+      });
+
+      if (email) {
+        await sendEmailOTP(email, otpCode);
+      } else if (normalizedPhone) {
+        await sendSMSOTP(normalizedPhone, otpCode);
+      }
+
+      return sendResponse(res, 201, true, "Registration successful. Please verify your account with the OTP sent.", {
+        userId: existingUser.id,
+        email: existingUser.email,
+        phone: existingUser.phone,
+      });
     }
 
+    // New user registration
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 

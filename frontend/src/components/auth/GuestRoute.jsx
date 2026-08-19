@@ -13,6 +13,9 @@ const rolePaths = {
 
 export const getDefaultPath = (user) => {
   if (!user) return "/";
+  if (user.hasProfile === false) {
+    return "/profile/edit";
+  }
   return rolePaths[user.role]?.[user.category] || rolePaths[user.role] || "/";
 };
 

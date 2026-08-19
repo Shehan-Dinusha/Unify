@@ -4,6 +4,8 @@ import {
   verifyOTP,
   login,
   refreshToken,
+  logout,
+  logoutAll,
   resendOTP,
   forgotPassword,
   verifyResetOTP,
@@ -19,6 +21,7 @@ import {
   resetPasswordValidator,
 } from "../validators/auth.validator.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
+import { protect } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -43,6 +46,8 @@ router.post("/verify-otp", verifyOTPValidator, validateRequest, verifyOTP);
  */
 router.post("/login", loginValidator, validateRequest, login);
 router.post("/refresh", refreshToken);
+router.post("/logout", logout);
+router.post("/logout-all", protect, logoutAll);
 router.post("/resend-otp", resendOTPValidator, validateRequest, resendOTP);
 router.post("/forgot-password", forgotPasswordValidator, validateRequest, forgotPassword);
 router.post("/verify-reset-otp", verifyResetOTPValidator, validateRequest, verifyResetOTP);

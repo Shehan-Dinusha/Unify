@@ -43,6 +43,23 @@ export const protect = async (req, res, next) => {
     next();
   } catch (error) {
     logger.error("Auth Middleware Error:", error);
+
+    // Distinguish infrastructure failures from credential failures.
+    // Database/network errors must NEVER be returned as 401 — that would
+    // cause the frontend to treat a temporary outage as "invalid session"
+    // and wipe the user's authentication tokens.
+    const isInfraError =
+      error.name?.startsWith("Sequelize") ||
+      error.code === "ENOTFOUND" ||
+      error.code === "ECONNREFUSED" ||
+      error.code === "ETIMEDOUT" ||
+      error.code === "ECONNRESET";
+
+    if (isInfraError) {
+      return sendResponse(res, 503, false, "Service temporarily unavailable");
+    }
+
+    // Only genuine JWT errors (expired, malformed, wrong signature) reach here.
     return sendResponse(res, 401, false, "Not authorized, token failed");
   }
 };
@@ -81,6 +98,11 @@ export const isBatchRep = async (req, res, next) => {
     next();
   } catch (error) {
     logger.error("isBatchRep Middleware Error:", error);
-    return sendResponse(res, 500, false, "Server error checking batch rep status");
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Server error checking batch rep status",
+    );
   }
 };

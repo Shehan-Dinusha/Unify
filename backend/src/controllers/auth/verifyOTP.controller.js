@@ -39,7 +39,7 @@ export const verifyOTP = async (req, res) => {
       await user.save();
     }
 
-    const { accessToken, refreshToken } = await generateTokens(user);
+    const { accessToken, refreshToken } = await generateTokens(user, req);
 
     const avatar = await resolveAvatarUrl(user.avatar, user.name);
     return sendResponse(res, 200, true, "Account verified successfully", {
