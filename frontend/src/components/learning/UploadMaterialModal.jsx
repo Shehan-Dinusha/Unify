@@ -232,6 +232,9 @@ const UploadMaterialModal = ({
                     "video/mp4",
                     "video/webm",
                     "video/ogg",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                   ]}
                   onFileSelect={(file) => setSelectedFile(file)}
                 />

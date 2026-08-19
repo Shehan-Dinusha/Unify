@@ -76,6 +76,18 @@ const getFileIconConfig = (fileName = "", type = "file") => {
       bg: "bg-emerald-500/10 outline-emerald-500/20",
     };
   }
+  if (
+    lowerType.includes("wordprocessingml") ||
+    lowerType.includes("presentationml") ||
+    lowerType.includes("spreadsheetml") ||
+    lowerName.match(/\.(docx|pptx|xlsx)$/)
+  ) {
+    return {
+      type: "office",
+      icon: <FileText size={20} className="text-blue-400" />,
+      bg: "bg-blue-500/10 outline-blue-500/20",
+    };
+  }
   return {
     type: "document",
     icon: <FileText size={20} className="text-red-500" />,
@@ -171,6 +183,13 @@ const FileListTable = ({
               onClick={() => {
                 if (iconConfig.type === "link") {
                   window.open(file.fileUrl || file.url, "_blank");
+                } else if (iconConfig.type === "office") {
+                  const a = document.createElement("a");
+                  a.href = file.fileUrl || file.url;
+                  a.download = file.name;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
                 } else {
                   setViewingFile(file);
                   setModalType(
