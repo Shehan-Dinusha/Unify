@@ -1,4 +1,5 @@
 import axios from "axios";
+import { updateActiveAccountTokens, removeSavedAccount } from "./authService";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
@@ -96,6 +97,7 @@ api.interceptors.response.use(
         if (newRefreshToken) {
           localStorage.setItem("refreshToken", newRefreshToken);
         }
+        updateActiveAccountTokens(accessToken, newRefreshToken);
 
         api.defaults.headers.common["Authorization"] = "Bearer " + accessToken;
         originalRequest.headers.Authorization = "Bearer " + accessToken;
@@ -115,10 +117,21 @@ api.interceptors.response.use(
         // so we must NOT wipe them.
         const status = refreshError.response?.status;
         if (status === 401) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("refreshToken");
-          localStorage.removeItem("user");
-          if (window.location.pathname !== "/login") {
+          const userStr = localStorage.getItem("user");
+          let userId = null;
+          try {
+            userId = userStr ? JSON.parse(userStr)?.id : null;
+          } catch {}
+
+          if (userId) {
+            removeSavedAccount(userId);
+          } else {
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+            localStorage.removeItem("user");
+          }
+
+          if (!localStorage.getItem("token") && window.location.pathname !== "/login") {
             window.location.href = "/login";
           }
         }

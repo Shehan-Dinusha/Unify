@@ -60,8 +60,25 @@ import Batch from "./Batch.model.js";
 import SemesterVisibility from "./SemesterVisibility.model.js";
 import OTP from "./OTP.model.js";
 import UserSession from "./UserSession.model.js";
+import AccountGroup from "./AccountGroup.model.js";
+import AccountGroupMember from "./AccountGroupMember.model.js";
 
 // ── Associations ──────────────────────────────────────────────────────────────
+
+// --- Account Grouping ---
+User.hasOne(AccountGroupMember, {
+  foreignKey: "userId",
+  as: "groupMember",
+  onDelete: "CASCADE",
+});
+AccountGroupMember.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+AccountGroup.hasMany(AccountGroupMember, {
+  foreignKey: "groupId",
+  as: "members",
+  onDelete: "CASCADE",
+});
+AccountGroupMember.belongsTo(AccountGroup, { foreignKey: "groupId", as: "group" });
 
 // --- User Sessions ---
 User.hasMany(UserSession, {
@@ -692,4 +709,6 @@ export {
   UserSuspensionHistory,
   ClaimRequest,
   UserSession,
+  AccountGroup,
+  AccountGroupMember,
 };

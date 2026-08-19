@@ -3,8 +3,8 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
-import { login } from "../../services/authService";
-import { Link, useNavigate } from "react-router-dom";
+import { login, linkAccountServer } from "../../services/authService";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 const LoginForm = () => {
   const [identifier, setIdentifier] = useState("");
@@ -13,6 +13,8 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isAddAccount = searchParams.get("addAccount") === "true";
 
   const validate = () => {
     let tempErrors = {};
@@ -55,7 +57,12 @@ const LoginForm = () => {
         formattedIdentifier = "+94" + formattedIdentifier;
       }
 
-      const data = await login(formattedIdentifier, password);
+      let data;
+      if (isAddAccount && localStorage.getItem("token")) {
+        data = await linkAccountServer(formattedIdentifier, password);
+      } else {
+        data = await login(formattedIdentifier, password);
+      }
 
       // Navigate based on user role (Navigation occurs AFTER tokens are stored in authService)
       const role = data.user.role.toLowerCase();

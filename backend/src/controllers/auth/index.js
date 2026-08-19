@@ -7,3 +7,4 @@ export * from "./resendOTP.controller.js";
 export * from "./forgotPassword.controller.js";
 export * from "./verifyResetOTP.controller.js";
 export * from "./resetPassword.controller.js";
+export * from "./accountLink.controller.js";

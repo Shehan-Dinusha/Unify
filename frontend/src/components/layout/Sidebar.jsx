@@ -384,9 +384,9 @@ const UnifiedSidebar = ({
       {showLogoutModal && (
         <LogoutModal
           onClose={() => setShowLogoutModal(false)}
-          onConfirm={() => {
+          onConfirm={async () => {
             setShowLogoutModal(false);
-            logout();
+            await logout();
             navigate("/login", { replace: true });
           }}
         />
