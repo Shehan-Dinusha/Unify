@@ -8,6 +8,7 @@ import {
   Post,
   Comment,
   AdminLog,
+  UserSession,
 } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
@@ -464,6 +465,11 @@ export const forceLogout = async (req, res, next) => {
 
     user.isOnline = false;
     await user.save();
+
+    await UserSession.update(
+      { revokedAt: new Date() },
+      { where: { userId: id, revokedAt: null } }
+    );
 
     await AdminLog.create({
       adminId,

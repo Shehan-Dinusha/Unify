@@ -37,7 +37,7 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) return sendResponse(res, 401, false, "Invalid credentials");
 
-    const { accessToken, refreshToken } = await generateTokens(user);
+    const { accessToken, refreshToken } = await generateTokens(user, req);
     const avatar = await resolveAvatarUrl(user.avatar, user.name);
 
     const profileData = await getRoleProfileData(user);

@@ -59,8 +59,17 @@ import Degree from "./Degree.model.js";
 import Batch from "./Batch.model.js";
 import SemesterVisibility from "./SemesterVisibility.model.js";
 import OTP from "./OTP.model.js";
+import UserSession from "./UserSession.model.js";
 
 // ── Associations ──────────────────────────────────────────────────────────────
+
+// --- User Sessions ---
+User.hasMany(UserSession, {
+  foreignKey: "userId",
+  as: "sessions",
+  onDelete: "CASCADE",
+});
+UserSession.belongsTo(User, { foreignKey: "userId", as: "user" });
 
 // --- University & Academic Structure ---
 University.hasMany(Faculty, {
@@ -682,4 +691,5 @@ export {
   UserSuspension,
   UserSuspensionHistory,
   ClaimRequest,
+  UserSession,
 };

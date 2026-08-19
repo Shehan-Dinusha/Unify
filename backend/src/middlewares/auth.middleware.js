@@ -81,6 +81,11 @@ export const isBatchRep = async (req, res, next) => {
     next();
   } catch (error) {
     logger.error("isBatchRep Middleware Error:", error);
-    return sendResponse(res, 500, false, "Server error checking batch rep status");
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Server error checking batch rep status",
+    );
   }
 };
