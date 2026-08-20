@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { NormalPost, User } from "../../modules/index.js";
+import { NormalPost, ClubEventPost, ClubProductPost, User } from "../../modules/index.js";
 import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 import logger from "../../utils/logger.js";
@@ -30,43 +30,67 @@ export const getNewAnnouncements = async (req, res) => {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const announcements = await NormalPost.findAll({
-      where: {
-        createdAt: {
-          [Op.gte]: today,
-          [Op.lt]: tomorrow,
-        },
+    const dateFilter = {
+      createdAt: {
+        [Op.gte]: today,
+        [Op.lt]: tomorrow,
       },
-      include: [
-        {
-          model: User,
-          as: "author",
-          attributes: ["id", "name", "email", "avatar", "role"],
-        },
-      ],
-      order: [["createdAt", "DESC"]],
-      raw: true,
-      nest: true,
-    });
+    };
 
-    // Add postType and resolve images
-    const processedAnnouncements = await Promise.all(
-      announcements.map(async (announcement) => {
-        // Find correct postType based on category if needed, or default to "normal"
-        // In getFeed, "food-cafe" uses category "FOOD" and "services" uses "SELF_EMPLOYED"
-        let postType = "normal";
-        if (announcement.category === "FOOD") postType = "food-cafe";
-        else if (announcement.category === "SELF_EMPLOYED")
-          postType = "services";
+    const authorInclude = {
+      model: User,
+      as: "author",
+      attributes: ["id", "name", "email", "avatar", "role"],
+    };
 
-        const withType = { ...announcement, postType };
-        return resolvePostImages(withType);
+    // Fetch all three post types created today in parallel
+    const [normalPosts, eventPosts, productPosts] = await Promise.all([
+      NormalPost.findAll({
+        where: { ...dateFilter, category: "CLUB" },
+        include: [authorInclude],
+        order: [["createdAt", "DESC"]],
+        raw: true,
+        nest: true,
       }),
+      ClubEventPost.findAll({
+        where: dateFilter,
+        include: [authorInclude],
+        order: [["createdAt", "DESC"]],
+        raw: true,
+        nest: true,
+      }),
+      ClubProductPost.findAll({
+        where: dateFilter,
+        include: [authorInclude],
+        order: [["createdAt", "DESC"]],
+        raw: true,
+        nest: true,
+      }),
+    ]);
+
+    // Tag each group with its postType and resolve images
+    const processedNormal = await Promise.all(
+      normalPosts.map((post) => resolvePostImages({ ...post, postType: "normal" }))
     );
+
+    const processedEvents = await Promise.all(
+      eventPosts.map((post) => resolvePostImages({ ...post, postType: "club-event" }))
+    );
+
+    const processedProducts = await Promise.all(
+      productPosts.map((post) => resolvePostImages({ ...post, postType: "club-product" }))
+    );
+
+    // Combine and sort all announcements by createdAt descending
+    const announcements = [
+      ...processedNormal,
+      ...processedEvents,
+      ...processedProducts,
+    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     res
       .status(200)
-      .json({ success: true, announcements: processedAnnouncements });
+      .json({ success: true, announcements });
   } catch (error) {
     logger.error("Error fetching new announcements:", error);
     res.status(500).json({ success: false, error: error.message });

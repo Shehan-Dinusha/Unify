@@ -4,6 +4,7 @@ import logger from "../../utils/logger.js";
 import { generateTokens } from "./auth.utils.js";
 import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 import { normalizePhone } from "../../utils/phone.util.js";
+import { phoneWhere } from "../../utils/phoneWhere.util.js";
 
 /**
  * @desc    Verify OTP (Registration)
@@ -32,13 +33,13 @@ export const verifyOTP = async (req, res) => {
     await otpRecord.destroy(); // Remove immediately — no longer needed after verification
 
 
-    const user = await User.findOne({ where: email ? { email } : { phone: normalizedPhone } });
+    const user = await User.findOne({ where: email ? { email } : phoneWhere(phone) });
     if (user) {
       user.isVerified = true;
       await user.save();
     }
 
-    const { accessToken, refreshToken } = await generateTokens(user);
+    const { accessToken, refreshToken } = await generateTokens(user, req);
 
     const avatar = await resolveAvatarUrl(user.avatar, user.name);
     return sendResponse(res, 200, true, "Account verified successfully", {

@@ -1,15 +1,33 @@
 import { describe, it, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import bcrypt from "bcryptjs";
-import { mockRes } from "../../../helpers/testUtils.js";
-import { User, UserSession } from "../../../../src/modules/index.js";
-import { deleteAccount } from "../../../../src/controllers/profile/deleteAccount.controller.js";
+import { User, UserSession } from "../../../src/modules/index.js";
+import { deleteAccount } from "../../../src/controllers/profile/deleteAccount.controller.js";
 
 afterEach(() => {
   mock.restoreAll();
 });
 
-const createRes = mockRes;
+/**
+ * Helper to create a mock Express response.
+ */
+const createRes = () => {
+  let statusCode;
+  let body;
+  const res = {
+    status(code) {
+      statusCode = code;
+      return res;
+    },
+    json(data) {
+      body = data;
+      return res;
+    },
+    getStatusCode: () => statusCode,
+    getBody: () => body,
+  };
+  return res;
+};
 
 describe("deleteAccount", () => {
   it("returns 400 when password is not provided", async () => {

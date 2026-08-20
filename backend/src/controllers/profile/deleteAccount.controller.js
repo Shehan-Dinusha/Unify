@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { User } from "../../modules/index.js";
+import { User, UserSession } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -28,6 +28,9 @@ export const deleteAccount = async (req, res) => {
       return sendResponse(res, 401, false, "Incorrect password");
     }
 
+    // Revoke/destroy all active sessions for this user
+    await UserSession.destroy({ where: { userId } });
+
     // Soft delete: anonymize personal data and mark as deleted
     await user.update({
       name: "Deleted User",
@@ -35,7 +38,6 @@ export const deleteAccount = async (req, res) => {
       phone: null,
       avatar: null,
       status: "Deleted",
-      refreshToken: null,
       isOnline: false,
     });
 

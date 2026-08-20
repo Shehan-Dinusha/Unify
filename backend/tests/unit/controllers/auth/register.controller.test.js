@@ -23,8 +23,8 @@ afterEach(() => {
 const createRes = mockRes;
 
 describe("register", () => {
-  it("returns 400 if a user already exists with that email", async () => {
-    mock.method(User, "findOne", async () => ({ id: 9, email: "alice@example.com" }));
+  it("returns 400 if a VERIFIED user already exists with that email", async () => {
+    mock.method(User, "findOne", async () => ({ id: 9, email: "alice@example.com", isVerified: true }));
 
     const req = {
       body: { name: "Alice", email: "alice@example.com", password: "secret123", role: "Student" },
@@ -38,8 +38,8 @@ describe("register", () => {
     assert.match(res.getBody().message, /already exists with this email/i);
   });
 
-  it("returns 400 if a user already exists with that phone number", async () => {
-    mock.method(User, "findOne", async () => ({ id: 9, email: null, phone: "+94771234567" }));
+  it("returns 400 if a VERIFIED user already exists with that phone number", async () => {
+    mock.method(User, "findOne", async () => ({ id: 9, email: null, phone: "+94771234567", isVerified: true }));
 
     const req = {
       body: { name: "Alice", phone: "077 123 4567", password: "secret123", role: "Student" },
@@ -52,7 +52,53 @@ describe("register", () => {
     assert.match(res.getBody().message, /already exists with this phone number/i);
   });
 
-  it("returns 201 and sends OTP by email on successful registration", async () => {
+  it("resumes registration for an UNVERIFIED existing user, updating details and issuing fresh OTP", async () => {
+    mock.method(SESClient.prototype, "send", async () => ({ MessageId: "mocked" }));
+    mock.method(bcrypt, "genSalt", async () => "salt");
+    mock.method(bcrypt, "hash", async () => "hashed");
+    mock.method(crypto, "randomInt", () => 999888);
+
+    const mockUnverifiedUser = {
+      id: 15,
+      email: "alice@example.com",
+      phone: null,
+      name: "Old Name",
+      passwordHash: "oldHash",
+      role: "Student",
+      isVerified: false,
+      save: mock.fn(async () => {}),
+    };
+
+    mock.method(User, "findOne", async () => mockUnverifiedUser);
+    const otpUpdate = mock.fn(async () => [1]);
+    mock.method(OTP, "update", otpUpdate);
+    const otpCreate = mock.fn(async () => ({}));
+    mock.method(OTP, "create", otpCreate);
+
+    const req = {
+      body: { name: "Alice Updated", email: "alice@example.com", password: "newPassword123", role: "Student" },
+    };
+    const res = createRes();
+
+    await register(req, res);
+
+    assert.equal(res.getStatusCode(), 201);
+    assert.equal(res.getBody().success, true);
+    assert.equal(res.getBody().data.userId, 15);
+    assert.equal(mockUnverifiedUser.save.mock.calls.length, 1);
+    assert.equal(mockUnverifiedUser.name, "Alice Updated");
+    assert.equal(mockUnverifiedUser.passwordHash, "hashed");
+
+    // Invalidated previous OTPs
+    assert.equal(otpUpdate.mock.calls.length, 1);
+    assert.equal(otpUpdate.mock.calls[0].arguments[0].isUsed, true);
+
+    // Created fresh OTP
+    assert.equal(otpCreate.mock.calls.length, 1);
+    assert.equal(otpCreate.mock.calls[0].arguments[0].code, "999888");
+  });
+
+  it("returns 201 and sends OTP by email on successful NEW user registration", async () => {
     mock.method(SESClient.prototype, "send", async () => ({ MessageId: "mocked" }));
     mock.method(bcrypt, "genSalt", async () => "salt");
     mock.method(bcrypt, "hash", async () => "hashed");

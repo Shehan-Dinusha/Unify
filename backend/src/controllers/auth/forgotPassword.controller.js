@@ -5,6 +5,7 @@ import logger from "../../utils/logger.js";
 import { sendPasswordResetOTP } from "../../services/email.service.js";
 import { sendSMSOTP } from "../../services/sms.service.js";
 import { normalizePhone } from "../../utils/phone.util.js";
+import { phoneWhere } from "../../utils/phoneWhere.util.js";
 
 /**
  * @desc    Forgot Password (OTP-based)
@@ -15,9 +16,12 @@ export const forgotPassword = async (req, res) => {
   try {
     const { email, phone } = req.body;
     const normalizedPhone = phone ? normalizePhone(phone) : null;
-    const whereClause = email ? { email } : { phone: normalizedPhone };
+    // Space-insensitive lookup for the Users table
+    const userWhere = email ? { email } : phoneWhere(phone);
+    // Plain object for OTP queries (OTPs are stored with normalized phones)
+    const otpWhere = email ? { email } : { phone: normalizedPhone };
 
-    const user = await User.findOne({ where: whereClause });
+    const user = await User.findOne({ where: userWhere });
 
     // Generic response to prevent user enumeration
     if (!user) {
@@ -26,7 +30,7 @@ export const forgotPassword = async (req, res) => {
 
     // Cooldown check (60 seconds)
     const lastOtp = await OTP.findOne({
-      where: { ...whereClause, type: "PASSWORD_RESET" },
+      where: { ...otpWhere, type: "PASSWORD_RESET" },
       order: [["createdAt", "DESC"]],
     });
     if (lastOtp && (new Date() - new Date(lastOtp.createdAt)) / 1000 < 60) {
@@ -34,13 +38,13 @@ export const forgotPassword = async (req, res) => {
     }
 
     // Invalidate previous reset OTPs
-    await OTP.update({ isUsed: true }, { where: { ...whereClause, type: "PASSWORD_RESET", isUsed: false } });
+    await OTP.update({ isUsed: true }, { where: { ...otpWhere, type: "PASSWORD_RESET", isUsed: false } });
 
     // Generate numeric OTP
     const otpCode = crypto.randomInt(100000, 999999).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    await OTP.create({ ...whereClause, code: otpCode, expiresAt, type: "PASSWORD_RESET" });
+    await OTP.create({ ...otpWhere, code: otpCode, expiresAt, type: "PASSWORD_RESET" });
 
     // Send via the appropriate channel
     if (email) {

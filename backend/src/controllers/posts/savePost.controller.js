@@ -1,15 +1,37 @@
 import { NormalPost, ClubProductPost, ClubEventPost, Boarding, SavedItem, User, Comment, PostLike } from "../../modules/index.js";
 import { resolveAssetUrl } from "../../utils/assetUrl.util.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 import logger from "../../utils/logger.js";
 
+/**
+ * Mirrors the resolvePostImages helper from getFeed:
+ * resolves both post image URLs and the author/host avatar URL.
+ */
 const resolvePostImages = async (post) => {
   const resolved = { ...post };
+
   if (Array.isArray(resolved.images) && resolved.images.length > 0) {
     resolved.images = await Promise.all(resolved.images.map(resolveAssetUrl));
   }
   if (resolved.coverImage) {
     resolved.coverImage = await resolveAssetUrl(resolved.coverImage);
   }
+
+  // Resolve author avatar (same as getFeed)
+  if (resolved.author?.avatar !== undefined) {
+    resolved.author = {
+      ...resolved.author,
+      avatar: await resolveAvatarUrl(resolved.author.avatar, resolved.author.name),
+    };
+  }
+  // Resolve host avatar for boarding posts
+  if (resolved.host?.avatar !== undefined) {
+    resolved.host = {
+      ...resolved.host,
+      avatar: await resolveAvatarUrl(resolved.host.avatar, resolved.host.name),
+    };
+  }
+
   return resolved;
 };
 
@@ -99,13 +121,16 @@ export const getSavedPosts = async (req, res) => {
         populatedPosts.push({
           ...post,
           postType: item.postType,
+          // Normalise to 'author' key (same as getFeed) so frontend always reads post.author
           author: post[authorKey],
         });
       }
     }
 
+    // Resolve image and avatar URLs — mirrors getFeed behaviour exactly
     const resolvedFeed = await Promise.all(populatedPosts.map(resolvePostImages));
 
+    // Enrich with live interaction counts (commentsCount, isLiked, isSaved)
     const feedWithInteractions = await Promise.all(
       resolvedFeed.map(async (post) => {
         const [commentsCount, likeRecord] = await Promise.all([

@@ -18,13 +18,13 @@
 
 import { describe, it, mock, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mockRes } from '../../../helpers/testUtils.js';
+import { mockRes } from '../../helpers/testUtils.js';
 
 // ─── Model imports ─────────────────────────────────────────────────────────────
-import { ClubEventPost, NormalPost, ClubProductPost } from '../../../../src/modules/index.js';
+import { ClubEventPost, NormalPost, ClubProductPost } from '../../../src/modules/index.js';
 
 // ─── S3 default export (mock getFileUrl / getPublicUrl) ───────────────────────
-import s3Service from '../../../../src/services/s3.service.js';
+import s3Service from '../../../src/services/s3.service.js';
 
 afterEach(() => {
   mock.restoreAll();
@@ -70,7 +70,7 @@ describe('getEventsToday Controller', () => {
   it('returns 200 with events list', async () => {
     mock.method(ClubEventPost, 'findAll', async () => [makeEvent()]);
 
-    const { getEventsToday } = await import('../../../../src/controllers/newsfeed/getEventsToday.controller.js');
+    const { getEventsToday } = await import('../../../src/controllers/newsfeed/getEventsToday.controller.js');
 
     const res = mockRes();
     await getEventsToday({}, res);
@@ -87,7 +87,7 @@ describe('getEventsToday Controller', () => {
       makeEvent({ id: 2, title: 'Design Workshop' }),
     ]);
 
-    const { getEventsToday } = await import('../../../../src/controllers/newsfeed/getEventsToday.controller.js');
+    const { getEventsToday } = await import('../../../src/controllers/newsfeed/getEventsToday.controller.js');
 
     const res = mockRes();
     await getEventsToday({}, res);
@@ -100,7 +100,7 @@ describe('getEventsToday Controller', () => {
   it('returns 200 with empty events array when nothing is scheduled today', async () => {
     mock.method(ClubEventPost, 'findAll', async () => []);
 
-    const { getEventsToday } = await import('../../../../src/controllers/newsfeed/getEventsToday.controller.js');
+    const { getEventsToday } = await import('../../../src/controllers/newsfeed/getEventsToday.controller.js');
 
     const res = mockRes();
     await getEventsToday({}, res);
@@ -117,7 +117,7 @@ describe('getEventsToday Controller', () => {
     // We don't need to mock it; asserting the resolved URL starts with 's3.amazonaws.com'
     const res = mockRes();
 
-    const { getEventsToday } = await import('../../../../src/controllers/newsfeed/getEventsToday.controller.js');
+    const { getEventsToday } = await import('../../../src/controllers/newsfeed/getEventsToday.controller.js');
     await getEventsToday({}, res);
 
     assert.equal(res._status, 200);
@@ -127,7 +127,7 @@ describe('getEventsToday Controller', () => {
   it('returns 500 when the DB throws', async () => {
     mock.method(ClubEventPost, 'findAll', async () => { throw new Error('DB error'); });
 
-    const { getEventsToday } = await import('../../../../src/controllers/newsfeed/getEventsToday.controller.js');
+    const { getEventsToday } = await import('../../../src/controllers/newsfeed/getEventsToday.controller.js');
 
     const res = mockRes();
     await getEventsToday({}, res);
@@ -148,7 +148,7 @@ describe('getNewAnnouncements Controller', () => {
     mock.method(ClubEventPost, 'findAll', async () => []);
     mock.method(ClubProductPost, 'findAll', async () => []);
 
-    const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
+    const { getNewAnnouncements } = await import('../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
     const res = mockRes();
     await getNewAnnouncements({}, res);
@@ -164,7 +164,7 @@ describe('getNewAnnouncements Controller', () => {
     mock.method(ClubEventPost, 'findAll', async () => []);
     mock.method(ClubProductPost, 'findAll', async () => []);
 
-    const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
+    const { getNewAnnouncements } = await import('../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
     const res = mockRes();
     await getNewAnnouncements({}, res);
@@ -177,7 +177,7 @@ describe('getNewAnnouncements Controller', () => {
     mock.method(ClubEventPost, 'findAll', async () => []);
     mock.method(ClubProductPost, 'findAll', async () => []);
 
-    const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
+    const { getNewAnnouncements } = await import('../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
     const res = mockRes();
     await getNewAnnouncements({}, res);
@@ -192,7 +192,7 @@ describe('getNewAnnouncements Controller', () => {
     mock.method(ClubEventPost, 'findAll', async () => [makeEvent()]);
     mock.method(ClubProductPost, 'findAll', async () => [makeProduct()]);
 
-    const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
+    const { getNewAnnouncements } = await import('../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
     const res = mockRes();
     await getNewAnnouncements({}, res);
@@ -209,7 +209,7 @@ describe('getNewAnnouncements Controller', () => {
     mock.method(ClubEventPost, 'findAll', async () => []);
     mock.method(ClubProductPost, 'findAll', async () => []);
 
-    const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
+    const { getNewAnnouncements } = await import('../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
     const res = mockRes();
     await getNewAnnouncements({}, res);
@@ -222,7 +222,7 @@ describe('getNewAnnouncements Controller', () => {
     mock.method(NormalPost, 'findAll', async () => { throw new Error('Sequelize error'); });
     // ClubEventPost/ClubProductPost don't need mocking — Promise.all rejects on first throw
 
-    const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
+    const { getNewAnnouncements } = await import('../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
     const res = mockRes();
     await getNewAnnouncements({}, res);
@@ -236,7 +236,7 @@ describe('getNewAnnouncements Controller', () => {
     mock.method(ClubEventPost, 'findAll', async () => [makeEvent()]);
     mock.method(ClubProductPost, 'findAll', async () => []);
 
-    const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
+    const { getNewAnnouncements } = await import('../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
     const res = mockRes();
     await getNewAnnouncements({}, res);
@@ -251,7 +251,7 @@ describe('getNewAnnouncements Controller', () => {
     mock.method(ClubEventPost, 'findAll', async () => []);
     mock.method(ClubProductPost, 'findAll', async () => [makeProduct()]);
 
-    const { getNewAnnouncements } = await import('../../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
+    const { getNewAnnouncements } = await import('../../../src/controllers/newsfeed/getNewAnnouncements.controller.js');
 
     const res = mockRes();
     await getNewAnnouncements({}, res);
@@ -270,7 +270,7 @@ describe('getMarketplaceItemsToday Controller', () => {
   it('returns 200 with marketplace items list', async () => {
     mock.method(ClubProductPost, 'findAll', async () => [makeProduct()]);
 
-    const { getMarketplaceItemsToday } = await import('../../../../src/controllers/newsfeed/getMarketplaceItemsToday.controller.js');
+    const { getMarketplaceItemsToday } = await import('../../../src/controllers/newsfeed/getMarketplaceItemsToday.controller.js');
 
     const res = mockRes();
     await getMarketplaceItemsToday({}, res);
@@ -287,7 +287,7 @@ describe('getMarketplaceItemsToday Controller', () => {
       makeProduct({ id: 2, name: 'Hoodie' }),
     ]);
 
-    const { getMarketplaceItemsToday } = await import('../../../../src/controllers/newsfeed/getMarketplaceItemsToday.controller.js');
+    const { getMarketplaceItemsToday } = await import('../../../src/controllers/newsfeed/getMarketplaceItemsToday.controller.js');
 
     const res = mockRes();
     await getMarketplaceItemsToday({}, res);
@@ -300,7 +300,7 @@ describe('getMarketplaceItemsToday Controller', () => {
   it('returns 200 with empty array when no marketplace items were listed today', async () => {
     mock.method(ClubProductPost, 'findAll', async () => []);
 
-    const { getMarketplaceItemsToday } = await import('../../../../src/controllers/newsfeed/getMarketplaceItemsToday.controller.js');
+    const { getMarketplaceItemsToday } = await import('../../../src/controllers/newsfeed/getMarketplaceItemsToday.controller.js');
 
     const res = mockRes();
     await getMarketplaceItemsToday({}, res);
@@ -312,7 +312,7 @@ describe('getMarketplaceItemsToday Controller', () => {
   it('returns 500 when the DB throws', async () => {
     mock.method(ClubProductPost, 'findAll', async () => { throw new Error('Timeout'); });
 
-    const { getMarketplaceItemsToday } = await import('../../../../src/controllers/newsfeed/getMarketplaceItemsToday.controller.js');
+    const { getMarketplaceItemsToday } = await import('../../../src/controllers/newsfeed/getMarketplaceItemsToday.controller.js');
 
     const res = mockRes();
     await getMarketplaceItemsToday({}, res);

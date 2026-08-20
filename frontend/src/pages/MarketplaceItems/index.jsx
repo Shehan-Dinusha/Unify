@@ -5,15 +5,18 @@ import MarketplaceItemCard from '../../components/marketplace/MarketplaceItemCar
 import { Calendar, Loader2 } from 'lucide-react';
 import newsfeedService from '../../services/newsfeedService';
 import { getImageUrl } from '../../utils/formatters';
+import { getCurrentUser } from '../../services/authService';
 
 const MarketplaceItems = () => {
     const navigate = useNavigate();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const currentUser = getCurrentUser();
     const user = {
-        name: "Alex Johnson",
-        role: "student"
+        name: currentUser?.name || 'User',
+        role: currentUser?.role?.toLowerCase() || 'student',
+        avatar: currentUser?.avatar,
     };
 
     useEffect(() => {
