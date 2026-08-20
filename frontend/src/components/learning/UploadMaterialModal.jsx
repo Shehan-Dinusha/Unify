@@ -5,6 +5,7 @@ import Button from "../common/Button";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import FileUpload from "../common/FileUpload";
+import ProgressBar from "../chart/ProgressBar";
 import { useToast } from "../common/Toast";
 import * as learningService from "../../services/learningService";
 
@@ -18,6 +19,7 @@ const UploadMaterialModal = ({
   moduleId,
   categories = [],
   onSuccess,
+  onOptimisticAddFile,
 }) => {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -26,7 +28,10 @@ const UploadMaterialModal = ({
   const [linkUrl, setLinkUrl] = useState("");
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const toast = useToast();
+
+  const isProcessing = isSubmitting && uploadProgress === 100;
 
   useEffect(() => {
     setMounted(true);
@@ -40,6 +45,7 @@ const UploadMaterialModal = ({
       setAttachmentType("Upload File");
       setSelectedFile(null);
       setLinkUrl("");
+      setUploadProgress(0);
     }
   }, [isOpen, categories]);
 
@@ -57,6 +63,7 @@ const UploadMaterialModal = ({
     }
 
     setIsSubmitting(true);
+    setUploadProgress(0);
     try {
       const formData = new FormData();
       formData.append("title", title);
@@ -69,11 +76,19 @@ const UploadMaterialModal = ({
         formData.append("linkUrl", linkUrl);
       }
 
-      await learningService.uploadMaterial(moduleId, formData);
+      const uploadRes = await learningService.uploadMaterial(moduleId, formData, {
+        onUploadProgress: (e) => {
+          if (e.total) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        },
+      });
+      if (uploadRes?.data && onOptimisticAddFile) {
+        onOptimisticAddFile(uploadRes.data);
+      }
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
       toast.error("Upload Failed", "Failed to upload material. Please try again.");
+      setUploadProgress(0);
     } finally {
       setIsSubmitting(false);
     }
@@ -217,6 +232,9 @@ const UploadMaterialModal = ({
                     "video/mp4",
                     "video/webm",
                     "video/ogg",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                   ]}
                   onFileSelect={(file) => setSelectedFile(file)}
                 />
@@ -242,20 +260,36 @@ const UploadMaterialModal = ({
             variant="ghost-hoverless"
             size="small"
             onClick={onClose}
+            disabled={isSubmitting}
             className="w-24 bg-dark-3 hover:bg-dark-2 text-white border border-white/10"
           >
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            size="small"
-            onClick={handleUpload}
-            disabled={!isFormValid() || isSubmitting}
-            icon={FileUp}
-            className="w-auto px-6"
-          >
-            {isSubmitting ? "Uploading..." : "Upload Material"}
-          </Button>
+          {isSubmitting ? (
+            <div className="flex items-center gap-3 flex-1 justify-end">
+              <span className="text-sm text-text-tertiary font-inter whitespace-nowrap">
+                {isProcessing ? "Saving..." : `Uploading... ${uploadProgress}%`}
+              </span>
+              <div className="w-32">
+                <ProgressBar
+                  value={uploadProgress}
+                  color="#3B82F6"
+                  className={`h-2 ${isProcessing ? "animate-pulse" : ""}`}
+                />
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="primary"
+              size="small"
+              onClick={handleUpload}
+              disabled={!isFormValid()}
+              icon={FileUp}
+              className="w-auto px-6"
+            >
+              Upload Material
+            </Button>
+          )}
         </div>
       </Card>
     </div>

@@ -22,6 +22,7 @@ export const useBatchRepLearning = () => {
   const [availableDegrees, setAvailableDegrees] = useState([]);
   const [availableDegreesObjs, setAvailableDegreesObjs] = useState([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [actionModuleName, setActionModuleName] = useState("");
@@ -44,6 +45,7 @@ export const useBatchRepLearning = () => {
   };
 
   useEffect(() => {
+    setIsLoadingDetails(true);
     const init = async () => {
       try {
         const profileRes = await getMyProfile("student");
@@ -75,6 +77,8 @@ export const useBatchRepLearning = () => {
         }
       } catch (err) {
         toast.error("Error", "Failed to initialize learning dashboard");
+      } finally {
+        setIsLoadingDetails(false);
       }
     };
     init();
@@ -86,6 +90,7 @@ export const useBatchRepLearning = () => {
     setActiveModuleDetails(null);
     setSelectedCategory(null);
     setCategoryFiles([]);
+    setModuleCategories([]);
 
     const fetchModuleData = async () => {
       setIsLoadingDetails(true);
@@ -127,12 +132,15 @@ export const useBatchRepLearning = () => {
       return;
     }
 
+    setIsLoadingFiles(true);
     const fetchFiles = async () => {
       try {
         const filesRes = await learningService.getMaterialsByCategory(activeModuleId, selectedCategory.id);
         setCategoryFiles(filesRes.data || []);
       } catch (err) {
         setCategoryFiles([]);
+      } finally {
+        setIsLoadingFiles(false);
       }
     };
 
@@ -157,13 +165,38 @@ export const useBatchRepLearning = () => {
       const catsRes = await learningService.getModuleCategories(activeModuleId);
       const apiCategories = catsRes.data?.categories || [];
       setModuleCategories(apiCategories);
-      if (!selectedCategory && apiCategories.length > 0) {
+
+      if (apiCategories.length === 0) {
+        setSelectedCategory(null);
+      } else if (!selectedCategory) {
         setSelectedCategory(apiCategories[0]);
+      } else {
+        const updatedSelected = apiCategories.find((c) => c.id === selectedCategory.id);
+        if (updatedSelected) {
+          setSelectedCategory(updatedSelected);
+        } else {
+          setSelectedCategory(apiCategories[0]);
+        }
       }
     } catch (err) {
       toast.error("Error", "Failed to refresh categories");
       setModuleCategories([]);
     }
+  };
+
+  const refreshCategoryCounts = async () => {
+    if (!activeModuleId) return;
+    try {
+      const catsRes = await learningService.getModuleCategories(activeModuleId);
+      setModuleCategories(catsRes.data?.categories || []);
+    } catch {
+      // silent — non-critical
+    }
+  };
+
+  const handleCategoryChanged = async () => {
+    await refreshCategories();
+    await refreshCourseStructure();
   };
 
   const refreshFiles = async () => {
@@ -178,9 +211,116 @@ export const useBatchRepLearning = () => {
   };
 
   const handleMaterialChanged = async () => {
-    await refreshCategories();
-    await refreshActiveModule();
-    await refreshFiles();
+    await Promise.all([
+      refreshCategoryCounts(),
+      refreshFiles(),
+      refreshActiveModule(),
+    ]);
+  };
+
+  const optimisticDeleteFile = (fileId) => {
+    setCategoryFiles((prev) => prev.filter((f) => f.id !== fileId));
+  };
+
+  const optimisticRenameFile = (fileId, newName, newCategoryId) => {
+    setCategoryFiles((prev) =>
+      prev.map((f) =>
+        f.id === fileId ? { ...f, name: newName, categoryId: newCategoryId } : f,
+      ),
+    );
+  };
+
+  const optimisticDeleteCategory = (categoryId) => {
+    setModuleCategories((prev) => {
+      const next = prev.filter((c) => c.id !== categoryId);
+      if (selectedCategory?.id === categoryId) {
+        setSelectedCategory(next.length > 0 ? next[0] : null);
+      }
+      return next;
+    });
+  };
+
+  const optimisticRenameCategory = (categoryId, newTitle, newIconName) => {
+    setModuleCategories((prev) =>
+      prev.map((c) =>
+        c.id === categoryId ? { ...c, title: newTitle, iconName: newIconName } : c,
+      ),
+    );
+  };
+
+  const optimisticCreateCategory = (tempCategory) => {
+    setModuleCategories((prev) => [...prev, tempCategory]);
+  };
+
+  const optimisticCreateModule = (moduleData, semesterId) => {
+    const tempId = `temp-mod-${Date.now()}`;
+    setSemesters((prev) =>
+      prev.map((sem) => {
+        if (String(sem.id) === String(semesterId)) {
+          return {
+            ...sem,
+            modules: [
+              ...(sem.modules || []),
+              { id: tempId, name: moduleData.title, code: moduleData.code, degrees: moduleData.visibility },
+            ],
+          };
+        }
+        return sem;
+      }),
+    );
+    return tempId;
+  };
+
+  const optimisticEditModule = (moduleId, updates) => {
+    setSemesters((prevSemesters) => {
+      let updated = prevSemesters.map((sem) => ({
+        ...sem,
+        modules: sem.modules ? sem.modules.filter((mod) => String(mod.id) !== String(moduleId)) : [],
+      }));
+      updated = updated.map((sem) => {
+        if (sem.name === updates.semester || sem.id === updates.semester) {
+          return {
+            ...sem,
+            modules: [
+              ...(sem.modules || []),
+              { id: moduleId, name: updates.title, code: updates.code, degrees: updates.visibility },
+            ],
+          };
+        }
+        return sem;
+      });
+      return updated;
+    });
+  };
+
+  const optimisticDeleteModule = (moduleId) => {
+    setSemesters((prev) =>
+      prev.map((sem) => ({
+        ...sem,
+        modules: sem.modules ? sem.modules.filter((mod) => String(mod.id) !== String(moduleId)) : [],
+      })),
+    );
+    setActiveModuleDetails(null);
+    setActiveModuleId(null);
+    setSelectedCategory(null);
+    setCategoryFiles([]);
+  };
+
+  const optimisticAddFile = (fileData) => {
+    setCategoryFiles((prev) => [...prev, fileData]);
+    setModuleCategories((prev) =>
+      prev.map((c) =>
+        c.id === fileData.categoryId ? { ...c, fileCount: (c.fileCount || 0) + 1 } : c,
+      ),
+    );
+  };
+
+  const optimisticUpdateVisibility = (semesterId, visibilityData) => {
+    setSemesters((prev) =>
+      prev.map((sem) =>
+        String(sem.id) === String(semesterId) ? { ...sem, visibility: visibilityData } : sem,
+      ),
+    );
   };
 
   const activeSemesterInfo = semesters.find(
@@ -191,6 +331,7 @@ export const useBatchRepLearning = () => {
     activeSemesterInfo?.modules.find((mod) => String(mod.id) === String(activeModuleId));
 
   const handleAddModule = async (newModule) => {
+    const tempId = optimisticCreateModule(newModule, newModule.semester);
     try {
       const visibilityIds = newModule.visibility
         .map((degreeName) => {
@@ -214,15 +355,11 @@ export const useBatchRepLearning = () => {
           if (String(sem.id) === String(newModule.semester)) {
             return {
               ...sem,
-              modules: [
-                ...(sem.modules || []),
-                {
-                  id: createdModule?.id || `mod-${Date.now()}`,
-                  name: newModule.title,
-                  code: newModule.code,
-                  degrees: newModule.visibility,
-                },
-              ],
+              modules: (sem.modules || []).map((m) =>
+                m.id === tempId
+                  ? { ...m, id: createdModule?.id || tempId }
+                  : m,
+              ),
             };
           }
           return sem;
@@ -236,12 +373,19 @@ export const useBatchRepLearning = () => {
       setActionModuleName(newModule.title);
       setShowSuccessModal(true);
     } catch (err) {
+      setSemesters((prev) =>
+        prev.map((sem) => ({
+          ...sem,
+          modules: (sem.modules || []).filter((m) => m.id !== tempId),
+        })),
+      );
       const errorMessage = err.response?.data?.message || err.message || "Unknown error";
       toast.error("Error", `Failed to create module: ${errorMessage}`);
     }
   };
 
   const handleEditModule = async (editedData) => {
+    optimisticEditModule(activeModuleId, editedData);
     try {
       const selectedSemester = semesters.find(
         (s) => s.name === editedData.semester || s.id === editedData.semester,
@@ -264,35 +408,6 @@ export const useBatchRepLearning = () => {
         visibility: visibilityIds,
       });
 
-      setSemesters((prevSemesters) => {
-        let updatedSemesters = prevSemesters.map((sem) => ({
-          ...sem,
-          modules: sem.modules
-            ? sem.modules.filter((mod) => String(mod.id) !== String(activeModuleId))
-            : [],
-        }));
-
-        updatedSemesters = updatedSemesters.map((sem) => {
-          if (sem.name === editedData.semester || sem.id === editedData.semester) {
-            return {
-              ...sem,
-              modules: [
-                ...(sem.modules || []),
-                {
-                  id: activeModuleId,
-                  name: editedData.title,
-                  code: editedData.code,
-                  degrees: editedData.visibility,
-                },
-              ],
-            };
-          }
-          return sem;
-        });
-
-        return updatedSemesters;
-      });
-
       setActiveModuleDetails((prev) =>
         prev ? {
           ...prev,
@@ -308,29 +423,20 @@ export const useBatchRepLearning = () => {
       setActionModuleName(editedData.title);
       setShowSuccessModal(true);
     } catch (err) {
+      await refreshCourseStructure();
       toast.error("Error", "Failed to edit module");
     }
   };
 
   const handleDeleteModule = async () => {
+    const moduleName = activeModuleData?.name || "Module";
+    optimisticDeleteModule(activeModuleId);
     try {
       await learningService.deleteModule(activeModuleId);
-
-      setActionModuleName(activeModuleData?.name || "Module");
-      setSemesters((prevSemesters) =>
-        prevSemesters.map((sem) => ({
-          ...sem,
-          modules: sem.modules
-            ? sem.modules.filter((mod) => String(mod.id) !== String(activeModuleId))
-            : [],
-        })),
-      );
-      setActiveModuleDetails(null);
-      setActiveModuleId(null);
-      setSelectedCategory(null);
-      setCategoryFiles([]);
+      setActionModuleName(moduleName);
       setShowDeleteModal(true);
     } catch (err) {
+      await refreshCourseStructure();
       toast.error("Error", "Failed to delete module");
     }
   };
@@ -375,6 +481,7 @@ export const useBatchRepLearning = () => {
     activeSemesterInfo,
     availableDegrees,
     isLoadingDetails,
+    isLoadingFiles,
     showSuccessModal, setShowSuccessModal,
     showDeleteModal,
     actionModuleName,
@@ -384,6 +491,17 @@ export const useBatchRepLearning = () => {
     handleDeleteModule,
     closeDeleteModal,
     refreshCourseStructure,
+    handleCategoryChanged,
     handleMaterialChanged,
+    optimisticDeleteFile,
+    optimisticRenameFile,
+    optimisticDeleteCategory,
+    optimisticRenameCategory,
+    optimisticCreateCategory,
+    optimisticCreateModule,
+    optimisticEditModule,
+    optimisticDeleteModule,
+    optimisticAddFile,
+    optimisticUpdateVisibility,
   };
 };
