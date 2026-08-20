@@ -14,8 +14,8 @@
 
 import { describe, it, mock, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mockRes, mockNext } from '../../helpers/testUtils.js';
-import * as models from '../../../src/modules/index.js';
+import { mockRes, mockNext } from '../../../helpers/testUtils.js';
+import * as models from '../../../../src/modules/index.js';
 
 // ─── Automatic Mock Cleanup ─────────────────────────────────────────────────
 afterEach(() => {
@@ -30,7 +30,7 @@ describe('getBusinessProfile Controller', () => {
   it('returns 404 when business/club not found', async () => {
     mock.method(models.User, 'findOne', async () => null);
 
-    const { getBusinessProfile } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { getBusinessProfile } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = { params: { id: '99999' } };
     const res = mockRes();
@@ -48,7 +48,7 @@ describe('getBusinessProfile Controller', () => {
       throw new Error('DB connection lost');
     });
 
-    const { getBusinessProfile } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { getBusinessProfile } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = { params: { id: '1' } };
     const res = mockRes();
@@ -67,7 +67,7 @@ describe('getBusinessProfile Controller', () => {
 
 describe('updateBusinessStatus Controller', () => {
   it('returns 401 when admin is not authenticated', async () => {
-    const { updateBusinessStatus } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { updateBusinessStatus } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -86,7 +86,7 @@ describe('updateBusinessStatus Controller', () => {
   it('returns 404 when business not found', async () => {
     mock.method(models.User, 'findByPk', async () => null);
 
-    const { updateBusinessStatus } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { updateBusinessStatus } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '99999' },
@@ -106,7 +106,7 @@ describe('updateBusinessStatus Controller', () => {
       id: 1, role: 'Student', status: 'Active',
     }));
 
-    const { updateBusinessStatus } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { updateBusinessStatus } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -127,7 +127,7 @@ describe('updateBusinessStatus Controller', () => {
       id: 1, role: 'Business', status: 'Active',
     }));
 
-    const { updateBusinessStatus } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { updateBusinessStatus } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -152,7 +152,7 @@ describe('updateBusinessStatus Controller', () => {
     mock.method(models.User, 'findByPk', async () => mockUser);
     mock.method(models.AdminLog, 'create', async () => ({}));
 
-    const { updateBusinessStatus } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { updateBusinessStatus } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -175,10 +175,10 @@ describe('updateBusinessStatus Controller', () => {
       id: 1, role: 'Business', status: 'Active', email: 'biz@test.com',
     }));
 
-    const UserSuspensionService = (await import('../../../src/services/userSuspension.service.js')).default;
+    const UserSuspensionService = (await import('../../../../src/services/userSuspension.service.js')).default;
     mock.method(UserSuspensionService, 'createSuspension', async () => ({}));
 
-    const { updateBusinessStatus } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { updateBusinessStatus } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -202,10 +202,10 @@ describe('updateBusinessStatus Controller', () => {
     };
     mock.method(models.User, 'findByPk', async () => mockUser);
 
-    const UserSuspensionService = (await import('../../../src/services/userSuspension.service.js')).default;
+    const UserSuspensionService = (await import('../../../../src/services/userSuspension.service.js')).default;
     mock.method(UserSuspensionService, 'reactivateUser', async () => ({}));
 
-    const { updateBusinessStatus } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { updateBusinessStatus } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -228,7 +228,7 @@ describe('updateBusinessStatus Controller', () => {
       throw new Error('Unexpected DB failure');
     });
 
-    const { updateBusinessStatus } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { updateBusinessStatus } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -251,7 +251,7 @@ describe('updateBusinessStatus Controller', () => {
 
 describe('addBusinessNote Controller', () => {
   it('returns 401 when admin is not authenticated', async () => {
-    const { addBusinessNote } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { addBusinessNote } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -269,7 +269,7 @@ describe('addBusinessNote Controller', () => {
   it('returns 404 when business profile not found', async () => {
     mock.method(models.BusinessProfile, 'findOne', async () => null);
 
-    const { addBusinessNote } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { addBusinessNote } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '99999' },
@@ -292,7 +292,7 @@ describe('addBusinessNote Controller', () => {
     };
     mock.method(models.BusinessProfile, 'findOne', async () => mockProfile);
 
-    const { addBusinessNote } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { addBusinessNote } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -318,7 +318,7 @@ describe('addBusinessNote Controller', () => {
     };
     mock.method(models.BusinessProfile, 'findOne', async () => mockProfile);
 
-    const { addBusinessNote } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { addBusinessNote } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -341,7 +341,7 @@ describe('addBusinessNote Controller', () => {
     };
     mock.method(models.BusinessProfile, 'findOne', async () => mockProfile);
 
-    const { addBusinessNote } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { addBusinessNote } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },
@@ -362,7 +362,7 @@ describe('addBusinessNote Controller', () => {
       throw new Error('DB write error');
     });
 
-    const { addBusinessNote } = await import('../../../src/controllers/admin/businessManagement.controller.js');
+    const { addBusinessNote } = await import('../../../../src/controllers/admin/businessManagement.controller.js');
 
     const req = {
       params: { id: '1' },

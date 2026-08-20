@@ -9,17 +9,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createSuspensionSchema, reactivateUserSchema } from '../../src/validators/suspension.validator.js';
-import { validationResult } from 'express-validator';
-
-// Helper to extract error message
-const getError = async (schemaArray, data) => {
-  const req = { body: data };
-  for (const validation of schemaArray) {
-    await validation.run(req);
-  }
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(", ");
-};
+import { getError } from '../helpers/testUtils.js';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS

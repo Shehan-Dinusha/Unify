@@ -95,6 +95,20 @@ const getFileIconConfig = (fileName = "", type = "file") => {
     };
   }
 
+  // Office (Word, PowerPoint, Excel)
+  if (
+    lowerType.includes("wordprocessingml") ||
+    lowerType.includes("presentationml") ||
+    lowerType.includes("spreadsheetml") ||
+    lowerName.match(/\.(docx|pptx|xlsx)$/)
+  ) {
+    return {
+      type: "office",
+      icon: <FileText size={24} className="text-blue-400" />,
+      bg: "bg-blue-500/10 outline-blue-500/20",
+    };
+  }
+
   // Document (Default)
   return {
     type: "document",
@@ -246,17 +260,24 @@ const StudentMaterialList = ({ categoryName = "Notes", files = [] }) => {
     const config = getFileIconConfig(file.name, file.fileType || file.type);
     if (config.type === "video") {
       setModalType("video");
+      setSelectedFile(file);
     } else if (config.type === "link") {
       if (file.url) {
         window.open(file.url, "_blank");
       } else {
         showToast("No URL available for this link.");
       }
+    } else if (config.type === "office") {
+      const a = document.createElement("a");
+      a.href = file.url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     } else {
-      // For images, code, archives, and generic documents, use the document viewer
       setModalType("document");
+      setSelectedFile(file);
     }
-    setSelectedFile(file);
   };
 
   const handleCloseModal = () => {

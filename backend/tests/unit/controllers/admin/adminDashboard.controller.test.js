@@ -9,8 +9,8 @@
 
 import { describe, it, mock, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mockRes, mockNext } from '../../helpers/testUtils.js';
-import AdminDashboardService from '../../../src/services/adminDashboard.service.js';
+import { mockRes, mockNext } from '../../../helpers/testUtils.js';
+import AdminDashboardService from '../../../../src/services/adminDashboard.service.js';
 import {
   getDashboardStats,
   getPlatformGrowth,
@@ -19,7 +19,7 @@ import {
   getRevenueOverview,
   getRevenueTrajectory,
   getRevenueBreakdown,
-} from '../../../src/controllers/admin/adminDashboard.controller.js';
+} from '../../../../src/controllers/admin/adminDashboard.controller.js';
 
 // ─── Automatic Mock Cleanup ─────────────────────────────────────────────────
 afterEach(() => {

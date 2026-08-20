@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { validationResult } from 'express-validator';
+import { getError, getErrorWithParams, getErrorWithQuery } from '../helpers/testUtils.js';
 import {
   createLostFoundItemValidator,
   getLostFoundItemDetailsValidator,
@@ -9,33 +9,6 @@ import {
   deleteLostFoundItemValidator,
   claimLostFoundItemValidator,
 } from '../../src/validators/lostAndFound.validator.js';
-
-const getError = async (schemaArray, data) => {
-  const req = { body: data, params: {} };
-  for (const validation of schemaArray) {
-    await validation.run(req);
-  }
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(", ");
-};
-
-const getErrorWithParams = async (schemaArray, params, body) => {
-  const req = { body: body || {}, params, query: {} };
-  for (const validation of schemaArray) {
-    await validation.run(req);
-  }
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(", ");
-};
-
-const getErrorWithQuery = async (schemaArray, query) => {
-  const req = { body: {}, params: {}, query };
-  for (const validation of schemaArray) {
-    await validation.run(req);
-  }
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(", ");
-};
 
 describe('createLostFoundItemValidator', () => {
   const valid = { type: 'Lost', title: 'Blue Water Bottle', description: 'Lost in library', location: 'Library', date: '2026-05-01', timeOfDay: '14:30' };

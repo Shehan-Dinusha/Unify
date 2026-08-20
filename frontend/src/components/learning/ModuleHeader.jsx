@@ -19,6 +19,7 @@ const ModuleHeader = ({
   onDelete,
   moduleId,
   onMaterialUploaded,
+  onOptimisticAddFile,
   availableDegrees = [],
   primaryDegree,
   semesters = [],
@@ -33,7 +34,7 @@ const ModuleHeader = ({
   return (
     <div className="w-full p-4 sm:p-5 bg-slate-800 rounded-xl shadow-sm outline outline-1 outline-slate-700 flex flex-col gap-3.5">
       <div className="w-full flex flex-col sm:flex-row justify-between items-start gap-4">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 flex-1 min-w-0">
           {/* Title */}
           <div className="flex items-center gap-2">
             <FolderOpen size={20} className="text-indigo-500" />
@@ -54,20 +55,20 @@ const ModuleHeader = ({
                 📅 {semesterName}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-gray-400 text-xs font-normal font-inter leading-5">
                 Degrees:
               </span>
               {degrees.map((deg, idx) => (
                 <div
                   key={idx}
-                  className={`px-2 py-0.5 rounded flex justify-center items-center ${
+                  className={`px-2 py-0.5 rounded flex justify-center items-center max-w-full ${
                     idx === 0
                       ? "bg-blue-900 text-blue-200"
                       : "bg-gray-700 text-gray-300"
                   }`}
                 >
-                  <span className="text-xs font-normal font-inter leading-5">
+                  <span className="text-xs font-normal font-inter leading-5 truncate">
                     {deg}
                   </span>
                 </div>
@@ -77,7 +78,7 @@ const ModuleHeader = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <Button
             variant="ghost"
             size="small"
@@ -132,20 +133,21 @@ const ModuleHeader = ({
         moduleId={moduleId}
         categories={categories}
         onSuccess={onMaterialUploaded}
+        onOptimisticAddFile={onOptimisticAddFile}
       />
 
       <EditModuleModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onSave={(data) => {
+        onSave={async (data) => {
           if (onEditSave) {
-            onEditSave(data);
+            await onEditSave(data);
           }
           setIsEditModalOpen(false);
         }}
-        onDelete={() => {
+        onDelete={async () => {
           if (onDelete) {
-            onDelete();
+            await onDelete();
           }
           setIsEditModalOpen(false);
         }}

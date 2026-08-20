@@ -1,30 +1,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { validationResult } from 'express-validator';
+import { getErrorWithParams, getErrorWithQuery } from '../helpers/testUtils.js';
 import {
   toggleFollowValidator,
   getFollowersValidator,
   getFollowingValidator,
   getPublicFollowersValidator,
 } from '../../src/validators/follower.validator.js';
-
-const getErrorWithParams = async (schemaArray, params) => {
-  const req = { body: {}, params, query: {} };
-  for (const validation of schemaArray) {
-    await validation.run(req);
-  }
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(", ");
-};
-
-const getErrorWithQuery = async (schemaArray, query) => {
-  const req = { body: {}, params: {}, query };
-  for (const validation of schemaArray) {
-    await validation.run(req);
-  }
-  const errors = validationResult(req);
-  return errors.isEmpty() ? null : errors.array().map(e => e.msg).join(", ");
-};
 
 describe('toggleFollowValidator', () => {
   it('accepts valid clubId', async () => {

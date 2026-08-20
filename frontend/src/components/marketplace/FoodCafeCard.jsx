@@ -233,13 +233,13 @@ const FoodCafeCard = ({ post, onClick }) => {
     const handleToggleSave = async () => {
         const wasSaved = saved;
         setSaved(!wasSaved);
-        if (post) toggleSavePost(post);
+        if (post) toggleSavePost({ ...post, postType });
 
         try {
             await newsfeedService.toggleSave(postType, postId);
         } catch (err) {
             setSaved(wasSaved);
-            if (post) toggleSavePost(post);
+            if (post) toggleSavePost({ ...post, postType });
         }
     };
 

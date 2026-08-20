@@ -5,6 +5,7 @@ import logger from "../../utils/logger.js";
 import { sendEmailOTP } from "../../services/email.service.js";
 import { sendSMSOTP } from "../../services/sms.service.js";
 import { normalizePhone } from "../../utils/phone.util.js";
+import { phoneWhere } from "../../utils/phoneWhere.util.js";
 
 /**
  * @desc    Resend OTP
@@ -13,7 +14,7 @@ export const resendOTP = async (req, res) => {
   try {
     const { email, phone } = req.body;
     const normalizedPhone = phone ? normalizePhone(phone) : null;
-    const user = await User.findOne({ where: email ? { email } : { phone: normalizedPhone } });
+    const user = await User.findOne({ where: email ? { email } : phoneWhere(phone) });
 
     if (!user) return sendResponse(res, 404, false, "User not found");
     if (user.isVerified) return sendResponse(res, 400, false, "Account already verified");

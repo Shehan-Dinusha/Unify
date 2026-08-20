@@ -17,6 +17,7 @@ const ModuleSidebar = ({
   onSelectModule,
   onAddModule,
   onRefreshSemesters,
+  onOptimisticVisibility,
   readOnly = false,
   title,
   className = "",
@@ -34,6 +35,7 @@ const ModuleSidebar = ({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [lastSavedData, setLastSavedData] = useState(null);
   const [isSavingVisibility, setIsSavingVisibility] = useState(false);
+  const [isLoadingVisibility, setIsLoadingVisibility] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -48,16 +50,19 @@ const ModuleSidebar = ({
 
   const handleOpenVisibility = async (e, semester) => {
     e.stopPropagation();
+    if (isLoadingVisibility) return;
+    setVisibilitySemester(semester);
+    setCurrentVisibility([]);
+    setAvailableBatches([]);
+    setIsLoadingVisibility(true);
     try {
       const res = await learningService.getSemesterVisibility(degreeId, semester.id);
       setCurrentVisibility(res?.data?.currentVisibility || []);
       setAvailableBatches(res?.data?.availableBatches || []);
-      setVisibilitySemester(semester);
     } catch (err) {
       toast.error("Error", "Failed to fetch semester visibility");
-      setCurrentVisibility([]);
-      setAvailableBatches([]);
-      setVisibilitySemester(semester);
+    } finally {
+      setIsLoadingVisibility(false);
     }
   };
 
@@ -173,12 +178,11 @@ const ModuleSidebar = ({
       <AddModuleModal
         isOpen={isAddModuleOpen}
         onClose={() => setIsAddModuleOpen(false)}
-        onSave={(data) => {
+        onSave={async (data) => {
           if (onAddModule) {
-            onAddModule(data);
+            await onAddModule(data);
           }
           setIsAddModuleOpen(false);
-          // Set only the new semester to be open
           setExpandedSemesters([data.semester]);
         }}
         availableDegrees={availableDegrees}
@@ -196,6 +200,10 @@ const ModuleSidebar = ({
         onSaveVisibility={async (data) => {
           setIsSavingVisibility(true);
           try {
+            onOptimisticVisibility?.(visibilitySemester.id, {
+              visibleBatchIds: data.visibleBatchIds,
+              notifyStudents: data.notifyStudents,
+            });
             await learningService.updateSemesterVisibility(degreeId, visibilitySemester.id, {
               visibleBatchIds: data.visibleBatchIds,
               notifyStudents: data.notifyStudents,
@@ -206,11 +214,15 @@ const ModuleSidebar = ({
             });
             setShowSuccessModal(true);
           } catch (err) {
+            if (onRefreshSemesters) {
+              await onRefreshSemesters();
+            }
             toast.error("Error", "Failed to update semester visibility");
             setIsSavingVisibility(false);
           }
         }}
         isSaving={isSavingVisibility}
+        isLoading={isLoadingVisibility}
       />
 
       <VisibilitySuccessModal

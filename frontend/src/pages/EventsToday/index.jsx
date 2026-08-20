@@ -5,15 +5,18 @@ import EventItemCard from '../../components/events/EventItemCard';
 import { Calendar, Loader2 } from 'lucide-react';
 import newsfeedService from '../../services/newsfeedService';
 import { getImageUrl } from '../../utils/formatters';
+import { getCurrentUser } from '../../services/authService';
 
 const EventsToday = () => {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     
+    const currentUser = getCurrentUser();
     const user = {
-        name: "Alex Johnson",
-        role: "student"
+        name: currentUser?.name || 'User',
+        role: currentUser?.role?.toLowerCase() || 'student',
+        avatar: currentUser?.avatar,
     };
 
     useEffect(() => {

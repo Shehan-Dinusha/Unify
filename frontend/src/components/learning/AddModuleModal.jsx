@@ -4,7 +4,7 @@ import Button from "../common/Button";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Select from "../common/Select";
-import { X, Lock, Save, ChevronDown } from "lucide-react";
+import { X, Lock, Save, ChevronDown, Loader2 } from "lucide-react";
 
 const AddModuleModal = ({
   isOpen,
@@ -20,6 +20,7 @@ const AddModuleModal = ({
   const [mounted, setMounted] = useState(false);
   const [selectedDegrees, setSelectedDegrees] = useState([primaryDegree]);
   const [isDegreeDropdownOpen, setIsDegreeDropdownOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -50,16 +51,19 @@ const AddModuleModal = ({
     setSelectedDegrees((prev) => prev.filter((d) => d !== degreeToRemove));
   };
 
-  const handleSave = () => {
-    // Basic validation
+  const handleSave = async () => {
     if (!title || !code || !semester) return;
-
-    onSave({
-      title,
-      code,
-      semester,
-      visibility: selectedDegrees,
-    });
+    setIsSaving(true);
+    try {
+      await onSave({
+        title,
+        code,
+        semester,
+        visibility: selectedDegrees,
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const unselectedDegrees = availableDegrees.filter(
@@ -216,18 +220,28 @@ const AddModuleModal = ({
           <Button
             variant="ghost-hoverless"
             onClick={onClose}
-            className="w-24 h-12 bg-gray-800 rounded-2xl flex justify-center items-center text-neutral-100 text-base font-bold font-inter leading-5 hover:bg-slate-700 transition-colors"
+            disabled={isSaving}
+            className="w-24 h-12 bg-gray-800 rounded-2xl flex justify-center items-center text-neutral-100 text-base font-bold font-inter leading-5 hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </Button>
           <Button
             variant="primary"
             onClick={handleSave}
-            disabled={!title || !code || !semester}
+            disabled={!title || !code || !semester || isSaving}
             className="w-44 h-12 rounded-2xl shadow-[0px_4px_6px_-4px_rgba(43,140,238,0.25)] flex justify-center items-center gap-2 text-white text-base font-bold font-inter leading-5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Save size={18} className="text-white" />
-            Save Module
+            {isSaving ? (
+              <>
+                <Loader2 size={18} className="animate-spin text-white" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save size={18} className="text-white" />
+                Save Module
+              </>
+            )}
           </Button>
         </div>
       </Card>

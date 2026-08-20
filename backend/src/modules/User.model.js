@@ -66,11 +66,6 @@ const User = sequelize.define(
       defaultValue: false,
     },
 
-    refreshToken: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-
     lastActive: {
       type: DataTypes.DATE,
       allowNull: true,

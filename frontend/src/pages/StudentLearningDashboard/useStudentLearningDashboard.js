@@ -118,6 +118,6 @@ export const useStudentLearningDashboard = () => {
   return {
     sidebarUser, semesters, activeSemesterId, activeModuleId,
     facultyName, degreeName, batchName, moduleCategories, selectedCategory, setSelectedCategory,
-    categoryFiles, isLoading, activeModuleData, handleSelectModule,
+    categoryFiles, isLoading, activeModuleData, activeSemesterInfo, handleSelectModule,
   };
 };

@@ -4,10 +4,16 @@ import {
   verifyOTP,
   login,
   refreshToken,
+  logout,
+  logoutAll,
   resendOTP,
   forgotPassword,
   verifyResetOTP,
   resetPassword,
+  linkAccountController,
+  getLinkedAccountsController,
+  switchAccountController,
+  unlinkAccountController,
 } from "../controllers/auth/index.js";
 import {
   registerValidator,
@@ -19,6 +25,7 @@ import {
   resetPasswordValidator,
 } from "../validators/auth.validator.js";
 import { validateRequest } from "../middlewares/expressValidator.middleware.js";
+import { protect } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -43,9 +50,17 @@ router.post("/verify-otp", verifyOTPValidator, validateRequest, verifyOTP);
  */
 router.post("/login", loginValidator, validateRequest, login);
 router.post("/refresh", refreshToken);
+router.post("/logout", logout);
+router.post("/logout-all", protect, logoutAll);
 router.post("/resend-otp", resendOTPValidator, validateRequest, resendOTP);
 router.post("/forgot-password", forgotPasswordValidator, validateRequest, forgotPassword);
 router.post("/verify-reset-otp", verifyResetOTPValidator, validateRequest, verifyResetOTP);
 router.post("/reset-password", resetPasswordValidator, validateRequest, resetPassword);
+
+// ─── Account Switching & Server-Side Account Link Routes ──────────────────────
+router.post("/link-account", protect, linkAccountController);
+router.get("/linked-accounts", protect, getLinkedAccountsController);
+router.post("/switch-account", protect, switchAccountController);
+router.delete("/unlink-account/:targetUserId", protect, unlinkAccountController);
 
 export default router;

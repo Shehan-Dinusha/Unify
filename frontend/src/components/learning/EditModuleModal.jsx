@@ -4,7 +4,7 @@ import Button from "../common/Button";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Select from "../common/Select";
-import { X, Lock, Save, ChevronDown, Trash2 } from "lucide-react";
+import { X, Lock, Save, ChevronDown, Trash2, Loader2 } from "lucide-react";
 
 const EditModuleModal = ({
   isOpen,
@@ -24,6 +24,8 @@ const EditModuleModal = ({
   const [mounted, setMounted] = useState(false);
   const [selectedDegrees, setSelectedDegrees] = useState([primaryDegree]);
   const [isDegreeDropdownOpen, setIsDegreeDropdownOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -59,19 +61,28 @@ const EditModuleModal = ({
     setSelectedDegrees((prev) => prev.filter((d) => d !== degreeToRemove));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title || !code || !semester) return;
-    onSave({
-      title,
-      code,
-      semester,
-      visibility: selectedDegrees,
-    });
+    setIsSaving(true);
+    try {
+      await onSave({
+        title,
+        code,
+        semester,
+        visibility: selectedDegrees,
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDelete = () => {
-    if (onDelete) {
-      onDelete();
+  const handleDelete = async () => {
+    if (!onDelete) return;
+    setIsDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -235,15 +246,25 @@ const EditModuleModal = ({
               variant="dangerOutline"
               fullWidth
               onClick={handleDelete}
-              className="!border-red-400 text-red-400 flex justify-center items-center gap-1.5 hover:bg-red-400/10 transition-colors group !h-10"
+              disabled={isSaving || isDeleting}
+              className="!border-red-400 text-red-400 flex justify-center items-center gap-1.5 hover:bg-red-400/10 transition-colors group !h-10 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Trash2
-                size={14}
-                className="text-red-400 group-hover:text-red-300"
-              />
-              <span className="text-red-400 text-body-small-bold group-hover:text-red-300">
-                {isOwner ? "Delete Module" : "Remove Module Integration"}
-              </span>
+              {isDeleting ? (
+                <>
+                  <Loader2 size={14} className="animate-spin text-red-400 group-hover:text-red-300" />
+                  <span className="text-red-400 text-body-small-bold group-hover:text-red-300">Deleting...</span>
+                </>
+              ) : (
+                <>
+                  <Trash2
+                    size={14}
+                    className="text-red-400 group-hover:text-red-300"
+                  />
+                  <span className="text-red-400 text-body-small-bold group-hover:text-red-300">
+                    {isOwner ? "Delete Module" : "Remove Module Integration"}
+                  </span>
+                </>
+              )}
             </Button>
             <p className="text-center text-zinc-400 text-[10px] sm:text-body-extra-small leading-tight">
               {isOwner
@@ -258,7 +279,8 @@ const EditModuleModal = ({
           <Button
             variant="ghost-hoverless"
             onClick={onClose}
-            className="w-20 h-10 bg-gray-800 rounded-xl flex justify-center items-center text-neutral-100 text-body-small-bold hover:bg-slate-700 transition-colors"
+            disabled={isSaving || isDeleting}
+            className="w-20 h-10 bg-gray-800 rounded-xl flex justify-center items-center text-neutral-100 text-body-small-bold hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </Button>
@@ -266,11 +288,20 @@ const EditModuleModal = ({
             <Button
               variant="primary"
               onClick={handleSave}
-              disabled={!title || !code || !semester}
+              disabled={!title || !code || !semester || isSaving || isDeleting}
               className="w-auto px-4 h-10 rounded-xl shadow-[0px_4px_6px_-4px_rgba(43,140,238,0.25)] flex justify-center items-center gap-1.5 text-white text-body-small-bold disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap overflow-visible"
             >
-              <Save size={16} className="text-white shrink-0" />
-              <span>Save Module</span>
+              {isSaving ? (
+                <>
+                  <Loader2 size={16} className="animate-spin text-white shrink-0" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Save size={16} className="text-white shrink-0" />
+                  <span>Save Module</span>
+                </>
+              )}
             </Button>
           )}
         </div>

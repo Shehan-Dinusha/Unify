@@ -157,7 +157,6 @@ const PostCard = ({
   imageStyle = "contain",
 }) => {
   const { toggleSavePost, isPostSaved } = useSavedPosts();
-  // const isSavedLocal = post ? isPostSaved(post.id) : false; // Use initialIsSaved from props instead
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [likeCount, setLikeCount] = useState(likes);
   const [showComments, setShowComments] = useState(false);
@@ -204,14 +203,15 @@ const PostCard = ({
   const handleToggleSave = async () => {
     const wasSaved = isSaved;
     setIsSaved(!wasSaved);
-    // Also toggle in context for SavedPosts page
-    if (post) toggleSavePost(post);
+    // Optimistically update context (matched by id + postType to avoid cross-type collisions)
+    if (post) toggleSavePost({ ...post, postType });
 
     try {
       await newsfeedService.toggleSave(postType, postId);
     } catch (err) {
+      // Revert both local state and context on failure
       setIsSaved(wasSaved);
-      if (post) toggleSavePost(post); // revert context too
+      if (post) toggleSavePost({ ...post, postType });
     }
   };
 
