@@ -4,7 +4,11 @@ import jwt from "jsonwebtoken";
 import { User, StudentProfile } from "../../../src/modules/index.js";
 
 // Import the middleware
-import { protect, authorize, isBatchRep } from "../../../src/middlewares/auth.middleware.js";
+import {
+  protect,
+  authorize,
+  isBatchRep,
+} from "../../../src/middlewares/auth.middleware.js";
 
 const TEST_SECRET = "test_auth_middleware_secret";
 let originalSecret;
@@ -50,7 +54,9 @@ describe("protect middleware", () => {
     const res = createRes();
     let nextCalled = false;
 
-    await protect(req, res, () => { nextCalled = true; });
+    await protect(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 401);
     assert.equal(res.getBody().success, false);
@@ -63,7 +69,9 @@ describe("protect middleware", () => {
     const res = createRes();
     let nextCalled = false;
 
-    await protect(req, res, () => { nextCalled = true; });
+    await protect(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 401);
     assert.equal(nextCalled, false);
@@ -74,7 +82,9 @@ describe("protect middleware", () => {
     const res = createRes();
     let nextCalled = false;
 
-    await protect(req, res, () => { nextCalled = true; });
+    await protect(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 401);
     assert.match(res.getBody().message, /token failed/i);
@@ -89,7 +99,9 @@ describe("protect middleware", () => {
 
     mock.method(User, "findByPk", async () => null);
 
-    await protect(req, res, () => { nextCalled = true; });
+    await protect(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 401);
     assert.match(res.getBody().message, /not found/i);
@@ -108,7 +120,9 @@ describe("protect middleware", () => {
       status: "Suspended",
     }));
 
-    await protect(req, res, () => { nextCalled = true; });
+    await protect(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 403);
     assert.match(res.getBody().message, /suspended/i);
@@ -127,7 +141,9 @@ describe("protect middleware", () => {
       status: "Deleted",
     }));
 
-    await protect(req, res, () => { nextCalled = true; });
+    await protect(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 401);
     assert.match(res.getBody().message, /deleted/i);
@@ -135,15 +151,24 @@ describe("protect middleware", () => {
   });
 
   it("attaches user to req and calls next() on valid token and active user", async () => {
-    const token = jwt.sign({ id: 5, role: "Student" }, TEST_SECRET, { expiresIn: "15m" });
+    const token = jwt.sign({ id: 5, role: "Student" }, TEST_SECRET, {
+      expiresIn: "15m",
+    });
     const req = { headers: { authorization: `Bearer ${token}` } };
     const res = createRes();
     let nextCalled = false;
 
-    const mockUser = { id: 5, role: "Student", status: "Active", name: "Test User" };
+    const mockUser = {
+      id: 5,
+      role: "Student",
+      status: "Active",
+      name: "Test User",
+    };
     mock.method(User, "findByPk", async () => mockUser);
 
-    await protect(req, res, () => { nextCalled = true; });
+    await protect(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(nextCalled, true);
     assert.equal(req.user.id, 5);
@@ -159,9 +184,60 @@ describe("protect middleware", () => {
     // Small delay to ensure token is expired
     await new Promise((resolve) => setTimeout(resolve, 10));
 
-    await protect(req, res, () => { nextCalled = true; });
+    await protect(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 401);
+    assert.equal(nextCalled, false);
+  });
+
+  it("returns 503 when database throws a Sequelize connection error (e.g. SequelizeHostNotFoundError / ENOTFOUND)", async () => {
+    const token = jwt.sign({ id: 1 }, TEST_SECRET, { expiresIn: "15m" });
+    const req = { headers: { authorization: `Bearer ${token}` } };
+    const res = createRes();
+    let nextCalled = false;
+
+    const dbError = new Error(
+      "getaddrinfo ENOTFOUND database-1.cj6ue8k8cg0v.eu-north-1.rds.amazonaws.com",
+    );
+    dbError.name = "SequelizeHostNotFoundError";
+    dbError.code = "ENOTFOUND";
+
+    mock.method(User, "findByPk", async () => {
+      throw dbError;
+    });
+
+    await protect(req, res, () => {
+      nextCalled = true;
+    });
+
+    assert.equal(res.getStatusCode(), 503);
+    assert.equal(res.getBody().success, false);
+    assert.match(res.getBody().message, /service temporarily unavailable/i);
+    assert.equal(nextCalled, false);
+  });
+
+  it("returns 503 when database throws ECONNREFUSED network error", async () => {
+    const token = jwt.sign({ id: 1 }, TEST_SECRET, { expiresIn: "15m" });
+    const req = { headers: { authorization: `Bearer ${token}` } };
+    const res = createRes();
+    let nextCalled = false;
+
+    const netError = new Error("connect ECONNREFUSED 127.0.0.1:5432");
+    netError.code = "ECONNREFUSED";
+
+    mock.method(User, "findByPk", async () => {
+      throw netError;
+    });
+
+    await protect(req, res, () => {
+      nextCalled = true;
+    });
+
+    assert.equal(res.getStatusCode(), 503);
+    assert.equal(res.getBody().success, false);
+    assert.match(res.getBody().message, /service temporarily unavailable/i);
     assert.equal(nextCalled, false);
   });
 });
@@ -173,7 +249,9 @@ describe("authorize middleware", () => {
     const res = createRes();
     let nextCalled = false;
 
-    middleware(req, res, () => { nextCalled = true; });
+    middleware(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(nextCalled, true);
   });
@@ -184,7 +262,9 @@ describe("authorize middleware", () => {
     const res = createRes();
     let nextCalled = false;
 
-    middleware(req, res, () => { nextCalled = true; });
+    middleware(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 403);
     assert.equal(nextCalled, false);
@@ -197,7 +277,9 @@ describe("authorize middleware", () => {
     const res = createRes();
     let nextCalled = false;
 
-    middleware(req, res, () => { nextCalled = true; });
+    middleware(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 403);
     assert.equal(nextCalled, false);
@@ -209,7 +291,9 @@ describe("authorize middleware", () => {
     const res = createRes();
     let nextCalled = false;
 
-    middleware(req, res, () => { nextCalled = true; });
+    middleware(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(nextCalled, true);
   });
@@ -223,7 +307,9 @@ describe("isBatchRep middleware", () => {
 
     mock.method(StudentProfile, "findOne", async () => ({ isBatchRep: true }));
 
-    await isBatchRep(req, res, () => { nextCalled = true; });
+    await isBatchRep(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(nextCalled, true);
   });
@@ -235,7 +321,9 @@ describe("isBatchRep middleware", () => {
 
     mock.method(StudentProfile, "findOne", async () => ({ isBatchRep: false }));
 
-    await isBatchRep(req, res, () => { nextCalled = true; });
+    await isBatchRep(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 403);
     assert.match(res.getBody().message, /batch rep/i);
@@ -249,7 +337,9 @@ describe("isBatchRep middleware", () => {
 
     mock.method(StudentProfile, "findOne", async () => null);
 
-    await isBatchRep(req, res, () => { nextCalled = true; });
+    await isBatchRep(req, res, () => {
+      nextCalled = true;
+    });
 
     assert.equal(res.getStatusCode(), 403);
     assert.equal(nextCalled, false);

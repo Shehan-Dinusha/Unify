@@ -8,6 +8,7 @@ import ClubOwnerView from "../../components/profile/owner/ClubOwnerView";
 import FoodCafeOwnerView from "../../components/profile/owner/FoodCafeOwnerView";
 import SelfEmployedOwnerView from "../../components/profile/owner/SelfEmployedOwnerView";
 import DeleteAccountModal from "../../components/profile/modals/DeleteAccountModal";
+import SwitchAccountModal from "../../components/profile/modals/SwitchAccountModal";
 import Button from "../../components/common/Button";
 import { Loader2 } from "lucide-react";
 import { useOwnProfile } from "./useOwnProfile";
@@ -57,8 +58,9 @@ const OwnProfilePage = () => {
   const {
     navigate, user, loading, profile, activeRole,
     verificationStatus, verificationReason, repStatus, repReason,
-    deleteOpen, isUnverifiedClub, getPageTitle,
-    handleEditProfile, handleSecurity, handleDeleteAccount, closeModal, handleConfirmDelete, fetchProfile,
+    deleteOpen, switchOpen, savedAccounts, serverLinkedAccounts, activeUserId, isUnverifiedClub, getPageTitle,
+    handleEditProfile, handleSecurity, handleSwitchAccount, handleDeleteAccount, closeModal, handleConfirmDelete,
+    handleSelectSwitchAccount, handleAddAccount, handleRemoveAccount, handleUnlinkAccount, fetchProfile,
   } = useOwnProfile();
 
   if (loading) {
@@ -104,11 +106,25 @@ const OwnProfilePage = () => {
           <AccountSettingsSection
             onEditProfile={handleEditProfile}
             onSecurity={handleSecurity}
+            onSwitchAccount={handleSwitchAccount}
             onDeleteAccount={handleDeleteAccount}
             disabled={false}
           />
         </div>
       </div>
+
+      {switchOpen && (
+        <SwitchAccountModal
+          savedAccounts={savedAccounts}
+          serverLinkedAccounts={serverLinkedAccounts}
+          activeUserId={activeUserId}
+          onClose={closeModal}
+          onSelectAccount={handleSelectSwitchAccount}
+          onAddAccount={handleAddAccount}
+          onRemoveAccount={handleRemoveAccount}
+          onUnlinkAccount={handleUnlinkAccount}
+        />
+      )}
 
       {deleteOpen && (
         <DeleteAccountModal

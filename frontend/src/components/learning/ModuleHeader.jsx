@@ -19,6 +19,7 @@ const ModuleHeader = ({
   onDelete,
   moduleId,
   onMaterialUploaded,
+  onOptimisticAddFile,
   availableDegrees = [],
   primaryDegree,
   semesters = [],
@@ -132,20 +133,21 @@ const ModuleHeader = ({
         moduleId={moduleId}
         categories={categories}
         onSuccess={onMaterialUploaded}
+        onOptimisticAddFile={onOptimisticAddFile}
       />
 
       <EditModuleModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        onSave={(data) => {
+        onSave={async (data) => {
           if (onEditSave) {
-            onEditSave(data);
+            await onEditSave(data);
           }
           setIsEditModalOpen(false);
         }}
-        onDelete={() => {
+        onDelete={async () => {
           if (onDelete) {
-            onDelete();
+            await onDelete();
           }
           setIsEditModalOpen(false);
         }}

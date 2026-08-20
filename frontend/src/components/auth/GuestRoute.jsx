@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useSearchParams } from "react-router-dom";
 
 const rolePaths = {
   Student: "/news-feed",
@@ -13,10 +13,20 @@ const rolePaths = {
 
 export const getDefaultPath = (user) => {
   if (!user) return "/";
+  if (user.hasProfile === false) {
+    return "/profile/edit";
+  }
   return rolePaths[user.role]?.[user.category] || rolePaths[user.role] || "/";
 };
 
 const GuestRoute = () => {
+  const [searchParams] = useSearchParams();
+  const isAddAccount = searchParams.get("addAccount") === "true";
+
+  if (isAddAccount) {
+    return <Outlet />;
+  }
+
   const userStr = localStorage.getItem("user");
   if (userStr) {
     const user = JSON.parse(userStr);

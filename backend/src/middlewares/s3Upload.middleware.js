@@ -20,13 +20,16 @@ const fileFilter = (req, file, cb) => {
     "video/mp4",
     "video/webm",
     "video/ogg",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
     cb(
-      new Error("Invalid file type. Only Images and PDFs are allowed."),
+      new Error("Invalid file type. Only Images, PDFs, and Office documents are allowed."),
       false,
     );
   }

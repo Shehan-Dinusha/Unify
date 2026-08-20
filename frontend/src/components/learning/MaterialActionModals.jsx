@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { X, PenTool, AlertTriangle } from "lucide-react";
+import { X, PenTool, AlertTriangle, Loader2 } from "lucide-react";
 import Card from "../common/Card";
 import { ChevronDownIcon } from "../common/Icons";
 
 export const EditMaterialModal = ({ isOpen, onClose, file, categories = [], onSave }) => {
   const [title, setTitle] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (file) {
@@ -15,6 +16,16 @@ export const EditMaterialModal = ({ isOpen, onClose, file, categories = [], onSa
   }, [file, categories]);
 
   if (!isOpen || !file) return null;
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await onSave({ ...file, name: title, categoryId });
+      onClose();
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-dark-1/80 backdrop-blur-md transition-all duration-300">
@@ -71,14 +82,26 @@ export const EditMaterialModal = ({ isOpen, onClose, file, categories = [], onSa
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-700/50 flex justify-end items-center gap-3">
-          <button onClick={onClose} className="w-24 h-9 bg-gray-800 hover:bg-gray-700 rounded-2xl flex justify-center items-center text-neutral-100 text-sm font-bold font-inter leading-5 transition-colors">
+          <button 
+            onClick={onClose} 
+            disabled={isSaving}
+            className="w-24 h-9 bg-gray-800 hover:bg-gray-700 rounded-2xl flex justify-center items-center text-neutral-100 text-sm font-bold font-inter leading-5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             Cancel
           </button>
           <button 
-            onClick={() => { onSave({ ...file, name: title, categoryId }); onClose(); }}
-            className="px-5 h-9 bg-blue-500 hover:bg-blue-600 rounded-2xl shadow-[0px_10px_15px_-3px_rgba(43,140,238,0.25)] flex justify-center items-center text-white text-sm font-bold font-inter leading-5 transition-colors"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-5 h-9 bg-blue-500 hover:bg-blue-600 rounded-2xl shadow-[0px_10px_15px_-3px_rgba(43,140,238,0.25)] flex justify-center items-center text-white text-sm font-bold font-inter leading-5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Update Details
+            {isSaving ? (
+              <>
+                <Loader2 size={16} className="animate-spin mr-2" />
+                Saving...
+              </>
+            ) : (
+              "Update Details"
+            )}
           </button>
         </div>
       </Card>
@@ -87,7 +110,19 @@ export const EditMaterialModal = ({ isOpen, onClose, file, categories = [], onSa
 };
 
 export const DeleteMaterialModal = ({ isOpen, onClose, file, onDelete }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+
   if (!isOpen || !file) return null;
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete(file);
+      onClose();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-dark-1/80 backdrop-blur-md transition-all duration-300">
@@ -118,15 +153,24 @@ export const DeleteMaterialModal = ({ isOpen, onClose, file, onDelete }) => {
           <div className="w-full flex justify-center gap-3">
             <button 
               onClick={onClose} 
-              className="flex-1 h-12 bg-gray-800 hover:bg-gray-700 rounded-2xl outline outline-1 outline-blue-500/20 flex justify-center items-center text-neutral-100 text-sm font-bold font-inter leading-5 transition-colors"
+              disabled={isDeleting}
+              className="flex-1 h-12 bg-gray-800 hover:bg-gray-700 rounded-2xl outline outline-1 outline-blue-500/20 flex justify-center items-center text-neutral-100 text-sm font-bold font-inter leading-5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button 
-              onClick={() => { onDelete(file); onClose(); }} 
-              className="flex-1 h-12 bg-red-500 hover:bg-red-600 rounded-2xl flex justify-center items-center text-white text-sm font-bold font-inter leading-5 transition-colors"
+              onClick={handleDelete} 
+              disabled={isDeleting}
+              className="flex-1 h-12 bg-red-500 hover:bg-red-600 rounded-2xl flex justify-center items-center text-white text-sm font-bold font-inter leading-5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Delete Material
+              {isDeleting ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Material"
+              )}
             </button>
           </div>
         </div>

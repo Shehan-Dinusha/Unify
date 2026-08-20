@@ -63,6 +63,12 @@ export const studentRoutes = [
         path: "/marketplace/:targetId/reviews",
         element: <MarketplaceReviews />,
       },
+      // Newsfeed highlight card destinations — accessible to all roles
+      { path: "/events-today", element: <EventsToday /> },
+      { path: "/marketplace-items", element: <MarketplaceItems /> },
+      { path: "/new-announcements", element: <NewAnnouncements /> },
+      // Saved posts — accessible to all roles
+      { path: "/my-saved-posts", element: <MySavedPosts /> },
     ],
   },
   // 3. NOTIFICATIONS (Accessible to all, including unverified clubs)
@@ -79,9 +85,6 @@ export const studentRoutes = [
       { path: "/lost-and-found", element: <LostAndFound /> },
       { path: "/my-lost-and-found", element: <MyLostAndFound /> },
       { path: "/marketplace", element: <Marketplace /> },
-      { path: "/marketplace-items", element: <MarketplaceItems /> },
-      { path: "/events-today", element: <EventsToday /> },
-      { path: "/new-announcements", element: <NewAnnouncements /> },
       { path: "/student/followings", element: <Followings /> },
 
       //marketplace
@@ -105,8 +108,6 @@ export const studentRoutes = [
       { path: "/student-learning", element: <StudentLearningDashboard /> },
       { path: "/batch-rep-verification", element: <BatchRepVerification /> },
 
-      // Saved content & Reviews
-      { path: "/my-saved-posts", element: <MySavedPosts /> },
 
       // Orders & reports
       { path: "/order-history", element: <MyOrders /> },
