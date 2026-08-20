@@ -2,7 +2,7 @@ import "dotenv/config";
 import { createServer } from "http";
 import app from "./app.js";
 import logger from "./utils/logger.js";
-import { sequelize } from "./modules/index.js"; // Registers all models + associations
+import { sequelize, AccountGroup, AccountGroupMember } from "./modules/index.js"; // Registers all models + associations
 import { startOtpCleanupJob } from "./jobs/otpCleanup.job.js";
 import { startConversationCleanupJob } from "./jobs/conversationCleanup.job.js";
 import { initializeSocket } from "./socket/index.js";
@@ -12,9 +12,11 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 
 const startServer = async () => {
   try {
-    // 1. Verify DB connectivity
+    // 1. Verify DB connectivity and sync account group tables if missing
     await sequelize.authenticate();
-    logger.info("✅ Database connection established successfully.");
+    await AccountGroup.sync();
+    await AccountGroupMember.sync();
+    logger.info("✅ Database connection established and tables synced successfully.");
 
     // 2. Start background jobs
     startOtpCleanupJob();

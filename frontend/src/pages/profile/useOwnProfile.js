@@ -5,6 +5,12 @@ import {
   getCurrentUser,
   logout,
   refreshCurrentUser,
+  getSavedAccounts,
+  switchAccount,
+  removeSavedAccount,
+  fetchServerLinkedAccounts,
+  switchAccountServer,
+  unlinkAccountServer,
 } from "../../services/authService";
 import { useToast } from "../../components/common/Toast";
 
@@ -56,6 +62,7 @@ export const useOwnProfile = () => {
   const [activeRole, setActiveRole] = useState(
     searchParams.get("role") || "student",
   );
+  const [serverLinkedAccounts, setServerLinkedAccounts] = useState([]);
   const [verificationStatus, setVerificationStatus] = useState("NOT_SUBMITTED");
   const [verificationReason, setVerificationReason] = useState(
     "Verification rejected. Please resubmit documents.",
@@ -139,9 +146,20 @@ export const useOwnProfile = () => {
 
   const activeModal = searchParams.get("modal");
   const deleteOpen = activeModal === "delete";
+  const switchOpen = activeModal === "switch";
 
-  const handleEditProfile = () => navigate(`/profile/edit?role=${activeRole}`);
-  const handleSecurity = () => navigate(`/profile/security?role=${activeRole}`);
+  useEffect(() => {
+    if (switchOpen) {
+      fetchServerLinkedAccounts().then((accounts) => {
+        setServerLinkedAccounts(accounts || []);
+      });
+    }
+  }, [switchOpen]);
+
+  const handleEditProfile = () => navigate("/profile/edit");
+  const handleSecurity = () => navigate("/profile/security");
+  const handleSwitchAccount = () =>
+    navigate(`/profile?role=${activeRole}&modal=switch`);
   const handleDeleteAccount = () =>
     navigate(`/profile?role=${activeRole}&modal=delete`);
   const closeModal = () => navigate(-1);
@@ -150,14 +168,61 @@ export const useOwnProfile = () => {
     try {
       await deleteAccount(password);
       toast.success("Success", "Account deleted successfully");
-      logout();
+      await logout();
       navigate("/login", { replace: true });
     } catch (error) {
       throw error;
     }
   };
 
-  const getPageTitle = () => (deleteOpen ? "Delete account" : "Profile");
+  const handleSelectSwitchAccount = async (userId, hasLocalSession) => {
+    try {
+      let target;
+      if (hasLocalSession) {
+        target = switchAccount(userId);
+      } else {
+        const result = await switchAccountServer(userId);
+        target = { user: result.user };
+      }
+
+      if (target) {
+        toast.success("Account Switched", `Switched to ${target.user?.name || "account"}`);
+        const role = target.user?.role?.toLowerCase();
+        if (role === "admin") navigate("/admin");
+        else navigate("/");
+      }
+    } catch (error) {
+      toast.error("Switch Failed", error.message || "Failed to switch account.");
+    }
+  };
+
+  const handleAddAccount = () => {
+    navigate("/login?addAccount=true");
+  };
+
+  const handleRemoveAccount = (userId) => {
+    removeSavedAccount(userId);
+    setServerLinkedAccounts((prev) => prev.filter((a) => String(a.id) !== String(userId)));
+    toast.info("Account Removed", "Saved session removed from this device.");
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      navigate("/login");
+    }
+  };
+
+  const handleUnlinkAccount = async (userId) => {
+    try {
+      await unlinkAccountServer(userId);
+      removeSavedAccount(userId);
+      setServerLinkedAccounts((prev) => prev.filter((a) => String(a.id) !== String(userId)));
+      toast.success("Account Unlinked", "Server-side link removed.");
+    } catch (error) {
+      toast.error("Unlink Failed", error.message || "Failed to unlink account.");
+    }
+  };
+
+  const getPageTitle = () =>
+    deleteOpen ? "Delete account" : switchOpen ? "Switch account" : "Profile";
 
   const user = profile
     ? {
@@ -171,6 +236,9 @@ export const useOwnProfile = () => {
   const isUnverifiedClub =
     activeRole === "club_society" && verificationStatus !== "APPROVED";
 
+  const savedAccounts = getSavedAccounts();
+  const activeUserId = getCurrentUser()?.id;
+
   return {
     navigate,
     user,
@@ -183,13 +251,22 @@ export const useOwnProfile = () => {
     repStatus,
     repReason,
     deleteOpen,
+    switchOpen,
+    savedAccounts,
+    serverLinkedAccounts,
+    activeUserId,
     isUnverifiedClub,
     getPageTitle,
     handleEditProfile,
     handleSecurity,
+    handleSwitchAccount,
     handleDeleteAccount,
     closeModal,
     handleConfirmDelete,
+    handleSelectSwitchAccount,
+    handleAddAccount,
+    handleRemoveAccount,
+    handleUnlinkAccount,
     fetchProfile,
   };
 };

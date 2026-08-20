@@ -8,8 +8,89 @@ const handleError = (error) => {
   throw new Error(error.response?.data?.message || "Something went wrong");
 };
 
-// ─── Standard Auth Data ───────────────────────────────────────────────────────
-// Normal login/OTP: just sets the active session. Does NOT auto-add to any linked list.
+// ─── Standard Auth Data & Multi-Account Storage ───────────────────────────────
+
+export const getSavedAccounts = () => {
+  try {
+    const raw = localStorage.getItem("savedAccounts");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const saveAccountSession = (data) => {
+  if (!data?.user || !data.user.id) return;
+  const accounts = getSavedAccounts();
+  const token = data.accessToken || localStorage.getItem("token");
+  const refreshToken = data.refreshToken || localStorage.getItem("refreshToken");
+
+  const accountEntry = {
+    id: data.user.id,
+    user: data.user,
+    token,
+    refreshToken,
+    lastActive: Date.now(),
+  };
+
+  const index = accounts.findIndex((a) => String(a.id) === String(data.user.id));
+  if (index >= 0) {
+    accounts[index] = { ...accounts[index], ...accountEntry };
+  } else {
+    accounts.push(accountEntry);
+  }
+
+  localStorage.setItem("savedAccounts", JSON.stringify(accounts));
+};
+
+export const updateActiveAccountTokens = (accessToken, refreshToken, userId) => {
+  const accounts = getSavedAccounts();
+  const targetId = userId || getCurrentUser()?.id;
+  if (!targetId) return;
+
+  const index = accounts.findIndex((a) => String(a.id) === String(targetId));
+  if (index >= 0) {
+    if (accessToken) accounts[index].token = accessToken;
+    if (refreshToken) accounts[index].refreshToken = refreshToken;
+    accounts[index].lastActive = Date.now();
+    localStorage.setItem("savedAccounts", JSON.stringify(accounts));
+  }
+};
+
+export const switchAccount = (userId) => {
+  const accounts = getSavedAccounts();
+  const target = accounts.find((a) => String(a.id) === String(userId));
+  if (!target) return false;
+
+  if (target.token) localStorage.setItem("token", target.token);
+  if (target.refreshToken) localStorage.setItem("refreshToken", target.refreshToken);
+  if (target.user) localStorage.setItem("user", JSON.stringify(target.user));
+
+  saveAccountSession({ user: target.user, accessToken: target.token, refreshToken: target.refreshToken });
+
+  window.dispatchEvent(new Event("auth-changed"));
+  return target;
+};
+
+export const removeSavedAccount = (userId) => {
+  let accounts = getSavedAccounts();
+  const currentUser = getCurrentUser();
+  const isActiveAccount = currentUser && String(currentUser.id) === String(userId);
+
+  accounts = accounts.filter((a) => String(a.id) !== String(userId));
+  localStorage.setItem("savedAccounts", JSON.stringify(accounts));
+
+  if (isActiveAccount) {
+    if (accounts.length > 0) {
+      switchAccount(accounts[0].id);
+    } else {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      window.dispatchEvent(new Event("auth-changed"));
+    }
+  }
+};
 
 const setAuthData = (data) => {
   if (data.accessToken) localStorage.setItem("token", data.accessToken);
@@ -17,6 +98,7 @@ const setAuthData = (data) => {
     localStorage.setItem("refreshToken", data.refreshToken);
   if (data.user) {
     localStorage.setItem("user", JSON.stringify(data.user));
+    saveAccountSession(data);
   }
   window.dispatchEvent(new Event("auth-changed"));
 };
@@ -129,6 +211,7 @@ export const refreshCurrentUser = async () => {
     }
 
     localStorage.setItem("user", JSON.stringify(updatedUser));
+    saveAccountSession({ user: updatedUser });
     return updatedUser;
   } catch {
     return getCurrentUser();
@@ -136,18 +219,26 @@ export const refreshCurrentUser = async () => {
 };
 
 export const logout = async () => {
+  const currentUser = getCurrentUser();
+  const refreshToken = localStorage.getItem("refreshToken");
+
+  // Synchronously clear active session tokens first to prevent race condition with GuestRoute
+  if (currentUser?.id) {
+    let accounts = getSavedAccounts();
+    accounts = accounts.filter((a) => String(a.id) !== String(currentUser.id));
+    localStorage.setItem("savedAccounts", JSON.stringify(accounts));
+  }
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+  localStorage.removeItem("user");
+  window.dispatchEvent(new Event("auth-changed"));
+
   try {
-    const refreshToken = localStorage.getItem("refreshToken");
     if (refreshToken) {
       await api.post("/auth/logout", { refreshToken });
     }
   } catch {
     // Ignore network error on logout
-  } finally {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
-    window.dispatchEvent(new Event("auth-changed"));
   }
 };
 
@@ -162,4 +253,46 @@ export const getCurrentUser = () => {
 
 export const isAuthenticated = () => {
   return !!localStorage.getItem("token");
+};
+
+// ─── Server-Side Account Linking API Integrations ─────────────────────────────
+
+export const fetchServerLinkedAccounts = async () => {
+  try {
+    const response = await api.get("/auth/linked-accounts");
+    return response.data.data || [];
+  } catch {
+    return [];
+  }
+};
+
+export const linkAccountServer = async (identifier, password) => {
+  try {
+    const response = await api.post("/auth/link-account", { identifier, password });
+    const { data } = response.data;
+    setAuthData(data);
+    return data;
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+export const switchAccountServer = async (targetUserId) => {
+  try {
+    const response = await api.post("/auth/switch-account", { targetUserId });
+    const { data } = response.data;
+    setAuthData(data);
+    return data;
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+export const unlinkAccountServer = async (targetUserId) => {
+  try {
+    await api.delete(`/auth/unlink-account/${targetUserId}`);
+    return true;
+  } catch (error) {
+    handleError(error);
+  }
 };

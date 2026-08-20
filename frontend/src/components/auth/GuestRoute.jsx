@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useSearchParams } from "react-router-dom";
 
 const rolePaths = {
   Student: "/news-feed",
@@ -20,6 +20,13 @@ export const getDefaultPath = (user) => {
 };
 
 const GuestRoute = () => {
+  const [searchParams] = useSearchParams();
+  const isAddAccount = searchParams.get("addAccount") === "true";
+
+  if (isAddAccount) {
+    return <Outlet />;
+  }
+
   const userStr = localStorage.getItem("user");
   if (userStr) {
     const user = JSON.parse(userStr);
