@@ -102,14 +102,6 @@ const ClubOwnerView = ({
       disabled: !isApproved,
     },
     {
-      icon: "⭐",
-      iconBg: "bg-yellow-500/20",
-      title: "My Reviews",
-      description: "Manage your submitted reviews.",
-      path: "/profile/reviews",
-      disabled: !isApproved,
-    },
-    {
       icon: "🚀",
       iconBg: "bg-violet-500/20",
       title: "View Boosted Posts",
