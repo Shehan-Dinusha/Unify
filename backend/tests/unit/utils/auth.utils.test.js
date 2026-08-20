@@ -27,7 +27,8 @@ describe("generateTokens & hashToken", () => {
     if (originalSecret !== undefined) process.env.JWT_SECRET = originalSecret;
     else delete process.env.JWT_SECRET;
 
-    if (originalRefreshSecret !== undefined) process.env.JWT_REFRESH_SECRET = originalRefreshSecret;
+    if (originalRefreshSecret !== undefined)
+      process.env.JWT_REFRESH_SECRET = originalRefreshSecret;
     else delete process.env.JWT_REFRESH_SECRET;
   });
 
@@ -82,7 +83,10 @@ describe("generateTokens & hashToken", () => {
     });
 
     const user = createMockUser({ id: 99 });
-    const req = { headers: { "user-agent": "TestBrowser/1.0" }, ip: "127.0.0.1" };
+    const req = {
+      headers: { "user-agent": "TestBrowser/1.0" },
+      ip: "127.0.0.1",
+    };
     const { refreshToken } = await generateTokens(user, req);
 
     assert.ok(createdPayload);
