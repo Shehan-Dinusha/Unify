@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 
 const Modal = ({ open, children, onClose, className = "", zIndex = "z-50" }) => {
   if (!open) return null;
@@ -9,7 +10,7 @@ const Modal = ({ open, children, onClose, className = "", zIndex = "z-50" }) => 
     }
   };
 
-  return (
+  const content = (
     <div
       className={`fixed inset-0 ${zIndex} flex items-center justify-center bg-dark-1/80 backdrop-blur-xl transition-all duration-300 px-4 ${className}`}
       onClick={handleBackdropClick}
@@ -17,6 +18,9 @@ const Modal = ({ open, children, onClose, className = "", zIndex = "z-50" }) => 
       {children}
     </div>
   );
+
+  if (typeof document === 'undefined') return content;
+  return createPortal(content, document.body);
 };
 
 export default Modal;

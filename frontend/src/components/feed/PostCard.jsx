@@ -16,6 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Card from "../common/Card";
+import Overlay from "../common/Overlay";
 import newsfeedService from "../../services/newsfeedService";
 import postService from "../../services/postService";
 import { formatTimeAgo } from "../../utils/formatters";
@@ -168,6 +169,7 @@ const PostCard = ({
   const [imgFailed, setImgFailed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const currentUser = getCurrentUser();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const DESCRIPTION_LIMIT = 250;
   const isLongDescription =
@@ -277,16 +279,14 @@ const PostCard = ({
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this post? This action cannot be undone.",
-      )
-    )
-      return;
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
 
+  const confirmDelete = async () => {
     try {
       await postService.deletePost(postType, postId);
+      setShowDeleteModal(false);
       if (onPostUpdate) onPostUpdate();
     } catch (err) {
       alert(err.error || "Failed to delete post. Please try again.");
@@ -497,7 +497,7 @@ const PostCard = ({
 
               {/* Delete */}
               <button
-                onClick={handleDelete}
+                onClick={handleDeleteClick}
                 className="flex flex-col items-center justify-center gap-0.5 py-2 hover:bg-white/5 rounded-lg transition-colors group hover:text-state-error"
               >
                 <div className="flex items-center gap-1.5">
@@ -589,6 +589,37 @@ const PostCard = ({
           />
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <Overlay open={showDeleteModal} onClose={() => setShowDeleteModal(false)} zIndex="z-[200]">
+          <Card variant="modal" padding="p-0" className="w-full max-w-sm">
+            <div className="p-6 md:p-8 flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-state-error/10 flex items-center justify-center mb-4">
+                <Trash2 className="text-state-error" size={24} />
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Delete Post</h2>
+              <p className="text-text-secondary text-sm leading-relaxed mb-6">
+                Are you sure you want to delete this post? This action cannot be undone.
+              </p>
+              <div className="flex w-full gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 text-text-primary font-medium hover:bg-white/10 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 h-11 rounded-xl bg-state-error text-white font-medium hover:bg-red-500 transition-colors shadow-lg shadow-state-error/20"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </Card>
+        </Overlay>
+      )}
     </Card>
   );
 };
