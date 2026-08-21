@@ -219,15 +219,11 @@ export const refreshCurrentUser = async () => {
 };
 
 export const logout = async () => {
-  const currentUser = getCurrentUser();
   const refreshToken = localStorage.getItem("refreshToken");
 
-  // Synchronously clear active session tokens first to prevent race condition with GuestRoute
-  if (currentUser?.id) {
-    let accounts = getSavedAccounts();
-    accounts = accounts.filter((a) => String(a.id) !== String(currentUser.id));
-    localStorage.setItem("savedAccounts", JSON.stringify(accounts));
-  }
+  // Clear only the active authentication state.
+  // savedAccounts is intentionally NOT modified here — accounts remain
+  // remembered on this device so they appear in the Switch Account modal.
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("user");
