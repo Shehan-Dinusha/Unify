@@ -24,10 +24,19 @@ const createRes = mockRes;
 
 describe("register", () => {
   it("returns 400 if a VERIFIED user already exists with that email", async () => {
-    mock.method(User, "findOne", async () => ({ id: 9, email: "alice@example.com", isVerified: true }));
+    mock.method(User, "findOne", async () => ({
+      id: 9,
+      email: "alice@example.com",
+      isVerified: true,
+    }));
 
     const req = {
-      body: { name: "Alice", email: "alice@example.com", password: "secret123", role: "Student" },
+      body: {
+        name: "Alice",
+        email: "alice@example.com",
+        password: "secret123",
+        role: "Student",
+      },
     };
     const res = createRes();
 
@@ -39,21 +48,36 @@ describe("register", () => {
   });
 
   it("returns 400 if a VERIFIED user already exists with that phone number", async () => {
-    mock.method(User, "findOne", async () => ({ id: 9, email: null, phone: "+94771234567", isVerified: true }));
+    mock.method(User, "findOne", async () => ({
+      id: 9,
+      email: null,
+      phone: "+94771234567",
+      isVerified: true,
+    }));
 
     const req = {
-      body: { name: "Alice", phone: "077 123 4567", password: "secret123", role: "Student" },
+      body: {
+        name: "Alice",
+        phone: "077 123 4567",
+        password: "secret123",
+        role: "Student",
+      },
     };
     const res = createRes();
 
     await register(req, res);
 
     assert.equal(res.getStatusCode(), 400);
-    assert.match(res.getBody().message, /already exists with this phone number/i);
+    assert.match(
+      res.getBody().message,
+      /already exists with this phone number/i,
+    );
   });
 
   it("resumes registration for an UNVERIFIED existing user, updating details and issuing fresh OTP", async () => {
-    mock.method(SESClient.prototype, "send", async () => ({ MessageId: "mocked" }));
+    mock.method(SESClient.prototype, "send", async () => ({
+      MessageId: "mocked",
+    }));
     mock.method(bcrypt, "genSalt", async () => "salt");
     mock.method(bcrypt, "hash", async () => "hashed");
     mock.method(crypto, "randomInt", () => 999888);
@@ -76,7 +100,12 @@ describe("register", () => {
     mock.method(OTP, "create", otpCreate);
 
     const req = {
-      body: { name: "Alice Updated", email: "alice@example.com", password: "newPassword123", role: "Student" },
+      body: {
+        name: "Alice Updated",
+        email: "alice@example.com",
+        password: "newPassword123",
+        role: "Student",
+      },
     };
     const res = createRes();
 
@@ -99,7 +128,9 @@ describe("register", () => {
   });
 
   it("returns 201 and sends OTP by email on successful NEW user registration", async () => {
-    mock.method(SESClient.prototype, "send", async () => ({ MessageId: "mocked" }));
+    mock.method(SESClient.prototype, "send", async () => ({
+      MessageId: "mocked",
+    }));
     mock.method(bcrypt, "genSalt", async () => "salt");
     mock.method(bcrypt, "hash", async () => "hashed");
     mock.method(crypto, "randomInt", () => 123456);
@@ -109,7 +140,12 @@ describe("register", () => {
     mock.method(OTP, "create", otpCreate);
 
     const req = {
-      body: { name: "Alice", email: "alice@example.com", password: "secret123", role: "Student" },
+      body: {
+        name: "Alice",
+        email: "alice@example.com",
+        password: "secret123",
+        role: "Student",
+      },
     };
     const res = createRes();
 
@@ -135,7 +171,12 @@ describe("register", () => {
     mock.method(OTP, "create", async () => ({}));
 
     const req = {
-      body: { name: "Bob", phone: "077 123 4567", password: "secret123", role: "Student" },
+      body: {
+        name: "Bob",
+        phone: "077 123 4567",
+        password: "secret123",
+        role: "Student",
+      },
     };
     const res = createRes();
 
@@ -152,7 +193,12 @@ describe("register", () => {
     });
 
     const req = {
-      body: { name: "Alice", email: "alice@example.com", password: "secret123", role: "Student" },
+      body: {
+        name: "Alice",
+        email: "alice@example.com",
+        password: "secret123",
+        role: "Student",
+      },
     };
     const res = createRes();
 
