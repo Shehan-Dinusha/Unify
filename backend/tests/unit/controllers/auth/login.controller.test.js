@@ -3,7 +3,11 @@ import assert from "node:assert/strict";
 import bcrypt from "bcryptjs";
 import { mockRes } from "../../../helpers/testUtils.js";
 import { login } from "../../../../src/controllers/auth/login.controller.js";
-import { User, StudentProfile, UserSession } from "../../../../src/modules/index.js";
+import {
+  User,
+  StudentProfile,
+  UserSession,
+} from "../../../../src/modules/index.js";
 import { phoneWhere } from "../../../../src/utils/phoneWhere.util.js";
 
 process.env.JWT_SECRET = "test_secret";
@@ -135,13 +139,17 @@ describe("login", () => {
     mock.method(bcrypt, "compare", async () => true);
     mock.method(StudentProfile, "findOne", async () => null);
 
-    const req = { body: { identifier: "alice@example.com", password: "secret123" } };
+    const req = {
+      body: { identifier: "alice@example.com", password: "secret123" },
+    };
     const res = createRes();
 
     await login(req, res);
 
     assert.equal(res.getStatusCode(), 200);
-    assert.deepEqual(findOne.mock.calls[0].arguments[0].where, { email: "alice@example.com" });
+    assert.deepEqual(findOne.mock.calls[0].arguments[0].where, {
+      email: "alice@example.com",
+    });
   });
 
   it("supports identifier-based login with a phone number", async () => {
@@ -156,7 +164,10 @@ describe("login", () => {
     await login(req, res);
 
     assert.equal(res.getStatusCode(), 200);
-    assert.deepEqual(findOne.mock.calls[0].arguments[0].where, phoneWhere("0771234567"));
+    assert.deepEqual(
+      findOne.mock.calls[0].arguments[0].where,
+      phoneWhere("0771234567"),
+    );
   });
 
   it("returns 500 on unexpected error", async () => {

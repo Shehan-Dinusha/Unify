@@ -94,7 +94,11 @@ describe("refreshToken controller (session-based)", () => {
       }),
     };
     mock.method(UserSession, "findOne", async () => mockSession);
-    mock.method(User, "findByPk", async () => ({ id: 5, role: "Student", status: "Active" }));
+    mock.method(User, "findByPk", async () => ({
+      id: 5,
+      role: "Student",
+      status: "Active",
+    }));
 
     const req = { body: { refreshToken: token } };
     const res = createRes();
@@ -135,7 +139,11 @@ describe("refreshToken controller (session-based)", () => {
       }),
     };
 
-    mock.method(User, "findByPk", async () => ({ id: 5, role: "Student", status: "Active" }));
+    mock.method(User, "findByPk", async () => ({
+      id: 5,
+      role: "Student",
+      status: "Active",
+    }));
 
     // 1. Refresh Session A
     mock.method(UserSession, "findOne", async (opts) => {

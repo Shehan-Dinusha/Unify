@@ -90,7 +90,9 @@ describe("deleteAccount", () => {
     assert.match(res.getBody().message, /deleted/i);
     assert.equal(updateFn.mock.calls.length, 1);
     assert.equal(destroyFn.mock.calls.length, 1);
-    assert.deepEqual(destroyFn.mock.calls[0].arguments[0], { where: { userId: 1 } });
+    assert.deepEqual(destroyFn.mock.calls[0].arguments[0], {
+      where: { userId: 1 },
+    });
 
     // Verify the anonymization data passed to update()
     const updateArg = updateFn.mock.calls[0].arguments[0];

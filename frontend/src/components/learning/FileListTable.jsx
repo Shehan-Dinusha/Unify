@@ -76,6 +76,18 @@ const getFileIconConfig = (fileName = "", type = "file") => {
       bg: "bg-emerald-500/10 outline-emerald-500/20",
     };
   }
+  if (
+    lowerType.includes("wordprocessingml") ||
+    lowerType.includes("presentationml") ||
+    lowerType.includes("spreadsheetml") ||
+    lowerName.match(/\.(docx|pptx|xlsx)$/)
+  ) {
+    return {
+      type: "office",
+      icon: <FileText size={20} className="text-blue-400" />,
+      bg: "bg-blue-500/10 outline-blue-500/20",
+    };
+  }
   return {
     type: "document",
     icon: <FileText size={20} className="text-red-500" />,
@@ -90,7 +102,10 @@ const FileListTable = ({
   categoryName,
   categories = [],
   files: initialFiles = [],
+  isLoadingFiles = false,
   onRefresh,
+  onDeleteFile,
+  onRenameFile,
 }) => {
   const [files, setFiles] = useState(initialFiles);
   const [editingFile, setEditingFile] = useState(null);
@@ -105,6 +120,7 @@ const FileListTable = ({
 
   const handleEditSave = async (updatedFile) => {
     try {
+      onRenameFile?.(updatedFile.id, updatedFile.name, updatedFile.categoryId);
       await learningService.editMaterial(updatedFile.id, {
         title: updatedFile.name,
         categoryId: updatedFile.categoryId,
@@ -112,15 +128,18 @@ const FileListTable = ({
       onRefresh?.();
     } catch (err) {
       toast.error("Error", "Failed to edit material");
+      onRefresh?.();
     }
   };
 
   const handleDeleteConfirm = async (fileToDelete) => {
     try {
+      onDeleteFile?.(fileToDelete.id);
       await learningService.deleteMaterial(fileToDelete.id);
       onRefresh?.();
     } catch (err) {
       toast.error("Error", "Failed to delete material");
+      onRefresh?.();
     }
   };
   return (
@@ -164,6 +183,13 @@ const FileListTable = ({
               onClick={() => {
                 if (iconConfig.type === "link") {
                   window.open(file.fileUrl || file.url, "_blank");
+                } else if (iconConfig.type === "office") {
+                  const a = document.createElement("a");
+                  a.href = file.fileUrl || file.url;
+                  a.download = file.name;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
                 } else {
                   setViewingFile(file);
                   setModalType(
@@ -243,7 +269,36 @@ const FileListTable = ({
             </div>
           );
         })}
-        {files.length === 0 && (
+        {isLoadingFiles && files.length === 0 && (
+          <div className="flex flex-col">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="shrink-0 w-full h-20 px-5 flex items-center border-t border-gray-700"
+              >
+                <div className="w-80 flex items-center gap-3.5 pr-4">
+                  <div className="w-10 h-10 rounded-lg bg-white/5 animate-pulse shrink-0" />
+                  <div className="flex flex-col gap-1.5">
+                    <div className="h-3 w-36 bg-white/5 animate-pulse rounded" />
+                    <div className="h-2.5 w-16 bg-white/5 animate-pulse rounded" />
+                  </div>
+                </div>
+                <div className="w-40 flex items-center gap-2 pr-4">
+                  <div className="w-6 h-6 rounded-full bg-white/5 animate-pulse shrink-0" />
+                  <div className="h-2.5 w-20 bg-white/5 animate-pulse rounded" />
+                </div>
+                <div className="flex-1 flex justify-between items-center">
+                  <div className="h-2.5 w-24 bg-white/5 animate-pulse rounded" />
+                  <div className="flex gap-2">
+                    <div className="w-7 h-7 rounded bg-white/5 animate-pulse" />
+                    <div className="w-7 h-7 rounded bg-white/5 animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {!isLoadingFiles && files.length === 0 && (
           <div className="p-8 text-center text-gray-500 font-inter text-sm">
             No files uploaded yet.
           </div>
