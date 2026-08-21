@@ -58,9 +58,9 @@ const OwnProfilePage = () => {
   const {
     navigate, user, loading, profile, activeRole,
     verificationStatus, verificationReason, repStatus, repReason,
-    deleteOpen, switchOpen, savedAccounts, serverLinkedAccounts, activeUserId, isUnverifiedClub, getPageTitle,
+    deleteOpen, switchOpen, savedAccounts, activeUserId, isUnverifiedClub, getPageTitle,
     handleEditProfile, handleSecurity, handleSwitchAccount, handleDeleteAccount, closeModal, handleConfirmDelete,
-    handleSelectSwitchAccount, handleAddAccount, handleRemoveAccount, handleUnlinkAccount, fetchProfile,
+    handleSelectSwitchAccount, handleAddAccount, handleRemoveAccount, fetchProfile,
   } = useOwnProfile();
 
   if (loading) {
@@ -116,13 +116,11 @@ const OwnProfilePage = () => {
       {switchOpen && (
         <SwitchAccountModal
           savedAccounts={savedAccounts}
-          serverLinkedAccounts={serverLinkedAccounts}
           activeUserId={activeUserId}
           onClose={closeModal}
           onSelectAccount={handleSelectSwitchAccount}
           onAddAccount={handleAddAccount}
           onRemoveAccount={handleRemoveAccount}
-          onUnlinkAccount={handleUnlinkAccount}
         />
       )}
 
