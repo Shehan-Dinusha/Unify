@@ -14,7 +14,11 @@ const getAccountSubtitle = (user) => {
     ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()
     : "";
   if (role === "Student") {
-    const detail = user.faculty || user.department || user.subtitle || "Information Technology";
+    const detail =
+      user.faculty ||
+      user.department ||
+      user.subtitle ||
+      "Information Technology";
     return detail.toLowerCase().includes("student")
       ? detail
       : `Student • ${detail}`;

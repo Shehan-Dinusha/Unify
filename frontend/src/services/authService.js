@@ -23,7 +23,8 @@ export const saveAccountSession = (data) => {
   if (!data?.user || !data.user.id) return;
   const accounts = getSavedAccounts();
   const token = data.accessToken || localStorage.getItem("token");
-  const refreshToken = data.refreshToken || localStorage.getItem("refreshToken");
+  const refreshToken =
+    data.refreshToken || localStorage.getItem("refreshToken");
 
   const accountEntry = {
     id: data.user.id,
@@ -33,7 +34,9 @@ export const saveAccountSession = (data) => {
     lastActive: Date.now(),
   };
 
-  const index = accounts.findIndex((a) => String(a.id) === String(data.user.id));
+  const index = accounts.findIndex(
+    (a) => String(a.id) === String(data.user.id),
+  );
   if (index >= 0) {
     accounts[index] = { ...accounts[index], ...accountEntry };
   } else {
@@ -43,7 +46,11 @@ export const saveAccountSession = (data) => {
   localStorage.setItem("savedAccounts", JSON.stringify(accounts));
 };
 
-export const updateActiveAccountTokens = (accessToken, refreshToken, userId) => {
+export const updateActiveAccountTokens = (
+  accessToken,
+  refreshToken,
+  userId,
+) => {
   const accounts = getSavedAccounts();
   const targetId = userId || getCurrentUser()?.id;
   if (!targetId) return;
@@ -63,10 +70,15 @@ export const switchAccount = (userId) => {
   if (!target) return false;
 
   if (target.token) localStorage.setItem("token", target.token);
-  if (target.refreshToken) localStorage.setItem("refreshToken", target.refreshToken);
+  if (target.refreshToken)
+    localStorage.setItem("refreshToken", target.refreshToken);
   if (target.user) localStorage.setItem("user", JSON.stringify(target.user));
 
-  saveAccountSession({ user: target.user, accessToken: target.token, refreshToken: target.refreshToken });
+  saveAccountSession({
+    user: target.user,
+    accessToken: target.token,
+    refreshToken: target.refreshToken,
+  });
 
   window.dispatchEvent(new Event("auth-changed"));
   return target;
@@ -75,7 +87,8 @@ export const switchAccount = (userId) => {
 export const removeSavedAccount = (userId) => {
   let accounts = getSavedAccounts();
   const currentUser = getCurrentUser();
-  const isActiveAccount = currentUser && String(currentUser.id) === String(userId);
+  const isActiveAccount =
+    currentUser && String(currentUser.id) === String(userId);
 
   accounts = accounts.filter((a) => String(a.id) !== String(userId));
   localStorage.setItem("savedAccounts", JSON.stringify(accounts));
@@ -264,7 +277,10 @@ export const fetchServerLinkedAccounts = async () => {
 
 export const linkAccountServer = async (identifier, password) => {
   try {
-    const response = await api.post("/auth/link-account", { identifier, password });
+    const response = await api.post("/auth/link-account", {
+      identifier,
+      password,
+    });
     const { data } = response.data;
     setAuthData(data);
     return data;

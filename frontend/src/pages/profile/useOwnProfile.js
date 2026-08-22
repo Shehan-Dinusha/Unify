@@ -59,6 +59,7 @@ export const useOwnProfile = () => {
   const [activeRole, setActiveRole] = useState(
     searchParams.get("role") || "student",
   );
+  const [serverLinkedAccounts, setServerLinkedAccounts] = useState([]);
   const [verificationStatus, setVerificationStatus] = useState("NOT_SUBMITTED");
   const [verificationReason, setVerificationReason] = useState(
     "Verification rejected. Please resubmit documents.",
@@ -144,8 +145,6 @@ export const useOwnProfile = () => {
   const deleteOpen = activeModal === "delete";
   const switchOpen = activeModal === "switch";
 
-
-
   const handleEditProfile = () => navigate("/profile/edit");
   const handleSecurity = () => navigate("/profile/security");
   const handleSwitchAccount = () =>
@@ -168,7 +167,10 @@ export const useOwnProfile = () => {
   const handleSelectSwitchAccount = (userId) => {
     const target = switchAccount(userId);
     if (target) {
-      toast.success("Account Switched", `Switched to ${target.user?.name || "account"}`);
+      toast.success(
+        "Account Switched",
+        `Switched to ${target.user?.name || "account"}`,
+      );
       const role = target.user?.role?.toLowerCase();
       if (role === "admin") navigate("/admin");
       else navigate("/");
@@ -189,8 +191,6 @@ export const useOwnProfile = () => {
       navigate("/login");
     }
   };
-
-
 
   const getPageTitle = () =>
     deleteOpen ? "Delete account" : switchOpen ? "Switch account" : "Profile";
