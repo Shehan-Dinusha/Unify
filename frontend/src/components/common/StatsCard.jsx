@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import Card from "./Card";
 
 const StatsCard = ({
@@ -12,21 +12,21 @@ const StatsCard = ({
   loading = false,
 }) => {
   return (
-    <Card variant="container" className="h-40 relative group transition-colors">
+    <Card variant="container" className="h-24 md:h-40 relative group transition-colors">
       <div
-        className={`absolute top-lg left-lg w-10 h-10 rounded-lg flex items-center justify-center ${iconBgClass}`}
+        className={`absolute top-3 left-3 md:top-lg md:left-lg w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center ${iconBgClass}`}
       >
-        <img src={iconSrc} alt={iconAlt} className="w-6 h-6" />
+        <img src={iconSrc} alt={iconAlt} className="w-5 h-5 md:w-6 md:h-6" />
       </div>
-      <div className="absolute top-[80px] left-lg">
+      <div className="hidden md:block absolute top-[80px] left-lg">
         <p className="text-body-small-bold text-text-secondary">{title}</p>
       </div>
-      <div className="absolute top-[100px] left-lg right-lg min-w-0">
+      <div className="absolute top-[52px] md:top-[100px] left-3 md:left-lg right-3 md:right-lg min-w-0">
         {loading ? (
-          <div className="h-8 w-16 bg-white/5 animate-pulse rounded" />
+          <div className="h-6 md:h-8 w-10 md:w-16 bg-white/5 animate-pulse rounded" />
         ) : (
-          <div className="flex items-baseline gap-2">
-            <span className="text-heading-medium text-text-primary truncate">
+          <div className="flex items-baseline gap-1 md:gap-2">
+            <span className="text-heading-small md:text-heading-medium text-text-primary truncate">
               {value}
             </span>
             {subValue && (

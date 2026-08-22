@@ -9,6 +9,9 @@
  *
  * Usage from any controller / service:
  *   import { notifyUser, notifyLike, notifyComment, notifyMatch } from "../services/notification.service.js";
+ *
+ * Aggregated helpers (like reviewFeedback / follower patterns):
+ *   notifyLike, removeLikeFromNotification, buildLikeTitle
  */
 
 import { Notification, User } from "../modules/index.js";
@@ -80,7 +83,28 @@ export const notifyUser = async ({
 // ── Convenience Helpers ──────────────────────────────────────────────────────
 
 /**
- * Notify a post owner that someone liked their post.
+ * Build the title for an aggregated post-like notification.
+ * Exported for unit testing.
+ *
+ * @param {Array<{id: number, name: string}>} users - Ordered list of likers (oldest first)
+ * @returns {string}
+ */
+export const buildLikeTitle = (users) => {
+  if (users.length === 1) return `${users[0].name} liked your post`;
+  if (users.length === 2) return `${users[0].name} and ${users[1].name} liked your post`;
+  return `${users[0].name}, ${users[1].name}, and ${users.length - 2} other${users.length - 2 === 1 ? "" : "s"} liked your post`;
+};
+
+/**
+ * Aggregated post-like notification.
+ *
+ * If the post owner already has an unread like notification for the same post,
+ * the new liker is appended to it (title/content updated in-place).
+ * Otherwise a fresh notification is created.
+ *
+ * referenceType is always "PostLike" so the notification can be found
+ * regardless of the underlying post type. The actual postType is stored
+ * inside the content JSON so the frontend can still build deep-link URLs.
  *
  * @param {Object} params
  * @param {number} params.postOwnerId - The post author's user ID
@@ -88,7 +112,6 @@ export const notifyUser = async ({
  * @param {string} params.actorName   - Name of the liker
  * @param {number} params.postId      - Post ID
  * @param {string} params.postType    - Post type (normal, club-product, etc.)
- * @param {string} [params.postTitle] - Post title for context
  */
 export const notifyLike = async ({
   postOwnerId,
@@ -96,18 +119,79 @@ export const notifyLike = async ({
   actorName,
   postId,
   postType,
-  postTitle = "your post",
 }) => {
-  return notifyUser({
-    userId: postOwnerId,
-    actorId,
-    type: "Like",
-    title: `${actorName} liked your post`,
-    content: "",
-    referenceId: postId,
-    referenceType: postType,
-    dedupeKey: `like:${actorId}:${postType}:${postId}`,
-  });
+  try {
+    if (postOwnerId === actorId) return null;
+
+    const existing = await Notification.findOne({
+      where: { userId: postOwnerId, referenceType: "PostLike", referenceId: postId, isUnread: true },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if (existing) {
+      const data = JSON.parse(existing.content || "{}");
+      const list = data.users || [];
+      if (!list.some((u) => u.id === actorId)) {
+        list.push({ id: actorId, name: actorName });
+      }
+      data.users = list;
+      existing.content = JSON.stringify(data);
+      existing.title = buildLikeTitle(list);
+      existing.actorId = actorId;
+      await existing.save();
+      return existing;
+    }
+
+    const data = { postType, users: [{ id: actorId, name: actorName }] };
+    return notifyUser({
+      userId: postOwnerId,
+      actorId,
+      type: "Like",
+      title: buildLikeTitle(data.users),
+      content: JSON.stringify(data),
+      referenceId: postId,
+      referenceType: "PostLike",
+    });
+  } catch (error) {
+    logger.error(`notifyLike error: ${error.message}`);
+    return null;
+  }
+};
+
+/**
+ * Remove a liker from ALL aggregated post-like notifications (read and unread)
+ * for the given post. If any notification's user list becomes empty it is destroyed.
+ *
+ * @param {Object} params
+ * @param {number} params.postOwnerId - The post author's user ID
+ * @param {number} params.actorId     - The user who unliked
+ * @param {number} params.postId      - The post ID
+ */
+export const removeLikeFromNotification = async ({ postOwnerId, actorId, postId }) => {
+  try {
+    const notifications = await Notification.findAll({
+      where: { userId: postOwnerId, referenceType: "PostLike", referenceId: postId },
+    });
+    if (notifications.length === 0) return null;
+
+    for (const notification of notifications) {
+      const data = JSON.parse(notification.content || "{}");
+      const filtered = (data.users || []).filter((u) => u.id !== actorId);
+      if (filtered.length === 0) {
+        await notification.destroy();
+      } else {
+        data.users = filtered;
+        notification.content = JSON.stringify(data);
+        notification.title = buildLikeTitle(filtered);
+        notification.actorId = filtered[filtered.length - 1].id;
+        await notification.save();
+      }
+    }
+    return true;
+  } catch (error) {
+    logger.error(`removeLikeFromNotification error: ${error.message}`);
+    return null;
+  }
 };
 
 /**
