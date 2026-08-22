@@ -87,4 +87,8 @@ export const commentValidator = [
     .trim()
     .notEmpty().withMessage("Comment content is required")
     .isString().withMessage("Comment content must be a string"),
+  body("parentId")
+    .optional({ nullable: true })
+    .isInt({ min: 1 }).withMessage("parentId must be a positive integer"),
 ];
+

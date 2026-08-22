@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import StatsCard from '../../components/common/StatsCard';
 
 const HighlightStats = ({ counts }) => (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-lg">
+    <div className="grid grid-cols-3 gap-lg">
         <Link to="/new-announcements">
             <StatsCard iconSrc="/icon_new_announcement.svg" iconAlt="Announcements" iconBgClass="bg-yellow-500/20" title="New Announcements" value={counts.announcements} />
         </Link>

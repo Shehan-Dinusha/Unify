@@ -1,11 +1,11 @@
 import React from "react";
-import { Users, X, Check, Plus, Trash2, Unlink } from "lucide-react";
+import { Users, X, Check, Plus, Trash2 } from "lucide-react";
 import Button from "../../common/Button";
 import Card from "../../common/Card";
 import Avatar from "../../common/Avatar";
 
 /**
- * Generates compact subtitle matching Screenshot 3:
+ * Generates compact subtitle:
  * e.g. "Student • Information Technology", "Business • Food & Cafe"
  */
 const getAccountSubtitle = (user) => {
@@ -14,7 +14,11 @@ const getAccountSubtitle = (user) => {
     ? user.role.charAt(0).toUpperCase() + user.role.slice(1).toLowerCase()
     : "";
   if (role === "Student") {
-    const detail = user.faculty || user.department || user.subtitle || "Information Technology";
+    const detail =
+      user.faculty ||
+      user.department ||
+      user.subtitle ||
+      "Information Technology";
     return detail.toLowerCase().includes("student")
       ? detail
       : `Student • ${detail}`;
@@ -34,44 +38,23 @@ const getAccountSubtitle = (user) => {
 };
 
 /**
- * SwitchAccountModal — displays device sessions + server-side linked accounts.
- * Distinguishes "Remove from device" (local) from "Unlink account" (global).
+ * SwitchAccountModal — displays only locally saved device sessions.
+ * Source of truth: localStorage.savedAccounts (browser/device-specific).
+ * Accounts must be explicitly added on each browser/device via Add Account.
  */
 const SwitchAccountModal = ({
   savedAccounts = [],
-  serverLinkedAccounts = [],
   activeUserId,
   onClose,
   onSelectAccount,
   onAddAccount,
   onRemoveAccount,
-  onUnlinkAccount,
 }) => {
-  // Merge device saved sessions with server-discovered linked accounts
-  const accountMap = new Map();
-
-  // 1. Add device saved sessions
-  savedAccounts.forEach((acc) => {
-    accountMap.set(String(acc.id), {
-      id: acc.id,
-      user: acc.user,
-      hasLocalSession: true,
-    });
-  });
-
-  // 2. Add server linked accounts (if not already present locally)
-  serverLinkedAccounts.forEach((acc) => {
-    const key = String(acc.id);
-    if (!accountMap.has(key)) {
-      accountMap.set(key, {
-        id: acc.id,
-        user: acc,
-        hasLocalSession: false,
-      });
-    }
-  });
-
-  const mergedAccounts = Array.from(accountMap.values());
+  // Build account list solely from local device sessions
+  const accounts = savedAccounts.map((acc) => ({
+    id: acc.id,
+    user: acc.user || {},
+  }));
 
   return (
     <div
@@ -107,16 +90,16 @@ const SwitchAccountModal = ({
               Switch Account
             </h2>
             <p className="text-body-extra-small text-text-secondary">
-              Switch between linked accounts on your devices
+              Switch between your saved accounts on this device
             </p>
           </div>
         </div>
 
         {/* Account List — Compact Horizontal Cards */}
         <div className="flex flex-col gap-3 max-h-[340px] overflow-y-auto pr-1 mb-lg custom-scrollbar">
-          {mergedAccounts.map((acc) => {
+          {accounts.map((acc) => {
             const isActive = String(acc.id) === String(activeUserId);
-            const user = acc.user || {};
+            const user = acc.user;
             const displayName = user.name || "Unify User";
             const email = user.email || user.phone || "No contact info";
             const subtitle = getAccountSubtitle(user);
@@ -124,7 +107,7 @@ const SwitchAccountModal = ({
             return (
               <div
                 key={acc.id}
-                onClick={() => !isActive && onSelectAccount(acc.id, acc.hasLocalSession)}
+                onClick={() => !isActive && onSelectAccount(acc.id)}
                 className={`group w-full flex items-center justify-between p-3.5 md:p-4 rounded-2xl border transition-all duration-200 text-left ${
                   isActive
                     ? "bg-white/10 border-white/20 shadow-md"
@@ -160,46 +143,28 @@ const SwitchAccountModal = ({
                       <span>Active</span>
                     </div>
                   ) : (
-                    <>
-                      {/* Local Session Remove Icon */}
-                      {onRemoveAccount && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onRemoveAccount(acc.id);
-                          }}
-                          className="p-2 text-text-tertiary hover:text-amber-400 hover:bg-white/5 rounded-xl transition-colors"
-                          title="Remove session from this device only"
-                        >
-                          <Trash2 size={17} />
-                        </button>
-                      )}
-
-                      {/* Server Unlink Icon */}
-                      {onUnlinkAccount && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onUnlinkAccount(acc.id);
-                          }}
-                          className="p-2 text-text-tertiary hover:text-state-error hover:bg-state-error/10 rounded-xl transition-colors"
-                          title="Unlink account permanently from server"
-                        >
-                          <Unlink size={17} />
-                        </button>
-                      )}
-                    </>
+                    onRemoveAccount && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveAccount(acc.id);
+                        }}
+                        className="p-2 text-text-tertiary hover:text-amber-400 hover:bg-white/5 rounded-xl transition-colors"
+                        title="Remove saved session from this device"
+                      >
+                        <Trash2 size={17} />
+                      </button>
+                    )
                   )}
                 </div>
               </div>
             );
           })}
 
-          {mergedAccounts.length === 0 && (
+          {accounts.length === 0 && (
             <div className="text-center py-6 text-text-secondary text-body-small">
-              No linked accounts found.
+              No saved accounts on this device.
             </div>
           )}
         </div>
