@@ -115,6 +115,20 @@ const UnifiedSidebar = ({
     });
   }, []);
 
+  // Keep freshUser in sync with the active account after any auth change
+  // (login, logout, or account switch). Without this, freshUser retains the
+  // previous account's role and drives navigate("/profile?role=<stale-role>"),
+  // which loads the profile page in the wrong role context and causes 403s.
+  useEffect(() => {
+    const handleAuthChange = () => {
+      // switchAccount() updates localStorage.user synchronously before firing
+      // auth-changed, so getCurrentUser() already returns the new account here.
+      setFreshUser(getCurrentUser());
+    };
+    window.addEventListener("auth-changed", handleAuthChange);
+    return () => window.removeEventListener("auth-changed", handleAuthChange);
+  }, []);
+
   // Get user from auth or fallback to prop
   const authUser = freshUser || getCurrentUser();
   const user = authUser || propUser || { name: "Guest", role: "student" };
