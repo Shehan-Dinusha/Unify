@@ -244,7 +244,7 @@ const StudentFileRecord = ({ file, onClick, onShare }) => {
 /**
  * List layout for the student dashboard showing a styled record list
  */
-const StudentMaterialList = ({ categoryName = "Notes", files = [] }) => {
+const StudentMaterialList = ({ categoryName = "Notes", files = [], isLoadingFiles = false }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [modalType, setModalType] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
@@ -297,7 +297,22 @@ const StudentMaterialList = ({ categoryName = "Notes", files = [] }) => {
             </div>
           </div>
           <div className="w-full flex flex-col justify-start items-start gap-3">
-            {files.length > 0 ? (
+            {isLoadingFiles ? (
+              <div className="flex flex-col w-full gap-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="w-full p-3 sm:p-3.5 bg-slate-800 rounded-xl outline outline-1 outline-white/5 flex items-center gap-3.5"
+                  >
+                    <div className="w-11 h-11 rounded-lg bg-white/5 animate-pulse shrink-0" />
+                    <div className="flex flex-col gap-1.5 min-w-0">
+                      <div className="h-3 w-36 bg-white/5 animate-pulse rounded" />
+                      <div className="h-2.5 w-16 bg-white/5 animate-pulse rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : files.length > 0 ? (
               files.map((file, idx) => (
                 <StudentFileRecord
                   key={file.id || idx}

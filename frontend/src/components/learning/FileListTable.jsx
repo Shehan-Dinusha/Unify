@@ -269,7 +269,7 @@ const FileListTable = ({
             </div>
           );
         })}
-        {isLoadingFiles && files.length === 0 && (
+        {isLoadingFiles && (
           <div className="flex flex-col">
             {[1, 2, 3].map((i) => (
               <div
