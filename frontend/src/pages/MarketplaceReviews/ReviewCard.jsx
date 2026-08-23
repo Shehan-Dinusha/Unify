@@ -139,16 +139,19 @@ const ReviewCard = ({ review, onDelete, onFeedback }) => {
             className="w-9 h-9 rounded-full object-cover shrink-0"
           />
           <div className="flex-1 bg-gray-800 rounded-tr-lg rounded-bl-lg rounded-br-lg p-3 outline outline-1 outline-gray-800 flex flex-col gap-1">
-            <div className="flex justify-between items-center h-6">
-              <div className="flex items-center gap-2">
-                <span className="text-white text-xs font-bold font-inter leading-5">
+            <div className="flex justify-between items-center gap-2 min-h-6">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <span
+                  title={review.ownerReply.author.name}
+                  className="text-white text-xs font-bold font-inter leading-5 truncate"
+                >
                   {review.ownerReply.author.name}
                 </span>
-                <span className="px-1.5 py-0.5 bg-blue-600/10 text-blue-600 text-xs font-bold font-inter rounded leading-none">
+                <span className="px-1.5 py-0.5 bg-blue-600/10 text-blue-600 text-xs font-bold font-inter rounded leading-none shrink-0">
                   Owner
                 </span>
               </div>
-              <span className="text-gray-400 text-xs font-normal font-inter leading-5">
+              <span className="text-gray-400 text-xs font-normal font-inter leading-5 shrink-0 whitespace-nowrap">
                 {review.ownerReply.createdAt}
               </span>
             </div>

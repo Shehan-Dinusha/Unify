@@ -136,25 +136,32 @@ export const useBatchRepLearning = () => {
   useEffect(() => {
     if (!activeModuleId || !selectedCategory) {
       setCategoryFiles([]);
+      setIsLoadingFiles(false);
       return;
     }
 
+    let ignore = false;
     setIsLoadingFiles(true);
+    setCategoryFiles([]);
     const fetchFiles = async () => {
       try {
         const filesRes = await learningService.getMaterialsByCategory(
           activeModuleId,
           selectedCategory.id,
         );
+        if (ignore) return;
         setCategoryFiles(filesRes.data || []);
       } catch (err) {
-        setCategoryFiles([]);
+        if (!ignore) setCategoryFiles([]);
       } finally {
-        setIsLoadingFiles(false);
+        if (!ignore) setIsLoadingFiles(false);
       }
     };
 
     fetchFiles();
+    return () => {
+      ignore = true;
+    };
   }, [activeModuleId, selectedCategory]);
 
   const refreshActiveModule = async () => {
