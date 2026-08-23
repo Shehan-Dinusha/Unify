@@ -191,6 +191,12 @@ export const refreshCurrentUser = async () => {
     const currentUser = getCurrentUser();
     if (!currentUser) return null;
 
+    // Capture the userId before the async fetch so we can detect whether
+    // switchAccount() ran while the request was in-flight. If it did, the
+    // fetched profile belongs to the OLD account — writing it to localStorage
+    // would restore a stale user object and cause 403s on role-restricted
+    // endpoints (e.g. /profiles/club/me called with a Student token).
+    const snapshotId = currentUser.id;
     const role = currentUser.role?.toLowerCase();
 
     // Admins do not have a specific profile endpoint
@@ -199,6 +205,13 @@ export const refreshCurrentUser = async () => {
     }
 
     const profile = await getMyProfile(role);
+
+    // After the await, verify that the active account has not changed.
+    // If a switch happened while this fetch was in-flight, discard silently.
+    const activeUser = getCurrentUser();
+    if (!activeUser || String(activeUser.id) !== String(snapshotId)) {
+      return null;
+    }
 
     const updatedUser = {
       id: currentUser.id,
