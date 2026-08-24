@@ -135,33 +135,6 @@ const BoardingOverlay = ({ post, onClose }) => {
                         </p>
                     </div>
 
-                    <div className="h-[1px] bg-white/5 w-full"></div>
-
-                    {/* Host Section */}
-                    <div className="flex items-center justify-between p-2 hover:bg-white/5 rounded-2xl transition-colors cursor-pointer group">
-                        <div className="flex items-center gap-4">
-                            <div className="relative">
-                                <img
-                                    src={getAvatarUrl(post.host?.avatar || post.author?.avatar, post.host?.name || post.author?.name)}
-                                    alt={post.host?.name || post.author?.name || post.user}
-                                    className="w-12 h-12 rounded-full border-2 border-primary-blue/30 object-cover"
-                                    onError={(e) => { e.target.onerror = null; e.target.src = getAvatarUrl(null, post.host?.name || post.author?.name); }}
-                                />
-                                {post.host?.verified && (
-                                    <div className="absolute -bottom-1 -right-1 bg-primary-blue rounded-full p-0.5 border-2 border-[#12202E]">
-                                        <svg viewBox="0 0 24 24" className="w-2 h-2 fill-white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <h4 className="text-body-medium-bold text-text-primary">{post.host?.name || post.user}</h4>
-                                {/*<p className="text-body-extra-small text-text-tertiary">
-                                    Joined {post.host?.joined || "September 2023"} • {post.host?.verified ? "Verified Owner" : "Owner"}
-                                </p>*/}
-                            </div>
-                        </div>
-                        <ChevronRight size={20} className="text-text-tertiary group-hover:text-text-primary transform group-hover:translate-x-1 transition-all" />
-                    </div>
                 </div>
             </div>
         </div>
