@@ -14,6 +14,7 @@ import {
   Home,
   MessageSquare,
   Trash2,
+  BarChart2,
 } from "lucide-react";
 import Card from "../common/Card";
 import newsfeedService from "../../services/newsfeedService";
@@ -466,34 +467,52 @@ const PostCard = ({
         >
           {isManagementMode ? (
             <>
-              {/* Boost */}
-              <button
-                onClick={() =>
-                  !isPromoted &&
-                  reportNavigate("/business/boost-post", {
-                    state: { postId: postId, postType: postType },
-                  })
-                }
-                disabled={isPromoted}
-                className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
-                  isPromoted
-                    ? "opacity-40 cursor-not-allowed"
-                    : "hover:bg-white/5 hover:text-[#FBBF24]"
-                }`}
-              >
-                <div className="flex items-center gap-1.5">
-                  <Zap
-                    size={20}
-                    className={
-                      !isPromoted ? "group-hover:fill-[#FBBF24]/20" : ""
-                    }
-                    strokeWidth={1.8}
-                  />
-                </div>
-                <span className="text-[11px]">
-                  {isPromoted ? "Active Boost" : "Boost"}
-                </span>
-              </button>
+              {/* Boost / Analytics */}
+              {isPromoted && boostMeta?.analyticsAccess ? (
+                <button
+                  onClick={() =>
+                    reportNavigate(`/boost-analytics/${boostMeta.purchaseId}`)
+                  }
+                  className="flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group hover:bg-white/5 hover:text-primary-blue"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <BarChart2
+                      size={20}
+                      className="group-hover:text-primary-blue"
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <span className="text-[11px]">Analytics</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() =>
+                    !isPromoted &&
+                    reportNavigate("/business/boost-post", {
+                      state: { postId: postId, postType: postType },
+                    })
+                  }
+                  disabled={isPromoted}
+                  className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
+                    isPromoted
+                      ? "opacity-40 cursor-not-allowed"
+                      : "hover:bg-white/5 hover:text-[#FBBF24]"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Zap
+                      size={20}
+                      className={
+                        !isPromoted ? "group-hover:fill-[#FBBF24]/20" : ""
+                      }
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <span className="text-[11px]">
+                    {isPromoted ? "Active Boost" : "Boost"}
+                  </span>
+                </button>
+              )}
 
               {/* Delete */}
               <button
