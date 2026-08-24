@@ -14,6 +14,7 @@
  *   notifyLike, removeLikeFromNotification, buildLikeTitle
  */
 
+import { Op } from "sequelize";
 import { Notification, User } from "../modules/index.js";
 import logger from "../utils/logger.js";
 
@@ -506,7 +507,12 @@ export const getUserNotifications = async (userId, { filter = "all", limit = 50,
   if (filter === "unread") {
     where.isUnread = true;
   } else if (filter === "match") {
-    where.type = "Match";
+    // Include auto-match notifications (type='Match') AND
+    // claim/found-item notifications sent by claimItem controller (referenceType='LostAndFound')
+    where[Op.or] = [
+      { type: "Match" },
+      { referenceType: "LostAndFound" },
+    ];
   }
 
   const { count, rows } = await Notification.findAndCountAll({
