@@ -16,7 +16,7 @@ import {
 
 const router = Router();
 
-// All chat routes require authentication and Student/Club role
+// All chat routes require authentication and Student/Club role only
 router.use(protect, authorize("Student", "Club"));
 
 // GET /api/v1/chat/conversations — List user's conversations
