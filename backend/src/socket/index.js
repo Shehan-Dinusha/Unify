@@ -54,7 +54,7 @@ export const initializeSocket = (httpServer) => {
 
       // Only Students and Clubs can use chat
       if (!["Student", "Club"].includes(user.role)) {
-        return next(new Error("Authorization error: Chat is not available for your role"));
+        return next(new Error("Authorization error: Chat is only available for Students and Clubs"));
       }
 
       // Attach user to socket (never trust frontend user IDs)
