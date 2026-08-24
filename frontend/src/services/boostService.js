@@ -225,18 +225,7 @@ export const getCampaignById = async (id) => {
   }
 };
 
-/**
- * Get campaign analytics (performance, funnel, reach data).
- * @param {string} id
- */
-export const getCampaignAnalytics = async (id) => {
-  try {
-    const response = await api.get(`/boosts/campaigns/${encodeURIComponent(id)}/analytics`);
-    return response.data;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }
-};
+
 
 /**
  * Get interactions for a specific campaign.
@@ -245,6 +234,19 @@ export const getCampaignAnalytics = async (id) => {
 export const getCampaignInteractions = async (id) => {
   try {
     const response = await api.get(`/boosts/campaigns/${encodeURIComponent(id)}/interactions`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+};
+
+/**
+ * Get boost analytics by BoostPurchase ID (for business users viewing from My Posts).
+ * @param {number|string} purchaseId
+ */
+export const getBoostAnalyticsByPurchase = async (purchaseId) => {
+  try {
+    const response = await api.get(`/boosts/purchase/${encodeURIComponent(purchaseId)}/analytics`);
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
