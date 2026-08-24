@@ -10,7 +10,6 @@ export * from "./createCampaign.controller.js";
 export * from "./getCampaigns.controller.js";
 export * from "./getCampaignById.controller.js";
 export * from "./updateCampaignStatus.controller.js";
-export * from "./getCampaignAnalytics.controller.js";
 export * from "./getBoostStatistics.controller.js";
 export * from "./recordInteraction.controller.js";
 export * from "./getInteractions.controller.js";
@@ -18,4 +17,5 @@ export * from "./handlePaymentWebhook.controller.js";
 export * from "./getAdminStats.controller.js";
 export * from "./createBoostCheckoutSession.controller.js";
 export * from "./confirmBoostPayment.controller.js";
+export * from "./getBoostAnalyticsByPurchase.controller.js";
 
