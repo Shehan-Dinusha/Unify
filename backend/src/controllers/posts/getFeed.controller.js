@@ -317,6 +317,7 @@ export const getFeed = async (req, res) => {
           isPromoted: !!boostMeta,
           boostMeta: boostMeta
             ? {
+                purchaseId: boostMeta.purchaseId,
                 packageName: boostMeta.packageName,
                 packageBadge: boostMeta.packageBadge,
                 highlightStyle: boostMeta.highlightStyle,
