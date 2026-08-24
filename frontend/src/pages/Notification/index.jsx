@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, X, Loader2 } from 'lucide-react';
+import { Search, X, Loader2, CheckCheck } from 'lucide-react';
 import MainLayout from '../../components/layout/MainLayout';
 import { useNotification } from './useNotification';
 import NotificationCard from './NotificationCard';
@@ -10,6 +10,7 @@ const Notification = () => {
     searchInputRef, showSearch, setShowSearch, searchQuery, setSearchQuery,
     unreadCount, user, fetchNotifications,
     handleFilterChange, handleMarkRead, handleNavigateToPost,
+    handleMarkAllRead, markingAllRead,
   } = useNotification();
 
   const headerRight = (
@@ -32,6 +33,8 @@ const Notification = () => {
           )}
         </div>
       )}
+
+
       <button
         onClick={() => { setShowSearch(!showSearch); if (showSearch) setSearchQuery(''); }}
         className={`p-2 flex items-center justify-center shrink-0 rounded-full transition-colors ${
@@ -67,6 +70,21 @@ const Notification = () => {
               )}
             </button>
           ))}
+
+          {/* Mark all as read — pushed to the far right of the filter row */}
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllRead}
+              disabled={markingAllRead}
+              title="Mark all as read"
+              className="ml-auto shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold text-primary-blue border border-primary-blue/30 bg-primary-blue/10 hover:bg-primary-blue/20 active:scale-95 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              {markingAllRead
+                ? <Loader2 size={14} className="animate-spin" />
+                : <CheckCheck size={14} />}
+              <span>{markingAllRead ? 'Marking…' : 'Mark all read'}</span>
+            </button>
+          )}
         </div>
 
         <div className="flex flex-col gap-3 sm:gap-4">

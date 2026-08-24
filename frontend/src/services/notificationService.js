@@ -41,6 +41,19 @@ const notificationService = {
       throw error.response?.data || error.message;
     }
   },
+
+  /**
+   * Mark all notifications as read
+   * PATCH /notifications/read-all
+   */
+  markAllAsRead: async () => {
+    try {
+      const response = await api.patch("/notifications/read-all");
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
 
 export default notificationService;
