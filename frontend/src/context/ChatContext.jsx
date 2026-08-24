@@ -7,7 +7,7 @@ import React, {
   useRef,
 } from "react";
 import chatService from "../services/chatService";
-import { isAuthenticated, getCurrentUser } from "../services/authService";
+import { isAuthenticated, getCurrentUser, logout } from "../services/authService";
 import { io } from "socket.io-client";
 
 const ChatContext = createContext({
@@ -88,6 +88,12 @@ export const ChatProvider = ({ children }) => {
 
     newSocket.on("chat:read_receipt", () => {
       refreshUnreadCount();
+    });
+
+    // ── Admin force-logout: clear session and redirect to login ──────
+    newSocket.on("auth:force_logout", () => {
+      logout().catch(() => {});
+      window.location.href = "/login";
     });
 
     socketRef.current = newSocket;
