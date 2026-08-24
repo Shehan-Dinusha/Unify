@@ -142,12 +142,14 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick,
         setPostComments(prev => [...prev, newComment]);
     };
 
+    const isClickable = onCardClick && post.postType !== 'normal';
+
     return (
         <Card 
             variant="card" 
             padding="p-0" 
-            className={`overflow-hidden transition-all duration-200 ${onCardClick ? "cursor-pointer hover:border-white/15 hover:bg-white/[0.02]" : ""}`}
-            onClick={onCardClick}
+            className={`overflow-hidden transition-all duration-200 ${isClickable ? "cursor-pointer hover:border-white/15 hover:bg-white/[0.02]" : ""}`}
+            onClick={isClickable ? onCardClick : undefined}
         >
             {/* Image */}
             <div className="relative w-full bg-white/5 flex justify-center items-center min-h-[200px] max-h-[500px] overflow-hidden">
@@ -260,7 +262,7 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick,
                 )}
 
                 {/* Buy now */}
-                {!isOwner && (
+                {!isOwner && post.postType !== 'normal' && (
                     <div className="mt-lg pt-md border-t border-white/10 flex items-end justify-end">
                         <Button
                             variant="primary"
