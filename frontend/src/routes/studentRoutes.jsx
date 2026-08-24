@@ -57,7 +57,6 @@ export const studentRoutes = [
     ),
     children: [
       { path: "/news-feed", element: <NewsFeed /> },
-      { path: "/messages", element: <ChatPage /> },
       { path: "/profile/reviews", element: <MyReviewHistory /> },
       {
         path: "/marketplace/:targetId/reviews",
@@ -69,6 +68,15 @@ export const studentRoutes = [
       { path: "/new-announcements", element: <NewAnnouncements /> },
       // Saved posts — accessible to all roles
       { path: "/my-saved-posts", element: <MySavedPosts /> },
+    ],
+  },
+  // 2b. CHAT — Accessible to Students and Clubs
+  {
+    element: (
+      <ProtectedRoute allowedRoles={["Student", "Club"]} requireVerified />
+    ),
+    children: [
+      { path: "/messages", element: <ChatPage /> },
     ],
   },
   // 3. NOTIFICATIONS (Accessible to all, including unverified clubs)
