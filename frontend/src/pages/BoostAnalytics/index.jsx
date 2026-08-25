@@ -38,7 +38,7 @@ const BoostAnalytics = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await getBoostAnalyticsByPurchase(purchaseId);
+        const res = await getBoostAnalyticsByPurchase(purchaseId, timeRange);
         if (!res?.data) throw new Error('No analytics data returned.');
         const data = res.data;
         // Synthesize a campaign-like object for the header card
@@ -50,9 +50,11 @@ const BoostAnalytics = () => {
           image: null,
           postedDate: data.purchaseDate ? new Date(data.purchaseDate).toLocaleDateString() : '—',
           createdAt: data.purchaseDate,
+          postId: data.postId,
+          postType: data.postType || null,
         });
         setAnalytics({ ...defaultAnalytics, ...data });
-        setInteractions([]); // interactions aren't fetched here yet
+        setInteractions(data.interactions || []);
       } catch (err) {
         setError(err.message || 'Failed to load analytics. Please check the backend.');
       } finally {
@@ -60,7 +62,7 @@ const BoostAnalytics = () => {
       }
     };
     if (purchaseId) loadData();
-  }, [purchaseId]);
+  }, [purchaseId, timeRange]);
 
   const filteredInteractions = searchQuery.trim()
     ? interactions.filter(
@@ -121,7 +123,10 @@ const BoostAnalytics = () => {
               <h2 className="text-body-large-bold md:text-heading-small text-text-primary font-inter mb-1">{campaign.postTitle || campaign.name || 'Boost Campaign'}</h2>
               <p className="text-body-small text-text-secondary font-inter leading-relaxed max-w-2xl">{campaign.description || 'No description available.'}</p>
             </div>
-            <button className="h-10 px-md rounded-2xl border border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center gap-2 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200 flex-shrink-0">
+            <button
+              onClick={() => navigate('/my-posts', { state: { highlightPostId: campaign.postId, postType: campaign.postType } })}
+              className="h-10 px-md rounded-2xl border border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center gap-2 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200 flex-shrink-0"
+            >
               <Pencil size={14} />
               Edit Post
             </button>
