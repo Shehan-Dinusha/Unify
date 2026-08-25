@@ -160,6 +160,23 @@ export const useNotification = () => {
     }
   };
 
+  const [markingAllRead, setMarkingAllRead] = useState(false);
+
+  const handleMarkAllRead = async () => {
+    if (markingAllRead) return;
+    try {
+      setMarkingAllRead(true);
+      await notificationService.markAllAsRead();
+      // Optimistically update local state
+      setNotifications((prev) => prev.map((n) => ({ ...n, isUnread: false })));
+      refreshUnreadCount();
+    } catch (err) {
+      // silently fail — UI stays consistent
+    } finally {
+      setMarkingAllRead(false);
+    }
+  };
+
   const handleNavigateToPost = (referenceId, referenceType, notification) => {
     if (referenceType === 'LostAndFound') {
       navigate(`/lost-and-found?view=detail&id=${referenceId}`);
@@ -229,6 +246,8 @@ export const useNotification = () => {
     fetchNotifications,
     handleFilterChange,
     handleMarkRead,
+    handleMarkAllRead,
+    markingAllRead,
     handleNavigateToPost,
   };
 };
