@@ -6,9 +6,9 @@ const ConversionFunnel = ({ funnel }) => {
   const maxBar = impressions || 1;
 
   const items = [
-    { label: 'Impressions', value: (impressions || 0).toLocaleString(), rate: null, width: 100, color: 'bg-white/10' },
+    { label: 'Impressions', value: (impressions || 0).toLocaleString(), rate: null, width: 100, color: 'bg-primary-blue' },
     { label: 'Clicks', value: (clicks || 0).toLocaleString(), rate: clicksRate, width: (clicks / maxBar) * 100, color: 'bg-primary-blue' },
-    { label: 'Purchase', value: (purchases || 0).toLocaleString(), rate: purchasesRate, width: (purchases / maxBar) * 100 + 15, color: 'bg-state-warning' },
+    { label: 'Purchase', value: (purchases || 0).toLocaleString(), rate: purchasesRate, width: (purchases / maxBar) * 100, color: 'bg-primary-blue' },
   ];
 
   return (

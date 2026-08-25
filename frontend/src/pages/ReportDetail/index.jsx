@@ -304,7 +304,6 @@ const ReportDetail = () => {
                             <p className="text-body-small text-text-secondary">{r.offender.handle} • ID: {r.offender.id}</p>
                             <div className="flex items-center gap-3 mt-4">
                                 <Button variant="outline" size="small" onClick={() => navigate(r.offender.role === "Business" ? `/active-businesses/${r.offender.id}` : `/student-management/${r.offender.id}`)}>View Profile</Button>
-                                <Button variant="outline" size="small" onClick={() => navigate('/messages')}>Message</Button>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3 mb-5">

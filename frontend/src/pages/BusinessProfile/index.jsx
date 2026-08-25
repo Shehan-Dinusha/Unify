@@ -10,7 +10,6 @@ import BusinessStatsRow from './BusinessStatsRow';
 import BusinessInfoSection from './BusinessInfoSection';
 import BusinessSentimentCard from './BusinessSentimentCard';
 import SuspendModal from './SuspendModal';
-import MessageModal from './MessageModal';
 import ActionSuccessModal from './ActionSuccessModal';
 
 const BusinessProfile = () => {
@@ -71,7 +70,6 @@ const BusinessProfile = () => {
       <BusinessHeaderCard
         biz={biz}
         onSuspend={() => openModal('suspend')}
-        onMessage={() => openModal('message')}
       />
 
       <BusinessStatsRow stats={statsArray} />
@@ -95,13 +93,6 @@ const BusinessProfile = () => {
         onDetailChange={setSuspendDetail}
         onEmailToggle={() => setSendEmail(!sendEmail)}
         onConfirm={confirmAction}
-      />
-
-      <MessageModal
-        open={modal === 'message'}
-        biz={biz}
-        onClose={closeModal}
-        onSend={() => confirmAction('message')}
       />
 
       <ActionSuccessModal

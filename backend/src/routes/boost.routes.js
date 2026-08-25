@@ -122,10 +122,14 @@ router.put(
 
 // ── Campaign Analytics ───────────────────────────────────────────────────────
 
-//Get campaign performance analytics
+
+// ── Business User Purchase Analytics ─────────────────────────────────────────
+
+//Get boost analytics by BoostPurchase ID (used by business users from MyPosts)
 router.get(
-  '/campaigns/:id/analytics',
-  BoostController.getCampaignAnalytics
+  '/purchase/:purchaseId/analytics',
+  protect,
+  BoostController.getBoostAnalyticsByPurchase
 );
 
 // ── Interactions ─────────────────────────────────────────────────────────────
@@ -134,6 +138,12 @@ router.get(
 router.post(
   '/campaigns/:id/interactions',
   BoostController.recordInteraction
+);
+
+//Track lightweight metrics (impressions, clicks)
+router.post(
+  '/track',
+  BoostController.trackMetrics
 );
 
 //Get interactions for a campaign

@@ -14,6 +14,7 @@ import {
   Home,
   MessageSquare,
   Trash2,
+  BarChart2,
   CornerDownRight,
   ChevronDown,
   ChevronUp,
@@ -22,6 +23,7 @@ import Card from "../common/Card";
 import Overlay from "../common/Overlay";
 import newsfeedService from "../../services/newsfeedService";
 import postService from "../../services/postService";
+import boostService from "../../services/boostService";
 import { formatTimeAgo } from "../../utils/formatters";
 
 /* ─── Avatar helper ──────────────────────────────────────────── */
@@ -103,7 +105,9 @@ const ReplyCard = ({ reply }) => (
         <span className="text-[12px] font-semibold text-text-primary">
           {reply.user?.name || reply.user || "User"}
         </span>
-        <span className="text-[10px] text-text-tertiary">{reply.time || "just now"}</span>
+        <span className="text-[10px] text-text-tertiary">
+          {reply.time || "just now"}
+        </span>
       </div>
       <p className="text-[12px] text-text-secondary leading-relaxed whitespace-pre-wrap break-words">
         {reply.content || reply.text}
@@ -129,7 +133,10 @@ const CommentItem = ({ comment, currentUser, onAddReply }) => {
       {/* Root comment */}
       <div className="flex gap-3 items-start">
         <img
-          src={getAvatar(comment.avatar, comment.user?.name || comment.user || "User")}
+          src={getAvatar(
+            comment.avatar,
+            comment.user?.name || comment.user || "User",
+          )}
           alt={comment.user?.name || comment.user || "User"}
           className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5 object-cover"
         />
@@ -138,7 +145,9 @@ const CommentItem = ({ comment, currentUser, onAddReply }) => {
             <span className="text-[13px] font-semibold text-text-primary">
               {comment.user?.name || comment.user || "User"}
             </span>
-            <span className="text-[11px] text-text-tertiary">{comment.time || "just now"}</span>
+            <span className="text-[11px] text-text-tertiary">
+              {comment.time || "just now"}
+            </span>
           </div>
           <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-wrap break-words">
             {comment.content || comment.text}
@@ -163,12 +172,14 @@ const CommentItem = ({ comment, currentUser, onAddReply }) => {
             {showReplies ? (
               <>
                 <ChevronUp size={12} strokeWidth={2} />
-                Hide {replies.length} {replies.length === 1 ? "reply" : "replies"}
+                Hide {replies.length}{" "}
+                {replies.length === 1 ? "reply" : "replies"}
               </>
             ) : (
               <>
                 <ChevronDown size={12} strokeWidth={2} />
-                Show {replies.length} {replies.length === 1 ? "reply" : "replies"}
+                Show {replies.length}{" "}
+                {replies.length === 1 ? "reply" : "replies"}
               </>
             )}
           </button>
@@ -316,6 +327,7 @@ const PostCard = ({
   const [imgFailed, setImgFailed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const currentUser = getCurrentUser();
+  const cardRef = useRef(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const DESCRIPTION_LIMIT = 250;
@@ -342,6 +354,17 @@ const PostCard = ({
 
     try {
       await newsfeedService.toggleLike(postType, postId);
+      if (!wasLiked && isPromoted && postId) {
+        // Track the like for boost analytics
+        boostService.trackBoostMetrics({
+          postId,
+          postType,
+          action: "Like",
+          content: "Liked the post",
+          impact: "Medium",
+          userId: currentUser?.id || currentUser?.userId,
+        });
+      }
     } catch (err) {
       // Revert on failure
       setIsLiked(wasLiked);
@@ -419,12 +442,17 @@ const PostCard = ({
         prev.map((c) =>
           c.id === parentId
             ? { ...c, replies: [...(c.replies || []), tempReply] }
-            : c
-        )
+            : c,
+        ),
       );
 
       try {
-        const data = await newsfeedService.addComment(postType, postId, text, parentId);
+        const data = await newsfeedService.addComment(
+          postType,
+          postId,
+          text,
+          parentId,
+        );
         if (data.comment) {
           const realReply = {
             id: data.comment.id,
@@ -440,11 +468,11 @@ const PostCard = ({
                 ? {
                     ...c,
                     replies: (c.replies || []).map((r) =>
-                      r.id === tempReply.id ? realReply : r
+                      r.id === tempReply.id ? realReply : r,
                     ),
                   }
-                : c
-            )
+                : c,
+            ),
           );
         }
       } catch (err) {
@@ -452,10 +480,27 @@ const PostCard = ({
         setPostComments((prev) =>
           prev.map((c) =>
             c.id === parentId
-              ? { ...c, replies: (c.replies || []).filter((r) => r.id !== tempReply.id) }
-              : c
-          )
+              ? {
+                  ...c,
+                  replies: (c.replies || []).filter(
+                    (r) => r.id !== tempReply.id,
+                  ),
+                }
+              : c,
+          ),
         );
+
+        if (isPromoted && postId) {
+          // Track the comment for boost analytics
+          boostService.trackBoostMetrics({
+            postId,
+            postType,
+            action: "Comment",
+            content: text.substring(0, 500),
+            impact: "High",
+            userId: currentUser?.id || currentUser?.userId,
+          });
+        }
       }
     } else {
       // ── Optimistic root comment ───────────────────────────────
@@ -473,7 +518,12 @@ const PostCard = ({
       setCommentCount((c) => c + 1);
 
       try {
-        const data = await newsfeedService.addComment(postType, postId, text, null);
+        const data = await newsfeedService.addComment(
+          postType,
+          postId,
+          text,
+          null,
+        );
         if (data.comment) {
           const realComment = {
             id: data.comment.id,
@@ -486,7 +536,7 @@ const PostCard = ({
             replies: [],
           };
           setPostComments((prev) =>
-            prev.map((c) => (c.id === tempComment.id ? realComment : c))
+            prev.map((c) => (c.id === tempComment.id ? realComment : c)),
           );
         }
       } catch (err) {
@@ -516,7 +566,6 @@ const PostCard = ({
     if (profileId) {
       reportNavigate(`/profile/${profileId}`);
     } else {
-
     }
   };
 
@@ -555,10 +604,55 @@ const PostCard = ({
     }
   })();
 
+  // Impression tracking for promoted posts
+  useEffect(() => {
+    if (!isPromoted || !postId) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          // Track impression
+          boostService.trackBoostMetrics({
+            postId,
+            postType,
+            action: "impression",
+          });
+          // Stop observing once tracked
+          if (cardRef.current) {
+            observer.unobserve(cardRef.current);
+          }
+        }
+      },
+      { threshold: 0.5 }, // 50% of the post must be visible
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, [isPromoted, postId, postType]);
+
+  const handleTrackClick = () => {
+    if (isPromoted && postId) {
+      boostService.trackBoostMetrics({
+        postId,
+        postType,
+        action: "click",
+      });
+    }
+  };
+
   return (
     <Card
+      ref={cardRef}
       variant="card"
       padding="p-0"
+      onClick={handleTrackClick}
       className={
         "w-full overflow-hidden transition-all duration-300 !border-0 " +
         boostStyles.borderClass
@@ -684,34 +778,66 @@ const PostCard = ({
         >
           {isManagementMode ? (
             <>
-              {/* Boost */}
-              <button
-                onClick={() =>
-                  !isPromoted &&
-                  reportNavigate("/business/boost-post", {
-                    state: { postId: postId, postType: postType },
-                  })
-                }
-                disabled={isPromoted}
-                className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
-                  isPromoted
-                    ? "opacity-40 cursor-not-allowed"
-                    : "hover:bg-white/5 hover:text-[#FBBF24]"
-                }`}
-              >
-                <div className="flex items-center gap-1.5">
-                  <Zap
-                    size={20}
-                    className={
-                      !isPromoted ? "group-hover:fill-[#FBBF24]/20" : ""
+              {/* Boost / Analytics */}
+              {isPromoted && boostMeta?.analyticsAccess ? (
+                <button
+                  onClick={() => {
+                    if (boostMeta?.purchaseId) {
+                      reportNavigate(
+                        `/boost-analytics/${boostMeta.purchaseId}`,
+                      );
                     }
-                    strokeWidth={1.8}
-                  />
-                </div>
-                <span className="text-[11px]">
-                  {isPromoted ? "Active Boost" : "Boost"}
-                </span>
-              </button>
+                  }}
+                  disabled={!boostMeta?.purchaseId}
+                  title={
+                    !boostMeta?.purchaseId
+                      ? "Analytics not available yet"
+                      : "View Analytics"
+                  }
+                  className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
+                    boostMeta?.purchaseId
+                      ? "hover:bg-white/5 hover:text-primary-blue"
+                      : "opacity-40 cursor-not-allowed"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <BarChart2
+                      size={20}
+                      className="group-hover:text-primary-blue"
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <span className="text-[11px]">Analytics</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() =>
+                    !isPromoted &&
+                    reportNavigate("/business/boost-post", {
+                      state: { postId: postId, postType: postType },
+                    })
+                  }
+                  disabled={isPromoted}
+                  className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
+                    isPromoted
+                      ? "opacity-40 cursor-not-allowed"
+                      : "hover:bg-white/5 hover:text-[#FBBF24]"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Zap
+                      size={20}
+                      className={
+                        !isPromoted ? "group-hover:fill-[#FBBF24]/20" : ""
+                      }
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <span className="text-[11px]">
+                    {isPromoted ? "Active Boost" : "Boost"}
+                  </span>
+                </button>
+              )}
 
               {/* Delete */}
               <button
@@ -810,7 +936,11 @@ const PostCard = ({
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <Overlay open={showDeleteModal} onClose={() => setShowDeleteModal(false)} zIndex="z-[200]">
+        <Overlay
+          open={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          zIndex="z-[200]"
+        >
           <Card variant="modal" padding="p-0" className="w-full max-w-sm">
             <div className="p-6 md:p-8 flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-full bg-state-error/10 flex items-center justify-center mb-4">
@@ -818,7 +948,8 @@ const PostCard = ({
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Delete Post</h2>
               <p className="text-text-secondary text-sm leading-relaxed mb-6">
-                Are you sure you want to delete this post? This action cannot be undone.
+                Are you sure you want to delete this post? This action cannot be
+                undone.
               </p>
               <div className="flex w-full gap-3">
                 <button

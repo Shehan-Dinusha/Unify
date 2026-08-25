@@ -38,6 +38,11 @@ const BoostPurchase = sequelize.define(
       allowNull: true,
       comment: "The post being boosted",
     },
+    postType: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      comment: "The post type: normal, club-product, club-event, boarding",
+    },
     purchaseDate: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -53,6 +58,21 @@ const BoostPurchase = sequelize.define(
       type: DataTypes.ENUM("active", "expired", "used"),
       allowNull: false,
       defaultValue: "active",
+    },
+    impressions: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      comment: "Total views tracked by IntersectionObserver",
+    },
+    clicks: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      comment: "Total clicks on the boosted post",
+    },
+    salesAttributed: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0,
+      comment: "Total order value generated while active",
     },
     transactionId: {
       type: DataTypes.STRING(100),
