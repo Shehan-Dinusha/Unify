@@ -1,5 +1,6 @@
-import { Order, ClubProductPost, User } from "../../modules/index.js";
+import { Order, ClubProductPost, User, BoostPurchase } from "../../modules/index.js";
 import crypto from "crypto";
+import { Op } from "sequelize";
 
 export const createOrder = async (req, res) => {
   try {
@@ -62,6 +63,27 @@ export const createOrder = async (req, res) => {
       status: "PENDING",
       timeline: [{ status: "PENDING", timestamp: new Date() }],
     });
+
+    // Sales Attribution for Boosted Posts
+    try {
+      const activeBoost = await BoostPurchase.findOne({
+        where: {
+          postId: post.id,
+          status: 'active',
+          expiryDate: {
+            [Op.gt]: new Date(),
+          },
+        },
+      });
+
+      if (activeBoost) {
+        activeBoost.salesAttributed = Number(activeBoost.salesAttributed || 0) + Number(total);
+        await activeBoost.save();
+      }
+    } catch (attributionError) {
+      console.error("Failed to attribute sale to boost:", attributionError);
+      // Non-blocking error
+    }
 
     res.status(201).json({ success: true, order: newOrder });
   } catch (error) {
