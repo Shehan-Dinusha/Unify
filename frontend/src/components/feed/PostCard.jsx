@@ -19,6 +19,7 @@ import {
 import Card from "../common/Card";
 import newsfeedService from "../../services/newsfeedService";
 import postService from "../../services/postService";
+import boostService from "../../services/boostService";
 import { formatTimeAgo } from "../../utils/formatters";
 
 /* ─── Comment Section (from ClubPostCard) ───────────────────── */
@@ -169,6 +170,7 @@ const PostCard = ({
   const [imgFailed, setImgFailed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const currentUser = getCurrentUser();
+  const cardRef = useRef(null);
 
   const DESCRIPTION_LIMIT = 250;
   const isLongDescription =
@@ -194,6 +196,17 @@ const PostCard = ({
 
     try {
       await newsfeedService.toggleLike(postType, postId);
+      if (!wasLiked && isPromoted && postId) {
+        // Track the like for boost analytics
+        boostService.trackBoostMetrics({
+          postId,
+          postType,
+          action: 'Like',
+          content: 'Liked the post',
+          impact: 'Medium',
+          userId: currentUser?.id || currentUser?.userId
+        });
+      }
     } catch (err) {
       // Revert on failure
       setIsLiked(wasLiked);
@@ -270,6 +283,18 @@ const PostCard = ({
         setPostComments((prev) =>
           prev.map((c) => (c.id === tempComment.id ? realComment : c)),
         );
+        
+        if (isPromoted && postId) {
+          // Track the comment for boost analytics
+          boostService.trackBoostMetrics({
+            postId,
+            postType,
+            action: 'Comment',
+            content: text.substring(0, 500),
+            impact: 'High',
+            userId: currentUser?.id || currentUser?.userId
+          });
+        }
       }
     } catch (err) {
       // Remove temp comment on failure
@@ -338,10 +363,55 @@ const PostCard = ({
     }
   })();
 
+  // Impression tracking for promoted posts
+  useEffect(() => {
+    if (!isPromoted || !postId) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          // Track impression
+          boostService.trackBoostMetrics({
+            postId,
+            postType,
+            action: 'impression'
+          });
+          // Stop observing once tracked
+          if (cardRef.current) {
+            observer.unobserve(cardRef.current);
+          }
+        }
+      },
+      { threshold: 0.5 } // 50% of the post must be visible
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, [isPromoted, postId, postType]);
+
+  const handleTrackClick = () => {
+    if (isPromoted && postId) {
+      boostService.trackBoostMetrics({
+        postId,
+        postType,
+        action: 'click'
+      });
+    }
+  };
+
   return (
     <Card
+      ref={cardRef}
       variant="card"
       padding="p-0"
+      onClick={handleTrackClick}
       className={
         "w-full overflow-hidden transition-all duration-300 !border-0 " +
         boostStyles.borderClass
@@ -470,10 +540,18 @@ const PostCard = ({
               {/* Boost / Analytics */}
               {isPromoted && boostMeta?.analyticsAccess ? (
                 <button
-                  onClick={() =>
-                    reportNavigate(`/boost-analytics/${boostMeta.purchaseId}`)
-                  }
-                  className="flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group hover:bg-white/5 hover:text-primary-blue"
+                  onClick={() => {
+                    if (boostMeta?.purchaseId) {
+                      reportNavigate(`/boost-analytics/${boostMeta.purchaseId}`);
+                    }
+                  }}
+                  disabled={!boostMeta?.purchaseId}
+                  title={!boostMeta?.purchaseId ? 'Analytics not available yet' : 'View Analytics'}
+                  className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
+                    boostMeta?.purchaseId
+                      ? 'hover:bg-white/5 hover:text-primary-blue'
+                      : 'opacity-40 cursor-not-allowed'
+                  }`}
                 >
                   <div className="flex items-center gap-1.5">
                     <BarChart2
