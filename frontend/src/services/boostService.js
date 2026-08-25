@@ -225,18 +225,7 @@ export const getCampaignById = async (id) => {
   }
 };
 
-/**
- * Get campaign analytics (performance, funnel, reach data).
- * @param {string} id
- */
-export const getCampaignAnalytics = async (id) => {
-  try {
-    const response = await api.get(`/boosts/campaigns/${encodeURIComponent(id)}/analytics`);
-    return response.data;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }
-};
+
 
 /**
  * Get interactions for a specific campaign.
@@ -250,3 +239,53 @@ export const getCampaignInteractions = async (id) => {
     throw new Error(extractErrorMessage(error));
   }
 };
+
+/**
+ * Track an impression or click for a boosted post
+ * @param {Object} data - { postId, postType, action: 'impression' | 'click' }
+ */
+export const trackBoostMetrics = async (data) => {
+  try {
+    const response = await api.post('/boosts/track', data);
+    return response.data;
+  } catch (error) {
+    // Fail silently for tracking
+    console.error("Tracking error:", extractErrorMessage(error));
+  }
+};
+
+/**
+ * Get boost analytics by BoostPurchase ID (for business users viewing from My Posts).
+ * @param {number|string} purchaseId
+ * @param {number|string} timeRange
+ */
+export const getBoostAnalyticsByPurchase = async (purchaseId, timeRange = 7) => {
+  try {
+    const response = await api.get(`/boosts/purchase/${encodeURIComponent(purchaseId)}/analytics?timeRange=${timeRange}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+};
+
+const boostService = {
+  getPackages,
+  getPackageById,
+  createPackage,
+  updatePackage,
+  deletePackage,
+  getAdminStats,
+  purchaseBoost,
+  createBoostCheckoutSession,
+  confirmBoostPayment,
+  getMyBoosts,
+  getBoostLogs,
+  createCampaign,
+  getCampaigns,
+  getCampaignById,
+  getCampaignInteractions,
+  getBoostAnalyticsByPurchase,
+  trackBoostMetrics,
+};
+
+export default boostService;

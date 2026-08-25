@@ -520,6 +520,7 @@ class BoostService {
           businessId: null,
           packageId,
           postId: postId || null,
+          postType: postType || null,
           purchaseDate: purchaseDate.toISOString(),
           expiryDate: expiryDate.toISOString(),
           status: "active",

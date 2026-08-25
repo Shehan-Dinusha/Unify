@@ -1,10 +1,10 @@
 import React from 'react';
-import { MapPin, Mail } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import { getAvatarUrl } from '../../utils/formatters';
 
-const BusinessHeaderCard = ({ biz, onSuspend, onMessage }) => (
+const BusinessHeaderCard = ({ biz, onSuspend }) => (
   <Card variant="container" className="py-3 px-6 mb-8">
     <div className="flex flex-col sm:flex-row items-center gap-8">
       <div className="relative shrink-0">
@@ -42,16 +42,6 @@ const BusinessHeaderCard = ({ biz, onSuspend, onMessage }) => (
             Suspend
           </Button>
         )}
-        <Button
-          variant="primary"
-          size="medium"
-          icon={Mail}
-          disabled={biz.status === 'Suspended'}
-          onClick={onMessage}
-          className={`flex-1 sm:flex-none h-11 px-10 ${biz.status === 'Suspended' ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
-        >
-          Message
-        </Button>
       </div>
     </div>
   </Card>

@@ -1,13 +1,13 @@
-import React from "react";
+import React, { forwardRef } from "react";
 
-const Card = ({
+const Card = forwardRef(({
   children,
   variant = "card", // 'card' or 'container'
   className = "",
   padding = "p-lg",
   overflow = "overflow-hidden",
   ...props
-}) => {
+}, ref) => {
   // Common base styles: Border, rounding, and backdrop blur
   const baseStyles = `relative ${overflow} border border-white/20 font-inter transition-all duration-300`;
 
@@ -24,6 +24,7 @@ const Card = ({
 
   return (
     <div
+      ref={ref}
       className={`${baseStyles} ${variants[variant]} ${className}`}
       {...props}
     >
@@ -31,6 +32,8 @@ const Card = ({
       <div className={`${padding} ${overflow} h-full w-full`}>{children}</div>
     </div>
   );
-};
+});
+
+Card.displayName = "Card";
 
 export default Card;

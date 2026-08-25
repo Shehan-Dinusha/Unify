@@ -102,6 +102,14 @@ export const confirmBoostPayment = async (req, res) => {
       return sendResponse(res, error.statusCode, false, error.message);
     }
     logger.error(`Error in confirmBoostPayment: ${error.message}`);
-    return sendResponse(res, 500, false, error.message);
+    // Don't leak raw DB/FK errors to the client
+    const isFkOrDbError =
+      error.name === "SequelizeForeignKeyConstraintError" ||
+      error.name === "SequelizeDatabaseError" ||
+      (error.message && error.message.includes("violates foreign key"));
+    const clientMessage = isFkOrDbError
+      ? "Payment was received but we could not activate your boost. Please contact support with your payment reference."
+      : "An unexpected error occurred. Please try again.";
+    return sendResponse(res, 500, false, clientMessage);
   }
 };
