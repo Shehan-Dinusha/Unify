@@ -14,8 +14,8 @@ export * from "./getBoostStatistics.controller.js";
 export * from "./recordInteraction.controller.js";
 export * from "./getInteractions.controller.js";
 export * from "./handlePaymentWebhook.controller.js";
+export * from "./trackMetrics.controller.js";
 export * from "./getAdminStats.controller.js";
 export * from "./createBoostCheckoutSession.controller.js";
 export * from "./confirmBoostPayment.controller.js";
 export * from "./getBoostAnalyticsByPurchase.controller.js";
-
