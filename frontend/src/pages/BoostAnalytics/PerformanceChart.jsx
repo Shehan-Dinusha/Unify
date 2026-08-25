@@ -14,7 +14,10 @@ const PerformanceChart = ({ performanceData }) => {
   const chartW = width - padX * 2;
   const chartH = height - padY * 2;
 
-  const toX = (i) => padX + (i / (labels.length - 1)) * chartW;
+  const toX = (i) => {
+    const divisor = labels.length > 1 ? labels.length - 1 : 1;
+    return padX + (i / divisor) * chartW;
+  };
   const toY = (v) => padY + chartH - (v / maxVal) * chartH;
 
   const boostedPath = boostedReach
