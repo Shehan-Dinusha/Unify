@@ -45,11 +45,13 @@ const NotificationCard = ({ notification, onMarkRead, onNavigate }) => {
         if (notification.referenceType === "Follower")
           return <FollowerAvatar avatar={avatar} />;
         if (notification.referenceType === "Order") return <OrderIcon />;
-        if (
-          notification.referenceType === "LostAndFound" &&
+        if (notification.referenceType === "LostAndFound" &&
           notification.title?.includes("your item")
         ) {
           return <ClaimAvatar avatar={avatar} />;
+        }
+        if (notification.referenceType === "PostLike") {
+          return <LikeAvatar avatar={avatar} />;
         }
         if (notification.referenceType === "Review") {
           switch (notification.reviewAction) {

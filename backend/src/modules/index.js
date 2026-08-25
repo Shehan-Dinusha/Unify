@@ -657,6 +657,18 @@ UserSuspension.belongsTo(User, { foreignKey: "reactivatedBy", as: "reactivatedBy
 
 
 
+// --- Comment Replies (self-referential, one level deep) ---
+Comment.hasMany(Comment, {
+  foreignKey: "parentId",
+  as: "replies",
+  onDelete: "SET NULL",
+});
+Comment.belongsTo(Comment, {
+  foreignKey: "parentId",
+  as: "parent",
+});
+
+
 // ── Exports ───────────────────────────────────────────────────────────────────
 export {
   sequelize,

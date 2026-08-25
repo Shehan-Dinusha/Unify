@@ -45,22 +45,26 @@ const ClubProduct = () => {
 
     return (
         <MainLayout user={user} pageTitle="Club" verificationCount={0}>
-            <Card variant="card" padding="p-0" className="overflow-hidden">
+            <Card variant="card" padding="p-0" className="overflow-hidden mb-lg md:mb-2xl">
                 <div className="p-md md:p-2xl">
                     <div className="grid grid-cols-1 lg:grid-cols-[520px_1fr] gap-2xl">
                         <ImageGallery images={images} currentImg={currentImg} activeImg={activeImg} onSelect={setActiveImg} />
-                        <ProductDetails
-                            post={post}
-                            activeColor={activeColor} setActiveColor={setActiveColor}
-                            activeSize={activeSize} setActiveSize={setActiveSize}
-                            activeTier={activeTier} setActiveTier={setActiveTier}
-                            isDescExpanded={isDescExpanded} setIsDescExpanded={setIsDescExpanded}
-                            finalPrice={finalPrice}
-                        />
+                        <div className="flex flex-col h-full">
+                            <ProductDetails
+                                post={post}
+                                activeColor={activeColor} setActiveColor={setActiveColor}
+                                activeSize={activeSize} setActiveSize={setActiveSize}
+                                activeTier={activeTier} setActiveTier={setActiveTier}
+                                isDescExpanded={isDescExpanded} setIsDescExpanded={setIsDescExpanded}
+                                finalPrice={finalPrice}
+                            />
+                            <div className="mt-auto pt-xl">
+                                <BuyBar qty={qty} onQtyChange={setQty} onBuy={handleBuy} pickupNote={post.pickupNote} />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </Card>
-            <BuyBar qty={qty} onQtyChange={setQty} onBuy={handleBuy} pickupNote={post.pickupNote} />
         </MainLayout>
     );
 };

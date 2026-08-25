@@ -65,6 +65,17 @@ const normalizeNotification = (n) => {
     }
   }
 
+  if (referenceType === 'PostLike') {
+    // Content holds the aggregated liker list — hide raw JSON from display
+    if (n.content) {
+      try {
+        const parsed = JSON.parse(n.content);
+        metadata = parsed; // { postType, users: [...] }
+        displayContent = '';
+      } catch {}
+    }
+  }
+
   return {
     id: n.id,
     type: typeLower,
@@ -149,6 +160,23 @@ export const useNotification = () => {
     }
   };
 
+  const [markingAllRead, setMarkingAllRead] = useState(false);
+
+  const handleMarkAllRead = async () => {
+    if (markingAllRead) return;
+    try {
+      setMarkingAllRead(true);
+      await notificationService.markAllAsRead();
+      // Optimistically update local state
+      setNotifications((prev) => prev.map((n) => ({ ...n, isUnread: false })));
+      refreshUnreadCount();
+    } catch (err) {
+      // silently fail — UI stays consistent
+    } finally {
+      setMarkingAllRead(false);
+    }
+  };
+
   const handleNavigateToPost = (referenceId, referenceType, notification) => {
     if (referenceType === 'LostAndFound') {
       navigate(`/lost-and-found?view=detail&id=${referenceId}`);
@@ -179,6 +207,10 @@ export const useNotification = () => {
       }
     } else if (referenceType === 'Report') {
       navigate(`/student/reports/${referenceId}`);
+    } else if (referenceType === 'PostLike') {
+      // referenceId is the postId; postType is stored in metadata
+      const postType = notification?.metadata?.postType || 'normal';
+      navigate('/news-feed', { state: { targetPostId: referenceId, targetPostType: postType } });
     } else {
       navigate('/news-feed', { state: { targetPostId: referenceId, targetPostType: referenceType } });
     }
@@ -214,6 +246,8 @@ export const useNotification = () => {
     fetchNotifications,
     handleFilterChange,
     handleMarkRead,
+    handleMarkAllRead,
+    markingAllRead,
     handleNavigateToPost,
   };
 };

@@ -12,14 +12,23 @@ export const handleWebhook = async (req, res) => {
     return res.status(503).json({ error: "Payment service not configured." });
   }
   const sig = req.headers["stripe-signature"];
+
+  // If stripe-account header is present, this is a Connected Account event.
+  // Use the connected account webhook secret. Otherwise use the standard secret.
+  const isConnectedEvent = !!req.headers["stripe-account"];
+  const webhookSecret = isConnectedEvent
+    ? process.env.STRIPE_CONNECTED_WEBHOOK_SECRET
+    : process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!webhookSecret) {
+    logger.warn("No webhook secret configured for this event type.");
+    return res.status(503).json({ error: "Webhook secret not configured." });
+  }
+
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      req.rawBody,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
   } catch (err) {
     logger.error(`Webhook Signature Error: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);

@@ -56,16 +56,44 @@ const OwnerViewSwitch = ({
 // ------------------------------------------------------------------
 const OwnProfilePage = () => {
   const {
-    navigate, user, loading, profile, activeRole,
-    verificationStatus, verificationReason, repStatus, repReason,
-    deleteOpen, switchOpen, savedAccounts, serverLinkedAccounts, activeUserId, isUnverifiedClub, getPageTitle,
-    handleEditProfile, handleSecurity, handleSwitchAccount, handleDeleteAccount, closeModal, handleConfirmDelete,
-    handleSelectSwitchAccount, handleAddAccount, handleRemoveAccount, handleUnlinkAccount, fetchProfile,
+    navigate,
+    user,
+    loading,
+    profile,
+    activeRole,
+    verificationStatus,
+    verificationReason,
+    repStatus,
+    repReason,
+    deleteOpen,
+    switchOpen,
+    savedAccounts,
+    activeUserId,
+    isUnverifiedClub,
+    getPageTitle,
+    handleEditProfile,
+    handleSecurity,
+    handleSwitchAccount,
+    handleDeleteAccount,
+    closeModal,
+    handleConfirmDelete,
+    handleSelectSwitchAccount,
+    handleAddAccount,
+    handleRemoveAccount,
+    fetchProfile,
   } = useOwnProfile();
 
   if (loading) {
     return (
-      <MainLayout user={{ name: "Loading...", role: "student", displayRole: "Loading..." }} pageTitle="Profile" verificationCount={0}>
+      <MainLayout
+        user={{
+          name: "Loading...",
+          role: "student",
+          displayRole: "Loading...",
+        }}
+        pageTitle="Profile"
+        verificationCount={0}
+      >
         <div className="w-full h-[60vh] flex items-center justify-center">
           <Loader2 className="w-8 h-8 text-primary-blue animate-spin" />
         </div>
@@ -75,7 +103,11 @@ const OwnProfilePage = () => {
 
   if (!profile) {
     return (
-      <MainLayout user={{ name: "Error", role: "student", displayRole: "Error" }} pageTitle="Profile" verificationCount={0}>
+      <MainLayout
+        user={{ name: "Error", role: "student", displayRole: "Error" }}
+        pageTitle="Profile"
+        verificationCount={0}
+      >
         <div className="w-full h-[60vh] flex flex-col items-center justify-center gap-4">
           <p className="text-text-secondary">Failed to load profile data.</p>
           <Button onClick={() => fetchProfile()}>Retry</Button>
@@ -116,13 +148,11 @@ const OwnProfilePage = () => {
       {switchOpen && (
         <SwitchAccountModal
           savedAccounts={savedAccounts}
-          serverLinkedAccounts={serverLinkedAccounts}
           activeUserId={activeUserId}
           onClose={closeModal}
           onSelectAccount={handleSelectSwitchAccount}
           onAddAccount={handleAddAccount}
           onRemoveAccount={handleRemoveAccount}
-          onUnlinkAccount={handleUnlinkAccount}
         />
       )}
 
