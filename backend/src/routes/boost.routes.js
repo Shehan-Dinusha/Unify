@@ -140,6 +140,12 @@ router.post(
   BoostController.recordInteraction
 );
 
+//Track lightweight metrics (impressions, clicks)
+router.post(
+  '/track',
+  BoostController.trackMetrics
+);
+
 //Get interactions for a campaign
 router.get(
   '/campaigns/:id/interactions',
