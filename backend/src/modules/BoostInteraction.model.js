@@ -12,8 +12,13 @@ const BoostInteraction = sequelize.define(
     },
     campaignId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       comment: "The campaign this interaction belongs to",
+    },
+    purchaseId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: "The boost purchase this interaction belongs to",
     },
     userId: {
       type: DataTypes.INTEGER,
