@@ -91,7 +91,7 @@ const useChatPage = () => {
             typeof m.id === 'string' &&
             m.id.startsWith('temp-') &&
             m.senderId === message.senderId &&
-            m.text === message.text,
+            (m.text || null) === (message.text || null),
         );
         if (optimisticIdx !== -1) {
           const updated = [...existing];
@@ -374,7 +374,7 @@ const useChatPage = () => {
         conversationId: activeChatId,
         senderId: currentUser?.id,
         senderName: currentUser?.name || 'You',
-        text: text.trim(),
+        text: text.trim() || null,
         attachments: attachments.length > 0
           ? attachments.map((a) => ({
               key: a.key, name: a.name, type: a.type, url: a.url, isImage: a.isImage,
