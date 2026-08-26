@@ -25,15 +25,12 @@ export const createBoostCheckoutSession = async (req, res) => {
       return sendResponse(res, 401, false, "Authentication required.");
     }
 
-    const { packageId, postId, postType, amount, packageName, durationDays } =
+    const { packageId, postId, postType, packageName, durationDays } =
       req.body;
 
     // ── Validation ─────────────────────────────────────────────────────
     if (!packageId) {
       return sendResponse(res, 400, false, "Package ID is required.");
-    }
-    if (!amount || amount <= 0) {
-      return sendResponse(res, 400, false, "A valid amount is required.");
     }
 
     // Validate the package exists and is live
@@ -64,7 +61,7 @@ export const createBoostCheckoutSession = async (req, res) => {
               name: `${packageName || pkg.name} — Boost Package`,
               description: `Boost your post for ${durationDays || pkg.durationValue} ${pkg.durationUnit}. Priority feed placement and enhanced visibility.`,
             },
-            unit_amount: Math.round(amount * 100), // amount in cents
+            unit_amount: Math.round(Number(pkg.price) * 100), // always from DB — never trust client
           },
           quantity: 1,
         },
@@ -79,7 +76,7 @@ export const createBoostCheckoutSession = async (req, res) => {
         postType: postType || "",
         userId: userId ? String(userId) : "",
         durationDays: String(durationDays || 0),
-        amount: String(amount),
+        amount: String(Number(pkg.price)), // audit: actual DB price charged
       },
     });
 
