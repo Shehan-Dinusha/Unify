@@ -33,6 +33,7 @@ export const trackMetrics = async (req, res, next) => {
     const purchase = await BoostPurchase.findOne({
       where: {
         postId: parseInt(postId, 10),
+        ...(postType && { postType }),
         status: 'active',
         expiryDate: {
           [Op.gt]: new Date(),
@@ -46,31 +47,11 @@ export const trackMetrics = async (req, res, next) => {
       const transaction = await sequelize.transaction();
       try {
         if (action === 'impression') {
-          // Deduplicate impressions per user per day
-          const dayBucket = new Date().toISOString().split('T')[0];
-          const [log, created] = await BoostImpressionLog.findOrCreate({
-            where: {
-              userId: actorId,
-              postId: parseInt(postId, 10),
-              dayBucket: dayBucket,
-            },
-            defaults: {
-              postType: postType || null,
-            },
-            transaction,
-          });
-
-          if (created) {
-            purchase.impressions = (purchase.impressions || 0) + 1;
-            await purchase.save({ transaction }); // Issue #13 fix: pass transaction
-          }
+          purchase.impressions = (purchase.impressions || 0) + 1;
+          await purchase.save({ transaction });
         } else if (action === 'click') {
           purchase.clicks = (purchase.clicks || 0) + 1;
-          // Safeguard: Clicks should theoretically never exceed impressions
-          if (purchase.clicks > (purchase.impressions || 0)) {
-            purchase.impressions = purchase.clicks;
-          }
-          await purchase.save({ transaction }); // Issue #13 fix: add transaction here
+          await purchase.save({ transaction });
         } else {
           // Rich interaction (Like, Comment, Purchase)
           await BoostInteraction.create(
@@ -86,10 +67,7 @@ export const trackMetrics = async (req, res, next) => {
           
           // Also bump clicks for these, since they imply engagement
           purchase.clicks = (purchase.clicks || 0) + 1;
-          if (purchase.clicks > (purchase.impressions || 0)) {
-            purchase.impressions = purchase.clicks;
-          }
-          await purchase.save({ transaction }); // Issue #13 fix: add transaction here
+          await purchase.save({ transaction });
         }
 
         await transaction.commit();
