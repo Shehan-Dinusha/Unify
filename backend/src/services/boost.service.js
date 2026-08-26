@@ -501,6 +501,15 @@ class BoostService {
           error.statusCode = 404;
           throw error;
         }
+
+        // Ownership check — only the post author/host may boost their own post.
+        // Boarding posts use hostId; all other post types use authorId.
+        const ownerId = postType === "boarding" ? post.hostId : post.authorId;
+        if (ownerId !== userId) {
+          const error = new Error("You can only boost your own posts.");
+          error.statusCode = 403;
+          throw error;
+        }
       }
 
       // Calculate dates
@@ -661,7 +670,7 @@ class BoostService {
 
       const config = pkg.boostConfig || DEFAULT_BOOST_CONFIG;
 
-      boostMap.set(purchase.postId, {
+      boostMap.set(`${purchase.postType}-${purchase.postId}`, {
         purchaseId: purchase.id,
         packageId: pkg.id,
         packageName: pkg.name,
