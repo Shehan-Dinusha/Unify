@@ -23,7 +23,8 @@ export const saveAccountSession = (data) => {
   if (!data?.user || !data.user.id) return;
   const accounts = getSavedAccounts();
   const token = data.accessToken || localStorage.getItem("token");
-  const refreshToken = data.refreshToken || localStorage.getItem("refreshToken");
+  const refreshToken =
+    data.refreshToken || localStorage.getItem("refreshToken");
 
   const accountEntry = {
     id: data.user.id,
@@ -33,7 +34,9 @@ export const saveAccountSession = (data) => {
     lastActive: Date.now(),
   };
 
-  const index = accounts.findIndex((a) => String(a.id) === String(data.user.id));
+  const index = accounts.findIndex(
+    (a) => String(a.id) === String(data.user.id),
+  );
   if (index >= 0) {
     accounts[index] = { ...accounts[index], ...accountEntry };
   } else {
@@ -43,7 +46,24 @@ export const saveAccountSession = (data) => {
   localStorage.setItem("savedAccounts", JSON.stringify(accounts));
 };
 
-export const updateActiveAccountTokens = (accessToken, refreshToken, userId) => {
+// UPDATE-ONLY: refreshes user metadata for an account that is already in
+// savedAccounts. If the account was never explicitly added via + Add Account,
+// this is a deliberate no-op — it will NOT auto-insert the account.
+const updateSavedAccountUser = (user) => {
+  if (!user?.id) return;
+  const accounts = getSavedAccounts();
+  const index = accounts.findIndex((a) => String(a.id) === String(user.id));
+  if (index >= 0) {
+    accounts[index] = { ...accounts[index], user, lastActive: Date.now() };
+    localStorage.setItem("savedAccounts", JSON.stringify(accounts));
+  }
+};
+
+export const updateActiveAccountTokens = (
+  accessToken,
+  refreshToken,
+  userId,
+) => {
   const accounts = getSavedAccounts();
   const targetId = userId || getCurrentUser()?.id;
   if (!targetId) return;
@@ -63,10 +83,15 @@ export const switchAccount = (userId) => {
   if (!target) return false;
 
   if (target.token) localStorage.setItem("token", target.token);
-  if (target.refreshToken) localStorage.setItem("refreshToken", target.refreshToken);
+  if (target.refreshToken)
+    localStorage.setItem("refreshToken", target.refreshToken);
   if (target.user) localStorage.setItem("user", JSON.stringify(target.user));
 
-  saveAccountSession({ user: target.user, accessToken: target.token, refreshToken: target.refreshToken });
+  saveAccountSession({
+    user: target.user,
+    accessToken: target.token,
+    refreshToken: target.refreshToken,
+  });
 
   window.dispatchEvent(new Event("auth-changed"));
   return target;
@@ -75,7 +100,8 @@ export const switchAccount = (userId) => {
 export const removeSavedAccount = (userId) => {
   let accounts = getSavedAccounts();
   const currentUser = getCurrentUser();
-  const isActiveAccount = currentUser && String(currentUser.id) === String(userId);
+  const isActiveAccount =
+    currentUser && String(currentUser.id) === String(userId);
 
   accounts = accounts.filter((a) => String(a.id) !== String(userId));
   localStorage.setItem("savedAccounts", JSON.stringify(accounts));
@@ -92,13 +118,20 @@ export const removeSavedAccount = (userId) => {
   }
 };
 
-const setAuthData = (data) => {
+const setAuthData = (data, addToSwitcher = false) => {
   if (data.accessToken) localStorage.setItem("token", data.accessToken);
   if (data.refreshToken)
     localStorage.setItem("refreshToken", data.refreshToken);
   if (data.user) {
     localStorage.setItem("user", JSON.stringify(data.user));
-    saveAccountSession(data);
+    if (addToSwitcher) {
+      // Explicit Add Account flow — insert or update the entry in savedAccounts.
+      saveAccountSession(data);
+    } else {
+      // Normal login / OTP verify — only update if already explicitly saved;
+      // do NOT auto-add this account to the Switch Account list.
+      updateSavedAccountUser(data.user);
+    }
   }
   window.dispatchEvent(new Event("auth-changed"));
 };
@@ -178,6 +211,12 @@ export const refreshCurrentUser = async () => {
     const currentUser = getCurrentUser();
     if (!currentUser) return null;
 
+    // Capture the userId before the async fetch so we can detect whether
+    // switchAccount() ran while the request was in-flight. If it did, the
+    // fetched profile belongs to the OLD account — writing it to localStorage
+    // would restore a stale user object and cause 403s on role-restricted
+    // endpoints (e.g. /profiles/club/me called with a Student token).
+    const snapshotId = currentUser.id;
     const role = currentUser.role?.toLowerCase();
 
     // Admins do not have a specific profile endpoint
@@ -186,6 +225,13 @@ export const refreshCurrentUser = async () => {
     }
 
     const profile = await getMyProfile(role);
+
+    // After the await, verify that the active account has not changed.
+    // If a switch happened while this fetch was in-flight, discard silently.
+    const activeUser = getCurrentUser();
+    if (!activeUser || String(activeUser.id) !== String(snapshotId)) {
+      return null;
+    }
 
     const updatedUser = {
       id: currentUser.id,
@@ -211,7 +257,7 @@ export const refreshCurrentUser = async () => {
     }
 
     localStorage.setItem("user", JSON.stringify(updatedUser));
-    saveAccountSession({ user: updatedUser });
+    updateSavedAccountUser(updatedUser);
     return updatedUser;
   } catch {
     return getCurrentUser();
@@ -219,15 +265,11 @@ export const refreshCurrentUser = async () => {
 };
 
 export const logout = async () => {
-  const currentUser = getCurrentUser();
   const refreshToken = localStorage.getItem("refreshToken");
 
-  // Synchronously clear active session tokens first to prevent race condition with GuestRoute
-  if (currentUser?.id) {
-    let accounts = getSavedAccounts();
-    accounts = accounts.filter((a) => String(a.id) !== String(currentUser.id));
-    localStorage.setItem("savedAccounts", JSON.stringify(accounts));
-  }
+  // Clear only the active authentication state.
+  // savedAccounts is intentionally NOT modified here — accounts remain
+  // remembered on this device so they appear in the Switch Account modal.
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("user");
@@ -268,9 +310,24 @@ export const fetchServerLinkedAccounts = async () => {
 
 export const linkAccountServer = async (identifier, password) => {
   try {
-    const response = await api.post("/auth/link-account", { identifier, password });
+    // Step 1: Explicitly save the currently active account (A) into savedAccounts
+    // so the user can switch back to it after Account B is added.
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      saveAccountSession({
+        user: currentUser,
+        accessToken: localStorage.getItem("token"),
+        refreshToken: localStorage.getItem("refreshToken"),
+      });
+    }
+
+    // Step 2: Authenticate Account B and add it explicitly to savedAccounts.
+    const response = await api.post("/auth/link-account", {
+      identifier,
+      password,
+    });
     const { data } = response.data;
-    setAuthData(data);
+    setAuthData(data, true); // addToSwitcher = true → inserts Account B
     return data;
   } catch (error) {
     handleError(error);

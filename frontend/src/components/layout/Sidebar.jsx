@@ -12,10 +12,14 @@ import {
   ClipboardList,
 } from "lucide-react";
 import LogoutModal from "../profile/modals/LogoutModal";
+import SwitchAccountModal from "../profile/modals/SwitchAccountModal";
 import {
   getCurrentUser,
   logout,
   refreshCurrentUser,
+  getSavedAccounts,
+  switchAccount,
+  removeSavedAccount,
 } from "../../services/authService";
 import { useNotifications } from "../../context/NotificationContext";
 import { useChat } from "../../context/ChatContext";
@@ -100,6 +104,7 @@ const UnifiedSidebar = ({
   const navigate = useNavigate();
   const [freshUser, setFreshUser] = React.useState(null);
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+  const [showSwitchModal, setShowSwitchModal] = React.useState(false);
   const { unreadCount } = useNotifications();
   const { unreadMessageCount } = useChat();
   const { unconfirmedOrderCount } = useClubOrders();
@@ -108,6 +113,20 @@ const UnifiedSidebar = ({
     refreshCurrentUser().then((updated) => {
       if (updated) setFreshUser(updated);
     });
+  }, []);
+
+  // Keep freshUser in sync with the active account after any auth change
+  // (login, logout, or account switch). Without this, freshUser retains the
+  // previous account's role and drives navigate("/profile?role=<stale-role>"),
+  // which loads the profile page in the wrong role context and causes 403s.
+  useEffect(() => {
+    const handleAuthChange = () => {
+      // switchAccount() updates localStorage.user synchronously before firing
+      // auth-changed, so getCurrentUser() already returns the new account here.
+      setFreshUser(getCurrentUser());
+    };
+    window.addEventListener("auth-changed", handleAuthChange);
+    return () => window.removeEventListener("auth-changed", handleAuthChange);
   }, []);
 
   // Get user from auth or fallback to prop
@@ -355,7 +374,13 @@ const UnifiedSidebar = ({
           />
 
           <div
-            onClick={() => navigate("/profile?role=" + user.role)}
+            onClick={() => {
+              if (user.role?.toLowerCase() === "admin") {
+                setShowSwitchModal(true);
+              } else {
+                navigate("/profile?role=" + user.role);
+              }
+            }}
             className="w-full p-sm bg-white/5 rounded-2xl border border-white/10 flex items-center gap-md transition-colors group hover:bg-white/10 cursor-pointer"
           >
             <img
@@ -388,6 +413,36 @@ const UnifiedSidebar = ({
             setShowLogoutModal(false);
             await logout();
             navigate("/login", { replace: true });
+          }}
+        />
+      )}
+
+      {/* Switch Account Modal — Admin profile card shortcut */}
+      {showSwitchModal && (
+        <SwitchAccountModal
+          savedAccounts={getSavedAccounts()}
+          activeUserId={getCurrentUser()?.id}
+          onClose={() => setShowSwitchModal(false)}
+          onSelectAccount={(userId) => {
+            const target = switchAccount(userId);
+            setShowSwitchModal(false);
+            if (target) {
+              const role = target.user?.role?.toLowerCase();
+              if (role === "admin") navigate("/admin");
+              else navigate("/");
+            }
+          }}
+          onAddAccount={() => {
+            setShowSwitchModal(false);
+            navigate("/login?addAccount=true");
+          }}
+          onRemoveAccount={(userId) => {
+            removeSavedAccount(userId);
+            const current = getCurrentUser();
+            if (!current) {
+              setShowSwitchModal(false);
+              navigate("/login");
+            }
           }}
         />
       )}

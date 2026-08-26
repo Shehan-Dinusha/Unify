@@ -71,14 +71,7 @@ router.get(
   BoostController.getMyBoosts
 );
 
-// ── Admin Statistics ─────────────────────────────────────────────────────────
-
-//Admin dashboard boost stats
-router.get(
-  '/admin/statistics',
-  protect, authorize('Admin'),
-  BoostController.getBoostStatistics
-);
+// ── Admin ────────────────────────────────────────────────────────────────────
 
 //Admin configuration changes logs
 router.get(
@@ -94,60 +87,30 @@ router.get(
   BoostController.getAdminStats
 );
 
-// ── Campaign Management (Business User) ──────────────────────────────────────
+// ── Business User Purchase Analytics ─────────────────────────────────────────
 
-//Create a new campaign (select package + boost post)
+//Get boost analytics by BoostPurchase ID (used by business users from MyPosts)
+router.get(
+  '/purchase/:purchaseId/analytics',
+  protect,
+  BoostController.getBoostAnalyticsByPurchase
+);
+
+// ── Metrics Tracking ────────────────────────────────────────────────────────
+
+//Track lightweight metrics (impressions, clicks)
 router.post(
-  '/campaigns',
-  BoostController.createCampaign
+  '/track',
+  protect,
+  BoostController.trackMetrics
 );
 
-//Get all campaigns for the logged-in user
-router.get(
-  '/campaigns',
-  BoostController.getCampaigns
-);
-
-//Get specific campaign details
-router.get(
-  '/campaigns/:id',
-  BoostController.getCampaignById
-);
-
-//Update campaign status
-router.put(
-  '/campaigns/:id/status',
-  BoostController.updateCampaignStatus
-);
-
-// ── Campaign Analytics ───────────────────────────────────────────────────────
-
-//Get campaign performance analytics
-router.get(
-  '/campaigns/:id/analytics',
-  BoostController.getCampaignAnalytics
-);
-
-// ── Interactions ─────────────────────────────────────────────────────────────
-
-//Record an interaction
-router.post(
-  '/campaigns/:id/interactions',
-  BoostController.recordInteraction
-);
-
-//Get interactions for a campaign
-router.get(
-  '/campaigns/:id/interactions',
-  BoostController.getInteractions
-);
-
-// ── Payment Webhook (Stripe Stub) ────────────────────────────────────────────
-
-//Handle payment status from Stripe
-router.post(
-  '/webhooks/payment',
-  BoostController.handlePaymentWebhook
-);
+// ─── ISSUE #9: Dead campaign routes removed ──────────────────────────────
+// Campaign routes were defined but never exported in the controller index.
+// These endpoints were unreachable and have been removed for code clarity.
+// If you need to re-implement campaign management, ensure the controllers are:
+// 1. Implemented in backend/src/controllers/boost/
+// 2. Exported in backend/src/controllers/boost/index.js
+// 3. Added back to this routes file with proper auth middleware
 
 export default router;

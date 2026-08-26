@@ -1,5 +1,5 @@
 import { NormalPost, ClubProductPost, ClubEventPost, Boarding, PostLike, User } from "../../modules/index.js";
-import { notifyLike } from "../../services/notification.service.js";
+import { notifyLike, removeLikeFromNotification } from "../../services/notification.service.js";
 
 const getModelConfig = (type) => {
   switch (type) {
@@ -44,6 +44,11 @@ export const toggleLike = async (req, res) => {
       await existingLike.destroy();
       post.likesCount = Math.max(0, (post.likesCount || 0) - 1);
       await post.save();
+      // Remove liker from aggregated notification (non-blocking)
+      const postOwnerId = post.authorId || post.hostId;
+      if (postOwnerId) {
+        removeLikeFromNotification({ postOwnerId, actorId: userId, postId: parseInt(id, 10) });
+      }
       return res.status(200).json({ success: true, liked: false, likesCount: post.likesCount });
     } else {
       // Like

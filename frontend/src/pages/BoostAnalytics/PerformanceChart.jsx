@@ -14,7 +14,10 @@ const PerformanceChart = ({ performanceData }) => {
   const chartW = width - padX * 2;
   const chartH = height - padY * 2;
 
-  const toX = (i) => padX + (i / (labels.length - 1)) * chartW;
+  const toX = (i) => {
+    const divisor = labels.length > 1 ? labels.length - 1 : 1;
+    return padX + (i / divisor) * chartW;
+  };
   const toY = (v) => padY + chartH - (v / maxVal) * chartH;
 
   const boostedPath = boostedReach
@@ -33,9 +36,17 @@ const PerformanceChart = ({ performanceData }) => {
           <stop offset="100%" stopColor="#2B8CEE" stopOpacity="0.02" />
         </linearGradient>
       </defs>
-      {[0, 0.25, 0.5, 0.75, 1].map((f, i) => (
-        <line key={i} x1={padX} y1={padY + chartH * (1 - f)} x2={width - padX} y2={padY + chartH * (1 - f)} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-      ))}
+      {[0, 0.25, 0.5, 0.75, 1].map((f, i) => {
+        const yVal = padY + chartH * (1 - f);
+        return (
+          <g key={i}>
+            <line x1={padX} y1={yVal} x2={width - padX} y2={yVal} stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+            <text x={padX - 10} y={yVal + 4} textAnchor="end" className="fill-text-secondary" fontSize="10" fontFamily="Inter">
+              {Math.round(maxVal * f)}
+            </text>
+          </g>
+        );
+      })}
       <path d={boostedAreaPath} fill="url(#boostedGradient)" />
       <path d={organicPath} fill="none" stroke="#4ADE80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <path d={boostedPath} fill="none" stroke="#2B8CEE" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />

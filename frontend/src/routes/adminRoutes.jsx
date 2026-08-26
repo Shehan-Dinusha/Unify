@@ -14,7 +14,6 @@ import SuspendedUserReactivation from "../pages/SuspendedUserReactivation";
 import SuspendedUserSuccess from "../pages/SuspendedUserSuccess";
 import BoostController from "../pages/BoostController";
 import BoostPackageForm from "../pages/BoostPackageForm";
-import BoostAnalytics from "../pages/BoostAnalytics";
 
 export const adminRoutes = [
   {
@@ -49,7 +48,6 @@ export const adminRoutes = [
       { path: "/boost-controller", element: <BoostController /> },
       { path: "/boost-controller/new", element: <BoostPackageForm /> },
       { path: "/boost-controller/edit/:id", element: <BoostPackageForm /> },
-      { path: "/boost-controller/analytics/:id", element: <BoostAnalytics /> },
     ],
   },
 ];

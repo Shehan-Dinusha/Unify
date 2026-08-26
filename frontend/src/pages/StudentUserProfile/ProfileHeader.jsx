@@ -1,4 +1,4 @@
-import { Mail, FileText, MessageSquare, Star, Flag, AlertTriangle } from "lucide-react";
+import { FileText, MessageSquare, Star, Flag, AlertTriangle } from "lucide-react";
 import Card from "../../components/common/Card";
 
 const ProfileHeader = ({ user, statsArray }) => {
@@ -17,13 +17,7 @@ const ProfileHeader = ({ user, statsArray }) => {
               </span>
               {user.tier === 'Premium' && <span className="px-sm py-xs rounded-lg text-body-extra-small-bold bg-primary-blue/15 text-primary-blue border border-primary-blue/30">Premium</span>}
             </div>
-            <div className="flex flex-wrap items-center gap-md text-body-extra-small text-text-secondary font-inter"><span className="flex items-center gap-xs"><Mail size={12} /> {user.email}</span><span className="flex items-center gap-xs">⊙ ID: {user.userId}</span><span className="flex items-center gap-xs">📅 {user.joinDate}</span></div>
-            <button
-              disabled={user.status === 'Suspended'}
-              className={`mt-md px-lg py-sm rounded-xl text-white text-body-small-bold font-inter inline-flex items-center gap-sm transition-all shadow-lg ${user.status === 'Suspended' ? 'bg-white/10 text-text-secondary cursor-not-allowed grayscale shadow-none' : 'bg-primary-blue hover:brightness-110 shadow-primary-blue/20'}`}
-            >
-              <Mail size={14} /> Message
-            </button>
+            <div className="flex flex-wrap items-center gap-md text-body-extra-small text-text-secondary font-inter"><span className="flex items-center gap-xs">✉ {user.email}</span><span className="flex items-center gap-xs">⊙ ID: {user.userId}</span><span className="flex items-center gap-xs">📅 {user.joinDate}</span></div>
           </div>
         </div>
       </Card>

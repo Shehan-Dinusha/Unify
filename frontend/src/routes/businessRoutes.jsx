@@ -42,6 +42,7 @@ import MyReviewHistory from "../pages/MyReviewHistory";
 import BoostSelectPackage from "../pages/BoostSelectPackage";
 import BoostConfirmOrder from "../pages/BoostConfirmOrder";
 import BoostPostSuccess from "../pages/BoostPostSuccess";
+import BoostAnalytics from "../pages/BoostAnalytics";
 
 const PlaceholderPage = ({ title }) => (
   <MainLayout
@@ -68,6 +69,8 @@ export const businessSharedRoutes = [
   { path: "/business/boost-post", element: <BoostSelectPackage /> },
   { path: "/business/boost-post/confirm", element: <BoostConfirmOrder /> },
   { path: "/business/boost-post/success", element: <BoostPostSuccess /> },
+  // Business user boost analytics — accessed from My Posts when a boost is active
+  { path: "/boost-analytics/:purchaseId", element: <BoostAnalytics /> },
   { path: "/my-posts", element: <MyPosts /> },
   { path: "/messages", element: <ChatPage /> },
   { path: "/profile", element: <OwnProfilePage /> },

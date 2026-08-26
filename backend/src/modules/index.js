@@ -38,6 +38,7 @@ import BoostCampaign from "./BoostCampaign.model.js";
 import BoostInteraction from "./BoostInteraction.model.js";
 import BoostLog from "./BoostLog.model.js";
 import BoostPurchase from "./BoostPurchase.model.js";
+import BoostImpressionLog from "./BoostImpressionLog.model.js";
 import AdminLog from "./AdminLog.model.js";
 import UserActivityLog from "./UserActivityLog.model.js";
 import UserFollower from "./UserFollower.model.js";
@@ -438,6 +439,9 @@ BoostLog.belongsTo(BoostPackage, {
   constraints: false,
 });
 
+BoostImpressionLog.belongsTo(User, { foreignKey: "userId", as: "user" });
+User.hasMany(BoostImpressionLog, { foreignKey: "userId", as: "boostImpressionLogs", onDelete: "CASCADE" });
+
 // --- Admin Logs ---
 User.hasMany(AdminLog, {
   foreignKey: "adminId",
@@ -657,6 +661,18 @@ UserSuspension.belongsTo(User, { foreignKey: "reactivatedBy", as: "reactivatedBy
 
 
 
+// --- Comment Replies (self-referential, one level deep) ---
+Comment.hasMany(Comment, {
+  foreignKey: "parentId",
+  as: "replies",
+  onDelete: "SET NULL",
+});
+Comment.belongsTo(Comment, {
+  foreignKey: "parentId",
+  as: "parent",
+});
+
+
 // ── Exports ───────────────────────────────────────────────────────────────────
 export {
   sequelize,
@@ -688,6 +704,7 @@ export {
   BoostInteraction,
   BoostLog,
   BoostPurchase,
+  BoostImpressionLog,
   AdminLog,
   UserActivityLog,
   UserFollower,

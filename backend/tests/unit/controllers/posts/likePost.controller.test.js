@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mockRes } from "../../../helpers/testUtils.js";
 import { toggleLike } from "../../../../src/controllers/posts/likePost.controller.js";
 import { NormalPost, PostLike, User } from "../../../../src/modules/index.js";
+import Notification from "../../../../src/modules/Notification.model.js";
 
 afterEach(() => {
   mock.restoreAll();
@@ -58,6 +59,8 @@ describe("toggleLike", () => {
     mock.method(PostLike, "findOne", async () => ({
       destroy: async () => {},
     }));
+    // removeLikeFromNotification calls Notification.findAll — resolve with empty so it's a no-op
+    mock.method(Notification, "findAll", async () => []);
 
     const req = { user: { id: 1 }, params: { type: "normal", id: "1" } };
     const res = createRes();
@@ -67,6 +70,32 @@ describe("toggleLike", () => {
     assert.equal(res.getStatusCode(), 200);
     assert.equal(res.getBody().liked, false);
     assert.equal(res.getBody().likesCount, 2);
+  });
+
+  it("removes the actor from the aggregated like notification on unlike", async () => {
+    const save = mock.fn(async () => {});
+    const existing = {
+      content: JSON.stringify({ postType: "normal", users: [{ id: 1, name: "Alice" }, { id: 99, name: "Bob" }] }),
+      title: "Alice and Bob liked your post",
+      actorId: 1,
+      save,
+    };
+    mock.method(NormalPost, "findByPk", async () => makePost());
+    mock.method(PostLike, "findOne", async () => ({ destroy: async () => {} }));
+    mock.method(Notification, "findAll", async () => [existing]);
+
+    const req = { user: { id: 1 }, params: { type: "normal", id: "1" } };
+    const res = createRes();
+
+    await toggleLike(req, res);
+
+    assert.equal(res.getStatusCode(), 200);
+    assert.equal(res.getBody().liked, false);
+    // Notification should have been updated with Alice removed
+    assert.equal(save.mock.calls.length, 1);
+    const updatedData = JSON.parse(existing.content);
+    assert.equal(updatedData.users.length, 1);
+    assert.equal(updatedData.users[0].name, "Bob");
   });
 
   it("likes a post and increments the likes count", async () => {

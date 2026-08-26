@@ -501,6 +501,31 @@ class BoostService {
           error.statusCode = 404;
           throw error;
         }
+
+        // Ownership check — only the post author/host may boost their own post.
+        // Boarding posts use hostId; all other post types use authorId.
+        const ownerId = postType === "boarding" ? post.hostId : post.authorId;
+        if (ownerId !== userId) {
+          const error = new Error("You can only boost your own posts.");
+          error.statusCode = 403;
+          throw error;
+        }
+
+        // Overlapping boost check - a post can only have one active boost at a time
+        const activeBoost = await BoostPurchase.findOne({
+          where: {
+            postId: parseInt(postId, 10),
+            ...(postType && { postType }),
+            status: 'active',
+            expiryDate: { [Op.gt]: new Date() }
+          }
+        });
+
+        if (activeBoost) {
+          const error = new Error("This post already has an active boost package.");
+          error.statusCode = 409;
+          throw error;
+        }
       }
 
       // Calculate dates
@@ -520,6 +545,7 @@ class BoostService {
           businessId: null,
           packageId,
           postId: postId || null,
+          postType: postType || null,
           purchaseDate: purchaseDate.toISOString(),
           expiryDate: expiryDate.toISOString(),
           status: "active",
@@ -660,7 +686,7 @@ class BoostService {
 
       const config = pkg.boostConfig || DEFAULT_BOOST_CONFIG;
 
-      boostMap.set(purchase.postId, {
+      boostMap.set(`${purchase.postType}-${purchase.postId}`, {
         purchaseId: purchase.id,
         packageId: pkg.id,
         packageName: pkg.name,

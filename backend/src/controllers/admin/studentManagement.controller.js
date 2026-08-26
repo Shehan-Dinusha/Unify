@@ -1,4 +1,5 @@
 import { Op } from "sequelize";
+import { getIO } from "../../socket/index.js";
 import {
   User,
   StudentProfile,
@@ -470,6 +471,22 @@ export const forceLogout = async (req, res, next) => {
       { revokedAt: new Date() },
       { where: { userId: id, revokedAt: null } }
     );
+
+    // ── Emit force-logout event and disconnect all user sockets ────────
+    try {
+      const io = getIO();
+      // Notify the user's browser(s) to clear tokens and redirect to login
+      io.to(`user:${id}`).emit("auth:force_logout", {
+        reason: "Your session was terminated by an administrator.",
+      });
+      // Forcefully disconnect all sockets in the user's room
+      const userSockets = await io.in(`user:${id}`).fetchSockets();
+      for (const s of userSockets) {
+        s.disconnect(true);
+      }
+    } catch (socketErr) {
+      logger.warn(`Socket force-disconnect failed for user ${id}: ${socketErr.message}`);
+    }
 
     await AdminLog.create({
       adminId,

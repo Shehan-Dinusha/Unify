@@ -80,12 +80,18 @@ const newsfeedService = {
   },
 
   /**
-   * Add a comment to a post
+   * Add a comment (or reply) to a post
    * POST /posts/:type/:id/comments
+   * @param {string} postType
+   * @param {number} postId
+   * @param {string} content
+   * @param {number|null} parentId - ID of the parent comment when replying; null for root comments
    */
-  addComment: async (postType, postId, content) => {
+  addComment: async (postType, postId, content, parentId = null) => {
     try {
-      const response = await api.post(`/posts/${postType}/${postId}/comments`, { content });
+      const body = { content };
+      if (parentId) body.parentId = parentId;
+      const response = await api.post(`/posts/${postType}/${postId}/comments`, body);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

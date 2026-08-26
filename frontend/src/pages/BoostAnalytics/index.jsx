@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
 import Card from '../../components/common/Card';
 import { getCurrentUser } from '../../services/authService';
-import { getCampaignById, getCampaignAnalytics, getCampaignInteractions } from '../../services/boostService';
+import { getBoostAnalyticsByPurchase } from '../../services/boostService';
 import {
   Eye, MousePointerClick, DollarSign, ShoppingBag, Pencil,
   TrendingUp, TrendingDown, AlertTriangle,
@@ -23,7 +23,8 @@ const defaultAnalytics = {
 
 const BoostAnalytics = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  // Business user view, purchaseId = BoostPurchase.id
+  const { purchaseId } = useParams();
   const [timeRange, setTimeRange] = useState('7');
   const [searchQuery, setSearchQuery] = useState('');
   const [campaign, setCampaign] = useState(null);
@@ -37,28 +38,31 @@ const BoostAnalytics = () => {
       setLoading(true);
       setError(null);
       try {
-        const [campaignRes, analyticsRes, interactionsRes] = await Promise.allSettled([
-          getCampaignById(id), getCampaignAnalytics(id), getCampaignInteractions(id),
-        ]);
-        if (campaignRes.status === 'fulfilled' && campaignRes.value?.data) {
-          setCampaign(campaignRes.value.data);
-        } else {
-          setError('Campaign not found. Please check the campaign ID.');
-        }
-        if (analyticsRes.status === 'fulfilled' && analyticsRes.value?.data) {
-          setAnalytics({ ...defaultAnalytics, ...analyticsRes.value.data });
-        }
-        if (interactionsRes.status === 'fulfilled' && interactionsRes.value?.data) {
-          setInteractions(Array.isArray(interactionsRes.value.data) ? interactionsRes.value.data : []);
-        }
+        const res = await getBoostAnalyticsByPurchase(purchaseId, timeRange);
+        if (!res?.data) throw new Error('No analytics data returned.');
+        const data = res.data;
+        // Synthesize a campaign-like object for the header card
+        setCampaign({
+          name: data.packageName || 'Boost Campaign',
+          postTitle: data.packageName,
+          description: `Transaction: ${data.transactionId || '—'}`,
+          status: 'Active',
+          image: null,
+          postedDate: data.purchaseDate ? new Date(data.purchaseDate).toLocaleDateString() : '—',
+          createdAt: data.purchaseDate,
+          postId: data.postId,
+          postType: data.postType || null,
+        });
+        setAnalytics({ ...defaultAnalytics, ...data });
+        setInteractions(data.interactions || []);
       } catch (err) {
-        setError('Failed to load analytics. Please check the backend.');
+        setError(err.message || 'Failed to load analytics. Please check the backend.');
       } finally {
         setLoading(false);
       }
     };
-    if (id) loadData();
-  }, [id]);
+    if (purchaseId) loadData();
+  }, [purchaseId, timeRange]);
 
   const filteredInteractions = searchQuery.trim()
     ? interactions.filter(
@@ -119,7 +123,10 @@ const BoostAnalytics = () => {
               <h2 className="text-body-large-bold md:text-heading-small text-text-primary font-inter mb-1">{campaign.postTitle || campaign.name || 'Boost Campaign'}</h2>
               <p className="text-body-small text-text-secondary font-inter leading-relaxed max-w-2xl">{campaign.description || 'No description available.'}</p>
             </div>
-            <button className="h-10 px-md rounded-2xl border border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center gap-2 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200 flex-shrink-0">
+            <button
+              onClick={() => navigate('/my-posts', { state: { highlightPostId: campaign.postId, postType: campaign.postType } })}
+              className="h-10 px-md rounded-2xl border border-white/15 bg-white/5 text-text-primary font-inter font-semibold text-sm flex items-center gap-2 hover:bg-white/10 hover:border-white/25 active:scale-[0.98] transition-all duration-200 flex-shrink-0"
+            >
               <Pencil size={14} />
               Edit Post
             </button>

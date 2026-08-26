@@ -14,14 +14,200 @@ import {
   Home,
   MessageSquare,
   Trash2,
+  BarChart2,
+  CornerDownRight,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Card from "../common/Card";
 import Overlay from "../common/Overlay";
 import newsfeedService from "../../services/newsfeedService";
 import postService from "../../services/postService";
+import boostService from "../../services/boostService";
 import { formatTimeAgo } from "../../utils/formatters";
 
-/* ─── Comment Section (from ClubPostCard) ───────────────────── */
+/* ─── Avatar helper ──────────────────────────────────────────── */
+const getAvatar = (avatar, name) =>
+  avatar && !avatar.includes("placehold") && !avatar.includes("dicebear")
+    ? avatar
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=2666F1&color=fff`;
+
+/* ─── Inline Reply Input ─────────────────────────────────────── */
+const ReplyInput = ({ currentUser, onSubmit, onCancel }) => {
+  const [text, setText] = useState("");
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    onSubmit(trimmed);
+    setText("");
+    if (inputRef.current) inputRef.current.style.height = "inherit";
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="flex items-end gap-2 mt-2 ml-11 animate-in fade-in slide-in-from-top-1 duration-150"
+    >
+      <img
+        src={getAvatar(currentUser?.avatar, currentUser?.name || "Me")}
+        alt="You"
+        className="w-7 h-7 rounded-full border border-white/15 flex-shrink-0 mb-1 object-cover"
+      />
+      <div className="flex-1 flex items-end bg-white/5 border border-white/10 rounded-2xl px-3 py-1.5 gap-2 focus-within:border-primary-blue/50 transition-colors">
+        <textarea
+          ref={inputRef}
+          rows={1}
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            e.target.style.height = "inherit";
+            e.target.style.height = `${e.target.scrollHeight}px`;
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit(e);
+            }
+            if (e.key === "Escape") onCancel();
+          }}
+          placeholder="Write a reply…"
+          className="flex-1 bg-transparent text-[12px] text-text-primary placeholder:text-text-tertiary outline-none resize-none py-1 max-h-24 scrollbar-hide"
+        />
+        <button
+          type="submit"
+          disabled={!text.trim()}
+          className="text-primary-blue disabled:text-text-tertiary transition-colors p-0.5"
+        >
+          <Send size={15} strokeWidth={2} />
+        </button>
+      </div>
+    </form>
+  );
+};
+
+/* ─── Single Reply Card ──────────────────────────────────────── */
+const ReplyCard = ({ reply }) => (
+  <div className="flex gap-2.5 items-start">
+    <img
+      src={getAvatar(reply.avatar, reply.user?.name || reply.user || "User")}
+      alt={reply.user?.name || reply.user || "User"}
+      className="w-7 h-7 rounded-full border border-white/15 flex-shrink-0 mt-0.5 object-cover"
+    />
+    <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
+      <div className="flex items-center gap-2 mb-0.5">
+        <span className="text-[12px] font-semibold text-text-primary">
+          {reply.user?.name || reply.user || "User"}
+        </span>
+        <span className="text-[10px] text-text-tertiary">
+          {reply.time || "just now"}
+        </span>
+      </div>
+      <p className="text-[12px] text-text-secondary leading-relaxed whitespace-pre-wrap break-words">
+        {reply.content || reply.text}
+      </p>
+    </div>
+  </div>
+);
+
+/* ─── Single Comment Item with Replies ──────────────────────── */
+const CommentItem = ({ comment, currentUser, onAddReply }) => {
+  const [showReplyInput, setShowReplyInput] = useState(false);
+  const [showReplies, setShowReplies] = useState(true);
+  const replies = comment.replies || [];
+
+  const handleSubmitReply = (text) => {
+    onAddReply(text, comment.id);
+    setShowReplyInput(false);
+    setShowReplies(true);
+  };
+
+  return (
+    <div className="flex flex-col gap-0">
+      {/* Root comment */}
+      <div className="flex gap-3 items-start">
+        <img
+          src={getAvatar(
+            comment.avatar,
+            comment.user?.name || comment.user || "User",
+          )}
+          alt={comment.user?.name || comment.user || "User"}
+          className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5 object-cover"
+        />
+        <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[13px] font-semibold text-text-primary">
+              {comment.user?.name || comment.user || "User"}
+            </span>
+            <span className="text-[11px] text-text-tertiary">
+              {comment.time || "just now"}
+            </span>
+          </div>
+          <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-wrap break-words">
+            {comment.content || comment.text}
+          </p>
+        </div>
+      </div>
+
+      {/* Reply trigger row */}
+      <div className="flex items-center gap-3 ml-11 mt-1 mb-1">
+        <button
+          onClick={() => setShowReplyInput((v) => !v)}
+          className="flex items-center gap-1 text-[11px] text-text-tertiary hover:text-primary-blue transition-colors"
+        >
+          <CornerDownRight size={12} strokeWidth={2} />
+          Reply
+        </button>
+        {replies.length > 0 && (
+          <button
+            onClick={() => setShowReplies((v) => !v)}
+            className="flex items-center gap-1 text-[11px] text-text-tertiary hover:text-primary-blue transition-colors"
+          >
+            {showReplies ? (
+              <>
+                <ChevronUp size={12} strokeWidth={2} />
+                Hide {replies.length}{" "}
+                {replies.length === 1 ? "reply" : "replies"}
+              </>
+            ) : (
+              <>
+                <ChevronDown size={12} strokeWidth={2} />
+                Show {replies.length}{" "}
+                {replies.length === 1 ? "reply" : "replies"}
+              </>
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* Inline reply input */}
+      {showReplyInput && (
+        <ReplyInput
+          currentUser={currentUser}
+          onSubmit={handleSubmitReply}
+          onCancel={() => setShowReplyInput(false)}
+        />
+      )}
+
+      {/* Replies list with vertical connector line */}
+      {showReplies && replies.length > 0 && (
+        <div className="ml-11 pl-3 border-l-2 border-white/10 flex flex-col gap-2 mt-1">
+          {replies.map((r) => (
+            <ReplyCard key={r.id} reply={r} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ─── Comment Section ────────────────────────────────────────── */
 const CommentSection = ({
   postComments,
   onAddComment,
@@ -39,9 +225,8 @@ const CommentSection = ({
     e.preventDefault();
     const trimmed = text.trim();
     if (!trimmed) return;
-    onAddComment(trimmed);
+    onAddComment(trimmed, null);
     setText("");
-    // Reset height if ref exists
     if (inputRef.current) {
       inputRef.current.style.height = "inherit";
     }
@@ -56,50 +241,24 @@ const CommentSection = ({
         </div>
       )}
 
-      {/* Existing comments */}
+      {/* Existing comments with replies */}
       {!loading && postComments.length > 0 && (
-        <div className="flex flex-col gap-3 max-h-56 overflow-y-auto pr-1 scrollbar-hide">
+        <div className="flex flex-col gap-4 max-h-[480px] overflow-y-auto pr-1 scrollbar-hide">
           {postComments.map((c) => (
-            <div key={c.id} className="flex gap-3 items-start">
-              <img
-                src={
-                  c.avatar &&
-                  !c.avatar.includes("placehold") &&
-                  !c.avatar.includes("dicebear")
-                    ? c.avatar
-                    : `https://ui-avatars.com/api/?name=${encodeURIComponent(c.user?.name || c.user || "User")}&background=2666F1&color=fff`
-                }
-                alt={c.user?.name || c.user || "User"}
-                className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mt-0.5 object-cover"
-              />
-              <div className="flex-1 min-w-0 bg-white/5 rounded-xl px-3 py-2">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[13px] font-semibold text-text-primary">
-                    {c.user?.name || c.user || "User"}
-                  </span>
-                  <span className="text-[11px] text-text-tertiary">
-                    {c.time || "just now"}
-                  </span>
-                </div>
-                <p className="text-[13px] text-text-secondary leading-relaxed whitespace-pre-wrap break-words">
-                  {c.content || c.text}
-                </p>
-              </div>
-            </div>
+            <CommentItem
+              key={c.id}
+              comment={c}
+              currentUser={currentUser}
+              onAddReply={onAddComment}
+            />
           ))}
         </div>
       )}
 
-      {/* Input */}
+      {/* New comment input */}
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <img
-          src={
-            currentUser?.avatar &&
-            !currentUser.avatar.includes("placehold") &&
-            !currentUser.avatar.includes("dicebear")
-              ? currentUser.avatar
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.name || "Me")}&background=2666F1&color=fff`
-          }
+          src={getAvatar(currentUser?.avatar, currentUser?.name || "Me")}
           alt="You"
           className="w-8 h-8 rounded-full border border-white/15 flex-shrink-0 mb-1 object-cover"
         />
@@ -110,7 +269,6 @@ const CommentSection = ({
             value={text}
             onChange={(e) => {
               setText(e.target.value);
-              // Auto-resize
               e.target.style.height = "inherit";
               e.target.style.height = `${e.target.scrollHeight}px`;
             }}
@@ -169,14 +327,41 @@ const PostCard = ({
   const [imgFailed, setImgFailed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const currentUser = getCurrentUser();
+  const cardRef = useRef(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+  const impressionTracked = useRef(false);
+  const interactionTracked = useRef(false);
+
+  const postType = post?.postType || "normal";
+  const postId = post?.id;
+
+  useEffect(() => {
+    if (!isPromoted || !postId || impressionTracked.current || !cardRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !impressionTracked.current) {
+          impressionTracked.current = true;
+          boostService.trackBoostMetrics({
+            postId,
+            postType,
+            action: "impression",
+            userId: currentUser?.id || currentUser?.userId,
+          });
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(cardRef.current);
+
+    return () => observer.disconnect();
+  }, [isPromoted, postId, postType, currentUser]);
 
   const DESCRIPTION_LIMIT = 250;
   const isLongDescription =
     description && description.length > DESCRIPTION_LIMIT;
-
-  const postType = post?.postType || "normal";
-  const postId = post?.id;
 
   // Handle case where author is passed as an object instead of a string
   const displayAuthor =
@@ -195,6 +380,18 @@ const PostCard = ({
 
     try {
       await newsfeedService.toggleLike(postType, postId);
+      if (!wasLiked && isPromoted && postId && !interactionTracked.current) {
+        interactionTracked.current = true;
+        // Track the like for boost analytics
+        boostService.trackBoostMetrics({
+          postId,
+          postType,
+          action: "Like",
+          content: "Liked the post",
+          impact: "Medium",
+          userId: currentUser?.id || currentUser?.userId,
+        });
+      }
     } catch (err) {
       // Revert on failure
       setIsLiked(wasLiked);
@@ -233,6 +430,16 @@ const PostCard = ({
           seed: c.user?.name || "User",
           time: c.createdAt ? formatTimeAgo(c.createdAt) : "just now",
           text: c.content,
+          content: c.content,
+          // Map nested replies
+          replies: (c.replies || []).map((r) => ({
+            id: r.id,
+            user: r.user?.name || "User",
+            avatar: r.user?.avatar,
+            time: r.createdAt ? formatTimeAgo(r.createdAt) : "just now",
+            text: r.content,
+            content: r.content,
+          })),
         }));
         setPostComments(fetchedComments);
         setCommentCount(fetchedComments.length);
@@ -243,39 +450,128 @@ const PostCard = ({
     }
   };
 
-  const handleAddComment = async (text) => {
-    // Optimistic add
-    const tempComment = {
-      id: `new-${Date.now()}`,
-      user: currentUser?.name || "You",
-      avatar: currentUser?.avatar,
-      seed: currentUser?.name || "Me",
-      time: "just now",
-      text,
-    };
-    setPostComments((prev) => [...prev, tempComment]);
-    setCommentCount((c) => c + 1);
+  /**
+   * handleAddComment handles both new root comments (parentId = null)
+   * and replies (parentId = commentId of the parent).
+   */
+  const handleAddComment = async (text, parentId = null) => {
+    if (parentId) {
+      // ── Optimistic reply ──────────────────────────────────────
+      const tempReply = {
+        id: `new-reply-${Date.now()}`,
+        user: currentUser?.name || "You",
+        avatar: currentUser?.avatar,
+        time: "just now",
+        text,
+        content: text,
+      };
+      setPostComments((prev) =>
+        prev.map((c) =>
+          c.id === parentId
+            ? { ...c, replies: [...(c.replies || []), tempReply] }
+            : c,
+        ),
+      );
 
-    try {
-      const data = await newsfeedService.addComment(postType, postId, text);
-      // Replace temp with real comment from backend
-      if (data.comment) {
-        const realComment = {
-          id: data.comment.id,
-          user: data.comment.user?.name || currentUser?.name || "You",
-          avatar: data.comment.user?.avatar || currentUser?.avatar,
-          seed: data.comment.user?.name || currentUser?.name || "Me",
-          time: "just now",
-          text: data.comment.content,
-        };
-        setPostComments((prev) =>
-          prev.map((c) => (c.id === tempComment.id ? realComment : c)),
+      try {
+        const data = await newsfeedService.addComment(
+          postType,
+          postId,
+          text,
+          parentId,
         );
+        if (data.comment) {
+          const realReply = {
+            id: data.comment.id,
+            user: data.comment.user?.name || currentUser?.name || "You",
+            avatar: data.comment.user?.avatar || currentUser?.avatar,
+            time: "just now",
+            text: data.comment.content,
+            content: data.comment.content,
+          };
+          setPostComments((prev) =>
+            prev.map((c) =>
+              c.id === parentId
+                ? {
+                    ...c,
+                    replies: (c.replies || []).map((r) =>
+                      r.id === tempReply.id ? realReply : r,
+                    ),
+                  }
+                : c,
+            ),
+          );
+        }
+      } catch (err) {
+        // Revert temp reply on failure
+        setPostComments((prev) =>
+          prev.map((c) =>
+            c.id === parentId
+              ? {
+                  ...c,
+                  replies: (c.replies || []).filter(
+                    (r) => r.id !== tempReply.id,
+                  ),
+                }
+              : c,
+          ),
+        );
+
+        if (isPromoted && postId && !interactionTracked.current) {
+          interactionTracked.current = true;
+          // Track the comment for boost analytics
+          boostService.trackBoostMetrics({
+            postId,
+            postType,
+            action: "Comment",
+            content: text.substring(0, 500),
+            impact: "High",
+            userId: currentUser?.id || currentUser?.userId,
+          });
+        }
       }
-    } catch (err) {
-      // Remove temp comment on failure
-      setPostComments((prev) => prev.filter((c) => c.id !== tempComment.id));
-      setCommentCount((c) => c - 1);
+    } else {
+      // ── Optimistic root comment ───────────────────────────────
+      const tempComment = {
+        id: `new-${Date.now()}`,
+        user: currentUser?.name || "You",
+        avatar: currentUser?.avatar,
+        seed: currentUser?.name || "Me",
+        time: "just now",
+        text,
+        content: text,
+        replies: [],
+      };
+      setPostComments((prev) => [...prev, tempComment]);
+      setCommentCount((c) => c + 1);
+
+      try {
+        const data = await newsfeedService.addComment(
+          postType,
+          postId,
+          text,
+          null,
+        );
+        if (data.comment) {
+          const realComment = {
+            id: data.comment.id,
+            user: data.comment.user?.name || currentUser?.name || "You",
+            avatar: data.comment.user?.avatar || currentUser?.avatar,
+            seed: data.comment.user?.name || currentUser?.name || "Me",
+            time: "just now",
+            text: data.comment.content,
+            content: data.comment.content,
+            replies: [],
+          };
+          setPostComments((prev) =>
+            prev.map((c) => (c.id === tempComment.id ? realComment : c)),
+          );
+        }
+      } catch (err) {
+        // Remove temp comment on failure
+        setPostComments((prev) => prev.filter((c) => c.id !== tempComment.id));
+        setCommentCount((c) => c - 1);
+      }
     }
   };
 
@@ -298,7 +594,6 @@ const PostCard = ({
     if (profileId) {
       reportNavigate(`/profile/${profileId}`);
     } else {
-
     }
   };
 
@@ -336,9 +631,9 @@ const PostCard = ({
         };
     }
   })();
-
   return (
     <Card
+      ref={cardRef}
       variant="card"
       padding="p-0"
       className={
@@ -466,34 +761,66 @@ const PostCard = ({
         >
           {isManagementMode ? (
             <>
-              {/* Boost */}
-              <button
-                onClick={() =>
-                  !isPromoted &&
-                  reportNavigate("/business/boost-post", {
-                    state: { postId: postId, postType: postType },
-                  })
-                }
-                disabled={isPromoted}
-                className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
-                  isPromoted
-                    ? "opacity-40 cursor-not-allowed"
-                    : "hover:bg-white/5 hover:text-[#FBBF24]"
-                }`}
-              >
-                <div className="flex items-center gap-1.5">
-                  <Zap
-                    size={20}
-                    className={
-                      !isPromoted ? "group-hover:fill-[#FBBF24]/20" : ""
+              {/* Boost / Analytics */}
+              {isPromoted && boostMeta?.analyticsAccess ? (
+                <button
+                  onClick={() => {
+                    if (boostMeta?.purchaseId) {
+                      reportNavigate(
+                        `/boost-analytics/${boostMeta.purchaseId}`,
+                      );
                     }
-                    strokeWidth={1.8}
-                  />
-                </div>
-                <span className="text-[11px]">
-                  {isPromoted ? "Active Boost" : "Boost"}
-                </span>
-              </button>
+                  }}
+                  disabled={!boostMeta?.purchaseId}
+                  title={
+                    !boostMeta?.purchaseId
+                      ? "Analytics not available yet"
+                      : "View Analytics"
+                  }
+                  className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
+                    boostMeta?.purchaseId
+                      ? "hover:bg-white/5 hover:text-primary-blue"
+                      : "opacity-40 cursor-not-allowed"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <BarChart2
+                      size={20}
+                      className="group-hover:text-primary-blue"
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <span className="text-[11px]">Analytics</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() =>
+                    !isPromoted &&
+                    reportNavigate("/business/boost-post", {
+                      state: { postId: postId, postType: postType },
+                    })
+                  }
+                  disabled={isPromoted}
+                  className={`flex flex-col items-center justify-center gap-0.5 py-2 rounded-lg transition-colors group ${
+                    isPromoted
+                      ? "opacity-40 cursor-not-allowed"
+                      : "hover:bg-white/5 hover:text-[#FBBF24]"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Zap
+                      size={20}
+                      className={
+                        !isPromoted ? "group-hover:fill-[#FBBF24]/20" : ""
+                      }
+                      strokeWidth={1.8}
+                    />
+                  </div>
+                  <span className="text-[11px]">
+                    {isPromoted ? "Active Boost" : "Boost"}
+                  </span>
+                </button>
+              )}
 
               {/* Delete */}
               <button
@@ -579,7 +906,7 @@ const PostCard = ({
           )}
         </div>
 
-        {/* Comment Section (ClubPostCard style) */}
+        {/* Comment Section */}
         {showComments && (
           <CommentSection
             postComments={postComments}
@@ -592,7 +919,11 @@ const PostCard = ({
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <Overlay open={showDeleteModal} onClose={() => setShowDeleteModal(false)} zIndex="z-[200]">
+        <Overlay
+          open={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          zIndex="z-[200]"
+        >
           <Card variant="modal" padding="p-0" className="w-full max-w-sm">
             <div className="p-6 md:p-8 flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-full bg-state-error/10 flex items-center justify-center mb-4">
@@ -600,7 +931,8 @@ const PostCard = ({
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Delete Post</h2>
               <p className="text-text-secondary text-sm leading-relaxed mb-6">
-                Are you sure you want to delete this post? This action cannot be undone.
+                Are you sure you want to delete this post? This action cannot be
+                undone.
               </p>
               <div className="flex w-full gap-3">
                 <button
