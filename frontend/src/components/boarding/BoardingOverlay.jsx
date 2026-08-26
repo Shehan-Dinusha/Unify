@@ -98,7 +98,7 @@ const BoardingOverlay = ({ post, onClose }) => {
                     <div className="bg-white/5 border border-white/5 rounded-3xl p-6 flex flex-col">
                         <span className="text-body-extra-small text-text-tertiary mb-1 uppercase tracking-widest font-semibold">Monthly Rent</span>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-heading-medium text-text-primary">{post.price.split('/')[0]}</span>
+                            <span className="text-heading-medium text-text-primary">Rs. {post.price.split('/')[0]}</span>
                             <span className="text-body-medium text-text-tertiary">/{post.price.split('/')[1] || 'mo'}</span>
                         </div>
                     </div>
