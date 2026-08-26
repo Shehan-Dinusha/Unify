@@ -33,8 +33,20 @@ export const createBoostCheckoutSession = async (req, res) => {
       return sendResponse(res, 400, false, "Package ID is required.");
     }
 
-    // Validate the package exists and is live
-    const pkg = await BoostPackage.findByPk(packageId);
+    // ─── ISSUE #10: Add error handling for DB lookup failures ──────────
+    let pkg;
+    try {
+      pkg = await BoostPackage.findByPk(packageId);
+    } catch (dbError) {
+      logger.error(`Database error fetching package ${packageId}: ${dbError.message}`);
+      return sendResponse(
+        res,
+        500,
+        false,
+        "Could not retrieve package details. Please try again."
+      );
+    }
+
     if (!pkg) {
       return sendResponse(res, 404, false, "Boost package not found.");
     }

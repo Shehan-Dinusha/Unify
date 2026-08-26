@@ -41,7 +41,11 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
     });
 
     if (!purchase) {
-      return sendResponse(res, 404, false, 'Boost purchase not found or unauthorized.');
+      // ─── ISSUE #6: Log unauthorized access attempts for audit trail ────
+      logger.warn(
+        `Unauthorized analytics access attempt: purchaseId=${purchaseId}, userId=${userId}`
+      );
+      return sendResponse(res, 403, false, 'You do not have access to this purchase analytics.');
     }
 
     // 2. Try to find a linked BoostCampaign by postId + userId
@@ -145,8 +149,12 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
         const dayDate = new Date(purchaseDate.getTime() + d * msPerDay);
         labels.push(dayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
         
-        // Slightly randomize the distribution for visual variance, unless it's just 1 day
-        const variance = chartDays > 1 ? (Math.random() * 0.4 + 0.8) : 1; // +/- 20%
+        // ─── ISSUE #7: Use deterministic seeding instead of random variance ─
+        // This ensures the same purchase always displays the same chart,
+        // even on multiple refreshes, preventing user confusion.
+        const seedValue = purchase.id + d; // Deterministic seed per purchase per day
+        const pseudoRandom = Math.sin(seedValue) * 10000 - Math.floor(Math.sin(seedValue) * 10000);
+        const variance = chartDays > 1 ? (pseudoRandom * 0.4 + 0.8) : 1; // +/- 20% variance
         boostedReachArr.push(Math.round(impressionsPerDay * variance));
         
         // Organic reach is zero since we only track boosted impressions
@@ -203,7 +211,7 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
         purchasesRate: clicks > 0 ? `${((purchaseCount / clicks) * 100).toFixed(1)}%` : '0.0%',
       },
       byAction,
-      // Real per-day chart data
+      // Deterministic per-day chart data
       performanceData: {
         labels,
         boostedReach: boostedReachArr,
