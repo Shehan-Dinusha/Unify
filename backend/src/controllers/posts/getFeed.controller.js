@@ -227,9 +227,11 @@ export const getFeed = async (req, res) => {
         const multiplier = boostMeta.visibilityMultiplier || 1;
         const score = (11 - priority) * 100 + multiplier * 10;
         
-        boostedPosts.push({ ...post, _boostMeta: boostMeta, _score: score });
+        boostedPosts.push({ ...post, _boostMeta: boostMeta, _score: score, _isBoostedClone: true });
+        // NEW: also keep the organic version in regularPosts
+        regularPosts.push({ ...post, _isBoostedClone: false });
       } else {
-        regularPosts.push(post);
+        regularPosts.push({ ...post, _isBoostedClone: false });
       }
     }
 
@@ -277,7 +279,8 @@ export const getFeed = async (req, res) => {
           SavedItem.findOne({ where: { userId, postId: post.id, postType: post.postType } }),
         ]);
 
-        const boostMeta = boostMap.get(`${post.postType}-${post.id}`);
+        const isBoostedClone = post._isBoostedClone || false;
+        const boostMeta = isBoostedClone ? boostMap.get(`${post.postType}-${post.id}`) : null;
 
         return {
           ...post,
