@@ -156,7 +156,9 @@ export const getFeed = async (req, res) => {
       const existingIds = new Set(combinedFeed.map((p) => `${p.postType}-${p.id}`));
 
       for (const [mapKey, boostMeta] of boostMap.entries()) {
-        const [postType, postIdStr] = mapKey.split('-');
+        const lastDash = mapKey.lastIndexOf('-');
+        const postType = mapKey.slice(0, lastDash);
+        const postIdStr = mapKey.slice(lastDash + 1);
         const postId = parseInt(postIdStr, 10);
 
         if (boostMeta.crossCategoryReach) {
