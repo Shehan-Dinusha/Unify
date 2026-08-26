@@ -20,7 +20,7 @@ const EditProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState(null);
-  const [activeRole, setActiveRole] = useState((searchParams.get("role") || "student").toLowerCase());
+  const [activeRole, setActiveRole] = useState(searchParams.get("role")?.toLowerCase() || "");
 
   const fetchProfile = async () => {
     try {
@@ -35,6 +35,23 @@ const EditProfilePage = () => {
       const serviceRole = backendRole === "admin" ? "student" : backendRole;
       const data = await getMyProfile(serviceRole);
       setProfile(data);
+
+      // Auto-detect role if not provided in searchParams URL query
+      if (!searchParams.get("role")) {
+        if (backendRole === "student") {
+          setActiveRole("student");
+        } else if (backendRole === "club") {
+          setActiveRole("club_society");
+        } else if (backendRole === "business") {
+          const category = data?.category?.toLowerCase();
+          if (category === "boarding") setActiveRole("boarding_owner");
+          else if (category === "food") setActiveRole("food_cafe");
+          else if (category === "self_employed") setActiveRole("self_employed");
+          else setActiveRole("boarding_owner");
+        } else {
+          setActiveRole("student");
+        }
+      }
     } catch (error) {
       toast.error("Error", error.message || "Failed to load profile");
     } finally {

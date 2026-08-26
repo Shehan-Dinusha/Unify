@@ -145,7 +145,7 @@ export const useOwnProfile = () => {
   const deleteOpen = activeModal === "delete";
   const switchOpen = activeModal === "switch";
 
-  const handleEditProfile = () => navigate("/profile/edit");
+  const handleEditProfile = () => navigate(`/profile/edit?role=${activeRole}`);
   const handleSecurity = () => navigate("/profile/security");
   const handleSwitchAccount = () =>
     navigate(`/profile?role=${activeRole}&modal=switch`);
