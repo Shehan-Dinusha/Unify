@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback } from "react";
 import {
-  Search, Trash2, X, CheckCheck, Smile, Paperclip, Send, FileText, ChevronLeft, Loader2, Download, ChevronUp, ChevronDown
+  Search, Trash2, X, CheckCheck, Smile, Paperclip, Send, FileText, ChevronLeft, Loader2, Download, ChevronUp, ChevronDown, Maximize2
 } from "lucide-react";
 import { EmptyInbox } from "./EmptyChatState";
 import * as chatService from "../../services/chatService";
@@ -305,6 +305,17 @@ const ChatWindow = ({
   const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, type: null, id: null });
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null); // lightbox
+
+  // Close lightbox on Escape
+  useEffect(() => {
+    if (!selectedImage) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setSelectedImage(null);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedImage]);
 
   // Determine if a message is "mine" based on currentUserId
   const enrichedMessages = useMemo(() => {
@@ -626,21 +637,19 @@ const ChatWindow = ({
                             {msg.attachments.map((att, attIdx) => (
                               <div key={att.id || attIdx}>
                                 {att.isImage ? (
-                                  <div className="relative group overflow-hidden rounded-xl border border-white/10">
+                                  <div
+                                    className="relative group overflow-hidden rounded-xl border border-white/10 cursor-pointer"
+                                    onClick={() => setSelectedImage(att)}
+                                  >
                                     <img
                                       src={att.url}
-                                      alt={att.name}
-                                      className="max-w-full h-auto object-cover max-h-[300px]"
+                                      alt={att.name || 'Image'}
+                                      className="block w-auto h-auto max-w-[260px] max-h-[220px] object-contain"
                                     />
-                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                       <a
-                                          href={att.url}
-                                          download={att.name}
-                                          className="p-2 bg-dark-1/80 rounded-full text-white hover:scale-110 transition-transform"
-                                          onClick={(e) => e.stopPropagation()}
-                                       >
-                                          <FileText size={20} />
-                                       </a>
+                                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                      <div className="p-2 bg-dark-1/80 backdrop-blur-sm rounded-full text-white">
+                                        <Maximize2 size={18} />
+                                      </div>
                                     </div>
                                   </div>
                                 ) : (
@@ -740,6 +749,47 @@ const ChatWindow = ({
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Image Lightbox ── */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/92 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={() => setSelectedImage(null)}
+        >
+          {/* Top bar: filename + controls */}
+          <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/70 to-transparent pointer-events-none">
+            <p className="text-white/70 text-[13px] font-medium truncate max-w-[55%] select-none">
+              {selectedImage.name}
+            </p>
+            <div className="flex items-center gap-2 pointer-events-auto">
+              <a
+                href={selectedImage.url}
+                download={selectedImage.name}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                onClick={(e) => e.stopPropagation()}
+                title="Download"
+              >
+                <Download size={18} />
+              </a>
+              <button
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                onClick={() => setSelectedImage(null)}
+                title="Close (Esc)"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* Image — stopPropagation so clicking the image itself doesn't close */}
+          <img
+            src={selectedImage.url}
+            alt={selectedImage.name || 'Image'}
+            className="max-w-[90vw] max-h-[85vh] w-auto h-auto object-contain rounded-xl shadow-2xl animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>

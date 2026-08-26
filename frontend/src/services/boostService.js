@@ -1,5 +1,5 @@
 //Boost API Service
-import api from './api';
+import api from "./api";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -10,19 +10,27 @@ const extractErrorMessage = (error) => {
     if (data?.message) return data.message;
 
     switch (status) {
-      case 400: return 'Invalid request. Please check the submitted data.';
-      case 401: return 'Unauthorized. Please log in again.';
-      case 404: return 'The requested resource was not found.';
-      case 409: return 'A conflict occurred. The package may already exist.';
-      case 500: return 'An internal server error occurred. Please try again later.';
-      default:  return `Request failed with status ${status}.`;
+      case 400:
+        return "Invalid request. Please check the submitted data.";
+      case 401:
+        return "Unauthorized. Please log in again.";
+      case 404:
+        return "The requested resource was not found.";
+      case 409:
+        return "A conflict occurred. The package may already exist.";
+      case 500:
+        return "An internal server error occurred. Please try again later.";
+      default:
+        return `Request failed with status ${status}.`;
     }
   }
 
-  if (error.code === 'ECONNABORTED') return 'Request timed out. Please try again.';
-  if (error.message === 'Network Error') return 'Network error. Please check your connection.';
+  if (error.code === "ECONNABORTED")
+    return "Request timed out. Please try again.";
+  if (error.message === "Network Error")
+    return "Network error. Please check your connection.";
 
-  return error.message || 'An unexpected error occurred.';
+  return error.message || "An unexpected error occurred.";
 };
 
 // ─── Package CRUD ───────────────────────────────────────────────────────────
@@ -35,8 +43,8 @@ const extractErrorMessage = (error) => {
 export const getPackages = async (includeArchived = false) => {
   try {
     const params = {};
-    if (includeArchived) params.includeArchived = 'true';
-    const response = await api.get('/boosts/packages', { params });
+    if (includeArchived) params.includeArchived = "true";
+    const response = await api.get("/boosts/packages", { params });
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -49,7 +57,9 @@ export const getPackages = async (includeArchived = false) => {
  */
 export const getPackageById = async (id) => {
   try {
-    const response = await api.get(`/boosts/packages/${encodeURIComponent(id)}`);
+    const response = await api.get(
+      `/boosts/packages/${encodeURIComponent(id)}`,
+    );
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -62,7 +72,7 @@ export const getPackageById = async (id) => {
  */
 export const createPackage = async (data) => {
   try {
-    const response = await api.post('/boosts/packages', data);
+    const response = await api.post("/boosts/packages", data);
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -76,7 +86,10 @@ export const createPackage = async (data) => {
  */
 export const updatePackage = async (id, data) => {
   try {
-    const response = await api.put(`/boosts/packages/${encodeURIComponent(id)}`, data);
+    const response = await api.put(
+      `/boosts/packages/${encodeURIComponent(id)}`,
+      data,
+    );
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -89,7 +102,9 @@ export const updatePackage = async (id, data) => {
  */
 export const deletePackage = async (id) => {
   try {
-    const response = await api.delete(`/boosts/packages/${encodeURIComponent(id)}`);
+    const response = await api.delete(
+      `/boosts/packages/${encodeURIComponent(id)}`,
+    );
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -104,7 +119,7 @@ export const deletePackage = async (id) => {
  */
 export const getAdminStats = async () => {
   try {
-    const response = await api.get('/boosts/admin/stats');
+    const response = await api.get("/boosts/admin/stats");
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -119,9 +134,17 @@ export const getAdminStats = async () => {
  * @param {number|null} postId
  * @param {string} postType
  */
-export const purchaseBoost = async (packageId, postId = null, postType = 'normal') => {
+export const purchaseBoost = async (
+  packageId,
+  postId = null,
+  postType = "normal",
+) => {
   try {
-    const response = await api.post('/boosts/purchase', { packageId, postId, postType });
+    const response = await api.post("/boosts/purchase", {
+      packageId,
+      postId,
+      postType,
+    });
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -130,11 +153,12 @@ export const purchaseBoost = async (packageId, postId = null, postType = 'normal
 
 /**
  * Create a Stripe checkout session for a boost purchase.
- * @param {object} data - { packageId, postId, postType, amount, packageName, durationDays }
+ * @param {object} data - { packageId, postId, postType, packageName, durationDays }
+ *   Note: price is always read from the database — any `amount` field sent by the client is ignored.
  */
 export const createBoostCheckoutSession = async (data) => {
   try {
-    const response = await api.post('/boosts/create-checkout-session', data);
+    const response = await api.post("/boosts/create-checkout-session", data);
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -147,7 +171,7 @@ export const createBoostCheckoutSession = async (data) => {
  */
 export const confirmBoostPayment = async (sessionId) => {
   try {
-    const response = await api.post('/boosts/confirm-payment', { sessionId });
+    const response = await api.post("/boosts/confirm-payment", { sessionId });
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -159,7 +183,7 @@ export const confirmBoostPayment = async (sessionId) => {
  */
 export const getMyBoosts = async () => {
   try {
-    const response = await api.get('/boosts/my-boosts');
+    const response = await api.get("/boosts/my-boosts");
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -178,62 +202,7 @@ export const getBoostLogs = async (filters = {}) => {
     if (filters.page) params.page = filters.page;
     if (filters.limit) params.limit = filters.limit;
     if (filters.type) params.type = filters.type;
-    const response = await api.get('/boosts/admin/logs', { params });
-    return response.data;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }
-};
-
-// ─── Campaigns (existing) ──────────────────────────────────────────────────
-
-/**
- * Create a boost campaign.
- * @param {object} data
- */
-export const createCampaign = async (data) => {
-  try {
-    const response = await api.post('/boosts/campaigns', data);
-    return response.data;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }
-};
-
-/**
- * Get all campaigns for the current user.
- */
-export const getCampaigns = async () => {
-  try {
-    const response = await api.get('/boosts/campaigns');
-    return response.data;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }
-};
-
-/**
- * Get a specific campaign by ID.
- * @param {string} id
- */
-export const getCampaignById = async (id) => {
-  try {
-    const response = await api.get(`/boosts/campaigns/${encodeURIComponent(id)}`);
-    return response.data;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }
-};
-
-
-
-/**
- * Get interactions for a specific campaign.
- * @param {string} id
- */
-export const getCampaignInteractions = async (id) => {
-  try {
-    const response = await api.get(`/boosts/campaigns/${encodeURIComponent(id)}/interactions`);
+    const response = await api.get("/boosts/admin/logs", { params });
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -246,7 +215,7 @@ export const getCampaignInteractions = async (id) => {
  */
 export const trackBoostMetrics = async (data) => {
   try {
-    const response = await api.post('/boosts/track', data);
+    const response = await api.post("/boosts/track", data);
     return response.data;
   } catch (error) {
     // Fail silently for tracking
@@ -259,9 +228,14 @@ export const trackBoostMetrics = async (data) => {
  * @param {number|string} purchaseId
  * @param {number|string} timeRange
  */
-export const getBoostAnalyticsByPurchase = async (purchaseId, timeRange = 7) => {
+export const getBoostAnalyticsByPurchase = async (
+  purchaseId,
+  timeRange = 7,
+) => {
   try {
-    const response = await api.get(`/boosts/purchase/${encodeURIComponent(purchaseId)}/analytics?timeRange=${timeRange}`);
+    const response = await api.get(
+      `/boosts/purchase/${encodeURIComponent(purchaseId)}/analytics?timeRange=${timeRange}`,
+    );
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -280,10 +254,6 @@ const boostService = {
   confirmBoostPayment,
   getMyBoosts,
   getBoostLogs,
-  createCampaign,
-  getCampaigns,
-  getCampaignById,
-  getCampaignInteractions,
   getBoostAnalyticsByPurchase,
   trackBoostMetrics,
 };

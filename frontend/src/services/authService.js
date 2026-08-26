@@ -46,6 +46,19 @@ export const saveAccountSession = (data) => {
   localStorage.setItem("savedAccounts", JSON.stringify(accounts));
 };
 
+// UPDATE-ONLY: refreshes user metadata for an account that is already in
+// savedAccounts. If the account was never explicitly added via + Add Account,
+// this is a deliberate no-op — it will NOT auto-insert the account.
+const updateSavedAccountUser = (user) => {
+  if (!user?.id) return;
+  const accounts = getSavedAccounts();
+  const index = accounts.findIndex((a) => String(a.id) === String(user.id));
+  if (index >= 0) {
+    accounts[index] = { ...accounts[index], user, lastActive: Date.now() };
+    localStorage.setItem("savedAccounts", JSON.stringify(accounts));
+  }
+};
+
 export const updateActiveAccountTokens = (
   accessToken,
   refreshToken,
@@ -105,13 +118,20 @@ export const removeSavedAccount = (userId) => {
   }
 };
 
-const setAuthData = (data) => {
+const setAuthData = (data, addToSwitcher = false) => {
   if (data.accessToken) localStorage.setItem("token", data.accessToken);
   if (data.refreshToken)
     localStorage.setItem("refreshToken", data.refreshToken);
   if (data.user) {
     localStorage.setItem("user", JSON.stringify(data.user));
-    saveAccountSession(data);
+    if (addToSwitcher) {
+      // Explicit Add Account flow — insert or update the entry in savedAccounts.
+      saveAccountSession(data);
+    } else {
+      // Normal login / OTP verify — only update if already explicitly saved;
+      // do NOT auto-add this account to the Switch Account list.
+      updateSavedAccountUser(data.user);
+    }
   }
   window.dispatchEvent(new Event("auth-changed"));
 };
@@ -237,7 +257,7 @@ export const refreshCurrentUser = async () => {
     }
 
     localStorage.setItem("user", JSON.stringify(updatedUser));
-    saveAccountSession({ user: updatedUser });
+    updateSavedAccountUser(updatedUser);
     return updatedUser;
   } catch {
     return getCurrentUser();
@@ -290,12 +310,24 @@ export const fetchServerLinkedAccounts = async () => {
 
 export const linkAccountServer = async (identifier, password) => {
   try {
+    // Step 1: Explicitly save the currently active account (A) into savedAccounts
+    // so the user can switch back to it after Account B is added.
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      saveAccountSession({
+        user: currentUser,
+        accessToken: localStorage.getItem("token"),
+        refreshToken: localStorage.getItem("refreshToken"),
+      });
+    }
+
+    // Step 2: Authenticate Account B and add it explicitly to savedAccounts.
     const response = await api.post("/auth/link-account", {
       identifier,
       password,
     });
     const { data } = response.data;
-    setAuthData(data);
+    setAuthData(data, true); // addToSwitcher = true → inserts Account B
     return data;
   } catch (error) {
     handleError(error);

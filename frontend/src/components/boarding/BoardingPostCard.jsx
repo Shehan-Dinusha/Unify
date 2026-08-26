@@ -62,7 +62,7 @@ const ImageCarousel = ({ images, title, price }) => {
             {/* Price pill overlay */}
             {price && (
                 <div className="absolute bottom-md left-md bg-dark-1/70 backdrop-blur-md border border-white/10 rounded-full px-md py-sm z-10">
-                    <span className="text-body-small-bold text-text-primary">{price}</span>
+                    <span className="text-body-small-bold text-text-primary">Rs. {price}</span>
                 </div>
             )}
 

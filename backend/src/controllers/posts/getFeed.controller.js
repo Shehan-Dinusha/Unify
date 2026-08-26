@@ -155,32 +155,29 @@ export const getFeed = async (req, res) => {
     if (type !== "all" && type !== "popular") {
       const existingIds = new Set(combinedFeed.map((p) => `${p.postType}-${p.id}`));
 
-      for (const [postId, boostMeta] of boostMap.entries()) {
+      for (const [mapKey, boostMeta] of boostMap.entries()) {
+        const lastDash = mapKey.lastIndexOf('-');
+        const postType = mapKey.slice(0, lastDash);
+        const postIdStr = mapKey.slice(lastDash + 1);
+        const postId = parseInt(postIdStr, 10);
+
         if (boostMeta.crossCategoryReach) {
-          // Check if this post is already in the current feed
-          // We need to find it from any model
-          const key1 = `normal-${postId}`;
-          const key2 = `club-product-${postId}`;
-          const key3 = `club-event-${postId}`;
-          const key4 = `boarding-${postId}`;
-
-          if (!existingIds.has(key1) && !existingIds.has(key2) && !existingIds.has(key3) && !existingIds.has(key4)) {
+          if (!existingIds.has(mapKey)) {
             // This boosted post isn't in the current category feed — inject it
-            // Try to find the post from any model
-            const models = [
-              { Model: NormalPost, type: "normal", authorKey: "author" },
-              { Model: ClubProductPost, type: "club-product", authorKey: "author" },
-              { Model: ClubEventPost, type: "club-event", authorKey: "author" },
-              { Model: Boarding, type: "boarding", authorKey: "host" },
-            ];
-
-            for (const { Model, type: pType, authorKey } of models) {
-              const post = await Model.findOne({
+            const modelsMap = {
+              'normal': { Model: NormalPost, authorKey: "author" },
+              'club-product': { Model: ClubProductPost, authorKey: "author" },
+              'club-event': { Model: ClubEventPost, authorKey: "author" },
+              'boarding': { Model: Boarding, authorKey: "host" },
+            };
+            const modelInfo = modelsMap[postType];
+            if (modelInfo) {
+              const post = await modelInfo.Model.findOne({
                 where: { id: postId },
                 include: [
                   {
                     model: User,
-                    as: authorKey,
+                    as: modelInfo.authorKey,
                     attributes: ["id", "name", "email", "avatar", "role"],
                   },
                 ],
@@ -191,11 +188,10 @@ export const getFeed = async (req, res) => {
               if (post) {
                 combinedFeed.push({
                   ...post,
-                  postType: pType,
-                  author: post[authorKey],
+                  postType: postType,
+                  author: post[modelInfo.authorKey],
                   _crossCategoryInjected: true,
                 });
-                break;
               }
             }
           }
@@ -203,90 +199,68 @@ export const getFeed = async (req, res) => {
       }
     }
 
-    // ═══════ STEP 3: FEATURE — feedPriority sorting ═══════
+    // ═══════ STEP 3: FEATURE — feedPriority sorting & autoRefreshHours ═══════
     // Split feed into boosted posts and regular posts
     const boostedPosts = [];
     const regularPosts = [];
+    const now = new Date();
 
     for (const post of combinedFeed) {
-      const boostMeta = boostMap.get(post.id);
+      post._sortTimestamp = new Date(post.createdAt); // Default for all
+
+      const boostMeta = boostMap.get(`${post.postType}-${post.id}`);
       if (boostMeta) {
-        boostedPosts.push({ ...post, _boostMeta: boostMeta });
+        // Calculate autoRefreshHours impact on sortTimestamp
+        const refreshHours = boostMeta.autoRefreshHours || 0;
+        if (refreshHours > 0) {
+          const purchaseDate = new Date(boostMeta.purchaseDate || post.createdAt);
+          const hoursSincePurchase = (now - purchaseDate) / (1000 * 60 * 60);
+          const refreshCycles = Math.floor(hoursSincePurchase / refreshHours);
+          const latestRefresh = new Date(purchaseDate.getTime() + refreshCycles * refreshHours * 60 * 60 * 1000);
+          if (latestRefresh > purchaseDate) {
+            post._sortTimestamp = latestRefresh;
+          }
+        }
+
+        // Calculate ranking score instead of inserting duplicates
+        const priority = boostMeta.feedPriority || 10;
+        const multiplier = boostMeta.visibilityMultiplier || 1;
+        const score = (11 - priority) * 100 + multiplier * 10;
+        
+        boostedPosts.push({ ...post, _boostMeta: boostMeta, _score: score, _isBoostedClone: true });
+        // NEW: also keep the organic version in regularPosts
+        regularPosts.push({ ...post, _isBoostedClone: false });
       } else {
-        regularPosts.push(post);
+        regularPosts.push({ ...post, _isBoostedClone: false });
       }
     }
 
-    // Sort boosted posts by feedPriority (lower = higher in feed)
+    // Sort boosted posts by score descending
     boostedPosts.sort((a, b) => {
-      const priorityDiff = (a._boostMeta.feedPriority || 10) - (b._boostMeta.feedPriority || 10);
-      if (priorityDiff !== 0) return priorityDiff;
-      // Same priority? Higher price wins
-      return (b._boostMeta.packagePrice || 0) - (a._boostMeta.packagePrice || 0);
+      const scoreDiff = b._score - a._score;
+      if (scoreDiff !== 0) return scoreDiff;
+      // Same score? Higher price wins
+      const priceDiff = (b._boostMeta.packagePrice || 0) - (a._boostMeta.packagePrice || 0);
+      if (priceDiff !== 0) return priceDiff;
+      // Finally, sort by refresh timestamp
+      return b._sortTimestamp - a._sortTimestamp;
     });
 
-    // Sort regular posts normally
+    // Sort regular posts normally using _sortTimestamp
     if (type === "popular") {
       regularPosts.sort((a, b) => {
         const likesDiff = (b.likesCount || 0) - (a.likesCount || 0);
         if (likesDiff !== 0) return likesDiff;
-        return new Date(b.createdAt) - new Date(a.createdAt);
+        return b._sortTimestamp - a._sortTimestamp;
       });
     } else {
       regularPosts.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        (a, b) => b._sortTimestamp - a._sortTimestamp
       );
     }
 
-    // ═══════ STEP 3.5: FEATURE — autoRefreshHours ═══════
-    // If a boosted post has autoRefreshHours > 0, treat its createdAt as
-    // the most recent refresh cycle. This makes it appear as "fresh" content
-    // even if the original post is days old — like OLX/Facebook ad bumping.
-    const now = new Date();
-    for (const post of boostedPosts) {
-      const refreshHours = post._boostMeta.autoRefreshHours || 0;
-      if (refreshHours > 0) {
-        const purchaseDate = new Date(post._boostMeta.purchaseDate || post.createdAt);
-        const hoursSincePurchase = (now - purchaseDate) / (1000 * 60 * 60);
-        const refreshCycles = Math.floor(hoursSincePurchase / refreshHours);
-        // Set createdAt to the latest refresh point (so it sorts as recent)
-        const latestRefresh = new Date(purchaseDate.getTime() + refreshCycles * refreshHours * 60 * 60 * 1000);
-        post.createdAt = latestRefresh > purchaseDate ? latestRefresh.toISOString() : post.createdAt;
-      }
-    }
-
-    // ═══════ STEP 4: FEATURE — visibilityMultiplier ═══════
-    // If a boosted post has visibilityMultiplier > 1, insert duplicate
-    // entries at calculated positions deeper in the feed.
-    // NOTE: This feature is disabled for "My Posts" view to avoid confusion.
-    const boostDuplicates = [];
-    if (type !== "my-posts") {
-      for (const post of boostedPosts) {
-        const multiplier = post._boostMeta.visibilityMultiplier || 1;
-        if (multiplier > 1) {
-          // Insert extra copies spaced evenly through the regular feed
-          for (let i = 1; i < multiplier; i++) {
-            boostDuplicates.push({
-              ...post,
-              _duplicateSlot: i, // Which duplicate this is (for position calc)
-            });
-          }
-        }
-      }
-    }
-
-    // Build the final feed: boosted first, then regular posts with duplicates inserted
+    // Build the final feed: boosted first, then regular posts
     let finalFeed = [...boostedPosts, ...regularPosts];
-
-    // Insert duplicates at spaced positions within the regular section
-    for (const dup of boostDuplicates) {
-      // Space them evenly: slot 1 goes at ~33% through, slot 2 at ~66%, etc.
-      const insertIndex = Math.min(
-        boostedPosts.length + Math.floor((regularPosts.length / (dup._boostMeta.visibilityMultiplier + 1)) * (dup._duplicateSlot + 1)),
-        finalFeed.length
-      );
-      finalFeed.splice(insertIndex, 0, dup);
-    }
 
     // Trim to limit
     if (type === "popular") {
@@ -305,7 +279,8 @@ export const getFeed = async (req, res) => {
           SavedItem.findOne({ where: { userId, postId: post.id, postType: post.postType } }),
         ]);
 
-        const boostMeta = boostMap.get(post.id);
+        const isBoostedClone = post._isBoostedClone || false;
+        const boostMeta = isBoostedClone ? boostMap.get(`${post.postType}-${post.id}`) : null;
 
         return {
           ...post,
@@ -329,6 +304,8 @@ export const getFeed = async (req, res) => {
           _boostMeta: undefined,
           _duplicateSlot: undefined,
           _crossCategoryInjected: undefined,
+          _sortTimestamp: undefined,
+          _score: undefined,
         };
       })
     );
