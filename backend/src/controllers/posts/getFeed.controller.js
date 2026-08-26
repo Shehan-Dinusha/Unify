@@ -277,7 +277,7 @@ export const getFeed = async (req, res) => {
           SavedItem.findOne({ where: { userId, postId: post.id, postType: post.postType } }),
         ]);
 
-        const boostMeta = boostMap.get(post.id);
+        const boostMeta = boostMap.get(`${post.postType}-${post.id}`);
 
         return {
           ...post,
