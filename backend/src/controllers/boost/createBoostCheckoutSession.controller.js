@@ -33,20 +33,8 @@ export const createBoostCheckoutSession = async (req, res) => {
       return sendResponse(res, 400, false, "Package ID is required.");
     }
 
-    // ─── ISSUE #10: Add error handling for DB lookup failures ──────────
-    let pkg;
-    try {
-      pkg = await BoostPackage.findByPk(packageId);
-    } catch (dbError) {
-      logger.error(`Database error fetching package ${packageId}: ${dbError.message}`);
-      return sendResponse(
-        res,
-        500,
-        false,
-        "Could not retrieve package details. Please try again."
-      );
-    }
-
+    // Validate the package exists and is live
+    const pkg = await BoostPackage.findByPk(packageId);
     if (!pkg) {
       return sendResponse(res, 404, false, "Boost package not found.");
     }
@@ -62,35 +50,41 @@ export const createBoostCheckoutSession = async (req, res) => {
     const frontendUrl =
       process.env.CORS_ORIGIN || "http://localhost:5173";
 
-    // ── Create Stripe Checkout Session (one-to-one: platform receives all) ──
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "lkr",
-            product_data: {
-              name: `${packageName || pkg.name} — Boost Package`,
-              description: `Boost your post for ${durationDays || pkg.durationValue} ${pkg.durationUnit}. Priority feed placement and enhanced visibility.`,
+    // ── Issue #19 fix: Add error handling for Stripe API calls ──────────
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "lkr",
+              product_data: {
+                name: `${packageName || pkg.name} — Boost Package`,
+                description: `Boost your post for ${durationDays || pkg.durationValue} ${pkg.durationUnit}. Priority feed placement and enhanced visibility.`,
+              },
+              unit_amount: Math.round(Number(pkg.price) * 100), // always from DB — never trust client
             },
-            unit_amount: Math.round(Number(pkg.price) * 100), // always from DB — never trust client
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        mode: "payment",
+        success_url: `${frontendUrl}/business/boost-post/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${frontendUrl}/business/boost-post/confirm`,
+        metadata: {
+          type: "boost_purchase",
+          packageId: packageId,
+          postId: postId ? String(postId) : "",
+          postType: postType || "",
+          userId: userId ? String(userId) : "",
+          durationDays: String(durationDays || 0),
+          amount: String(Number(pkg.price)), // audit: actual DB price charged
         },
-      ],
-      mode: "payment",
-      success_url: `${frontendUrl}/business/boost-post/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${frontendUrl}/business/boost-post/confirm`,
-      metadata: {
-        type: "boost_purchase",
-        packageId: packageId,
-        postId: postId ? String(postId) : "",
-        postType: postType || "",
-        userId: userId ? String(userId) : "",
-        durationDays: String(durationDays || 0),
-        amount: String(Number(pkg.price)), // audit: actual DB price charged
-      },
-    });
+      });
+    } catch (stripeErr) {
+      logger.error(`Stripe session creation error: ${stripeErr.message}`);
+      return sendResponse(res, 500, false, "Failed to create payment session. Please try again.");
+    }
 
     logger.info(
       `Stripe Boost Checkout Session created: ${session.id} for package ${packageId}, post ${postId || "none"}`

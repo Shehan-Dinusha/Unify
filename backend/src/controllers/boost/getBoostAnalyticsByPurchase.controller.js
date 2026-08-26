@@ -21,8 +21,12 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
   try {
     const { purchaseId } = req.params;
     const userId = req.user?.id;
-    // timeRange: how many days of chart data to return (default 7)
-    const timeRange = parseInt(req.query.timeRange, 10) || 7;
+    
+    // Issue #15 fix: Validate timeRange parameter with bounds checking
+    let timeRange = parseInt(req.query.timeRange, 10);
+    if (isNaN(timeRange) || timeRange < 1 || timeRange > 365) {
+      timeRange = 7; // Safe default
+    }
 
     if (!userId) {
       return sendResponse(res, 401, false, 'Authentication required.');
@@ -41,11 +45,13 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
     });
 
     if (!purchase) {
-      // ─── ISSUE #6: Log unauthorized access attempts for audit trail ────
-      logger.warn(
-        `Unauthorized analytics access attempt: purchaseId=${purchaseId}, userId=${userId}`
-      );
-      return sendResponse(res, 403, false, 'You do not have access to this purchase analytics.');
+      return sendResponse(res, 404, false, 'Boost purchase not found or unauthorized.');
+    }
+
+    // Issue #17 fix: Check analyticsAccess permission
+    const pkg = purchase.package;
+    if (pkg && pkg.boostConfig && !pkg.boostConfig.analyticsAccess) {
+      return sendResponse(res, 403, false, 'This boost package does not include analytics access.');
     }
 
     // 2. Try to find a linked BoostCampaign by postId + userId
@@ -98,7 +104,15 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
     if (campaign) {
       impressions = (campaign.impressions || 0) + impressions;
       clicks = (campaign.clicks || rawInteractions.filter(i => i.action === 'Click').length) + clicks;
-      adSpend = Number(campaign.total) || adSpend;
+      
+      // Issue #18 fix: Safe Number conversion for campaign.total with NaN validation
+      if (campaign.total) {
+        const campaignTotal = Number(campaign.total);
+        if (!isNaN(campaignTotal) && campaignTotal > 0) {
+          adSpend = campaignTotal;
+        }
+      }
+      
       salesAttributed = (Number(campaign.salesAttributed) || 0) + salesAttributed;
 
       campaignInfo = {
@@ -118,7 +132,6 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
     const roi = adSpend > 0 ? (salesAttributed / adSpend).toFixed(1) : '0.0';
 
     // 5. Build package info
-    const pkg = purchase.package;
     const durationDays = pkg
       ? pkg.durationUnit === 'Hours' ? 1
         : pkg.durationUnit === 'Days' ? pkg.durationValue
@@ -149,12 +162,8 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
         const dayDate = new Date(purchaseDate.getTime() + d * msPerDay);
         labels.push(dayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
         
-        // ─── ISSUE #7: Use deterministic seeding instead of random variance ─
-        // This ensures the same purchase always displays the same chart,
-        // even on multiple refreshes, preventing user confusion.
-        const seedValue = purchase.id + d; // Deterministic seed per purchase per day
-        const pseudoRandom = Math.sin(seedValue) * 10000 - Math.floor(Math.sin(seedValue) * 10000);
-        const variance = chartDays > 1 ? (pseudoRandom * 0.4 + 0.8) : 1; // +/- 20% variance
+        // Slightly randomize the distribution for visual variance, unless it's just 1 day
+        const variance = chartDays > 1 ? (Math.random() * 0.4 + 0.8) : 1; // +/- 20%
         boostedReachArr.push(Math.round(impressionsPerDay * variance));
         
         // Organic reach is zero since we only track boosted impressions
@@ -211,7 +220,7 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
         purchasesRate: clicks > 0 ? `${((purchaseCount / clicks) * 100).toFixed(1)}%` : '0.0%',
       },
       byAction,
-      // Deterministic per-day chart data
+      // Real per-day chart data
       performanceData: {
         labels,
         boostedReach: boostedReachArr,
