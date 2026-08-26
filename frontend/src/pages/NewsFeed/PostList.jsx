@@ -37,7 +37,7 @@ const PostList = ({ posts, loading, error, onRetry, postRefs, user }) => {
     return (
         <div className="flex flex-col gap-6 w-full">
             {posts.map((post) => (
-                <div key={`${post.postType}-${post.id}`} ref={(el) => (postRefs.current[`${post.postType}-${post.id}`] = el)}>
+                <div key={`${post.isPromoted ? 'promoted' : 'organic'}-${post.postType}-${post.id}`} ref={(el) => (postRefs.current[`${post.isPromoted ? 'promoted' : 'organic'}-${post.postType}-${post.id}`] = el)}>
                     <PostCard
                         post={post}
                         author={post.author?.name || 'Unknown User'}
