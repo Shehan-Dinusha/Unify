@@ -329,13 +329,39 @@ const PostCard = ({
   const currentUser = getCurrentUser();
   const cardRef = useRef(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+  const impressionTracked = useRef(false);
+  const interactionTracked = useRef(false);
+
+  const postType = post?.postType || "normal";
+  const postId = post?.id;
+
+  useEffect(() => {
+    if (!isPromoted || !postId || impressionTracked.current || !cardRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !impressionTracked.current) {
+          impressionTracked.current = true;
+          boostService.trackBoostMetrics({
+            postId,
+            postType,
+            action: "impression",
+            userId: currentUser?.id || currentUser?.userId,
+          });
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(cardRef.current);
+
+    return () => observer.disconnect();
+  }, [isPromoted, postId, postType, currentUser]);
 
   const DESCRIPTION_LIMIT = 250;
   const isLongDescription =
     description && description.length > DESCRIPTION_LIMIT;
-
-  const postType = post?.postType || "normal";
-  const postId = post?.id;
 
   // Handle case where author is passed as an object instead of a string
   const displayAuthor =
@@ -354,7 +380,8 @@ const PostCard = ({
 
     try {
       await newsfeedService.toggleLike(postType, postId);
-      if (!wasLiked && isPromoted && postId) {
+      if (!wasLiked && isPromoted && postId && !interactionTracked.current) {
+        interactionTracked.current = true;
         // Track the like for boost analytics
         boostService.trackBoostMetrics({
           postId,
@@ -490,7 +517,8 @@ const PostCard = ({
           ),
         );
 
-        if (isPromoted && postId) {
+        if (isPromoted && postId && !interactionTracked.current) {
+          interactionTracked.current = true;
           // Track the comment for boost analytics
           boostService.trackBoostMetrics({
             postId,
@@ -603,56 +631,11 @@ const PostCard = ({
         };
     }
   })();
-
-  // Impression tracking for promoted posts
-  useEffect(() => {
-    if (!isPromoted || !postId) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          // Track impression
-          boostService.trackBoostMetrics({
-            postId,
-            postType,
-            action: "impression",
-          });
-          // Stop observing once tracked
-          if (cardRef.current) {
-            observer.unobserve(cardRef.current);
-          }
-        }
-      },
-      { threshold: 0.5 }, // 50% of the post must be visible
-    );
-
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
-    }
-
-    return () => {
-      if (cardRef.current) {
-        observer.unobserve(cardRef.current);
-      }
-    };
-  }, [isPromoted, postId, postType]);
-
-  const handleTrackClick = () => {
-    if (isPromoted && postId) {
-      boostService.trackBoostMetrics({
-        postId,
-        postType,
-        action: "click",
-      });
-    }
-  };
-
   return (
     <Card
       ref={cardRef}
       variant="card"
       padding="p-0"
-      onClick={handleTrackClick}
       className={
         "w-full overflow-hidden transition-all duration-300 !border-0 " +
         boostStyles.borderClass

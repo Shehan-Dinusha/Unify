@@ -130,7 +130,8 @@ export const purchaseBoost = async (packageId, postId = null, postType = 'normal
 
 /**
  * Create a Stripe checkout session for a boost purchase.
- * @param {object} data - { packageId, postId, postType, amount, packageName, durationDays }
+ * @param {object} data - { packageId, postId, postType, packageName, durationDays }
+ *   Note: price is always read from the database — any `amount` field sent by the client is ignored.
  */
 export const createBoostCheckoutSession = async (data) => {
   try {
@@ -185,60 +186,7 @@ export const getBoostLogs = async (filters = {}) => {
   }
 };
 
-// ─── Campaigns (existing) ──────────────────────────────────────────────────
 
-/**
- * Create a boost campaign.
- * @param {object} data
- */
-export const createCampaign = async (data) => {
-  try {
-    const response = await api.post('/boosts/campaigns', data);
-    return response.data;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }
-};
-
-/**
- * Get all campaigns for the current user.
- */
-export const getCampaigns = async () => {
-  try {
-    const response = await api.get('/boosts/campaigns');
-    return response.data;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }
-};
-
-/**
- * Get a specific campaign by ID.
- * @param {string} id
- */
-export const getCampaignById = async (id) => {
-  try {
-    const response = await api.get(`/boosts/campaigns/${encodeURIComponent(id)}`);
-    return response.data;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }
-};
-
-
-
-/**
- * Get interactions for a specific campaign.
- * @param {string} id
- */
-export const getCampaignInteractions = async (id) => {
-  try {
-    const response = await api.get(`/boosts/campaigns/${encodeURIComponent(id)}/interactions`);
-    return response.data;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }
-};
 
 /**
  * Track an impression or click for a boosted post
@@ -280,10 +228,6 @@ const boostService = {
   confirmBoostPayment,
   getMyBoosts,
   getBoostLogs,
-  createCampaign,
-  getCampaigns,
-  getCampaignById,
-  getCampaignInteractions,
   getBoostAnalyticsByPurchase,
   trackBoostMetrics,
 };

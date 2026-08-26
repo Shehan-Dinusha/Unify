@@ -1,5 +1,6 @@
 import Stripe from "stripe";
-import { BoostPackage } from "../../modules/index.js";
+import { BoostPackage, BoostPurchase } from "../../modules/index.js";
+import { Op } from "sequelize";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -25,15 +26,12 @@ export const createBoostCheckoutSession = async (req, res) => {
       return sendResponse(res, 401, false, "Authentication required.");
     }
 
-    const { packageId, postId, postType, amount, packageName, durationDays } =
+    const { packageId, postId, postType, packageName, durationDays } =
       req.body;
 
     // ── Validation ─────────────────────────────────────────────────────
     if (!packageId) {
       return sendResponse(res, 400, false, "Package ID is required.");
-    }
-    if (!amount || amount <= 0) {
-      return sendResponse(res, 400, false, "A valid amount is required.");
     }
 
     // Validate the package exists and is live
@@ -50,38 +48,65 @@ export const createBoostCheckoutSession = async (req, res) => {
       );
     }
 
+    // Check if this post already has an active boost
+    if (postId) {
+      const activeBoost = await BoostPurchase.findOne({
+        where: {
+          postId: parseInt(postId, 10),
+          ...(postType && { postType }),
+          status: 'active',
+          expiryDate: { [Op.gt]: new Date() }
+        }
+      });
+      
+      if (activeBoost) {
+        return sendResponse(
+          res,
+          409, // Conflict
+          false,
+          "This post already has an active boost package. You cannot boost a post multiple times simultaneously."
+        );
+      }
+    }
+
     const frontendUrl =
       process.env.CORS_ORIGIN || "http://localhost:5173";
 
-    // ── Create Stripe Checkout Session (one-to-one: platform receives all) ──
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "lkr",
-            product_data: {
-              name: `${packageName || pkg.name} — Boost Package`,
-              description: `Boost your post for ${durationDays || pkg.durationValue} ${pkg.durationUnit}. Priority feed placement and enhanced visibility.`,
+    // ── Issue #19 fix: Add error handling for Stripe API calls ──────────
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "lkr",
+              product_data: {
+                name: `${packageName || pkg.name} — Boost Package`,
+                description: `Boost your post for ${durationDays || pkg.durationValue} ${pkg.durationUnit}. Priority feed placement and enhanced visibility.`,
+              },
+              unit_amount: Math.round(Number(pkg.price) * 100), // always from DB — never trust client
             },
-            unit_amount: Math.round(amount * 100), // amount in cents
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        mode: "payment",
+        success_url: `${frontendUrl}/business/boost-post/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${frontendUrl}/business/boost-post/confirm`,
+        metadata: {
+          type: "boost_purchase",
+          packageId: packageId,
+          postId: postId ? String(postId) : "",
+          postType: postType || "",
+          userId: userId ? String(userId) : "",
+          durationDays: String(durationDays || 0),
+          amount: String(Number(pkg.price)), // audit: actual DB price charged
         },
-      ],
-      mode: "payment",
-      success_url: `${frontendUrl}/business/boost-post/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${frontendUrl}/business/boost-post/confirm`,
-      metadata: {
-        type: "boost_purchase",
-        packageId: packageId,
-        postId: postId ? String(postId) : "",
-        postType: postType || "",
-        userId: userId ? String(userId) : "",
-        durationDays: String(durationDays || 0),
-        amount: String(amount),
-      },
-    });
+      });
+    } catch (stripeErr) {
+      logger.error(`Stripe session creation error: ${stripeErr.message}`);
+      return sendResponse(res, 500, false, "Failed to create payment session. Please try again.");
+    }
 
     logger.info(
       `Stripe Boost Checkout Session created: ${session.id} for package ${packageId}, post ${postId || "none"}`
