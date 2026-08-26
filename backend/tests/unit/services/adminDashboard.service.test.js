@@ -1,9 +1,5 @@
 /**
- * Admin Dashboard Service — Unit Test Suite (Enhanced)
- * ─────────────────────────────────────────────────────
- * Industry-level tests for ALL pure functions exported from adminDashboard.service.js.
- * Tests pure helpers only (no DB calls).
- *
+ * Admin Dashboard Service — Unit Test Suite
  * Run: node --test tests/unit/services/adminDashboard.service.test.js
  */
 

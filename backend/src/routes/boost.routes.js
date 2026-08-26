@@ -105,12 +105,4 @@ router.post(
   BoostController.trackMetrics
 );
 
-// ─── ISSUE #9: Dead campaign routes removed ──────────────────────────────
-// Campaign routes were defined but never exported in the controller index.
-// These endpoints were unreachable and have been removed for code clarity.
-// If you need to re-implement campaign management, ensure the controllers are:
-// 1. Implemented in backend/src/controllers/boost/
-// 2. Exported in backend/src/controllers/boost/index.js
-// 3. Added back to this routes file with proper auth middleware
-
 export default router;

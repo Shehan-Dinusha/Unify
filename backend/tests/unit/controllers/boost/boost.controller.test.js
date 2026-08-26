@@ -1,12 +1,5 @@
 /**
- * Boost Controller — Unit Test Suite (Industry-Level)
- * ─────────────────────────────────────────────────────
- * Tests for key boost controllers:
- *   - createCampaign
- *   - getCampaigns
- *   - updateCampaignStatus
- *   - getAdminStats
- *
+ * Boost Controller — Unit Test Suite 
  * Run: node --test tests/unit/controllers/boost.controller.test.js
  */
 

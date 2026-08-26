@@ -16,8 +16,7 @@ export const purchaseBoost = async (req, res, next) => {
     if (!packageId) {
       return sendResponse(res, 400, false, "Package ID is required.");
     }
-
-    // Issue #16 fix: Validate postType if provided
+    
     if (postType) {
       const validPostTypes = ['normal', 'club-product', 'club-event', 'boarding'];
       if (!validPostTypes.includes(postType)) {

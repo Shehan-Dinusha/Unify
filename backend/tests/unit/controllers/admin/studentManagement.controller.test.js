@@ -1,14 +1,6 @@
 /**
- * Student Management Controller — Unit Test Suite (Industry-Level)
- * ─────────────────────────────────────────────────────────────────
- * Tests for all student management endpoints using mocked DB models.
- * Each controller function is tested for:
- *   - Happy path (success response)
- *   - Auth checks (missing user)
- *   - Not found scenarios
- *   - Edge cases and guard clauses
- *   - Error forwarding to next()
- *
+ * Student Management Controller — Unit Test Suite 
+ * 
  * Run: node --test tests/unit/controllers/studentManagement.controller.test.js
  */
 
@@ -16,8 +8,6 @@ import { describe, it, mock, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import { mockRes, mockNext } from "../../../helpers/testUtils.js";
 
-// We test the controller logic by importing the real controllers
-// and mocking the Sequelize models they depend on.
 import * as models from "../../../../src/modules/index.js";
 
 // ─── Automatic Mock Cleanup ─────────────────────────────────────────────────

@@ -1,14 +1,6 @@
 /**
- * Business Management Controller — Unit Test Suite (Industry-Level)
- * ──────────────────────────────────────────────────────────────────
- * Tests for all business/club management endpoints using mocked DB models.
- * Each controller function is tested for:
- *   - Happy path (success response)
- *   - Auth checks (missing user)
- *   - Not found scenarios
- *   - Edge cases and guard clauses
- *   - Error forwarding
- *
+ * Business Management Controller — Unit Test Suite 
+ * 
  * Run: node --test tests/unit/controllers/businessManagement.controller.test.js
  */
 

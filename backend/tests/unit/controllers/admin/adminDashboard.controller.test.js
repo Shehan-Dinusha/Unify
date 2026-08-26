@@ -1,9 +1,6 @@
 /**
- * Admin Dashboard Controller — Unit Test Suite (Industry-Level)
+ * Admin Dashboard Controller — Unit Test Suite
  * ──────────────────────────────────────────────────────────────
- * Tests all 7 admin dashboard controller endpoints.
- * Uses node:test mock.method to mock the AdminDashboardService.
- *
  * Run: node --test tests/unit/controllers/adminDashboard.controller.test.js
  */
 

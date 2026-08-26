@@ -1,8 +1,5 @@
 /**
  * Suspension Backend — Validation Test Suite
- * Tests the express-validator logic for creating suspensions and reactivating users.
- * Uses Node.js built-in test runner.
- *
  * Run from backend/: node --test tests/suspension.test.js
  */
 
@@ -10,12 +7,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createSuspensionSchema, reactivateUserSchema } from '../../src/validators/suspension.validator.js';
 import { getError } from '../helpers/testUtils.js';
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// TESTS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// ── createSuspension ─────────────────────────────────────────────────────────
 
 describe('createSuspensionSchema — Validation', () => {
   const validPayload = {

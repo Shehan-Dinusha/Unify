@@ -1,13 +1,5 @@
 /**
  * Admin Management — Validator Test Suite
- * ─────────────────────────────────────────
- * Industry-level tests for ALL admin management validators:
- *   - studentDirectoryValidator
- *   - businessDirectoryValidator
- *   - updateStatusValidator
- *   - addNoteValidator
- *   - sendWarningValidator
- *
  * Run: node --test tests/validators/adminManagement.validator.test.js
  */
 

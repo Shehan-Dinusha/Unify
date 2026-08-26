@@ -1,11 +1,5 @@
 /**
- * Report — Validator Test Suite (Enhanced)
- * ─────────────────────────────────────────
- * Industry-level tests for ALL report validators:
- *   - createReportSchema
- *   - updateReportSchema
- *   - withdrawReportSchema
- *
+ * Report — Validator Test Suite
  * Run: node --test tests/validators/report.validator.test.js
  */
 
