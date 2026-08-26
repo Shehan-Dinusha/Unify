@@ -1,5 +1,6 @@
 import Stripe from "stripe";
-import { BoostPackage } from "../../modules/index.js";
+import { BoostPackage, BoostPurchase } from "../../modules/index.js";
+import { Op } from "sequelize";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
@@ -45,6 +46,27 @@ export const createBoostCheckoutSession = async (req, res) => {
         false,
         "This boost package is no longer available."
       );
+    }
+
+    // Check if this post already has an active boost
+    if (postId) {
+      const activeBoost = await BoostPurchase.findOne({
+        where: {
+          postId: parseInt(postId, 10),
+          ...(postType && { postType }),
+          status: 'active',
+          expiryDate: { [Op.gt]: new Date() }
+        }
+      });
+      
+      if (activeBoost) {
+        return sendResponse(
+          res,
+          409, // Conflict
+          false,
+          "This post already has an active boost package. You cannot boost a post multiple times simultaneously."
+        );
+      }
     }
 
     const frontendUrl =
