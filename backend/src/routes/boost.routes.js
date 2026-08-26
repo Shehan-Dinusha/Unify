@@ -71,14 +71,7 @@ router.get(
   BoostController.getMyBoosts
 );
 
-// ── Admin Statistics ─────────────────────────────────────────────────────────
-
-//Admin dashboard boost stats
-router.get(
-  '/admin/statistics',
-  protect, authorize('Admin'),
-  BoostController.getBoostStatistics
-);
+// ── Admin ─────────────────────────────────────────────────────────────────────
 
 //Admin configuration changes logs
 router.get(
@@ -94,35 +87,6 @@ router.get(
   BoostController.getAdminStats
 );
 
-// ── Campaign Management (Business User) ──────────────────────────────────────
-
-//Create a new campaign (select package + boost post)
-router.post(
-  '/campaigns',
-  BoostController.createCampaign
-);
-
-//Get all campaigns for the logged-in user
-router.get(
-  '/campaigns',
-  BoostController.getCampaigns
-);
-
-//Get specific campaign details
-router.get(
-  '/campaigns/:id',
-  BoostController.getCampaignById
-);
-
-//Update campaign status
-router.put(
-  '/campaigns/:id/status',
-  BoostController.updateCampaignStatus
-);
-
-// ── Campaign Analytics ───────────────────────────────────────────────────────
-
-
 // ── Business User Purchase Analytics ─────────────────────────────────────────
 
 //Get boost analytics by BoostPurchase ID (used by business users from MyPosts)
@@ -132,32 +96,13 @@ router.get(
   BoostController.getBoostAnalyticsByPurchase
 );
 
-// ── Interactions ─────────────────────────────────────────────────────────────
-
-//Record an interaction
-router.post(
-  '/campaigns/:id/interactions',
-  BoostController.recordInteraction
-);
+// ── Metrics Tracking ──────────────────────────────────────────────────────────
 
 //Track lightweight metrics (impressions, clicks)
 router.post(
   '/track',
+  protect,
   BoostController.trackMetrics
-);
-
-//Get interactions for a campaign
-router.get(
-  '/campaigns/:id/interactions',
-  BoostController.getInteractions
-);
-
-// ── Payment Webhook (Stripe Stub) ────────────────────────────────────────────
-
-//Handle payment status from Stripe
-router.post(
-  '/webhooks/payment',
-  BoostController.handlePaymentWebhook
 );
 
 export default router;
