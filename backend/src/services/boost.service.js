@@ -510,6 +510,22 @@ class BoostService {
           error.statusCode = 403;
           throw error;
         }
+
+        // Overlapping boost check - a post can only have one active boost at a time
+        const activeBoost = await BoostPurchase.findOne({
+          where: {
+            postId: parseInt(postId, 10),
+            ...(postType && { postType }),
+            status: 'active',
+            expiryDate: { [Op.gt]: new Date() }
+          }
+        });
+
+        if (activeBoost) {
+          const error = new Error("This post already has an active boost package.");
+          error.statusCode = 409;
+          throw error;
+        }
       }
 
       // Calculate dates
