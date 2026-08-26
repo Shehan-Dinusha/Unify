@@ -329,7 +329,7 @@ const PostCard = ({
   const currentUser = getCurrentUser();
   const cardRef = useRef(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
+
   const impressionTracked = useRef(false);
   const interactionTracked = useRef(false);
 
@@ -337,7 +337,8 @@ const PostCard = ({
   const postId = post?.id;
 
   useEffect(() => {
-    if (!isPromoted || !postId || impressionTracked.current || !cardRef.current) return;
+    if (!isPromoted || !postId || impressionTracked.current || !cardRef.current)
+      return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -351,7 +352,7 @@ const PostCard = ({
           });
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
 
     observer.observe(cardRef.current);
@@ -636,6 +637,7 @@ const PostCard = ({
       ref={cardRef}
       variant="card"
       padding="p-0"
+      onClick={handleTrackClick}
       className={
         "w-full overflow-hidden transition-all duration-300 !border-0 " +
         boostStyles.borderClass

@@ -24,9 +24,14 @@ export const trackMetrics = async (req, res, next) => {
       return sendResponse(res, 400, false, "postId and action are required");
     }
 
-    const validActions = ['impression', 'click', 'Like', 'Comment', 'Purchase'];
+    const validActions = ["impression", "click", "Like", "Comment", "Purchase"];
     if (!validActions.includes(action)) {
-      return sendResponse(res, 400, false, `Invalid action. Must be one of: ${validActions.join(', ')}`);
+      return sendResponse(
+        res,
+        400,
+        false,
+        `Invalid action. Must be one of: ${validActions.join(", ")}`,
+      );
     }
 
     // ── Find the currently active boost purchase for this post
@@ -34,22 +39,22 @@ export const trackMetrics = async (req, res, next) => {
       where: {
         postId: parseInt(postId, 10),
         ...(postType && { postType }),
-        status: 'active',
+        status: "active",
         expiryDate: {
           [Op.gt]: new Date(),
         },
       },
-      order: [['createdAt', 'DESC']],
+      order: [["createdAt", "DESC"]],
     });
 
     if (purchase) {
       // All metric updates must use transactions to prevent race conditions (Issue #14 fix)
       const transaction = await sequelize.transaction();
       try {
-        if (action === 'impression') {
+        if (action === "impression") {
           purchase.impressions = (purchase.impressions || 0) + 1;
           await purchase.save({ transaction });
-        } else if (action === 'click') {
+        } else if (action === "click") {
           purchase.clicks = (purchase.clicks || 0) + 1;
           await purchase.save({ transaction });
         } else {
@@ -60,11 +65,11 @@ export const trackMetrics = async (req, res, next) => {
               userId: actorId,
               action: action,
               content: content || null,
-              impact: impact || (action === 'Purchase' ? 'High' : 'Medium'),
+              impact: impact || (action === "Purchase" ? "High" : "Medium"),
             },
-            { transaction }
+            { transaction },
           );
-          
+
           // Also bump clicks for these, since they imply engagement
           purchase.clicks = (purchase.clicks || 0) + 1;
           await purchase.save({ transaction });
