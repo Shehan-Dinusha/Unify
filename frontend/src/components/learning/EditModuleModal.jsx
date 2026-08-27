@@ -31,7 +31,8 @@ const EditModuleModal = ({
     setMounted(true);
   }, []);
 
-  // Update form when modal opens or initialData changes
+  // Update form when modal opens (not on every initialData change, so that
+  // optimistic parent re-renders during save don't clobber the user's input)
   useEffect(() => {
     if (isOpen && initialData) {
       setTitle(initialData.moduleName || "");
@@ -46,7 +47,7 @@ const EditModuleModal = ({
       setIsDegreeDropdownOpen(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, initialData]);
+  }, [isOpen]);
 
   if (!isOpen || !mounted) return null;
 
