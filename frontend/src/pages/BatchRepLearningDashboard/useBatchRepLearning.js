@@ -310,6 +310,16 @@ export const useBatchRepLearning = () => {
   };
 
   const optimisticEditModule = (moduleId, updates) => {
+    setActiveModuleDetails((prev) =>
+      prev
+        ? {
+            ...prev,
+            name: updates.title,
+            code: updates.code,
+            degrees: updates.visibility,
+          }
+        : prev,
+    );
     setSemesters((prevSemesters) => {
       let updated = prevSemesters.map((sem) => ({
         ...sem,
