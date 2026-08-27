@@ -1,6 +1,5 @@
 import React from "react";
 import MainLayout from "../../components/layout/MainLayout";
-import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useOrderDetails } from "./useOrderDetails";

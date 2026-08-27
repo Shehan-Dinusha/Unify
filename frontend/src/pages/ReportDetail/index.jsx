@@ -48,6 +48,7 @@ const ReportDetail = () => {
             }
         };
         loadReport();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const [modal, setModal]               = useState(null);
@@ -106,7 +107,9 @@ const ReportDetail = () => {
                 try {
                     const refreshed = await fetchReportById(id);
                     setReport(refreshed.data);
-                } catch (_) {}
+                } catch (_) {
+                    // intentionally empty
+                }
             }
         } catch (err) {
             const errorMsg = err.response?.data?.message || `Failed to process ${type}. Please try again.`;

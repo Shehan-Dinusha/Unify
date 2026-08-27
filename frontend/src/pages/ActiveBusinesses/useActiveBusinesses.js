@@ -44,6 +44,7 @@ export const useActiveBusinesses = () => {
       }
     };
     fetchStats();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -74,6 +75,7 @@ export const useActiveBusinesses = () => {
       }
     };
     fetchBusinesses();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, statusFilter, categoryFilter, currentPage]);
 
   const handleResetFilters = () => {

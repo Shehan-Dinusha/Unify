@@ -121,7 +121,6 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick,
     const navigate = useNavigate();
 
     const [saved, setSaved] = useState(false);
-    const [reported, setReported] = useState(false);
     const [liked, setLiked] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);
     const [postComments, setPostComments] = useState(post.comments ?? []);
@@ -129,7 +128,6 @@ const ClubPostCard = ({ post, isOwner = false, hideActions = false, onCardClick,
     const [isExpanded, setIsExpanded] = useState(false);
 
     const toggleSave = () => setSaved(p => !p);
-    const toggleReport = () => setReported(p => !p);
 
     const handleAddComment = (text) => {
         const newComment = {

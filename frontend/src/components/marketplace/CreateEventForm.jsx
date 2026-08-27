@@ -197,26 +197,17 @@ const CreateEventForm = ({ onCancel, onPublish }) => {
                                         accept="image/*"
                                         onChange={(e) => handleFiles(e.target.files)}
                                     />
-                                    {false ? (
-                                        <div className="w-full relative rounded-lg overflow-hidden group">
-                                            <img src={images[0].url} alt="Event" className="max-h-32 mx-auto object-cover" />
-                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <button onClick={(e) => { e.stopPropagation(); setImages([]); }} className="text-red-400 font-bold text-xs bg-red-400/20 px-3 py-1.5 rounded-lg border border-red-400/30">Remove Images</button>
-                                            </div>
+                                    <>
+                                        <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+                                            <ImagePlus className="text-blue-500 w-5 h-5" />
                                         </div>
-                                    ) : (
-                                        <>
-                                            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
-                                                <ImagePlus className="text-blue-500 w-5 h-5" />
-                                            </div>
-                                            <p className="text-white text-sm font-medium mb-1">
-                                                Click to upload or drag and drop
-                                            </p>
-                                            <p className="text-text-secondary text-[11px]">
-                                                SVG, PNG, JPG or GIF (max. 800×400px)
-                                            </p>
-                                        </>
-                                    )}
+                                        <p className="text-white text-sm font-medium mb-1">
+                                            Click to upload or drag and drop
+                                        </p>
+                                        <p className="text-text-secondary text-[11px]">
+                                            SVG, PNG, JPG or GIF (max. 800×400px)
+                                        </p>
+                                    </>
                                 </div>
                                 {images.map((img) => (
                                     <div key={img.id} className="relative aspect-square rounded-2xl overflow-hidden group">

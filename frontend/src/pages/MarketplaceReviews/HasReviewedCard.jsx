@@ -14,7 +14,7 @@ const HasReviewedCard = () => {
         </div>
         <div className="pb-3 flex flex-col justify-center items-center">
           <h3 className="text-center justify-center text-white text-xl font-bold font-inter leading-5 m-0">
-            You've shared your thoughts!
+            You&apos;ve shared your thoughts!
           </h3>
         </div>
         <div className="w-full max-w-96 px-1.5 flex flex-col justify-center items-center mb-8">

@@ -3,6 +3,7 @@ import newsfeedService from "../services/newsfeedService";
 
 const SavedPostsContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSavedPosts = () => useContext(SavedPostsContext);
 
 export const SavedPostsProvider = ({ children }) => {

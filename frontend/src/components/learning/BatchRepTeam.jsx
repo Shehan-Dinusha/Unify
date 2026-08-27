@@ -70,6 +70,7 @@ const BatchRepTeam = ({ degreeId, currentUserId }) => {
     };
 
     fetchReps();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [degreeId]);
 
   return (

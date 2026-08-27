@@ -35,6 +35,7 @@ const AddModuleModal = ({
       setSelectedDegrees([primaryDegree]);
       setIsDegreeDropdownOpen(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   if (!isOpen || !mounted) return null;

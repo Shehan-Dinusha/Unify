@@ -26,6 +26,7 @@ import WithdrawModal from "./WithdrawModal";
 import RevokeModal from "./RevokeModal";
 
 const BatchRepVerification = () => {
+  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
   const [submissionStatus, setSubmissionStatus] = useState(
     getCurrentUser()?.repVerificationStatus === "APPROVED" ? "approved" : "idle",

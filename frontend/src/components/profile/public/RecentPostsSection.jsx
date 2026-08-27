@@ -23,7 +23,7 @@ const RecentPostsSection = ({ posts = [] }) => {
 
             return (
               <PostCard
-                key={post.id}
+                key={`${post.postType}-${post.id}`}
                 post={post}
                 author={post.author}
                 authorAvatar={post.author?.avatar}

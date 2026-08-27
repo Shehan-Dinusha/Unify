@@ -34,11 +34,13 @@ const SecurityPage = () => {
         const data = await getMyProfile(backendRole);
         setProfile(data);
       } catch (error) {
+        // intentionally empty
       } finally {
         setLoadingProfile(false);
       }
     };
     fetchProfileData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const currentUser = getCurrentUser();

@@ -68,6 +68,7 @@ export const useAdminDashboard = () => {
         const res = await getPlatformGrowth(rangeApiMap[activeRange]);
         setChartData(res.data);
       } catch (err) {
+        // intentionally empty
       } finally {
         setChartLoading(false);
       }

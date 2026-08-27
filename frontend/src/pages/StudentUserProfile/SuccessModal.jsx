@@ -1,7 +1,7 @@
 import Overlay from "../../components/common/Overlay";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
-import { ShieldCheck, Power, CheckCircle2, ArrowLeft, RotateCcw, X } from "lucide-react";
+import { ShieldCheck, Power, CheckCircle2, ArrowLeft, RotateCcw } from "lucide-react";
 
 const SuccessModal = ({ open, onClose, type, userName, userId, userAvatar, warningLevel }) => {
   if (!type) return null;
@@ -17,7 +17,7 @@ const SuccessModal = ({ open, onClose, type, userName, userId, userAvatar, warni
                 <div className="absolute top-0 right-0 w-3 h-3 rounded-full bg-state-success border-2 border-dark-1" />
               </div>
               <h2 className="text-xl font-bold text-white font-inter mb-3">Warning Issued Successfully</h2>
-              <p className="text-text-secondary text-sm font-inter leading-relaxed mb-6 max-w-[340px]">The official warning has been issued and logged in the student's disciplinary record.</p>
+              <p className="text-text-secondary text-sm font-inter leading-relaxed mb-6 max-w-[340px]">The official warning has been issued and logged in the student&apos;s disciplinary record.</p>
               <div className="w-full bg-white/5 rounded-xl border border-white/10 p-md flex items-center gap-3 text-left mb-2">
                 <img src={userAvatar} alt="" className="w-11 h-11 rounded-full object-cover border border-white/20" />
                 <div className="flex-1 min-w-0"><p className="text-body-small-bold text-text-primary font-inter">{userName}</p><p className="text-body-extra-small text-text-secondary font-inter">ID: {userId}</p></div>

@@ -9,7 +9,7 @@ const EmptyStates = ({ savedPosts, filteredPosts, searchQuery, onBrowseFeed }) =
           <Bookmark size={36} className="text-primary-blue" />
         </div>
         <h2 className="text-body-large-bold text-text-primary mb-2">No saved posts yet</h2>
-        <p className="text-body-medium text-text-secondary max-w-sm mb-6">When you save posts from the News Feed, they'll appear here for easy access.</p>
+        <p className="text-body-medium text-text-secondary max-w-sm mb-6">When you save posts from the News Feed, they&apos;ll appear here for easy access.</p>
         <button onClick={onBrowseFeed}
           className="px-6 py-2.5 bg-primary-blue hover:bg-primary-blue/90 text-white text-body-small-bold rounded-full transition-colors">Browse News Feed</button>
       </div>

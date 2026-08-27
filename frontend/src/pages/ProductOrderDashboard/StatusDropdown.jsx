@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const PRODUCT_STATUSES = ['Seller Confirmed', 'Ready for Pickup', 'Order Completed'];
+// eslint-disable-next-line react-refresh/only-export-components
 export const EVENT_STATUSES = ['ATTENDED', 'CANCELLED'];
+// eslint-disable-next-line react-refresh/only-export-components
 export const ALL_PRODUCT_STATUSES = ['Order Placed', 'Seller Confirmed', 'Ready for Pickup', 'Order Completed'];
+// eslint-disable-next-line react-refresh/only-export-components
 export const ALL_EVENT_STATUSES = ['PENDING', 'CONFIRMED', 'ATTENDED', 'CANCELLED'];
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const statusStyle = {
   'Order Placed': { dot: 'bg-primary-blue', badge: 'bg-primary-blue/15 text-primary-blue border border-primary-blue/20' },
   'Seller Confirmed': { dot: 'bg-purple-400', badge: 'bg-purple-400/15 text-purple-400 border border-purple-400/20' },

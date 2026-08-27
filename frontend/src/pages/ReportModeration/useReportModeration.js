@@ -29,6 +29,7 @@ export const useReportModeration = () => {
             }
         };
         fetchStats();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -49,6 +50,7 @@ export const useReportModeration = () => {
             }
         };
         loadReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filterType, filterStatus]);
 
     const typeOptions = [

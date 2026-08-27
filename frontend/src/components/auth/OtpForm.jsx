@@ -160,7 +160,7 @@ const OtpForm = ({ email, onVerify, onBack, mode = "registration" }) => {
 
               <div className="flex flex-col items-center gap-4">
                 <p className="text-text-secondary text-body-small text-center">
-                  Didn't receive the {isEmail ? "email" : "code"}?{" "}
+                  Didn&apos;t receive the {isEmail ? "email" : "code"}?{" "}
                   <button
                     type="button"
                     className="text-primary-blue hover:underline body-small-bold disabled:text-text-tertiary"

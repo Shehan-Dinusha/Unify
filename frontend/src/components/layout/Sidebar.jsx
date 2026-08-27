@@ -8,8 +8,6 @@ import {
   Store,
   GraduationCap,
   LayoutDashboard,
-  ShoppingCart,
-  ClipboardList,
 } from "lucide-react";
 import LogoutModal from "../profile/modals/LogoutModal";
 import SwitchAccountModal from "../profile/modals/SwitchAccountModal";
@@ -304,10 +302,6 @@ const UnifiedSidebar = ({
   }
 
   const currentConfig = roleConfigs[configKey] || roleConfigs.student;
-
-  const handleNavClick = (path) => {
-    if (onClose) onClose();
-  };
 
   return (
     <>

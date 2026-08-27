@@ -11,7 +11,7 @@ import StarRating from "../common/StarRating";
  *  onAddReview: function
  *  onViewReviews: function
  */
-const ReviewsSection = ({ rating = 0, reviewCount = 0, onAddReview, onViewReviews }) => {
+const ReviewsSection = ({ rating = 0, reviewCount = 0, onAddReview, _onViewReviews }) => {
   return (
     <Card variant="container" padding="p-4 md:p-lg text-start">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 md:gap-md">

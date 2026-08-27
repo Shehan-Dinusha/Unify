@@ -71,6 +71,7 @@ const ClubOwnerDashboard = () => {
           setClubPosts(normalized);
         }
       } catch (error) {
+        // intentionally empty
       } finally {
         setLoading(false);
       }

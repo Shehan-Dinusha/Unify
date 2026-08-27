@@ -18,7 +18,7 @@ const StudentManagement = () => {
     statusFilter, setStatusFilter,
     currentPage, setCurrentPage,
     totalPages, totalCount, PAGE_LIMIT,
-    handleResetFilters, navigate,
+    handleResetFilters,
   } = useStudentManagement();
 
   return (

@@ -28,6 +28,7 @@ export const useStudentReportDetail = () => {
       }
     };
     loadReport();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   return { report, loading, error, user, navigate };

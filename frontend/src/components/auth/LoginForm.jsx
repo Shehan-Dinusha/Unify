@@ -164,7 +164,7 @@ const LoginForm = () => {
 
           <div className="flex flex-wrap justify-center items-center gap-1 text-center">
             <span className="text-text-secondary text-body-medium">
-              Don't have an account?
+              Don&apos;t have an account?
             </span>
             <Link
               to="/register"

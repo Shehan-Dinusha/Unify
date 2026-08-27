@@ -17,6 +17,7 @@ export const useMyOrders = () => {
 
   useEffect(() => {
     fetchAllHistory();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAllHistory = async () => {

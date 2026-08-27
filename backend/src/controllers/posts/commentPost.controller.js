@@ -1,5 +1,13 @@
-import { NormalPost, ClubProductPost, ClubEventPost, Boarding, Comment, User } from "../../modules/index.js";
+import {
+  NormalPost,
+  ClubProductPost,
+  ClubEventPost,
+  Boarding,
+  Comment,
+  User,
+} from "../../modules/index.js";
 import { notifyComment } from "../../services/notification.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 
 const getModelConfig = (type) => {
   switch (type) {
@@ -24,7 +32,8 @@ export const addComment = async (req, res) => {
     const { type, id } = req.params;
     const { content, parentId } = req.body;
     const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
+    if (!userId)
+      return res.status(401).json({ success: false, message: "Unauthorized" });
 
     if (!content || !content.trim()) {
       return res.status(400).json({ error: "Comment content is required." });
@@ -53,7 +62,12 @@ export const addComment = async (req, res) => {
 
       // Enforce one-level depth: parent must be a root comment
       if (parentComment.parentId !== null) {
-        return res.status(400).json({ error: "Cannot reply to a reply. Only top-level comments can be replied to." });
+        return res
+          .status(400)
+          .json({
+            error:
+              "Cannot reply to a reply. Only top-level comments can be replied to.",
+          });
       }
     }
 
@@ -108,6 +122,13 @@ export const addComment = async (req, res) => {
       }
     }
 
+    if (commentWithUser?.user?.avatar) {
+      commentWithUser.user.avatar = await resolveAvatarUrl(
+        commentWithUser.user.avatar,
+        commentWithUser.user.name,
+      );
+    }
+
     return res.status(201).json({ success: true, comment: commentWithUser });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -147,6 +168,27 @@ export const getComments = async (req, res) => {
       ],
       order: [["createdAt", "ASC"]],
     });
+
+    await Promise.all(
+      comments.map(async (comment) => {
+        if (comment.user?.avatar) {
+          comment.user.avatar = await resolveAvatarUrl(
+            comment.user.avatar,
+            comment.user.name,
+          );
+        }
+        await Promise.all(
+          (comment.replies || []).map(async (reply) => {
+            if (reply.user?.avatar) {
+              reply.user.avatar = await resolveAvatarUrl(
+                reply.user.avatar,
+                reply.user.name,
+              );
+            }
+          }),
+        );
+      }),
+    );
 
     return res.status(200).json({ success: true, comments });
   } catch (error) {

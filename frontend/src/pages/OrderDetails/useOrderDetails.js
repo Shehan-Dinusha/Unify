@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { CheckCircle, Circle, Clock, Package, ShieldCheck, Truck } from "lucide-react";
+import { CheckCircle, Clock, Package, ShieldCheck, Truck } from "lucide-react";
 import orderService from "../../services/orderService";
 
 const getTimeline = (order) => {

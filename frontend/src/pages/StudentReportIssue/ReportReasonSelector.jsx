@@ -1,5 +1,6 @@
 import React from 'react';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const reportReasons = [
   { id: 'inappropriate', label: 'Inappropriate Content', description: 'Contains offensive or adult material' },
   { id: 'spam', label: 'Spam', description: 'Promotional, repetitive or irrelevant content' },

@@ -10,37 +10,33 @@ const CreateNormalPostPage = () => {
     const user = getCurrentUser();
 
     const handlePublish = async (postData, images) => {
-        try {
-            const data = new FormData();
-            data.append("description", postData.description);
+        const data = new FormData();
+        data.append("description", postData.description);
 
-            // Map user role to postType
-            // roles: club, food_cafe_owner, services_owner, boarding_owner
-            // postTypes: club, food-cafe, service, boarding
-            let postType = "club";
-            if (user.role === "food_cafe_owner") postType = "food-cafe";
-            else if (user.role === "services_owner") postType = "service";
-            else if (user.role === "boarding_owner") postType = "boarding";
+        // Map user role to postType
+        // roles: club, food_cafe_owner, services_owner, boarding_owner
+        // postTypes: club, food-cafe, service, boarding
+        let postType = "club";
+        if (user.role === "food_cafe_owner") postType = "food-cafe";
+        else if (user.role === "services_owner") postType = "service";
+        else if (user.role === "boarding_owner") postType = "boarding";
 
-            data.append("postType", postType);
+        data.append("postType", postType);
 
-            images.forEach(img => {
-                if (img.file) {
-                    data.append("images", img.file);
-                }
-            });
+        images.forEach(img => {
+            if (img.file) {
+                data.append("images", img.file);
+            }
+        });
 
-            await postService.createPost("normal", data);
+        await postService.createPost("normal", data);
 
-            // Navigate back based on role
-            if (user.role === "club") navigate("/club-owner/marketplace");
-            else if (user.role === "boarding_owner") navigate("/boarding-owner/marketplace");
-            else if (user.role === "food_cafe_owner") navigate("/food-cafe-owner/marketplace");
-            else if (user.role === "services_owner") navigate("/services-owner/marketplace");
-            else navigate("/");
-        } catch (error) {
-            throw error;
-        }
+        // Navigate back based on role
+        if (user.role === "club") navigate("/club-owner/marketplace");
+        else if (user.role === "boarding_owner") navigate("/boarding-owner/marketplace");
+        else if (user.role === "food_cafe_owner") navigate("/food-cafe-owner/marketplace");
+        else if (user.role === "services_owner") navigate("/services-owner/marketplace");
+        else navigate("/");
     };
 
     return (

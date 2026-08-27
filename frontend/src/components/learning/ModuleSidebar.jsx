@@ -42,6 +42,7 @@ const ModuleSidebar = ({
     if (activeSemesterId && !expandedSemesters.includes(activeSemesterId)) {
       setExpandedSemesters([activeSemesterId]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSemesterId]);
 
   const toggleSemester = (id) => {

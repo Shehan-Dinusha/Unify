@@ -51,6 +51,7 @@ export const useStudentLearningDashboard = () => {
           }
         }
       } catch (err) {
+        // intentionally empty
       } finally {
         setIsLoading(false);
       }
@@ -126,7 +127,9 @@ export const useStudentLearningDashboard = () => {
         const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
         return { name: parsed.name || "Student", role: role || "student", displayRole: parsed.displayRole || role || "Student" };
       }
-    } catch {}
+    } catch {
+      // intentionally empty
+    }
     return { name: currentUser?.name || "Student", role: "student", displayRole: "Student" };
   })();
 

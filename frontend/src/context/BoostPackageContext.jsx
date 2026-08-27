@@ -4,6 +4,7 @@ import { getCurrentUser, isAuthenticated } from '../services/authService';
 
 const BoostPackageContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useBoostPackages = () => useContext(BoostPackageContext);
 
 export const BoostPackageProvider = ({ children }) => {
@@ -37,6 +38,7 @@ export const BoostPackageProvider = ({ children }) => {
                 setLogs(response.data.logs);
             }
         } catch (err) {
+            // intentionally empty
         }
     }, []);
 
@@ -48,6 +50,7 @@ export const BoostPackageProvider = ({ children }) => {
                 setStats(response.data.stats);
             }
         } catch (err) {
+            // intentionally empty
         }
     }, []);
 

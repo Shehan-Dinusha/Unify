@@ -16,7 +16,7 @@ const SuccessModal = ({ open, data, onReturnDashboard, onManagePackages }) => {
           </div>
           <h2 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">Package Successfully {data.isEdit ? "Updated" : "Added"}</h2>
           <p className="text-text-secondary text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 max-w-sm">
-            The "{data.packageTier}" boosting package has been successfully {data.isEdit ? "applied to your active campaign" : "added to your active campaign"}. Your ad visibility will increase immediately.
+            The &quot;{data.packageTier}&quot; boosting package has been successfully {data.isEdit ? "applied to your active campaign" : "added to your active campaign"}. Your ad visibility will increase immediately.
           </p>
           <div className="w-full bg-white/5 rounded-2xl border border-white/10 p-md sm:p-lg mb-4 sm:mb-6">
             <div className="flex items-center justify-between py-xs sm:py-sm border-b border-white/10">

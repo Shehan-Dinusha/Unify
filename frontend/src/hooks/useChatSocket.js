@@ -33,7 +33,7 @@ export const useChatSocket = () => {
       setIsConnected(true);
     });
 
-    newSocket.on("disconnect", (reason) => {
+    newSocket.on("disconnect", (_reason) => {
       setIsConnected(false);
     });
 

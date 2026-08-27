@@ -1,7 +1,7 @@
 // src/components/marketplace/FoodCafeCard.jsx
 
 import React, { useState, useRef, useEffect } from "react";
-import { MapPin, Send, ChevronLeft, ChevronRight, Zap, Heart, MessageCircle, Bookmark } from "lucide-react";
+import { Send, ChevronLeft, ChevronRight, Zap, Heart, MessageCircle } from "lucide-react";
 import Card from "../common/Card";
 import { getImageUrl, formatTimeAgo, getAvatarUrl } from "../../utils/formatters";
 import newsfeedService from "../../services/newsfeedService";
@@ -169,13 +169,12 @@ const CommentSection = ({ postComments, onAddComment, loading, currentUser }) =>
 
 /* ─── Main Card ──────────────────────────────────────────────── */
 const FoodCafeCard = ({ post, onClick }) => {
-    const { toggleSavePost } = useSavedPosts();
+    useSavedPosts();
     const currentUser = getCurrentUser();
 
     const [liked, setLiked] = useState(post.isLiked || false);
     const [likes, setLikes] = useState(post.likesCount || post.stats?.likes || 0);
     const [saved, setSaved] = useState(post.isSaved || false);
-    const [reported, setReported] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);
 
     const [postComments, setPostComments] = useState(post.comments || []);
@@ -219,32 +218,6 @@ const FoodCafeCard = ({ post, onClick }) => {
         }
     })();
 
-    const handleToggleLike = async () => {
-        const wasLiked = liked;
-        setLiked(!wasLiked);
-        setLikes(wasLiked ? likes - 1 : likes + 1);
-
-        try {
-            await newsfeedService.toggleLike(postType, postId);
-        } catch (err) {
-            setLiked(wasLiked);
-            setLikes(wasLiked ? likes : likes - 1);
-        }
-    };
-
-    const handleToggleSave = async () => {
-        const wasSaved = saved;
-        setSaved(!wasSaved);
-        if (post) toggleSavePost({ ...post, postType });
-
-        try {
-            await newsfeedService.toggleSave(postType, postId);
-        } catch (err) {
-            setSaved(wasSaved);
-            if (post) toggleSavePost({ ...post, postType });
-        }
-    };
-
     const handleToggleComments = async () => {
         const shouldShow = !commentOpen;
         setCommentOpen(shouldShow);
@@ -264,6 +237,7 @@ const FoodCafeCard = ({ post, onClick }) => {
                 setPostComments(fetchedComments);
                 setCommentCount(fetchedComments.length);
             } catch (err) {
+                // intentionally empty
             } finally {
                 setLoadingComments(false);
             }

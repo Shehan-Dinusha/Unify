@@ -33,6 +33,7 @@ const Marketplace = () => {
                 }));
                 setPopularPosts(mappedPosts);
             } catch (err) {
+                // intentionally empty
             } finally {
                 setLoading(false);
             }

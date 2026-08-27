@@ -26,6 +26,7 @@ const EventsToday = () => {
                 const data = await newsfeedService.getEventsToday();
                 setEvents(data.events || []);
             } catch (err) {
+                // intentionally empty
             } finally {
                 setLoading(false);
             }

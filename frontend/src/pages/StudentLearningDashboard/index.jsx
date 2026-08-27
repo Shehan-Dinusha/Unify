@@ -122,7 +122,7 @@ const StudentLearningDashboard = () => {
                 <Lock size={32} className="text-gray-500" />
                 <p className="text-sm font-medium">No semesters available yet</p>
                 <p className="text-xs text-gray-500 text-center max-w-md">
-                  Your batch rep hasn't granted access to any semesters for your batch and degree. Check back later or contact your batch representative.
+                  Your batch rep hasn&apos;t granted access to any semesters for your batch and degree. Check back later or contact your batch representative.
                 </p>
               </div>
             ) : semesters.some(sem => sem.modules?.length > 0) ? (

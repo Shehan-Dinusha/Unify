@@ -4,7 +4,6 @@ import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 import NewsFeed from "../pages/NewsFeed";
 import Marketplace from "../pages/Marketplace";
-import Club from "../pages/Club";
 import ClubVerification from "../pages/ClubVerification";
 import ClubOwnerMarketplace from "../pages/ClubOwnerMarketplace";
 import ClubProduct from "../pages/ClubProduct";
@@ -24,15 +23,12 @@ import EditProfilePage from "../pages/profile/EditProfilePage";
 import SecurityPage from "../pages/profile/SecurityPage";
 import PublicProfilePage from "../pages/profile/PublicProfilePage";
 
-import Boarding from "../pages/Boarding";
 import BoardingOwnerMarketplace from "../pages/BoardingOwnerMarketplace";
 import CreateBoardingPostPage from "../pages/CreateBoardingPostPage";
 
-import FoodCafe from "../pages/FoodCafe";
 import FoodCafeOwnerMarketplace from "../pages/FoodCafeOwnerMarketplace";
 import CreateFoodCafePostPage from "../pages/CreateFoodCafePostPage";
 
-import Services from "../pages/Services";
 import ServicesOwnerMarketplace from "../pages/ServicesOwnerMarketplace";
 import CreateServicePostPage from "../pages/CreateServicePostPage";
 
@@ -44,6 +40,7 @@ import BoostConfirmOrder from "../pages/BoostConfirmOrder";
 import BoostPostSuccess from "../pages/BoostPostSuccess";
 import BoostAnalytics from "../pages/BoostAnalytics";
 
+// eslint-disable-next-line react-refresh/only-export-components
 const PlaceholderPage = ({ title }) => (
   <MainLayout
     pageTitle={title}

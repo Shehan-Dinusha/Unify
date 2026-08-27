@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Camera, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { ChevronDownIcon, SaveIcon } from "../common/Icons";
 import { editItem } from "../../services/lostAndFoundService";
 
@@ -16,7 +16,9 @@ const parseTimeForInput = (timeStr) => {
       if (ampm === "AM" && hours === 12) hours = 0;
       return `${hours.toString().padStart(2, "0")}:${mins}`;
     }
-  } catch(e) {}
+  } catch(e) {
+    // intentionally empty
+  }
   return timeStr;
 };
 
