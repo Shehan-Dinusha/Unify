@@ -1,14 +1,5 @@
 /**
- * Boost Service — Unit Test Suite (Enhanced)
- * ───────────────────────────────────────────
- * Industry-level tests for ALL pure functions and exported utilities from boost.service.js:
- *   - calculateExpiryDate
- *   - generateTransactionId
- *   - generateLogId (via default export)
- *   - validateStatusTransition
- *   - VALID_TRANSITIONS
- *   - generateFeaturesFromConfig
- *
+ * Boost Service — Unit Test Suite
  * Run: node --test tests/unit/services/boost.service.test.js
  */
 

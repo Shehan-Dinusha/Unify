@@ -1,12 +1,5 @@
 /**
- * Boost — Validator Test Suite (Enhanced)
- * ─────────────────────────────────────────
- * Industry-level tests for ALL boost validators including nested boostConfig fields:
- *   - createPackageValidator
- *   - updatePackageValidator
- *   - purchaseBoostValidator
- *   - logsQueryValidator
- *
+ * Boost — Validator Test Suite
  * Run: node --test tests/validators/boost.validator.test.js
  */
 

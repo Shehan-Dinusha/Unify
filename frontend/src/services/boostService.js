@@ -202,12 +202,14 @@ export const getBoostLogs = async (filters = {}) => {
     if (filters.page) params.page = filters.page;
     if (filters.limit) params.limit = filters.limit;
     if (filters.type) params.type = filters.type;
-    const response = await api.get("/boosts/admin/logs", { params });
+    const response = await api.get('/boosts/admin/logs', { params });
     return response.data;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }
 };
+
+
 
 /**
  * Track an impression or click for a boosted post
