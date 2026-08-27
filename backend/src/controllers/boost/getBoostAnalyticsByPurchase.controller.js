@@ -63,12 +63,6 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
       );
     }
 
-    // Issue #17 fix: Check analyticsAccess permission
-    const pkg = purchase.package;
-    if (pkg && pkg.boostConfig && !pkg.boostConfig.analyticsAccess) {
-      return sendResponse(res, 403, false, 'This boost package does not include analytics access.');
-    }
-
     // 2. Try to find a linked BoostCampaign by postId + userId
     let campaign = null;
     if (purchase.postId) {
