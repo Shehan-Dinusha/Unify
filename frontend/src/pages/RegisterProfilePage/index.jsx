@@ -42,6 +42,10 @@ const RegisterProfilePage = () => {
         }
       }
 
+      // Clear temporary registration session so user logs in cleanly from /login
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
 
       navigate("/register/success");
     } catch (err) {
