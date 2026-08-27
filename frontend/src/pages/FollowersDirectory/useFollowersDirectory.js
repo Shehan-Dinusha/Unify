@@ -40,6 +40,7 @@ export const useFollowersDirectory = () => {
       setHasMore(data.hasMore);
       setPage(nextPage);
     } catch (err) {
+      // intentionally empty
     } finally { setIsLoadingMore(false); }
   };
 
@@ -51,7 +52,9 @@ export const useFollowersDirectory = () => {
         const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
         return { name: parsed.name || "User", role: role || "club", displayRole: parsed.displayRole || role || "Club" };
       }
-    } catch {}
+    } catch {
+      // intentionally empty
+    }
     return { name: "User", role: "club", displayRole: "Club" };
   })();
 

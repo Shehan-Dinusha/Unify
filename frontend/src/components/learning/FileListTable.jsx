@@ -147,7 +147,7 @@ const FileListTable = ({
       {/* Header */}
       <div className="w-full min-w-[700px] h-12 px-5 py-3 border-b border-gray-700 flex items-center">
         <h3 className="text-white text-sm font-bold font-inter leading-5">
-          Files in "{categoryName}"
+          Files in &quot;{categoryName}&quot;
         </h3>
       </div>
 

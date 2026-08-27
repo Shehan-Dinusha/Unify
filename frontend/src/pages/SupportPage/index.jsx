@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import LandingLayout from "../../components/layout/LandingLayout";
 import Card from "../../components/common/Card";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 const FAQItem = ({ question, answer, isOpen, onClick }) => {
   return (

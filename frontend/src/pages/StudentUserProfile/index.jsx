@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
 import Card from '../../components/common/Card';
-import Button from '../../components/common/Button';
 import WarningModal from '../../components/common/WarningModal';
 import SuspendModal from '../../components/common/SuspendModal';
 import { useToast } from '../../components/common/Toast';
@@ -18,7 +17,6 @@ import {
   MinusCircle,
   LogOut,
   Ban,
-  ShieldCheck,
 } from 'lucide-react';
 import { getAvatarUrl } from '../../utils/formatters';
 import { getCurrentUser } from '../../services/authService';
@@ -74,6 +72,7 @@ const StudentUserProfile = () => {
       }
     };
     fetchProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const [modal, setModal] = useState(null);

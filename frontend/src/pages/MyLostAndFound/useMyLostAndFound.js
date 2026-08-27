@@ -67,6 +67,7 @@ export const useMyLostAndFound = () => {
         const data = await getMyItems();
         setItems(data);
       } catch (err) {
+        // intentionally empty
       } finally {
         setIsLoading(false);
       }
@@ -83,6 +84,7 @@ export const useMyLostAndFound = () => {
       formData.append("status", "Resolved");
       await editItem(id, formData);
     } catch (err) {
+      // intentionally empty
     }
   };
 

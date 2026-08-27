@@ -3,7 +3,7 @@ import Card from "../../components/common/Card";
 import Select from "../../components/common/Select";
 import StatusIcon from "../../components/common/StatusIcon";
 import {
-    AlertTriangle, X, Heart, MessageSquare, Flag, EyeOff,
+    AlertTriangle, Heart, MessageSquare, Flag, EyeOff,
     CheckCircle2, Trash2, Info,
 } from "lucide-react";
 import { Flag as FlagIcon } from "lucide-react";

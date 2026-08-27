@@ -1,6 +1,6 @@
 import Overlay from "./Overlay";
 import Card from "./Card";
-import Button from "./Button";
+
 import { UserX, X, CheckCircle2 } from "lucide-react";
 
 const SuspendModal = ({

@@ -11,6 +11,7 @@ const rolePaths = {
   },
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const getDefaultPath = (user) => {
   if (!user) return "/";
   if (user.hasProfile === false) {

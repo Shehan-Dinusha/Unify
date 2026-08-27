@@ -6,31 +6,23 @@ import api from "./api";
  * @param {string} type - "Lost", "Found", or "All"
  */
 export const getItems = async (type = "All") => {
-  try {
-    const params = new URLSearchParams();
-    if (type && type !== "All") {
-      params.append("type", type);
-    }
-
-    const response = await api.get(
-      `/lost-and-found?${params.toString()}`,
-    );
-    return response.data.data;
-  } catch (error) {
-    throw error;
+  const params = new URLSearchParams();
+  if (type && type !== "All") {
+    params.append("type", type);
   }
+
+  const response = await api.get(
+    `/lost-and-found?${params.toString()}`,
+  );
+  return response.data.data;
 };
 
 /**
  * Fetch a list of lost and found items created by the logged in user.
  */
 export const getMyItems = async () => {
-  try {
-    const response = await api.get(`/lost-and-found/my-items`);
-    return response.data.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.get(`/lost-and-found/my-items`);
+  return response.data.data;
 };
 
 /**
@@ -39,12 +31,8 @@ export const getMyItems = async () => {
  * @param {number|string} id - The ID of the item
  */
 export const getItemById = async (id) => {
-  try {
-    const response = await api.get(`/lost-and-found/${id}`);
-    return response.data.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.get(`/lost-and-found/${id}`);
+  return response.data.data;
 };
 
 /**
@@ -53,16 +41,12 @@ export const getItemById = async (id) => {
  * @param {FormData} formData - The item data including images
  */
 export const createItem = async (formData) => {
-  try {
-    const response = await api.post(`/lost-and-found`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    return response.data.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.post(`/lost-and-found`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data.data;
 };
 
 /**
@@ -72,16 +56,12 @@ export const createItem = async (formData) => {
  * @param {FormData} formData - The updated item data including images
  */
 export const editItem = async (id, formData) => {
-  try {
-    const response = await api.put(`/lost-and-found/${id}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    return response.data.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.put(`/lost-and-found/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data.data;
 };
 
 /**
@@ -90,12 +70,8 @@ export const editItem = async (id, formData) => {
  * @param {number|string} id - The ID of the item
  */
 export const deleteItem = async (id) => {
-  try {
-    const response = await api.delete(`/lost-and-found/${id}`);
-    return response.data.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.delete(`/lost-and-found/${id}`);
+  return response.data.data;
 };
 
 /**

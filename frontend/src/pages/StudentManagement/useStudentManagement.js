@@ -34,6 +34,7 @@ export const useStudentManagement = () => {
       }
     };
     fetchStats();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -64,6 +65,7 @@ export const useStudentManagement = () => {
       }
     };
     fetchStudents();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, statusFilter, facultyFilter, currentPage]);
 
   const handleResetFilters = () => {

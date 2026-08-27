@@ -67,7 +67,7 @@ const ClaimItemModal = ({ item, onClose, onSuccess }) => {
               {isLost ? "I Found This Item" : "Claim This Item"}
             </h3>
             <p className="text-body-small text-text-secondary mt-1">
-              Let the owner of "{item.title}" know.
+              Let the owner of &quot;{item.title}&quot; know.
             </p>
           </div>
           <button 

@@ -19,7 +19,7 @@ const RegisterOtpPage = () => {
       <div className="flex-1 flex flex-col items-center justify-center py-4 px-4">
         <OtpForm
           email={email}
-          onVerify={(code, result) => {
+          onVerify={(_code, _result) => {
             // Always proceed to profile setup — linking happens AFTER profile is complete
             navigate("/register/profile", {
               state: { mainType, businessType, email },

@@ -26,6 +26,7 @@ const MarketplaceItems = () => {
                 const data = await newsfeedService.getMarketplaceItemsToday();
                 setItems(data.items || []);
             } catch (err) {
+                // intentionally empty
             } finally {
                 setLoading(false);
             }

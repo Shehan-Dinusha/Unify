@@ -12,20 +12,16 @@ export const getFollowings = async (
   limit = 14,
   sortOrder = "asc",
 ) => {
-  try {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      sortOrder,
-    });
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+    sortOrder,
+  });
 
-    const response = await api.get(
-      `/followers/my-followings?${params.toString()}`,
-    );
-    return response.data.data; // Return the { followings, total, hasMore } object
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.get(
+    `/followers/my-followings?${params.toString()}`,
+  );
+  return response.data.data; // Return the { followings, total, hasMore } object
 };
 
 /**
@@ -50,12 +46,8 @@ export const getSingleFollowing = async (offset, sortOrder = "asc") => {
  * @param {number|string} clubId - ID of the club
  */
 export const unfollowOrganization = async (clubId) => {
-  try {
-    const response = await api.post(`/followers/${clubId}/toggle`, {});
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.post(`/followers/${clubId}/toggle`, {});
+  return response.data;
 };
 
 /**
@@ -65,32 +57,23 @@ export const unfollowOrganization = async (clubId) => {
  * @param {number} limit - Number of items per page
  */
 export const getClubFollowers = async (page = 1, limit = 14) => {
-  try {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-    });
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  });
 
-    const response = await api.get(
-      `/followers/my-followers?${params.toString()}`,
-    );
-    return response.data.data; // Return the { followers, total, hasMore } object
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.get(
+    `/followers/my-followers?${params.toString()}`,
+  );
+  return response.data.data; // Return the { followers, total, hasMore } object
 };
 
 /**
  * Fetch a paginated list of public followers for a specific user.
  */
 export const getPublicFollowers = async (userId, page = 1, limit = 20) => {
-  try {
-    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
-    const response = await api.get(`/followers/${userId}/followers?${params.toString()}`);
-    return response.data.data;
-  } catch (error) {
-    throw error;
-  }
+  const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+  const response = await api.get(`/followers/${userId}/followers?${params.toString()}`);
+  return response.data.data;
 };
-
 

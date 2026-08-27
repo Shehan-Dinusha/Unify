@@ -13,8 +13,8 @@ const SaveConfirmModal = ({ open, onCancel, onConfirm, isEditing, packageName })
           <h2 className="text-xl font-bold text-white mb-3">{isEditing ? "Update Package?" : "Save New Package?"}</h2>
           <p className="text-text-secondary text-sm leading-relaxed mb-2 max-w-sm">
             {isEditing
-              ? <>Are you sure you want to update the <span className="text-text-primary font-semibold">"{packageName || 'Untitled'}"</span> package? Changes will take effect immediately.</>
-              : <>Are you sure you want to create the <span className="text-text-primary font-semibold">"{packageName || 'Untitled'}"</span> package? It will be available for businesses immediately.</>}
+              ? <>Are you sure you want to update the <span className="text-text-primary font-semibold">&quot;{packageName || 'Untitled'}&quot;</span> package? Changes will take effect immediately.</>
+              : <>Are you sure you want to create the <span className="text-text-primary font-semibold">&quot;{packageName || 'Untitled'}&quot;</span> package? It will be available for businesses immediately.</>}
           </p>
         </div>
         <div className="px-8 pb-8 pt-2 flex flex-col gap-3">

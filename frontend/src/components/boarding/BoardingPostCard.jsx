@@ -153,18 +153,16 @@ const CommentSection = ({ postComments, onAddComment }) => {
 
 /* ─── Main Card ──────────────────────────────────────────────── */
 const BoardingPostCard = ({ post, onClick }) => {
-    const { toggleSavePost } = useSavedPosts();
+    useSavedPosts();
     const currentUser = getCurrentUser();
 
     const [liked, setLiked] = useState(post.isLiked || false);
     const [likes, setLikes] = useState(post.likesCount || post.stats?.likes || 0);
     const [saved, setSaved] = useState(post.isSaved || false);
-    const [boosted, setBoosted] = useState(false);
-    const [reported, setReported] = useState(false);
     const [commentOpen, setCommentOpen] = useState(false);
     const [postComments, setPostComments] = useState(post.comments || []);
     const [commentCount, setCommentCount] = useState(post.commentsCount || post.stats?.comments || (post.comments ? post.comments.length : 0));
-    const [loadingComments, setLoadingComments] = useState(false);
+    const [, setLoadingComments] = useState(false);
 
     const postType = post?.postType || "boarding";
     const postId = post?.id;
@@ -179,19 +177,6 @@ const BoardingPostCard = ({ post, onClick }) => {
         } catch (err) {
             setLiked(wasLiked);
             setLikes(wasLiked ? likes : Math.max(0, likes - 1));
-        }
-    };
-
-    const handleToggleSave = async () => {
-        const wasSaved = saved;
-        setSaved(!wasSaved);
-        if (post) toggleSavePost({ ...post, postType });
-
-        try {
-            await newsfeedService.toggleSave(postType, postId);
-        } catch (err) {
-            setSaved(wasSaved);
-            if (post) toggleSavePost({ ...post, postType });
         }
     };
 
@@ -214,6 +199,7 @@ const BoardingPostCard = ({ post, onClick }) => {
                 setPostComments(fetchedComments);
                 setCommentCount(fetchedComments.length);
             } catch (err) {
+                // intentionally empty
             } finally {
                 setLoadingComments(false);
             }

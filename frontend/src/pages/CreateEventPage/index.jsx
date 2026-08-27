@@ -74,32 +74,28 @@ const CreateEventPage = () => {
     }
 
     const handlePublish = async (eventData, images) => {
-        try {
-            const data = new FormData();
-            data.append("name", eventData.name);
-            data.append("description", eventData.description);
-            data.append("date", eventData.date);
-            data.append("time", eventData.time);
-            data.append("location", eventData.location);
-            
-            // Format tickets - in this simplified version we just pass a base price or tier array
-            // If the form has tiers, we can pass them
-            data.append("tickets", JSON.stringify(eventData.tickets || []));
-            
-            images.forEach(img => {
-                if (img.file) {
-                    data.append("coverImage", img.file);
-                }
-            });
+        const data = new FormData();
+        data.append("name", eventData.name);
+        data.append("description", eventData.description);
+        data.append("date", eventData.date);
+        data.append("time", eventData.time);
+        data.append("location", eventData.location);
+        
+        // Format tickets - in this simplified version we just pass a base price or tier array
+        // If the form has tiers, we can pass them
+        data.append("tickets", JSON.stringify(eventData.tickets || []));
+        
+        images.forEach(img => {
+            if (img.file) {
+                data.append("coverImage", img.file);
+            }
+        });
 
-            // Use real userId
-            data.append("userId", user.id);
+        // Use real userId
+        data.append("userId", user.id);
 
-            await postService.createPost("club-event", data);
-            navigate("/club-owner/marketplace");
-        } catch (error) {
-            throw error;
-        }
+        await postService.createPost("club-event", data);
+        navigate("/club-owner/marketplace");
     };
 
     return (

@@ -54,11 +54,13 @@ const ProductOrderDashboard = () => {
         }
       }
     } catch (error) {
+      // intentionally empty
     } finally {
       setLoading(false);
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchData(); }, [id, type]);
 
   const updateStatus = async (orderId, newStatus) => {

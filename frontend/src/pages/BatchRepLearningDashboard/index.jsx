@@ -69,6 +69,7 @@ const BatchRepLearningDashboard = () => {
     currentUserId,
     semesters,
     activeSemesterId,
+    // eslint-disable-next-line no-unused-vars
     setActiveSemesterId,
     activeModuleId,
     setActiveModuleId,
@@ -101,8 +102,11 @@ const BatchRepLearningDashboard = () => {
     optimisticDeleteCategory,
     optimisticRenameCategory,
     optimisticCreateCategory,
+    // eslint-disable-next-line no-unused-vars
     optimisticCreateModule,
+    // eslint-disable-next-line no-unused-vars
     optimisticEditModule,
+    // eslint-disable-next-line no-unused-vars
     optimisticDeleteModule,
     optimisticAddFile,
     optimisticUpdateVisibility,

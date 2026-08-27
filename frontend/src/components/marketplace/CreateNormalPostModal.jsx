@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus } from "lucide-react";
 import Card from "../common/Card";
 
 const CreateNormalPostModal = ({ isOpen, onClose }) => {
     const [description, setDescription] = useState("");
-    const [photos, setPhotos] = useState([]);
 
     if (!isOpen) return null;
 

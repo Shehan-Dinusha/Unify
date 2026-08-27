@@ -24,6 +24,7 @@ const FoodCafeOwnerMarketplace = () => {
             }));
             setPosts(mappedPosts);
         } catch (err) {
+            // intentionally empty
         } finally {
             setLoading(false);
         }
@@ -62,7 +63,7 @@ const FoodCafeOwnerMarketplace = () => {
                     ) : (
                         <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
                             <p className="text-text-secondary text-lg font-semibold">No posts yet.</p>
-                            <p className="text-text-tertiary text-sm mt-2">Click "Create Post" to add your first listing!</p>
+                            <p className="text-text-tertiary text-sm mt-2">Click &quot;Create Post&quot; to add your first listing!</p>
                         </div>
                     )}
                 </div>

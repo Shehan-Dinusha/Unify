@@ -22,7 +22,7 @@ const WarningModal = ({
                 </div>
                 <div>
                   <h3 className="text-body-large-bold text-text-primary font-inter">Issue Official Warning</h3>
-                  <p className="text-body-extra-small text-text-secondary font-inter">This action will be logged in the student's permanent record.</p>
+                  <p className="text-body-extra-small text-text-secondary font-inter">This action will be logged in the student&apos;s permanent record.</p>
                 </div>
               </div>
               <button onClick={onClose} className="p-2 text-text-secondary hover:text-text-primary transition-colors">

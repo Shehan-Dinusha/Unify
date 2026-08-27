@@ -27,6 +27,7 @@ export const useLostAndFound = () => {
         const data = await getItems("All");
         setItems(data);
       } catch (err) {
+        // intentionally empty
       } finally {
         setIsLoading(false);
       }

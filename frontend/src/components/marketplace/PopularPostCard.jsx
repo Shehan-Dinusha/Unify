@@ -1,6 +1,4 @@
 import React from "react";
-import Card from "../common/Card";
-import Button from "../common/Button";
 import { useNavigate } from "react-router-dom";
 
 const PopularPostCard = ({ post }) => {

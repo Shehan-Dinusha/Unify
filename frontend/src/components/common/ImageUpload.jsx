@@ -18,6 +18,7 @@ const ImageUpload = ({
     if (value && !preview) {
       setPreview(value);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   const handleClick = () => {

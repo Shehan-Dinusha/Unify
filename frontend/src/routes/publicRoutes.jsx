@@ -6,6 +6,7 @@ import FeaturesPage from "../pages/FeaturesPage";
 import SupportPage from "../pages/SupportPage";
 import PricingPage from "../pages/PricingPage";
 
+// eslint-disable-next-line react-refresh/only-export-components
 const IndexRoute = () => {
   const userStr = localStorage.getItem("user");
   if (!userStr) return <LandingHome />;

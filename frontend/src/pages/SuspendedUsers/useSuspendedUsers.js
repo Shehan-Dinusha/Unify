@@ -98,6 +98,7 @@ export const useSuspendedUsers = () => {
 
   useEffect(() => {
     fetchUsers(page, searchQuery, reasonFilter, dateFilter);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, reasonFilter, dateFilter]);
 
   useEffect(() => {
@@ -107,6 +108,7 @@ export const useSuspendedUsers = () => {
       fetchUsers(1, searchQuery, reasonFilter, dateFilter);
     }, 400);
     return () => clearTimeout(debounceRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
   const handleResetFilters = () => {

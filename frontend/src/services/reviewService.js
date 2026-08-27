@@ -6,12 +6,8 @@ import api from "./api";
  * @param {number|string} targetId - ID of the target user (e.g., Business or Boarding owner)
  */
 export const getTargetReviews = async (targetId) => {
-  try {
-    const response = await api.get(`/reviews/target/${targetId}`);
-    return response.data.data; // Return { reviews, summary }
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.get(`/reviews/target/${targetId}`);
+  return response.data.data; // Return { reviews, summary }
 };
 
 /**
@@ -20,12 +16,8 @@ export const getTargetReviews = async (targetId) => {
  * @param {Object} payload - { targetId, rating, review, isAnonymous }
  */
 export const submitReview = async (payload) => {
-  try {
-    const response = await api.post("/reviews/submit", payload);
-    return response.data.data; // Return the new review object
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.post("/reviews/submit", payload);
+  return response.data.data; // Return the new review object
 };
 
 /**
@@ -34,12 +26,8 @@ export const submitReview = async (payload) => {
  * @param {number|string} reviewId - ID of the review
  */
 export const deleteReview = async (reviewId) => {
-  try {
-    const response = await api.delete(`/reviews/${reviewId}`);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.delete(`/reviews/${reviewId}`);
+  return response.data;
 };
 
 /**
@@ -49,36 +37,24 @@ export const deleteReview = async (reviewId) => {
  * @param {string} action - "helpful" | "not_helpful"
  */
 export const toggleReviewFeedback = async (reviewId, action) => {
-  try {
-    const response = await api.post(`/reviews/${reviewId}/feedback`, { action });
-    return response.data.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.post(`/reviews/${reviewId}/feedback`, { action });
+  return response.data.data;
 };
 
 /**
  * Fetch all reviews created by the currently logged in user.
  */
 export const getMyReviews = async () => {
-  try {
-    const response = await api.get("/reviews/me");
-    return response.data.data; // Return { reviews, summary }
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.get("/reviews/me");
+  return response.data.data; // Return { reviews, summary }
 };
 
 /**
  * Fetch all reviews received by the currently logged in business.
  */
 export const getReceivedReviews = async () => {
-  try {
-    const response = await api.get("/reviews/received");
-    return response.data.data; // Return { reviews, summary }
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.get("/reviews/received");
+  return response.data.data; // Return { reviews, summary }
 };
 
 /**
@@ -87,12 +63,8 @@ export const getReceivedReviews = async () => {
  * @param {number|string} reviewId - ID of the review
  */
 export const toggleOwnerLike = async (reviewId) => {
-  try {
-    const response = await api.post(`/reviews/${reviewId}/owner-like`);
-    return response.data.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.post(`/reviews/${reviewId}/owner-like`);
+  return response.data.data;
 };
 
 /**
@@ -102,10 +74,6 @@ export const toggleOwnerLike = async (reviewId) => {
  * @param {string} content - The reply text
  */
 export const replyToReview = async (reviewId, content) => {
-  try {
-    const response = await api.post(`/reviews/${reviewId}/reply`, { content });
-    return response.data.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await api.post(`/reviews/${reviewId}/reply`, { content });
+  return response.data.data;
 };

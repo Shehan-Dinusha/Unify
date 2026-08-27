@@ -9,7 +9,7 @@ import OrderSummary from './OrderSummary';
 
 const BoostConfirmOrder = () => {
   const {
-    user, navigate, selectedPkg, isPurchasing, purchaseError,
+    user, selectedPkg, isPurchasing, purchaseError,
     estimatedReach, durationDays, dateRange, dailyRate, subtotal,
     tax, total, badgeLabel, benefits, handleProceedToPayment, handleModifyPackage,
   } = useBoostConfirmOrder();

@@ -110,6 +110,7 @@ const StudentDetailsForm = ({ onNext, initialData, loading }) => {
           );
         }
       } catch (err) {
+        // intentionally empty
       } finally {
         setLoadingMeta(false);
       }

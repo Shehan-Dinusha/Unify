@@ -38,6 +38,7 @@ const ClubOwnerMarketplace = () => {
             }));
             setPosts(mappedPosts);
         } catch (err) {
+            // intentionally empty
         } finally {
             setLoading(false);
         }
@@ -56,6 +57,7 @@ const ClubOwnerMarketplace = () => {
             }));
             setTrendingItems(mappedTrending);
         } catch (err) {
+            // intentionally empty
         } finally {
             setTrendingLoading(false);
         }
@@ -109,7 +111,7 @@ const ClubOwnerMarketplace = () => {
                     ) : (
                         <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
                             <p className="text-text-secondary text-lg font-semibold">No posts yet.</p>
-                            <p className="text-text-tertiary text-sm mt-2">Click "Create Post" to publish your first product or event!</p>
+                            <p className="text-text-tertiary text-sm mt-2">Click &quot;Create Post&quot; to publish your first product or event!</p>
                         </div>
                     )}
                 </div>

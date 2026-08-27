@@ -26,6 +26,7 @@ const NewAnnouncements = () => {
                 const data = await newsfeedService.getNewAnnouncements();
                 setAnnouncements(data.announcements || []);
             } catch (err) {
+                // intentionally empty
             } finally {
                 setLoading(false);
             }

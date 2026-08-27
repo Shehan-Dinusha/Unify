@@ -1,10 +1,8 @@
 import React from 'react';
 import Card from '../../components/common/Card';
 import StatusDropdown from './StatusDropdown';
-import { ALL_PRODUCT_STATUSES, ALL_EVENT_STATUSES } from './StatusDropdown';
 
 const OrdersTable = ({ orders, type, filterStatus, updateStatus }) => {
-  const ALL_STATUSES = type === 'club-event' ? ALL_EVENT_STATUSES : ALL_PRODUCT_STATUSES;
   const displayedOrders = filterStatus === 'All Statuses' ? orders : orders.filter((o) => o.status === filterStatus);
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Camera, Plus, MapPin } from "lucide-react";
+import { Plus, MapPin } from "lucide-react";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";

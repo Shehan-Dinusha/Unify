@@ -219,7 +219,7 @@ const ChatInput = ({ onSendMessage, onStartTyping, onStopTyping }) => {
 
 
 // ─── Typing Bubble ───────────────────────────────────────────────────────────
-const TypingBubble = ({ name }) => (
+const TypingBubble = ({ _name }) => (
   <div className="flex items-end gap-2 mt-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
     <div className="w-7 h-7" />
     <div className="bg-dark-2 border border-white/5 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1">

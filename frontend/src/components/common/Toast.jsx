@@ -5,6 +5,7 @@ import { CheckCircle2, AlertTriangle, X, Info } from 'lucide-react';
 
 const ToastContext = createContext(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useToast = () => {
   const context = useContext(ToastContext);
   if (!context) {
@@ -87,7 +88,6 @@ const Toast = ({ id, type = 'info', title, message, duration = 4000, onRemove })
 
   const handleMouseLeave = () => {
     if (pausedAtRef.current !== null) {
-      const pauseDuration = Date.now() - pausedAtRef.current;
       pausedAtRef.current = null;
     }
     startTimer(remainingRef.current);

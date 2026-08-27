@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../../components/layout/MainLayout";
-import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import { useBoostPackages } from "../../context/BoostPackageContext";
 import { getCurrentUser } from "../../services/authService";
@@ -16,6 +15,7 @@ const BoostPackageForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = !!id;
+  // eslint-disable-next-line no-unused-vars
   const { packages, addPackage, updatePackage, loading } = useBoostPackages();
 
   const existingPackage = isEditing

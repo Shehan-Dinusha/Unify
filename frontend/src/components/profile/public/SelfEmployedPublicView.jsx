@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import ProfileHeader from "../ProfileHeader";
-import FacilitiesCard from "../FacilitiesCard";
 import AboutSection from "../AboutSection";
 import ReviewsSection from "../ReviewsSection";
 import RecentPostsSection from "./RecentPostsSection";

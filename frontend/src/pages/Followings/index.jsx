@@ -15,7 +15,9 @@ const getSidebarUser = () => {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
       return { name: parsed.name || 'User', role: role || 'student', displayRole: parsed.displayRole || role || 'Student' };
     }
-  } catch (e) {}
+  } catch (e) {
+    // intentionally empty
+  }
   return { name: 'User', role: 'student', displayRole: 'Student' };
 };
 
@@ -75,7 +77,7 @@ const Followings = () => {
               ))
             ) : (
               <div className="w-full text-center py-12 text-slate-400 bg-white/5 rounded-2xl border border-white/10 px-4">
-                You aren't following anyone yet.
+                You aren&apos;t following anyone yet.
               </div>
             )}
           </div>

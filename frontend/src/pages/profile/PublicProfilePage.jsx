@@ -100,7 +100,7 @@ const PublicProfilePage = () => {
           </div>
           <h2 className="text-heading-medium text-white">Access Denied</h2>
           <p className="text-text-secondary max-w-md">
-            This profile is not accessible. You do not have the required permissions to view this user's information.
+            This profile is not accessible. You do not have the required permissions to view this user&apos;s information.
           </p>
           <Button variant="primary" onClick={() => navigate(-1)} className="mt-4">
             Go Back

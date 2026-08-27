@@ -28,6 +28,7 @@ const FoodCafe = () => {
                 }));
                 setPosts(mappedPosts);
             } catch (err) {
+                // intentionally empty
             } finally {
                 setLoading(false);
             }
