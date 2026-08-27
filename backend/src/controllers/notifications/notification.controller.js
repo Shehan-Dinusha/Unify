@@ -13,6 +13,7 @@ import {
 } from "../../services/notification.service.js";
 import { formatRelativeDate } from "../../utils/date.js";
 import s3Service from "../../services/s3.service.js";
+import { resolveAvatarUrl } from "../../utils/avatarUrl.util.js";
 import logger from "../../utils/logger.js";
 
 /**
@@ -47,7 +48,7 @@ export const getNotifications = async (req, res) => {
         ...json,
         time: formatRelativeDate(json.createdAt),
         // Map actor info into the shape the frontend expects
-        avatar: json.actor?.avatar || null,
+        avatar: await resolveAvatarUrl(json.actor?.avatar, json.actor?.name),
         actorName: json.actor?.name || null,
         image: signedImage,
       };
