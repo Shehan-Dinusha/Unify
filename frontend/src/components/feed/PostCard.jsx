@@ -328,7 +328,7 @@ const PostCard = ({
   const currentUser = getCurrentUser();
   const cardRef = useRef(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
+
   const impressionTracked = useRef(false);
   const interactionTracked = useRef(false);
 
@@ -336,7 +336,8 @@ const PostCard = ({
   const postId = post?.id;
 
   useEffect(() => {
-    if (!isPromoted || !postId || impressionTracked.current || !cardRef.current) return;
+    if (!isPromoted || !postId || impressionTracked.current || !cardRef.current)
+      return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -350,7 +351,7 @@ const PostCard = ({
           });
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.5 },
     );
 
     observer.observe(cardRef.current);

@@ -13,7 +13,7 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
   try {
     const { purchaseId } = req.params;
     const userId = req.user?.id;
-    
+
     let timeRange = parseInt(req.query.timeRange, 10);
     if (isNaN(timeRange) || timeRange < 1 || timeRange > 365) {
       timeRange = 7; // Safe default
@@ -119,16 +119,19 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
 
     if (campaign) {
       impressions = (campaign.impressions || 0) + impressions;
-      clicks = (campaign.clicks || rawInteractions.filter(i => i.action === 'Click').length) + clicks;
-      
+      clicks =
+        (campaign.clicks ||
+          rawInteractions.filter((i) => i.action === "Click").length) + clicks;
+
       if (campaign.total) {
         const campaignTotal = Number(campaign.total);
         if (!isNaN(campaignTotal) && campaignTotal > 0) {
           adSpend = campaignTotal;
         }
       }
-      
-      salesAttributed = (Number(campaign.salesAttributed) || 0) + salesAttributed;
+
+      salesAttributed =
+        (Number(campaign.salesAttributed) || 0) + salesAttributed;
 
       campaignInfo = {
         id: campaign.id,
@@ -149,29 +152,30 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
 
     // 5. Fetch actual organic engagements from the database (Likes + Comments) during the boost period
     const [commentsCount, likesCount] = await Promise.all([
-      Comment.count({ 
-        where: { 
-          postId: purchase.postId, 
+      Comment.count({
+        where: {
+          postId: purchase.postId,
           ...(purchase.postType && { postType: purchase.postType }),
-          createdAt: { [Op.gte]: purchase.purchaseDate }
-        } 
+          createdAt: { [Op.gte]: purchase.purchaseDate },
+        },
       }),
-      PostLike.count({ 
-        where: { 
-          postId: purchase.postId, 
+      PostLike.count({
+        where: {
+          postId: purchase.postId,
           ...(purchase.postType && { postType: purchase.postType }),
-          createdAt: { [Op.gte]: purchase.purchaseDate }
-        } 
-      })
+          createdAt: { [Op.gte]: purchase.purchaseDate },
+        },
+      }),
     ]);
-    
+
     const organicEngagements = commentsCount + likesCount;
-    
+
     const organicOnlyEngagements = Math.max(0, organicEngagements - clicks);
-    let totalOrganicReach = organicOnlyEngagements > 0 
-      ? Math.floor(organicOnlyEngagements / 0.05) 
-      : 0;
-      
+    let totalOrganicReach =
+      organicOnlyEngagements > 0
+        ? Math.floor(organicOnlyEngagements / 0.05)
+        : 0;
+
     // 6. Build package info
     const durationDays = pkg
       ? pkg.durationUnit === "Hours"
@@ -205,15 +209,21 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
 
     for (let d = 0; d < chartDays; d++) {
       const dayDate = new Date(purchaseDate.getTime() + d * msPerDay);
-      labels.push(dayDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-      
-      const variance = chartDays > 1 ? (Math.random() * 0.4 + 0.8) : 1; // +/- 20%
-      
-      boostedReachArr.push(impressions > 0 ? Math.round(impressionsPerDay * variance) : 0);
-      
+      labels.push(
+        dayDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      );
+
+      const variance = chartDays > 1 ? Math.random() * 0.4 + 0.8 : 1; // +/- 20%
+
+      boostedReachArr.push(
+        impressions > 0 ? Math.round(impressionsPerDay * variance) : 0,
+      );
+
       // If no organic engagements, mock a small flatline so chart looks realistic for a new post
       if (totalOrganicReach === 0) {
-        organicReachArr.push(Math.round((15 + Math.floor(Math.random() * 15)) * variance));
+        organicReachArr.push(
+          Math.round((15 + Math.floor(Math.random() * 15)) * variance),
+        );
       } else {
         organicReachArr.push(Math.round(organicPerDay * variance));
       }

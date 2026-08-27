@@ -63,9 +63,10 @@ router.get("/admin/logs", protect, authorize("Admin"), BoostController.getLogs);
 
 //Admin dashboard stats (DB-driven tiles)
 router.get(
-  '/admin/stats',
-  protect, authorize('Admin'),
-  BoostController.getAdminStats
+  "/admin/stats",
+  protect,
+  authorize("Admin"),
+  BoostController.getAdminStats,
 );
 
 // ── Business User Purchase Analytics ─────────────────────────────────────────
@@ -80,10 +81,6 @@ router.get(
 // ── Metrics Tracking ────────────────────────────────────────────────────────
 
 //Track lightweight metrics (impressions, clicks)
-router.post(
-  '/track',
-  protect,
-  BoostController.trackMetrics
-);
+router.post("/track", protect, BoostController.trackMetrics);
 
 export default router;

@@ -15,7 +15,13 @@ export const getLogs = async (req, res, next) => {
     const { type } = req.query;
 
     const result = await boostService.getBoostLogs({ page, limit, type });
-    return sendResponse(res, 200, true, "Boost logs retrieved successfully", result);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Boost logs retrieved successfully",
+      result,
+    );
   } catch (error) {
     logger.error(`Error in getLogs controller: ${error.message}`);
     next(error);

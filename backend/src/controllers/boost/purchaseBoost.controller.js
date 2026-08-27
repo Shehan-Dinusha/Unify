@@ -42,6 +42,19 @@ export const purchaseBoost = async (req, res, next) => {
       }
     }
 
+    // Issue #16 fix: Validate postType if provided
+    if (postType) {
+      const validPostTypes = ['normal', 'club-product', 'club-event', 'boarding'];
+      if (!validPostTypes.includes(postType)) {
+        return sendResponse(
+          res,
+          400,
+          false,
+          `Invalid postType. Must be one of: ${validPostTypes.join(', ')}`
+        );
+      }
+    }
+
     const result = await boostService.purchaseBoost(userId, packageId, postId, postType);
 
     return sendResponse(res, 201, true, "Boost purchased successfully", result);
