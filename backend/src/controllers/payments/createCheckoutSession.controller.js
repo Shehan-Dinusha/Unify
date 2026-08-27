@@ -25,7 +25,7 @@ export const createCheckoutSession = async (req, res) => {
       if (order) sellerId = order.sellerId;
     } else if (bookingId) {
       // Find by booking string ID (bookingId field in DB)
-      const booking = await EventBooking.findOne({ 
+      const booking = await EventBooking.findOne({
         where: { bookingId },
         include: [{ model: ClubEventPost, as: "event" }]
       });
@@ -40,8 +40,8 @@ export const createCheckoutSession = async (req, res) => {
     const destination = clubProfile?.stripeAccountId;
 
     if (!destination) {
-      return res.status(400).json({ 
-        error: "Seller has not connected their Stripe account. Payments cannot be processed for this item." 
+      return res.status(400).json({
+        error: "Seller has not connected their Stripe account. Payments cannot be processed for this item."
       });
     }
 

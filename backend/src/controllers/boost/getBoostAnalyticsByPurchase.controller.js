@@ -1,4 +1,4 @@
-import { Op } from 'sequelize';
+import { Op } from "sequelize";
 import { sequelize } from "../../modules/index.js";
 import BoostPurchase from "../../modules/BoostPurchase.model.js";
 import BoostPackage from "../../modules/BoostPackage.model.js";
@@ -20,7 +20,7 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
     }
 
     if (!userId) {
-      return sendResponse(res, 401, false, 'Authentication required.');
+      return sendResponse(res, 401, false, "Authentication required.");
     }
 
     // 1. Look up the BoostPurchase and verify ownership
@@ -29,14 +29,38 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
       include: [
         {
           model: BoostPackage,
-          as: 'package',
-          attributes: ['id', 'name', 'price', 'durationValue', 'durationUnit', 'badge', 'boostConfig'],
+          as: "package",
+          attributes: [
+            "id",
+            "name",
+            "price",
+            "durationValue",
+            "durationUnit",
+            "badge",
+            "boostConfig",
+          ],
         },
       ],
     });
 
     if (!purchase) {
-      return sendResponse(res, 404, false, 'Boost purchase not found or unauthorized.');
+      return sendResponse(
+        res,
+        404,
+        false,
+        "Boost purchase not found or unauthorized.",
+      );
+    }
+
+    // Issue #17 fix: Check analyticsAccess permission
+    const pkg = purchase.package;
+    if (pkg && pkg.boostConfig && !pkg.boostConfig.analyticsAccess) {
+      return sendResponse(
+        res,
+        403,
+        false,
+        "This boost package does not include analytics access.",
+      );
     }
 
     // Issue #17 fix: Check analyticsAccess permission
@@ -52,9 +76,9 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
         where: {
           postId: purchase.postId,
           userId,
-          status: { [Op.in]: ['Pending', 'Active', 'Paused', 'Completed'] },
+          status: { [Op.in]: ["Pending", "Active", "Paused", "Completed"] },
         },
-        order: [['createdAt', 'DESC']],
+        order: [["createdAt", "DESC"]],
       });
     }
 
@@ -63,32 +87,39 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
     let clicks = purchase.clicks || 0;
     let adSpend = Number(purchase.amount) || 0;
     let salesAttributed = Number(purchase.salesAttributed) || 0;
-    
+
     let purchaseCount = 0;
     let totalInteractions = 0;
     let byAction = [];
     let campaignInfo = null;
     let rawInteractions = [];
 
-    const interactionWhere = campaign 
+    const interactionWhere = campaign
       ? { [Op.or]: [{ purchaseId: purchase.id }, { campaignId: campaign.id }] }
       : { purchaseId: purchase.id };
 
     // Fetch all interactions for this purchase OR campaign (for table + metrics)
     rawInteractions = await BoostInteraction.findAll({
       where: interactionWhere,
-      include: [{ model: User, as: 'user', attributes: ['id', 'name', 'avatar'] }],
-      order: [['createdAt', 'DESC']],
+      include: [
+        { model: User, as: "user", attributes: ["id", "name", "avatar"] },
+      ],
+      order: [["createdAt", "DESC"]],
       limit: 50,
     });
 
     totalInteractions = rawInteractions.length;
-    purchaseCount = rawInteractions.filter(i => i.action === 'Purchase').length;
+    purchaseCount = rawInteractions.filter(
+      (i) => i.action === "Purchase",
+    ).length;
 
     byAction = await BoostInteraction.findAll({
-      attributes: ['action', [sequelize.fn('COUNT', sequelize.col('action')), 'count']],
+      attributes: [
+        "action",
+        [sequelize.fn("COUNT", sequelize.col("action")), "count"],
+      ],
       where: interactionWhere,
-      group: ['action'],
+      group: ["action"],
       raw: true,
     });
 
@@ -118,8 +149,9 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
     }
 
     // 4. Compute derived metrics
-    const ctr = impressions > 0 ? ((clicks / impressions) * 100).toFixed(1) : '0.0';
-    const roi = adSpend > 0 ? (salesAttributed / adSpend).toFixed(1) : '0.0';
+    const ctr =
+      impressions > 0 ? ((clicks / impressions) * 100).toFixed(1) : "0.0";
+    const roi = adSpend > 0 ? (salesAttributed / adSpend).toFixed(1) : "0.0";
 
     // 5. Fetch actual organic engagements from the database (Likes + Comments) during the boost period
     const [commentsCount, likesCount] = await Promise.all([
@@ -148,17 +180,26 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
       
     // 6. Build package info
     const durationDays = pkg
-      ? pkg.durationUnit === 'Hours' ? 1
-        : pkg.durationUnit === 'Days' ? pkg.durationValue
-        : pkg.durationValue * 7
+      ? pkg.durationUnit === "Hours"
+        ? 1
+        : pkg.durationUnit === "Days"
+          ? pkg.durationValue
+          : pkg.durationValue * 7
       : 0;
 
     // 7. Generate per-day performance data for the chart
     const purchaseDate = new Date(purchase.purchaseDate);
     const now = new Date();
     const msPerDay = 24 * 60 * 60 * 1000;
-    const daysElapsed = Math.max(1, Math.floor((now - purchaseDate) / msPerDay) + 1);
-    const chartDays = Math.min(timeRange, daysElapsed, durationDays || timeRange);
+    const daysElapsed = Math.max(
+      1,
+      Math.floor((now - purchaseDate) / msPerDay) + 1,
+    );
+    const chartDays = Math.min(
+      timeRange,
+      daysElapsed,
+      durationDays || timeRange,
+    );
 
     const labels = [];
     const boostedReachArr = [];
@@ -185,14 +226,19 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
     }
 
     // 7. Format interactions for the frontend table
-    const interactionsForFrontend = rawInteractions.map(i => ({
+    const interactionsForFrontend = rawInteractions.map((i) => ({
       id: i.id,
-      user: i.user?.name || 'Unknown User',
+      user: i.user?.name || "Unknown User",
       avatar: i.user?.profilePicture || null,
       action: i.action,
-      content: i.content || '',
-      date: i.date || new Date(i.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      impact: i.impact || 'Medium',
+      content: i.content || "",
+      date:
+        i.date ||
+        new Date(i.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+      impact: i.impact || "Medium",
     }));
 
     const analytics = {
@@ -201,7 +247,7 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
       postId: purchase.postId,
       postType: purchase.postType || null,
       transactionId: purchase.transactionId,
-      packageName: pkg?.name || 'Boost Package',
+      packageName: pkg?.name || "Boost Package",
       packageBadge: pkg?.badge,
       purchaseDate: purchase.purchaseDate,
       expiryDate: purchase.expiryDate,
@@ -220,9 +266,15 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
       conversionFunnel: {
         impressions,
         clicks,
-        clicksRate: impressions > 0 ? `${((clicks / impressions) * 100).toFixed(1)}%` : '0.0%',
+        clicksRate:
+          impressions > 0
+            ? `${((clicks / impressions) * 100).toFixed(1)}%`
+            : "0.0%",
         purchases: purchaseCount,
-        purchasesRate: clicks > 0 ? `${((purchaseCount / clicks) * 100).toFixed(1)}%` : '0.0%',
+        purchasesRate:
+          clicks > 0
+            ? `${((purchaseCount / clicks) * 100).toFixed(1)}%`
+            : "0.0%",
       },
       byAction,
       // Real per-day chart data
@@ -235,7 +287,13 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
       interactions: interactionsForFrontend,
     };
 
-    return sendResponse(res, 200, true, 'Boost analytics retrieved successfully', analytics);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Boost analytics retrieved successfully",
+      analytics,
+    );
   } catch (error) {
     logger.error(`Error in getBoostAnalyticsByPurchase: ${error.message}`);
     next(error);

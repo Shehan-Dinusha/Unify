@@ -359,9 +359,8 @@ const PostCard = ({
     return () => observer.disconnect();
   }, [isPromoted, postId, postType, currentUser]);
 
-  const DESCRIPTION_LIMIT = 250;
-  const isLongDescription =
-    description && description.length > DESCRIPTION_LIMIT;
+  const impressionTracked = useRef(false);
+  const interactionTracked = useRef(false);
 
   // Handle case where author is passed as an object instead of a string
   const displayAuthor =

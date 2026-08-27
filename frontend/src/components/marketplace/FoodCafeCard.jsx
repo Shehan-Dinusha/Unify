@@ -9,7 +9,7 @@ import { useSavedPosts } from "../../context/SavedPostsContext";
 import { getCurrentUser } from "../../services/authService";
 
 /* ─── Action Button ──────────────────────────────────────────── */
-const ActionBtn = ({ svgSrc, label, count, showCount, activeColor = "text-primary", onClick, active }) => (
+const ActionBtn = ({ svgSrc, icon, label, count, showCount, activeColor = "text-primary", onClick, active }) => (
     <button
         onClick={onClick}
         className={`
@@ -22,7 +22,9 @@ const ActionBtn = ({ svgSrc, label, count, showCount, activeColor = "text-primar
         `}
     >
         <div className="flex items-center gap-[3px]">
-            <img src={svgSrc} alt={label} className={`w-5 h-5 ${active ? "brightness-125" : ""}`} />
+            {icon
+                ? icon
+                : <img src={svgSrc} alt={label} className={`w-5 h-5 ${active ? "brightness-125" : ""}`} />}
             {showCount && <span className="text-[12px] font-bold leading-none">{count}</span>}
         </div>
         <span className="text-[11px] leading-none font-medium">{label}</span>
@@ -366,22 +368,22 @@ const FoodCafeCard = ({ post, onClick }) => {
                 {/* Action bar */}
                 <div className="pt-md border-t border-white/10 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
                     <ActionBtn
-                        svgSrc="/icon_like_marketplace.svg"
+                        icon={<Heart size={20} className={liked ? "fill-current" : ""} strokeWidth={liked ? 0 : 1.8} />}
                         label="Like"
                         count={likes}
                         showCount
-                        activeColor="text-red-500"
+                        activeColor="text-primary-blue"
                         active={liked}
                         onClick={() => { setLiked(p => !p); setLikes(n => liked ? n - 1 : n + 1); }}
                     />
                     <ActionBtn
-                        svgSrc="/icon_comment_marketplace.svg"
+                        icon={<MessageCircle size={20} strokeWidth={1.8} />}
                         label="Comments"
-                        count={postComments.length}
+                        count={commentCount}
                         showCount
-                        activeColor="text-blue-500"
+                        activeColor="text-primary-blue"
                         active={commentOpen}
-                        onClick={() => setCommentOpen(o => !o)}
+                        onClick={handleToggleComments}
                     />
                     {currentUser?.role === 'STUDENT' && (
                         <ActionBtn

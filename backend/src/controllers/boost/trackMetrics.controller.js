@@ -19,9 +19,14 @@ export const trackMetrics = async (req, res, next) => {
       return sendResponse(res, 400, false, "postId and action are required");
     }
 
-    const validActions = ['impression', 'click', 'Like', 'Comment', 'Purchase'];
+    const validActions = ["impression", "click", "Like", "Comment", "Purchase"];
     if (!validActions.includes(action)) {
-      return sendResponse(res, 400, false, `Invalid action. Must be one of: ${validActions.join(', ')}`);
+      return sendResponse(
+        res,
+        400,
+        false,
+        `Invalid action. Must be one of: ${validActions.join(", ")}`,
+      );
     }
 
     // ── Find the currently active boost purchase for this post
@@ -34,7 +39,7 @@ export const trackMetrics = async (req, res, next) => {
           [Op.gt]: new Date(),
         },
       },
-      order: [['createdAt', 'DESC']],
+      order: [["createdAt", "DESC"]],
     });
 
     if (purchase) {
