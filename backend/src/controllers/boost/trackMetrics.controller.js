@@ -34,7 +34,7 @@ export const trackMetrics = async (req, res, next) => {
       where: {
         postId: parseInt(postId, 10),
         ...(postType && { postType }),
-        status: 'active',
+        status: "active",
         expiryDate: {
           [Op.gt]: new Date(),
         },
@@ -46,10 +46,10 @@ export const trackMetrics = async (req, res, next) => {
       // All metric updates must use transactions to prevent race conditions (Issue #14 fix)
       const transaction = await sequelize.transaction();
       try {
-        if (action === 'impression') {
+        if (action === "impression") {
           purchase.impressions = (purchase.impressions || 0) + 1;
           await purchase.save({ transaction });
-        } else if (action === 'click') {
+        } else if (action === "click") {
           purchase.clicks = (purchase.clicks || 0) + 1;
           await purchase.save({ transaction });
         } else {
@@ -60,11 +60,11 @@ export const trackMetrics = async (req, res, next) => {
               userId: actorId,
               action: action,
               content: content || null,
-              impact: impact || (action === 'Purchase' ? 'High' : 'Medium'),
+              impact: impact || (action === "Purchase" ? "High" : "Medium"),
             },
-            { transaction }
+            { transaction },
           );
-          
+
           // Also bump clicks for these, since they imply engagement
           purchase.clicks = (purchase.clicks || 0) + 1;
           await purchase.save({ transaction });
