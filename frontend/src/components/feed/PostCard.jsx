@@ -690,25 +690,25 @@ const PostCard = ({
               switch (style) {
                 case "gold":
                   return (
-                    <span className="text-[11px] font-bold bg-gradient-to-r from-[#FBBF24]/20 to-[#F59E0B]/20 text-[#FBBF24] px-3 py-1 rounded-full border border-[#FBBF24]/30 flex items-center gap-1">
+                    <span className="text-[10px] sm:text-[11px] font-bold bg-gradient-to-r from-[#FBBF24]/20 to-[#F59E0B]/20 text-[#FBBF24] px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border border-[#FBBF24]/30 flex items-center gap-1 whitespace-nowrap shrink-0">
                       ⚡ Featured
                     </span>
                   );
                 case "blue":
                   return (
-                    <span className="text-[11px] font-bold bg-[#3B82F6]/15 text-[#60A5FA] px-3 py-1 rounded-full border border-[#3B82F6]/30">
+                    <span className="text-[10px] sm:text-[11px] font-bold bg-[#3B82F6]/15 text-[#60A5FA] px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border border-[#3B82F6]/30 whitespace-nowrap shrink-0">
                       Promoted
                     </span>
                   );
                 case "subtle":
                   return (
-                    <span className="text-[10px] font-medium text-[#94A3B8]/70 tracking-wider uppercase">
+                    <span className="text-[9px] sm:text-[10px] font-medium text-[#94A3B8]/70 tracking-wider uppercase whitespace-nowrap shrink-0">
                       Sponsored
                     </span>
                   );
                 default:
                   return (
-                    <span className="text-[11px] font-bold bg-[#FBBF24]/10 text-[#FBBF24] px-3 py-1 rounded-full">
+                    <span className="text-[10px] sm:text-[11px] font-bold bg-[#FBBF24]/10 text-[#FBBF24] px-2 py-0.5 sm:px-3 sm:py-1 rounded-full whitespace-nowrap shrink-0">
                       Promoted
                     </span>
                   );
