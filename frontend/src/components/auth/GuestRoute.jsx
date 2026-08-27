@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useSearchParams } from "react-router-dom";
+import { Navigate, Outlet, useSearchParams, useLocation } from "react-router-dom";
 
 const rolePaths = {
   Student: "/news-feed",
@@ -21,9 +21,18 @@ export const getDefaultPath = (user) => {
 
 const GuestRoute = () => {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const isAddAccount = searchParams.get("addAccount") === "true";
 
   if (isAddAccount) {
+    return <Outlet />;
+  }
+
+  // Allow registration wizard steps (profile setup and success message)
+  if (
+    location.pathname === "/register/profile" ||
+    location.pathname === "/register/success"
+  ) {
     return <Outlet />;
   }
 
