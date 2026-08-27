@@ -31,7 +31,8 @@ const EditModuleModal = ({
     setMounted(true);
   }, []);
 
-  // Update form when modal opens or initialData changes
+  // Update form when modal opens (not on every initialData change, so that
+  // optimistic parent re-renders during save don't clobber the user's input)
   useEffect(() => {
     if (isOpen && initialData) {
       setTitle(initialData.moduleName || "");
@@ -45,8 +46,8 @@ const EditModuleModal = ({
       setSelectedDegrees(updatedDegrees);
       setIsDegreeDropdownOpen(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, initialData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   if (!isOpen || !mounted) return null;
 
@@ -252,8 +253,13 @@ const EditModuleModal = ({
             >
               {isDeleting ? (
                 <>
-                  <Loader2 size={14} className="animate-spin text-red-400 group-hover:text-red-300" />
-                  <span className="text-red-400 text-body-small-bold group-hover:text-red-300">Deleting...</span>
+                  <Loader2
+                    size={14}
+                    className="animate-spin text-red-400 group-hover:text-red-300"
+                  />
+                  <span className="text-red-400 text-body-small-bold group-hover:text-red-300">
+                    Deleting...
+                  </span>
                 </>
               ) : (
                 <>
@@ -294,7 +300,10 @@ const EditModuleModal = ({
             >
               {isSaving ? (
                 <>
-                  <Loader2 size={16} className="animate-spin text-white shrink-0" />
+                  <Loader2
+                    size={16}
+                    className="animate-spin text-white shrink-0"
+                  />
                   <span>Saving...</span>
                 </>
               ) : (

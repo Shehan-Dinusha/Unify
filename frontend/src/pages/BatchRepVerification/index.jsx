@@ -343,14 +343,12 @@ const BatchRepVerification = () => {
                 {submissionStatus === "declined" && (
                   <>
                     Your registration request for{" "}
-                    {approvedRole || "Batch Representative"}
-                    has been reviewed and declined by the administration.
+                    {approvedRole || "Batch Representative"} has been reviewed and declined by the administration.
                   </>
                 )}
                 {submissionStatus === "removed" && (
                   <>
-                    Your verified status as {approvedRole || "Batch Representative"}
-                    has been removed by the administration.
+                    Your verified status as {approvedRole || "Batch Representative"} has been removed by the administration.
                   </>
                 )}
               </p>
