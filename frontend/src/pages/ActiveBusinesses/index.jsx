@@ -24,7 +24,6 @@ const ActiveBusinesses = () => {
     totalPages, totalCount,
     startItem, endItem,
     handleResetFilters,
-    PAGE_LIMIT,
   } = useActiveBusinesses();
 
   return (

@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import ProfileHeader from "../ProfileHeader";
 import ProfileDashboardCard from "../ProfileDashboardCard";
 import Button from "../../common/Button";
 import { Plus, Zap } from "lucide-react";

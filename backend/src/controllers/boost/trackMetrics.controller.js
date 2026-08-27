@@ -6,11 +6,6 @@ import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 import { sequelize } from "../../modules/index.js";
 
-/**
- * @desc    Track metrics (impressions or clicks) for boosted posts
- * @route   POST /api/v1/boosts/track
- * @access  Private
- */
 export const trackMetrics = async (req, res, next) => {
   try {
     const { postId, postType, action, content, impact } = req.body;

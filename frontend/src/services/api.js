@@ -121,7 +121,9 @@ api.interceptors.response.use(
           let userId = null;
           try {
             userId = userStr ? JSON.parse(userStr)?.id : null;
-          } catch {}
+          } catch {
+            // intentionally empty
+          }
 
           if (userId) {
             removeSavedAccount(userId);

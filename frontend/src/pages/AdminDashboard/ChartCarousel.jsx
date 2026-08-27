@@ -3,8 +3,8 @@ import { ChevronLeftIcon, ChevronRightIcon } from "../../components/common/Icons
 import { BarChart } from "../../components/chart";
 
 const ChartCarousel = ({
-  chartLoading, chartSlides, realIdx, xLabels, slideCount, chartIdx, isTransitioning,
-  isHovered, setIsHovered,
+  chartLoading, chartSlides, realIdx, xLabels, _slideCount, chartIdx, isTransitioning,
+  _isHovered, setIsHovered,
   goPrev, goNext, goTo, handleTransitionEnd,
 }) => (
   <div

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import LandingLayout from "../../components/layout/LandingLayout";
 import AuthenticationHeader from "../../components/auth/AuthenticationHeader";
 import ForgotPasswordForm from "../../components/auth/ForgotPasswordForm";

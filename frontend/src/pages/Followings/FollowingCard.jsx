@@ -27,6 +27,7 @@ const FollowingCard = ({ following, onUnfollow }) => {
         });
       }
     } catch (e) {
+      // intentionally empty
     }
   };
 

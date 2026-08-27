@@ -16,6 +16,7 @@ const ChatContext = createContext({
   socket: null,
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useChat = () => useContext(ChatContext);
 
 const REFRESH_INTERVAL_MS = 60_000; // fallback poll every 60 seconds

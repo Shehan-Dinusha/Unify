@@ -63,7 +63,7 @@ const ForgotPasswordForm = ({ onNext }) => {
             </h2>
             <p className="text-gray-400 text-sm font-normal font-inter leading-5 px-4 leading-relaxed">
               No worries, it happens. Enter your email or phone number below and
-              we'll send you an OTP to reset your password.
+              we&apos;ll send you an OTP to reset your password.
             </p>
           </div>
         </div>

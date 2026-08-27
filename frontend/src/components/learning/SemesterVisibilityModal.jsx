@@ -73,7 +73,7 @@ const SemesterVisibilityModal = ({
             <p className="text-gray-400 text-sm font-normal font-inter leading-5 mb-4 shrink-0">
               Control which batches can access content for{" "}
               {semesterName || "this semester"}.<br className="hidden sm:block" />
-              Toggling off will hide this folder from that batch's view
+              Toggling off will hide this folder from that batch&apos;s view
               <br className="hidden sm:block" />
               immediately.
             </p>

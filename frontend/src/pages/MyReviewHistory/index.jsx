@@ -60,7 +60,7 @@ const MyReviewHistory = () => {
           <div className="flex flex-col gap-2">
             <h1 className="text-white text-3xl font-bold font-inter leading-9 m-0">My Review History</h1>
             <p className="text-slate-400 text-base font-normal font-inter leading-5 m-0">
-              Manage and view all the feedback you've shared with the community.
+              Manage and view all the feedback you&apos;ve shared with the community.
             </p>
           </div>
           <ReviewKPICards summary={summary} />

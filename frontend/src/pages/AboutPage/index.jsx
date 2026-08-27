@@ -1,7 +1,7 @@
 import React from "react";
 import LandingLayout from "../../components/layout/LandingLayout";
 import Card from "../../components/common/Card";
-import { ShieldCheck, Shield, Network } from "lucide-react";
+
 
 const AboutPage = () => {
   return (

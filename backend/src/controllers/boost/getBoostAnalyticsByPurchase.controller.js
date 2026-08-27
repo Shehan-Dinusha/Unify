@@ -9,21 +9,11 @@ import { Comment, PostLike } from "../../modules/index.js";
 import { sendResponse } from "../../utils/response.js";
 import logger from "../../utils/logger.js";
 
-/**
- * @desc    Get boost analytics for a business user via their BoostPurchase ID.
- *          Looks up the linked BoostCampaign (by postId + userId) if it exists,
- *          otherwise derives analytics directly from the BoostPurchase record.
- *          Also generates real per-day performanceData for the chart and returns
- *          the interactions list for the Top Interactions table.
- * @route   GET /api/v1/boosts/purchase/:purchaseId/analytics?timeRange=7|30
- * @access  Private (owner of the purchase)
- */
 export const getBoostAnalyticsByPurchase = async (req, res, next) => {
   try {
     const { purchaseId } = req.params;
     const userId = req.user?.id;
 
-    // Issue #15 fix: Validate timeRange parameter with bounds checking
     let timeRange = parseInt(req.query.timeRange, 10);
     if (isNaN(timeRange) || timeRange < 1 || timeRange > 365) {
       timeRange = 7; // Safe default
@@ -133,7 +123,6 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
         (campaign.clicks ||
           rawInteractions.filter((i) => i.action === "Click").length) + clicks;
 
-      // Issue #18 fix: Safe Number conversion for campaign.total with NaN validation
       if (campaign.total) {
         const campaignTotal = Number(campaign.total);
         if (!isNaN(campaignTotal) && campaignTotal > 0) {
@@ -180,8 +169,7 @@ export const getBoostAnalyticsByPurchase = async (req, res, next) => {
     ]);
 
     const organicEngagements = commentsCount + likesCount;
-    // Assume a 5% engagement rate to reverse-engineer organic reach.
-    // If the boost generated interactions, we subtract them to isolate organic interactions.
+
     const organicOnlyEngagements = Math.max(0, organicEngagements - clicks);
     let totalOrganicReach =
       organicOnlyEngagements > 0

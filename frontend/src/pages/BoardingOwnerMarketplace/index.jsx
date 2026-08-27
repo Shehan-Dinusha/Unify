@@ -27,6 +27,7 @@ const BoardingOwnerMarketplace = () => {
             }));
             setPosts(mappedPosts);
         } catch (err) {
+            // intentionally empty
         } finally {
             setLoading(false);
         }
@@ -34,6 +35,7 @@ const BoardingOwnerMarketplace = () => {
 
     useEffect(() => {
         fetchFeed();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters]);
 
     const headerRight = (

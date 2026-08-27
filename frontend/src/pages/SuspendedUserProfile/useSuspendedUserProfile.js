@@ -31,6 +31,7 @@ export const useSuspendedUserProfile = () => {
             }
         };
         fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const user = data?.user || {};

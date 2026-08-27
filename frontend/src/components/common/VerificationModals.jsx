@@ -208,7 +208,7 @@ export const VerificationRejectionModal = ({
   onClose,
   onConfirm,
   clubName = "Robotics Club",
-  requestType = "Club",
+  _requestType = "Club",
   loading,
 }) => {
   const [selectedReason, setSelectedReason] = useState("Incomplete Documents");
@@ -220,9 +220,6 @@ export const VerificationRejectionModal = ({
     "Expired Proof/Validity",
     "Other (Specify below)",
   ];
-
-  const recipientRole =
-    requestType === "Club" ? "club representative" : "batch representative";
 
   return (
     <Overlay open={isOpen} onClose={onClose}>

@@ -56,11 +56,9 @@ const OwnerViewSwitch = ({
 // ------------------------------------------------------------------
 const OwnProfilePage = () => {
   const {
-    navigate,
     user,
     loading,
     profile,
-    activeRole,
     verificationStatus,
     verificationReason,
     repStatus,

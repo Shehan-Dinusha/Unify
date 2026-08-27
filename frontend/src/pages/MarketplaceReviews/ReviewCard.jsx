@@ -6,6 +6,7 @@ import Avatar from "../../components/common/Avatar";
 import useOptimisticFeedback from "../../hooks/useOptimisticFeedback";
 
 const ReviewCard = ({ review, onDelete, onFeedback }) => {
+  // eslint-disable-next-line no-unused-vars
   const { feedback, helpfulCount, notHelpfulCount, isUpdating, handleHelpful, handleNotHelpful } =
     useOptimisticFeedback(review.id, review, onFeedback);
 

@@ -11,7 +11,7 @@ const InfoCardsRow = ({ order }) => (
         </div>
         <div className="min-w-0">
           <p className="text-body-small-bold text-text-primary">Confirmation Email</p>
-          <p className="text-[11px] md:text-body-extra-small text-text-tertiary mt-xs leading-relaxed">We've sent the details to your registered email.</p>
+          <p className="text-[11px] md:text-body-extra-small text-text-tertiary mt-xs leading-relaxed">We&apos;ve sent the details to your registered email.</p>
         </div>
       </div>
     </Card>

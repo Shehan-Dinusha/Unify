@@ -50,6 +50,7 @@ const roleDisplayNames = {
 
 export const useOwnProfile = () => {
   const navigate = useNavigate();
+  // eslint-disable-next-line no-unused-vars
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const toast = useToast();
@@ -59,6 +60,7 @@ export const useOwnProfile = () => {
   const [activeRole, setActiveRole] = useState(
     searchParams.get("role") || "student",
   );
+  // eslint-disable-next-line no-unused-vars
   const [serverLinkedAccounts, setServerLinkedAccounts] = useState([]);
   const [verificationStatus, setVerificationStatus] = useState("NOT_SUBMITTED");
   const [verificationReason, setVerificationReason] = useState(
@@ -139,6 +141,7 @@ export const useOwnProfile = () => {
 
   useEffect(() => {
     fetchProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const activeModal = searchParams.get("modal");
@@ -154,14 +157,10 @@ export const useOwnProfile = () => {
   const closeModal = () => navigate(-1);
 
   const handleConfirmDelete = async (password) => {
-    try {
-      await deleteAccount(password);
-      toast.success("Success", "Account deleted successfully");
-      await logout();
-      navigate("/login", { replace: true });
-    } catch (error) {
-      throw error;
-    }
+    await deleteAccount(password);
+    toast.success("Success", "Account deleted successfully");
+    await logout();
+    navigate("/login", { replace: true });
   };
 
   const handleSelectSwitchAccount = (userId) => {

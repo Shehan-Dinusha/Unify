@@ -11,7 +11,9 @@ const FollowerCard = ({ follower }) => {
     try {
       const res = await chatService.createConversation(follower.id);
       if (res.success) navigate("/messages", { state: { activeConversationId: res.data.id, newConversation: res.data } });
-    } catch (e) {}
+    } catch (e) {
+      // intentionally empty
+    }
   };
 
   return (

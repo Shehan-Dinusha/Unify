@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, MessageSquare, UserCircle } from 'lucide-react';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const reportTypes = [
   { id: 'post', label: 'Post', description: 'Report a specific post on the feed', icon: FileText },
   { id: 'comment', label: 'Comment', description: 'Report a comment on a discussion', icon: MessageSquare },

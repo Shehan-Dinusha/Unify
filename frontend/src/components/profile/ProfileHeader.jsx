@@ -16,9 +16,7 @@ const ProfileHeader = ({ profile, isPublic = false, className = "" }) => {
     name = "User",
     subtitle = "",
     badge = "",
-    description = "",
     profileImage,
-    role,
   } = profile || {};
 
   const avatarSrc =

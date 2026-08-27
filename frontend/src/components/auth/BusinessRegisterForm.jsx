@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { Mail, Lock, ArrowLeft } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
 import { validatePassword } from "../../utils/validation";
 import { register } from "../../services/authService";
 
-const BusinessRegisterForm = ({ onNext, onBack, businessType }) => {
+const BusinessRegisterForm = ({ onNext, _onBack, businessType }) => {
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

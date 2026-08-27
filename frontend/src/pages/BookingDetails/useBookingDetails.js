@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { CheckCircle, Circle, Clock, ShieldCheck } from "lucide-react";
+import { CheckCircle, Clock, ShieldCheck } from "lucide-react";
 import orderService from "../../services/orderService";
 
 const formatDate = (dateString) => {

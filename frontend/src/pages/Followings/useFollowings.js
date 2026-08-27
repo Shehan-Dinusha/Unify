@@ -17,6 +17,7 @@ export const useFollowings = () => {
 
   useEffect(() => {
     fetchInitialFollowings();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchInitialFollowings = async () => {
@@ -49,6 +50,7 @@ export const useFollowings = () => {
       setHasMore(data.hasMore);
       setPage(nextPage);
     } catch (err) {
+      // intentionally empty
     } finally {
       setIsLoadingMore(false);
     }
@@ -65,6 +67,7 @@ export const useFollowings = () => {
       setHasMore(data.hasMore);
       setPage(1);
     } catch (err) {
+      // intentionally empty
     } finally {
       setIsLoading(false);
     }

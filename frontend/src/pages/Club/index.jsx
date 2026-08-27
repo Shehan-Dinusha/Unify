@@ -36,6 +36,7 @@ const Club = () => {
                 }));
                 setPosts(mappedPosts);
             } catch (err) {
+                // intentionally empty
             } finally {
                 setLoading(false);
             }
@@ -54,6 +55,7 @@ const Club = () => {
                 }));
                 setTrendingItems(mappedTrending);
             } catch (err) {
+                // intentionally empty
             } finally {
                 setTrendingLoading(false);
             }

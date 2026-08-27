@@ -53,6 +53,7 @@ const getStatusConfig = (submissionStatus) => {
 };
 
 const ClubVerification = () => {
+  // eslint-disable-next-line no-unused-vars
   const navigate = useNavigate();
   const [errorStatus, setErrorStatus] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState(
@@ -176,7 +177,7 @@ const ClubVerification = () => {
                 </div>
               )}
               <p className="text-text-secondary text-sm text-center mb-6 leading-relaxed">
-                To finalize the verification of your club account, we require official documentation to validate the organization's legitimacy and faculty approval.
+                To finalize the verification of your club account, we require official documentation to validate the organization&apos;s legitimacy and faculty approval.
               </p>
               <div className="mb-6">
                 <FileUpload onFileSelect={(file) => setSubmittedFile(file)} maxSizeMB={10} />

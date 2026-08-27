@@ -29,7 +29,7 @@ const CreatePostModal = ({ onClose, onCreateLost, onCreateFound }) => (
         <div className="flex flex-col items-center gap-4 p-5 rounded-2xl border border-white/10 bg-white/5 hover:border-primary-blue/40 transition-colors text-center">
           <h3 className="text-body-large-bold text-text-primary">Lost Item</h3>
           <p className="text-body-small text-text-secondary leading-relaxed flex-1">
-            Report an item you've lost. Provide detailed information such as
+            Report an item you&apos;ve lost. Provide detailed information such as
             location, date, and distinguishing features to help others identify
             and return it quickly.
           </p>

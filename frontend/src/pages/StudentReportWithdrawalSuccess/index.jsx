@@ -5,7 +5,7 @@ import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
 import Overlay from "../../components/common/Overlay";
 import { getCurrentUser } from "../../services/authService";
-import { CheckCircle2, LayoutDashboard, FileText, RotateCcw } from "lucide-react";
+import { CheckCircle2, LayoutDashboard, RotateCcw } from "lucide-react";
 
 const StudentReportWithdrawalSuccess = () => {
   const navigate = useNavigate();

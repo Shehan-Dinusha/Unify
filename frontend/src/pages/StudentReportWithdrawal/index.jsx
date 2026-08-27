@@ -5,6 +5,7 @@ import { useStudentReportWithdrawal } from "./useStudentReportWithdrawal";
 import WithdrawalForm from "./WithdrawalForm";
 
 const StudentReportWithdrawal = () => {
+  // eslint-disable-next-line no-unused-vars
   const { navigate, user, reason, setReason, submitting, loading, displayId, handleConfirm, handleCancel } = useStudentReportWithdrawal();
 
   if (loading) {

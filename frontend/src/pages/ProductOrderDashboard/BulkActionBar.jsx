@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import StatusDropdown, { ALL_PRODUCT_STATUSES, ALL_EVENT_STATUSES, PRODUCT_STATUSES, EVENT_STATUSES } from './StatusDropdown';
 
-const BulkActionBar = ({ orders, type, filterStatus, setFilterStatus, bulkFrom, setBulkFrom, bulkTo, setBulkTo, applyBulk }) => {
+const BulkActionBar = ({ orders: _orders, type, filterStatus, setFilterStatus, bulkFrom, setBulkFrom, bulkTo, setBulkTo, applyBulk }) => {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const ALL_STATUSES = type === 'club-event' ? ALL_EVENT_STATUSES : ALL_PRODUCT_STATUSES;
   const bulkStatuses = type === 'club-event' ? EVENT_STATUSES : PRODUCT_STATUSES;

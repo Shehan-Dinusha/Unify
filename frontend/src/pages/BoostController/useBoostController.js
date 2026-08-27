@@ -38,6 +38,7 @@ export const useBoostController = () => {
                 const newMax = Math.max(0, newLen - visibleCount);
                 if (carouselIndex > newMax) setCarouselIndex(newMax);
             } catch (err) {
+                // intentionally empty
             } finally {
                 setIsDeleting(false);
             }

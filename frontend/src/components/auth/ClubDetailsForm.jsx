@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Camera, Users, Info, FileText } from "lucide-react";
+import { Users, Info, FileText } from "lucide-react";
 import Card from "../common/Card";
 import Input from "../common/Input";
 import Button from "../common/Button";
@@ -7,11 +7,7 @@ import Button from "../common/Button";
 import ImageUpload from "../common/ImageUpload";
 
 const ClubDetailsForm = ({ onNext, initialData, loading }) => {
-  const categoryOptions = [
-    { value: "sports", label: "Sports" },
-    { value: "academic", label: "Academic" },
-    { value: "service", label: "Community Service" },
-  ];
+
 
   const [formData, setFormData] = useState({
     clubName: initialData?.clubName || "",

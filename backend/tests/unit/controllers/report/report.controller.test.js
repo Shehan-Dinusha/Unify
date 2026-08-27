@@ -1,14 +1,5 @@
 /**
- * Report Controller — Unit Test Suite (Industry-Level)
- * ──────────────────────────────────────────────────────
- * Tests for all report controllers:
- *   - createReport (student)
- *   - getStudentReports (student)
- *   - withdrawReport (student)
- *   - updateReport (admin actions: dismiss, resolve, delete_post, suspend_user, add_note)
- *   - getReportQueue (admin)
- *   - getStatistics (admin)
- *
+ * Report Controller — Unit Test Suite
  * Run: node --test tests/unit/controllers/report.controller.test.js
  */
 

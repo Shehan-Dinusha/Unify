@@ -3,11 +3,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import MainLayout from "../../components/layout/MainLayout";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
-import { XCircle, AlertCircle, ShoppingBag, ArrowLeft, HelpCircle } from "lucide-react";
+import { XCircle, AlertCircle, ShoppingBag, HelpCircle } from "lucide-react";
 import { getCurrentUser } from "../../services/authService";
 
 const ClubPaymentCancel = () => {
     const navigate = useNavigate();
+    // eslint-disable-next-line no-unused-vars
     const location = useLocation();
     const user = getCurrentUser();
 

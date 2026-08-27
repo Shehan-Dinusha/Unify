@@ -16,6 +16,31 @@ export const purchaseBoost = async (req, res, next) => {
     if (!packageId) {
       return sendResponse(res, 400, false, "Package ID is required.");
     }
+    
+    if (postType) {
+      const validPostTypes = ['normal', 'club-product', 'club-event', 'boarding'];
+      if (!validPostTypes.includes(postType)) {
+        return sendResponse(
+          res,
+          400,
+          false,
+          `Invalid postType. Must be one of: ${validPostTypes.join(', ')}`
+        );
+      }
+    }
+
+    // Issue #16 fix: Validate postType if provided
+    if (postType) {
+      const validPostTypes = ['normal', 'club-product', 'club-event', 'boarding'];
+      if (!validPostTypes.includes(postType)) {
+        return sendResponse(
+          res,
+          400,
+          false,
+          `Invalid postType. Must be one of: ${validPostTypes.join(', ')}`
+        );
+      }
+    }
 
     // Issue #16 fix: Validate postType if provided
     if (postType) {

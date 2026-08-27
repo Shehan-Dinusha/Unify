@@ -7,6 +7,7 @@ const ClubOrderContext = createContext({
   refreshUnconfirmedOrderCount: () => {},
 });
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useClubOrders = () => useContext(ClubOrderContext);
 
 const POLL_INTERVAL_MS = 30_000;

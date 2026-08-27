@@ -9,10 +9,6 @@ import {
   MessageCircle,
   Zap,
   Bookmark,
-  Calendar,
-  ShoppingBag,
-  Home,
-  MessageSquare,
   Trash2,
   BarChart2,
   CornerDownRight,
@@ -25,6 +21,8 @@ import newsfeedService from "../../services/newsfeedService";
 import postService from "../../services/postService";
 import boostService from "../../services/boostService";
 import { formatTimeAgo } from "../../utils/formatters";
+
+const DESCRIPTION_LIMIT = 250;
 
 /* ─── Avatar helper ──────────────────────────────────────────── */
 const getAvatar = (avatar, name) =>
@@ -298,7 +296,7 @@ const PostCard = ({
   post,
   author,
   authorAvatar,
-  authorInitial,
+  _authorInitial,
   time,
   title,
   location,
@@ -310,12 +308,12 @@ const PostCard = ({
   initialIsSaved = false,
   isPromoted,
   boostMeta,
-  showBoost = false,
+  _showBoost = false,
   isManagementMode = false,
   onPostUpdate,
   imageStyle = "contain",
 }) => {
-  const { toggleSavePost, isPostSaved } = useSavedPosts();
+  const { toggleSavePost } = useSavedPosts();
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [likeCount, setLikeCount] = useState(likes);
   const [showComments, setShowComments] = useState(false);
@@ -326,6 +324,7 @@ const PostCard = ({
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [imgFailed, setImgFailed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const isLongDescription = description?.length > DESCRIPTION_LIMIT;
   const currentUser = getCurrentUser();
   const cardRef = useRef(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -359,10 +358,6 @@ const PostCard = ({
 
     return () => observer.disconnect();
   }, [isPromoted, postId, postType, currentUser]);
-
-  const DESCRIPTION_LIMIT = 250;
-  const isLongDescription =
-    description && description.length > DESCRIPTION_LIMIT;
 
   // Handle case where author is passed as an object instead of a string
   const displayAuthor =
@@ -445,6 +440,7 @@ const PostCard = ({
         setPostComments(fetchedComments);
         setCommentCount(fetchedComments.length);
       } catch (err) {
+        // intentionally empty
       } finally {
         setLoadingComments(false);
       }
@@ -595,6 +591,7 @@ const PostCard = ({
     if (profileId) {
       reportNavigate(`/profile/${profileId}`);
     } else {
+      // intentionally empty
     }
   };
 
@@ -637,7 +634,6 @@ const PostCard = ({
       ref={cardRef}
       variant="card"
       padding="p-0"
-      onClick={handleTrackClick}
       className={
         "w-full overflow-hidden transition-all duration-300 !border-0 " +
         boostStyles.borderClass

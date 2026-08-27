@@ -1,7 +1,7 @@
 import React from "react";
-import { MessageSquare, HeartHandshake } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
-export const EmptyChatList = ({ onStartChat }) => (
+export const EmptyChatList = ({ _onStartChat }) => (
   <div className="flex flex-col items-center justify-center h-full text-center px-lg py-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
     <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-xl border border-white/10 shadow-inner group">
       <div className="w-12 h-12 bg-dark-3 rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-500 font-bold">
@@ -11,7 +11,7 @@ export const EmptyChatList = ({ onStartChat }) => (
     
     <h3 className="text-body-large-bold text-text-primary mb-xs tracking-tight">No active conversations</h3>
     <p className="text-body-extra-small text-text-tertiary max-w-[240px] leading-relaxed mx-auto">
-      You're all caught up! Start a new chat to connect with others.
+      You&apos;re all caught up! Start a new chat to connect with others.
     </p>
   </div>
 );

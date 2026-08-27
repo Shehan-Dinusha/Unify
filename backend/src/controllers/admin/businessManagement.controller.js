@@ -3,7 +3,7 @@ import {
   User, 
   BusinessProfile, 
   ClubProfile,
-  BoostCampaign, 
+  BoostPurchase, 
   UserActivityLog, 
   AdminLog, 
   Review,
@@ -268,11 +268,11 @@ export const getBusinessProfile = async (req, res, next) => {
           createdAt: { [Op.lt]: startOfThisMonth, [Op.gte]: startOfLastMonth }
         } 
       }) : Promise.resolve(0),
-      BoostCampaign.count({ where: { userId: id, status: 'Active' } }),
-      BoostCampaign.count({ 
+      BoostPurchase.count({ where: { userId: id, status: 'active' } }),
+      BoostPurchase.count({ 
         where: { 
           userId: id, 
-          status: 'Active',
+          status: 'active',
           createdAt: { [Op.lt]: startOfThisMonth, [Op.gte]: startOfLastMonth }
         } 
       }),

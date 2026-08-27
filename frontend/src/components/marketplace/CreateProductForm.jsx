@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Tag, Calendar, Edit3, X, Upload, Check, ChevronDown, Plus, Trash2, Search, Loader2, ImagePlus, Shirt, Watch, FileCode, Ticket } from "lucide-react";
+import { Tag, Calendar, Edit3, X, Check, ChevronDown, Trash2, Loader2, ImagePlus, Shirt, Watch, FileCode, Ticket } from "lucide-react";
 import Card from "../common/Card";
 import ClubPostCard from "../club/ClubPostCard";
 import postService from "../../services/postService";

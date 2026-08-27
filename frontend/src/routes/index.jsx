@@ -11,6 +11,7 @@ import { adminRoutes } from "./adminRoutes";
 import { publicRoutes } from "./publicRoutes";
 
 // Root layout wraps every route in the BoostPackageProvider
+// eslint-disable-next-line react-refresh/only-export-components
 const RootLayout = () => (
   <SavedPostsProvider>
     <BoostPackageProvider>

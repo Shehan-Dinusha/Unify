@@ -31,7 +31,9 @@ const normalizeNotification = (n) => {
           reviewFeedbackAction = parsed.action;
           displayContent = '';
         }
-      } catch {}
+      } catch {
+        // intentionally empty
+      }
     }
   } else if (referenceType === 'Review') {
     if (n.title?.includes('reviewed your business')) reviewAction = 'new';
@@ -47,7 +49,9 @@ const normalizeNotification = (n) => {
           metadata = parsed;
           displayContent = '';
         }
-      } catch {}
+      } catch {
+        // intentionally empty
+      }
     }
   }
 
@@ -61,7 +65,9 @@ const normalizeNotification = (n) => {
       try {
         JSON.parse(n.content);
         displayContent = '';
-      } catch {}
+      } catch {
+        // intentionally empty
+      }
     }
   }
 
@@ -72,7 +78,9 @@ const normalizeNotification = (n) => {
         const parsed = JSON.parse(n.content);
         metadata = parsed; // { postType, users: [...] }
         displayContent = '';
-      } catch {}
+      } catch {
+        // intentionally empty
+      }
     }
   }
 
@@ -157,6 +165,7 @@ export const useNotification = () => {
       );
       refreshUnreadCount();
     } catch (err) {
+      // intentionally empty
     }
   };
 

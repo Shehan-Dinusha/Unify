@@ -1,11 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import ProfileHeader from "../ProfileHeader";
 import ProfileDashboardCard from "../ProfileDashboardCard";
 import Button from "../../common/Button";
 import { ShieldCheck } from "lucide-react";
-
-const STORAGE_KEY = "unify_student_rep_submitted";
 
 /**
  * StudentOwnerView — dashboard cards and actions for the student role owner view.

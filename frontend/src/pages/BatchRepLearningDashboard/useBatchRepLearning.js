@@ -84,6 +84,7 @@ export const useBatchRepLearning = () => {
       }
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -109,7 +110,9 @@ export const useBatchRepLearning = () => {
               details.data.availableDegrees.map((d) => d.name),
             );
           }
-        } catch (err) {}
+        } catch (err) {
+          // intentionally empty
+        }
 
         try {
           const catsRes =
@@ -131,6 +134,7 @@ export const useBatchRepLearning = () => {
     };
 
     fetchModuleData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeModuleId]);
 
   useEffect(() => {
@@ -515,7 +519,9 @@ export const useBatchRepLearning = () => {
           displayRole: parsed.displayRole || role || "Batch Rep",
         };
       }
-    } catch {}
+    } catch {
+      // intentionally empty
+    }
     return {
       name: currentUser?.name || "Batch Rep",
       role: "admin",

@@ -45,7 +45,7 @@ const ChooseBusinessType = ({ onSelect, onBack }) => {
         <h1 className="text-white text-3xl md:text-heading-large font-black font-inter tracking-tight leading-tight">
           Welcome to Unify.
           <br />
-          Let's get you set up.
+          Let&apos;s get you set up.
         </h1>
         <p className="text-text-secondary text-body-large max-w-[600px] leading-relaxed">
           Select the category that best describes your business or organization

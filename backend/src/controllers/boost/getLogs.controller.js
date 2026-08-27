@@ -5,7 +5,6 @@ import logger from "../../utils/logger.js";
 // Retrieves all boost configuration logs for the admin panel.
 export const getLogs = async (req, res, next) => {
   try {
-    // Issue #20 fix: Validate page and limit parameters with bounds checking
     let page = parseInt(req.query.page, 10) || 1;
     let limit = parseInt(req.query.limit, 10) || 50;
 
@@ -16,7 +15,13 @@ export const getLogs = async (req, res, next) => {
     const { type } = req.query;
 
     const result = await boostService.getBoostLogs({ page, limit, type });
-    return sendResponse(res, 200, true, "Boost logs retrieved successfully", result);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Boost logs retrieved successfully",
+      result,
+    );
   } catch (error) {
     logger.error(`Error in getLogs controller: ${error.message}`);
     next(error);

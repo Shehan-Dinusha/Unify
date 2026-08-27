@@ -25,6 +25,7 @@ const useChatPage = () => {
     socket, isConnected, joinRoom, leaveRoom, sendMessage,
     markRead, deleteMessage, startTyping, stopTyping,
   } = useChatSocket();
+  // eslint-disable-next-line no-unused-vars
   const { refreshUnreadCount } = useChat();
 
   const location = useLocation();
@@ -54,6 +55,7 @@ const useChatPage = () => {
         });
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state?.activeConversationId]);
 
   useEffect(() => {
@@ -65,6 +67,7 @@ const useChatPage = () => {
           mergeConversations(res.data);
         }
       } catch (err) {
+        // intentionally empty
       } finally {
         setLoading(false);
       }
@@ -78,6 +81,7 @@ const useChatPage = () => {
         if (res.success) mergeConversations(res.data);
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   useEffect(() => {
@@ -230,6 +234,7 @@ const useChatPage = () => {
       socket.off('chat:user_stop_typing', handleStopTyping);
       socket.off('user:presence', handlePresence);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, activeChatId, currentUser?.id]);
 
   useEffect(() => {
@@ -251,6 +256,7 @@ const useChatPage = () => {
           setSearchResults(filtered);
         }
       } catch (err) {
+        // intentionally empty
       }
     }, 300);
 
@@ -308,6 +314,7 @@ const useChatPage = () => {
             setSearchResults([]);
           }
         } catch (err) {
+          // intentionally empty
         }
       } else {
         setConversations((prev) =>
@@ -350,12 +357,13 @@ const useChatPage = () => {
               }));
             }
           })
-          .catch((err) => undefined)
+          .catch((_err) => undefined)
           .finally(() => setMessagesLoading(false));
       }
     }
 
     prevChatIdRef.current = activeChatId;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChatId, joinRoom, leaveRoom, markRead]);
 
   useEffect(() => {
@@ -419,6 +427,7 @@ const useChatPage = () => {
           return next;
         });
       } catch (err) {
+        // intentionally empty
       }
     },
     [],

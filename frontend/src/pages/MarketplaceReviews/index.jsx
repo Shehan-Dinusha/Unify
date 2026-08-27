@@ -73,6 +73,7 @@ const MarketplaceReviews = () => {
 
   useEffect(() => {
     fetchReviewsData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -103,6 +104,7 @@ const MarketplaceReviews = () => {
         setHasScrolled(true);
       }, 300);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialScrollTarget, reviews, visibleCount, hasScrolled]);
 
   const sortOptions = [

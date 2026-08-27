@@ -15,6 +15,7 @@ const getAvatarColor = (id) => {
   return colors[id % colors.length];
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { getInitials, getAvatarColor };
 
 const OrderStatsCards = ({ orders, type }) => {

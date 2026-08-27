@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { X, MapPin, Star, Calendar, Phone, Home, Wifi, ChevronRight } from "lucide-react";
-import { CheckSmallIcon } from "../common/Icons";
+import { X, MapPin, Calendar, Phone, Home, Wifi } from "lucide-react";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
-import { getAvatarUrl } from "../../utils/formatters";
 
 /**
  * BoardingOverlay Component
