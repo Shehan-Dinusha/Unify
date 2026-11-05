@@ -17,7 +17,8 @@ import {
   editItem,
   deleteItem,
   getMatches,
-  claimItem
+  claimItem,
+  getClaims
 } from "../controllers/lostAndFound/index.js";
 import { protect } from "../middlewares/auth.middleware.js";
 
@@ -86,6 +87,14 @@ router.post(
   claimLostFoundItemValidator,
   validateRequest,
   claimItem
+);
+
+// 8. Fetch claim requests for an item (owner only — includes contact numbers)
+router.get(
+  "/:id/claims",
+  getLostFoundItemDetailsValidator,
+  validateRequest,
+  getClaims
 );
 
 export default router;

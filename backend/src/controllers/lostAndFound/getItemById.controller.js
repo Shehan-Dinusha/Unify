@@ -48,6 +48,8 @@ export const getItemById = catchAsync(async (req, res, next) => {
     timeOfDay: item.timeOfDay,
     time: formatRelativeDate(item.createdAt),
     images: signedImageUrls,
+    // Lets the frontend show owner-only UI (claim requests + contact numbers)
+    isOwner: item.userId === req.user?.id,
     postedBy: {
       name: item.user?.name || "Unknown",
       avatar: item.user?.avatar || "https://placehold.co/40x40",

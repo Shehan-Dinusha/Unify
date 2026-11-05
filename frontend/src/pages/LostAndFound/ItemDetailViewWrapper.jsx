@@ -1,20 +1,27 @@
 import { useState, useEffect } from "react";
-import { getItemById, getItemMatches } from "../../services/lostAndFoundService";
+import { getItemById, getItemMatches, getItemClaims } from "../../services/lostAndFoundService";
 import ItemDetailView from "./ItemDetailView";
 
 const ItemDetailViewWrapper = ({ id, onBack, onSelectMatch }) => {
   const [item, setItem] = useState(null);
   const [matches, setMatches] = useState(null);
+  const [claims, setClaims] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchItem = async () => {
       try {
         setLoading(true);
+        setClaims(null);
         const data = await getItemById(id);
         setItem(data);
         const matchData = await getItemMatches(id).catch(() => null);
         setMatches(matchData?.matches || null);
+        // Claims (with contact numbers) are only returned to the post owner
+        if (data?.isOwner) {
+          const claimData = await getItemClaims(id).catch(() => null);
+          setClaims(claimData);
+        }
       } catch (error) {
         // intentionally empty
       } finally {
@@ -31,7 +38,7 @@ const ItemDetailViewWrapper = ({ id, onBack, onSelectMatch }) => {
     </div>
   );
 
-  return <ItemDetailView item={item} matches={matches} onSelectMatch={onSelectMatch} />;
+  return <ItemDetailView item={item} matches={matches} claims={claims} onSelectMatch={onSelectMatch} />;
 };
 
 export default ItemDetailViewWrapper;

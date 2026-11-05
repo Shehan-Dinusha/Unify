@@ -187,9 +187,10 @@ export const cosineSimilarity = (vecA, vecB) => {
  *
  * @param {{ title: string, description: string }} query
  * @param {{ id: number, title: string, description: string }[]} candidates
+ * @param {{ title: string, description: string }[]} [backgroundDocs=[]] - Extra docs used only for IDF
  * @returns {{ id: number, textScore: number }[]} Parallel array to `candidates`
  */
-export const computeTextSimilarities = (query, candidates) => {
+export const computeTextSimilarities = (query, candidates, backgroundDocs = []) => {
   // Repeat title twice so its tokens appear 2× more frequently than description
   // tokens — this biases the TF score towards the title without changing the
   // underlying math of TF-IDF or cosine similarity.
@@ -207,7 +208,13 @@ export const computeTextSimilarities = (query, candidates) => {
   );
 
   // Build a unified corpus so IDF is computed across all documents together
-  const corpus = [queryTokens, ...candidateTokensList];
+  // backgroundDocs are used ONLY for IDF statistics (never scored). With a tiny
+  // corpus (query + 1 candidate) every shared word gets the LOWEST IDF, which
+  // unfairly drags down the similarity of genuinely matching posts.
+  const backgroundTokensList = backgroundDocs.map((d) =>
+    tokenize(buildText(d.title, d.description))
+  );
+  const corpus = [queryTokens, ...candidateTokensList, ...backgroundTokensList];
   const idf = computeIDF(corpus);
 
   const queryVector = buildVector(computeTF(queryTokens), idf);
