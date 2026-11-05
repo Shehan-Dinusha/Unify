@@ -88,3 +88,19 @@ export const getItemMatches = async (id) => {
     throw error;
   }
 };
+
+/**
+ * Fetch claim / "I found this" requests for an item (owner only).
+ * Returns null when the current user is not the owner.
+ *
+ * @param {number|string} id - The ID of the item
+ */
+export const getItemClaims = async (id) => {
+  try {
+    const response = await api.get(`/lost-and-found/${id}/claims`);
+    return response.data.data;
+  } catch (error) {
+    if (error.response?.status === 403) return null; // Not the owner
+    throw error;
+  }
+};

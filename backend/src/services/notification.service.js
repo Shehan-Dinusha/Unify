@@ -248,6 +248,8 @@ export const notifyComment = async ({
  * @param {string} params.matchTitle   - Title of the matched found item
  * @param {number} params.lostItemId   - The user's lost item ID
  * @param {number} params.foundItemId  - The found item ID
+ * @param {number} [params.targetItemId] - Item the notification opens (the matched item
+ *                                        the recipient did NOT post). Defaults to foundItemId.
  * @param {number} [params.score]      - Match score (0 to 1)
  * @param {string} [params.image]      - Thumbnail of the found item
  */
@@ -256,6 +258,7 @@ export const notifyMatch = async ({
   matchTitle,
   lostItemId,
   foundItemId,
+  targetItemId = null,
   score = null,
   image = null,
 }) => {
@@ -265,7 +268,9 @@ export const notifyMatch = async ({
     type: "Match",
     title: "Potential match found",
     content: `A new item "${matchTitle}" has been posted that matches your item report${matchText}.`,
-    referenceId: foundItemId,
+    // Point at the OTHER party's post so clicking opens the matching item,
+    // not the recipient's own post. Falls back to the found item.
+    referenceId: targetItemId ?? foundItemId,
     referenceType: "LostAndFound",
     dedupeKey: `match:${userId}:${lostItemId}:${foundItemId}`,
     image,
