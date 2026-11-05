@@ -6,3 +6,4 @@ export * from "./editItem.controller.js";
 export * from "./deleteItem.controller.js";
 export * from "./getMatches.controller.js";
 export * from "./claimItem.controller.js";
+export * from "./getClaims.controller.js";

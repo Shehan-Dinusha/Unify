@@ -4,8 +4,9 @@ import {
   FileText, CheckCircle,
 } from "lucide-react";
 import ClaimItemModal from "../../components/lost-found/ClaimItemModal";
+import ClaimRequestsPanel from "../../components/lost-found/ClaimRequestsPanel";
 
-const ItemDetailView = ({ item, matches, onSelectMatch }) => {
+const ItemDetailView = ({ item, matches, claims, onSelectMatch }) => {
   const isLost = item.type === "lost";
   const [activeImage, setActiveImage] = useState(0);
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
@@ -143,6 +144,10 @@ const ItemDetailView = ({ item, matches, onSelectMatch }) => {
             </div>
           </div>
 
+          {item.isOwner ? (
+            // Owner sees who responded + their contact numbers
+            <ClaimRequestsPanel claims={claims} isLost={isLost} />
+          ) : (
           <button 
             onClick={() => setIsClaimModalOpen(true)}
             className="w-full py-3.5 rounded-xl text-white text-body-medium-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 bg-primary-blue hover:brightness-110"
@@ -150,6 +155,7 @@ const ItemDetailView = ({ item, matches, onSelectMatch }) => {
             <CheckCircle size={18} />
             {isLost ? "I Found This" : "Claim This Item"}
           </button>
+          )}
         </div>
       </div>
 

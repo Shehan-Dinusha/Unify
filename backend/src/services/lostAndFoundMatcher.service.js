@@ -1,9 +1,7 @@
-/**
- * lostAndFoundMatcher.service.js
- *
- * Orchestrates the Lost & Found item-matching pipeline using:
+/*
+* Orchestrates the Lost & Found item-matching pipeline using:
  *   1. TF-IDF cosine similarity on (title + description) text
- *   2. Jaccard-index location similarity on location strings
+ *   2. Overlap-coefficient location similarity on location strings
  *   3. Exponential-decay time relevance based on item dates
  *
  * Composite scoring formula (weights tunable via constants below):
@@ -13,24 +11,22 @@
  *              + TIME_WEIGHT  × timeRelevance
  *
  * After scoring, the top MAX_MATCHES results that exceed MATCH_THRESHOLD
- * receive match notifications to both parties (the new-item author and
- * the existing-item author).
- *
+ * receive match notifications
  * Public exports:
+ *   scoreCandidates(item)     — scores EVERY candidate (unfiltered, for debugging)
  *   findMatches(item)         — pure scoring, returns ranked array (no side effects)
  *   runMatchingEngine(item)   — scoring + notifications (fire-and-forget safe)
  */
 
 import { Op } from "sequelize";
 import { LostAndFound } from "../modules/index.js";
-import { computeTextSimilarities, tokenize } from "./tfidf.service.js";
+import { computeTextSimilarities } from "./tfidf.service.js";
 import { notifyMatch } from "./notification.service.js";
 import logger from "../utils/logger.js";
 
-// ── Tunable Constants ─────────────────────────────────────────────────────────
 
-/** Composite score threshold — items below this are not considered matches */
-const MATCH_THRESHOLD = 0.65;
+
+const MATCH_THRESHOLD = 0.5;
 
 /** Maximum notifications sent per matching run */
 const MAX_MATCHES = 3;
@@ -54,7 +50,8 @@ const TIME_WEIGHT = 0.15;
  * Strategy:
  *  1. Tokenise both strings using a 2-char minimum (shorter than text so that
  *     common place abbreviations like "B2", "F3" still survive filtering).
- *  2. Compute Jaccard index over the token sets for an exact-overlap score.
+ *  2. Compute the overlap coefficient (|A∩B| / min(|A|,|B|)) over the token
+ *     sets, so a more specific location still matches a general one.
  *  3. Partial overlap bonus: if any single token from one side appears as a
  *     substring of any token in the other side, award half credit per pair.
  *  4. Fallback: direct substring check when tokenisation yields nothing.
@@ -91,15 +88,19 @@ export const computeLocationSimilarity = (locA, locB) => {
   const setA = new Set(tokensA);
   const setB = new Set(tokensB);
 
-  // ── Exact Jaccard score ─────────────────────────────────────────────────
+  // ── Exact overlap score ─────────────────────────────────────────────────
+  // Overlap coefficient instead of Jaccard. Different students describe the
+  // same place with different detail, e.g.
+  //   "Main Library" ↔ "Library 2nd floor" → 0.5  (Jaccard gave 0.25)
+  //   "Library"      ↔ "Library, 1st Floor" → 1.0 (Jaccard gave 0.33)
   const intersection = [...setA].filter((t) => setB.has(t)).length;
-  const union = new Set([...setA, ...setB]).size;
-  const jaccardScore = union === 0 ? 0 : intersection / union;
+  const minSize = Math.min(setA.size, setB.size);
+  const overlapScore = minSize === 0 ? 0 : intersection / minSize;
 
   // ── Partial-overlap bonus ───────────────────────────────────────────────
   // Award partial credit when a token from A is a prefix/substring of a
   // token in B (or vice versa). This handles cases like:
-  //   "Library, 1st Floor" ↔ "Library" → one token fully contains the other.
+  //   "Lib" ↔ "Library" → one token fully contains the other.
   let partialMatches = 0;
   for (const a of setA) {
     for (const b of setB) {
@@ -113,7 +114,7 @@ export const computeLocationSimilarity = (locA, locB) => {
   const partialBonus = partialMatches / Math.max(setA.size, setB.size);
 
   // Blend: exact match dominates, partial adds up to 40% of the remainder
-  const blended = jaccardScore + (1 - jaccardScore) * partialBonus * 0.4;
+  const blended = overlapScore + (1 - overlapScore) * partialBonus * 0.4;
 
   return Math.min(1, blended);
 };
@@ -149,10 +150,10 @@ export const computeTimeRelevance = (dateA, dateB) => {
 // ── Core Matching Logic ───────────────────────────────────────────────────────
 
 /**
- * Find and rank candidate matches for a given Lost & Found item.
+ * Score EVERY candidate for a given Lost & Found item (no threshold filter).
  *
- * Pure function — performs DB reads but triggers no notifications.
- * Safe to call from any context (e.g. a GET /matches/:id endpoint).
+ * Useful for debugging: it shows exactly why a candidate did or did not
+ * reach MATCH_THRESHOLD.
  *
  * @param {Object} item - Sequelize LostAndFound model instance (or plain object
  *                        with id, userId, type, title, description, location, date)
@@ -160,20 +161,29 @@ export const computeTimeRelevance = (dateA, dateB) => {
  *   item: Object,
  *   score: number,
  *   breakdown: { textScore: number, locScore: number, timeScore: number }
- * }>>} Descending-sorted array of matches above MATCH_THRESHOLD
+ * }>>} Descending-sorted array of ALL candidates
  */
-export const findMatches = async (item) => {
+export const scoreCandidates = async (item) => {
   const oppositeType = item.type === "Lost" ? "Found" : "Lost";
 
-  // Fetch all active opposing-type items, excluding the user's own posts
-  const candidates = await LostAndFound.findAll({
+  // Fetch every active post once. The opposing-type posts from other users
+  // are the candidates; everything else is used only as background corpus
+  // for IDF so the TF-IDF weights don't collapse when there is only one
+  // candidate (in a 2-document corpus every shared word gets the LOWEST IDF).
+  const activeItems = await LostAndFound.findAll({
     where: {
-      type: oppositeType,
       status: "Active",
-      userId: { [Op.ne]: item.userId },
+      ...(item.id ? { id: { [Op.ne]: item.id } } : {}),
     },
-    attributes: ["id", "userId", "title", "description", "location", "date", "images"],
+    attributes: ["id", "userId", "type", "title", "description", "location", "date", "images"],
   });
+
+  const candidates = activeItems.filter(
+    (c) => c.type === oppositeType && c.userId !== item.userId
+  );
+  const backgroundDocs = activeItems
+    .filter((c) => !candidates.includes(c))
+    .map((c) => ({ title: c.title, description: c.description }));
 
   if (candidates.length === 0) return [];
 
@@ -184,7 +194,8 @@ export const findMatches = async (item) => {
       id: c.id,
       title: c.title,
       description: c.description,
-    }))
+    })),
+    backgroundDocs
   );
   const textScoreMap = new Map(textScores.map((s) => [s.id, s.textScore]));
 
@@ -210,10 +221,26 @@ export const findMatches = async (item) => {
     };
   });
 
-  // Sort descending; filter below threshold
-  return scored
-    .filter((s) => s.score >= MATCH_THRESHOLD)
-    .sort((a, b) => b.score - a.score);
+  return scored.sort((a, b) => b.score - a.score);
+};
+
+/**
+ * Find and rank candidate matches for a given Lost & Found item.
+ *
+ * Pure function — performs DB reads but triggers no notifications.
+ * Safe to call from any context (e.g. a GET /matches/:id endpoint).
+ *
+ * @param {Object} item - Sequelize LostAndFound model instance (or plain object
+ *                        with id, userId, type, title, description, location, date)
+ * @returns {Promise<Array<{
+ *   item: Object,
+ *   score: number,
+ *   breakdown: { textScore: number, locScore: number, timeScore: number }
+ * }>>} Descending-sorted array of matches above MATCH_THRESHOLD
+ */
+export const findMatches = async (item) => {
+  const scored = await scoreCandidates(item);
+  return scored.filter((s) => s.score >= MATCH_THRESHOLD);
 };
 
 // ── Entry Point (fire-and-forget) ─────────────────────────────────────────────
@@ -244,63 +271,40 @@ export const runMatchingEngine = async (newItem) => {
     logger.info(`[Matcher] Item #${newItem.id} | Type: ${newItem.type} | Title: "${newItem.title}" | UserId: ${newItem.userId}`);
     logger.info(`[Matcher] Location: "${newItem.location}" | Date: ${newItem.date} | THRESHOLD: ${MATCH_THRESHOLD}`);
 
-    // ── Step 2: Show all candidates the DB returned ───────────────────────────
-    const oppositeType = newItem.type === "Lost" ? "Found" : "Lost";
-    const allCandidates = await LostAndFound.findAll({
-      where: {
-        type: oppositeType,
-        status: "Active",
-        userId: { [Op.ne]: newItem.userId },
-      },
-      attributes: ["id", "userId", "title", "location", "date"],
-    });
-    logger.info(`[Matcher] DB candidates (type=${oppositeType}, status=Active, different user): ${allCandidates.length}`);
-    allCandidates.forEach((c) => {
-      logger.info(`[Matcher]   Candidate #${c.id}: "${c.title}" | loc="${c.location}" | userId=${c.userId}`);
-    });
+    // ── Step 2: Score every candidate (single DB query) ──────────────────────
+    const scored = await scoreCandidates(newItem);
 
-    if (allCandidates.length === 0) {
-      logger.info(`[Matcher] No candidates found — skipping scoring. Done.`);
+    if (scored.length === 0) {
+      logger.info(`[Matcher] No candidates found - skipping scoring. Done.`);
       return;
     }
 
-    // ── Step 3: Run full scoring and log each score ───────────────────────────
-    const matches = await findMatches(newItem);
-
-    // Also log every candidate's raw scores (not just those above threshold)
-    // by computing them directly from the candidates we already fetched
-    const { computeTextSimilarities: computeScores, tokenize: tok } = await import("./tfidf.service.js");
-    const textScoresRaw = computeScores(
-      { title: newItem.title, description: newItem.description },
-      allCandidates.map((c) => ({ id: c.id, title: c.title, description: "" }))
-    );
-    const textMap = new Map(textScoresRaw.map((s) => [s.id, s.textScore]));
-
+    // Log the REAL per-candidate breakdown (text + location + time), so it is
+    // obvious why a candidate did or did not pass the threshold.
     logger.info(`[Matcher] Per-candidate scores (threshold=${MATCH_THRESHOLD}):`);
-    allCandidates.forEach((c) => {
-      const textScore = Math.round((textMap.get(c.id) || 0) * 1000) / 1000;
-      const final = Math.round((TEXT_WEIGHT * textScore) * 1000) / 1000;
-      const aboveThreshold = final >= MATCH_THRESHOLD ? "✓ ABOVE" : "✗ below";
-      logger.info(`[Matcher]   #${c.id} "${c.title}": textScore=${textScore} → finalMin=${final} (${aboveThreshold} threshold)`);
+    scored.forEach((s) => {
+      const mark = s.score >= MATCH_THRESHOLD ? "ABOVE" : "below";
+      logger.info(
+        `[Matcher]   #${s.item.id} "${s.item.title}" (userId=${s.item.userId}): ` +
+        `score=${s.score} [${mark}] | text=${s.breakdown.textScore} | ` +
+        `loc=${s.breakdown.locScore} | time=${s.breakdown.timeScore}`
+      );
     });
 
+    const matches = scored.filter((s) => s.score >= MATCH_THRESHOLD);
     logger.info(`[Matcher] Matches above threshold: ${matches.length}`);
-    matches.forEach((m) => {
-      logger.info(`[Matcher]   ✓ Match #${m.item.id} "${m.item.title}": score=${m.score} | text=${m.breakdown.textScore} | loc=${m.breakdown.locScore} | time=${m.breakdown.timeScore}`);
-    });
 
     if (matches.length === 0) {
       logger.info(`[Matcher] No matches above threshold (${MATCH_THRESHOLD}). Done.`);
       return;
     }
 
-    // ── Step 4: Notify both parties, each in its own try-catch ───────────────
+    // ── Step 3: Notify both parties, each in its own try-catch ───────────────
     const topMatches = matches.slice(0, MAX_MATCHES);
 
     for (const { item: matchedItem, score } of topMatches) {
       const lostItemId  = newItem.type === "Lost"  ? newItem.id : matchedItem.id;
       const foundItemId = newItem.type === "Found" ? newItem.id : matchedItem.id;
-      const dedupeKey = `match:${lostItemId}:${foundItemId}`;
 
       const matchedItemThumbnail =
         Array.isArray(matchedItem.images) && matchedItem.images.length > 0
@@ -310,7 +314,7 @@ export const runMatchingEngine = async (newItem) => {
           ? newItem.images[0] : null;
 
       // Notify the creator of the NEW item
-      logger.info(`[Matcher] Notifying userId=${newItem.userId} | dedupeKey="${dedupeKey}"`);
+      logger.info(`[Matcher] Notifying userId=${newItem.userId} | pair lost=${lostItemId} found=${foundItemId}`);
       try {
         const n1 = await notifyMatch({
           userId:     newItem.userId,
@@ -319,6 +323,7 @@ export const runMatchingEngine = async (newItem) => {
           foundItemId,
           score,
           image:      matchedItemThumbnail,
+          targetItemId: matchedItem.id, // open the matched post, not their own
         });
         logger.info(`[Matcher]   → userId=${newItem.userId}: ${n1 ? `CREATED (notifId=${n1.id})` : "SKIPPED (duplicate dedupeKey)"}`);
       } catch (e) {
@@ -326,7 +331,7 @@ export const runMatchingEngine = async (newItem) => {
       }
 
       // Notify the owner of the EXISTING matched item
-      logger.info(`[Matcher] Notifying userId=${matchedItem.userId} | dedupeKey="${dedupeKey}"`);
+      logger.info(`[Matcher] Notifying userId=${matchedItem.userId} | pair lost=${lostItemId} found=${foundItemId}`);
       try {
         const n2 = await notifyMatch({
           userId:     matchedItem.userId,
@@ -335,6 +340,7 @@ export const runMatchingEngine = async (newItem) => {
           foundItemId,
           score,
           image:      newItemThumbnail,
+          targetItemId: newItem.id, // open the new post, not their own
         });
         logger.info(`[Matcher]   → userId=${matchedItem.userId}: ${n2 ? `CREATED (notifId=${n2.id})` : "SKIPPED (duplicate dedupeKey)"}`);
       } catch (e) {

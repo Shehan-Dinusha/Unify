@@ -65,7 +65,7 @@ export const claimItem = catchAsync(async (req, res) => {
     actorId: claimantId,
     type: "General",
     title: `${claimantName} ${actionText} your item`,
-    content: `"${description.substring(0, 100)}${description.length > 100 ? "..." : ""}" — Contact: ${contactNumber}`,
+    content: `"${description.substring(0, 100)}${description.length > 100 ? "..." : ""}" - Contact: ${contactNumber}`,
     referenceId: parseInt(id),
     referenceType: "LostAndFound",
     dedupeKey: `claim:${id}:${claimantId}`,
