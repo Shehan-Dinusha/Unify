@@ -261,8 +261,10 @@ Run from the package root (`backend/` or `frontend/`).
 
 - Configured in `frontend/vite.config.js` via `vite-plugin-pwa`; the service worker is generated only by `npm run build` (use `npm run preview` to test it).
 - The app shell is precached; S3 images use a cache-first strategy.
-- **Authenticated API responses are never cached** by the service worker, and all caches are cleared on logout.
+- **Authenticated API responses are never cached** by the service worker. Runtime caches that may hold user media are cleared on logout (`src/utils/pwaCache.js`); the app-shell precache is kept.
 - When a new version is deployed, users see an "Update available" prompt instead of a silent reload.
+- Routes are lazy-loaded (`src/utils/lazyWithRetry.js`), which keeps the main bundle small and the precache well under Workbox's 2 MB per-file limit. A stale chunk after a deploy triggers one automatic reload.
+- nginx serves `sw.js`, `manifest.webmanifest` and `index.html` with `Cache-Control: no-cache`, and hashed `/assets/*` as immutable.
 
 ---
 

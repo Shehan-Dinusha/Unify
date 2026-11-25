@@ -2,6 +2,7 @@ import React from "react";
 import { RouterProvider } from "react-router-dom";
 import { ToastProvider } from "./components/common/Toast";
 import NetworkStatusBanner from "./components/common/NetworkStatusBanner";
+import PWAUpdatePrompt from "./components/common/PWAUpdatePrompt";
 import { NotificationProvider } from "./context/NotificationContext";
 import { ChatProvider } from "./context/ChatContext";
 import { ClubOrderProvider } from "./context/ClubOrderContext";
@@ -11,6 +12,7 @@ function App() {
   return (
     <ToastProvider>
       <NetworkStatusBanner />
+      <PWAUpdatePrompt />
       <NotificationProvider>
         <ClubOrderProvider>
           <ChatProvider>

@@ -1,44 +1,45 @@
+import lazyWithRetry from "../utils/lazyWithRetry";
 import React from "react";
 import MainLayout from "../components/layout/MainLayout";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 
-import NewsFeed from "../pages/NewsFeed";
-import Marketplace from "../pages/Marketplace";
-import ClubVerification from "../pages/ClubVerification";
-import ClubOwnerMarketplace from "../pages/ClubOwnerMarketplace";
-import ClubProduct from "../pages/ClubProduct";
-import ClubCheckout from "../pages/ClubCheckout";
-import ClubPaymentSuccess from "../pages/ClubPaymentSuccess";
-import ClubOwnerDashboard from "../pages/ClubOwnerDashboard";
-import ProductOrderDashboard from "../pages/ProductOrderDashboard";
-import ClubWalletPage from "../pages/ClubWalletPage";
-import FollowersDirectory from "../pages/FollowersDirectory";
-import CreateProductPage from "../pages/CreateProductPage";
-import CreateEventPage from "../pages/CreateEventPage";
-import CreateNormalPostPage from "../pages/CreateNormalPostPage";
-import MyPosts from "../pages/MyPosts";
-import ChatPage from "../pages/chat/ChatPage";
-import OwnProfilePage from "../pages/profile/OwnProfilePage";
-import EditProfilePage from "../pages/profile/EditProfilePage";
-import SecurityPage from "../pages/profile/SecurityPage";
-import PublicProfilePage from "../pages/profile/PublicProfilePage";
+const NewsFeed = lazyWithRetry(() => import("../pages/NewsFeed"));
+const Marketplace = lazyWithRetry(() => import("../pages/Marketplace"));
+const ClubVerification = lazyWithRetry(() => import("../pages/ClubVerification"));
+const ClubOwnerMarketplace = lazyWithRetry(() => import("../pages/ClubOwnerMarketplace"));
+const ClubProduct = lazyWithRetry(() => import("../pages/ClubProduct"));
+const ClubCheckout = lazyWithRetry(() => import("../pages/ClubCheckout"));
+const ClubPaymentSuccess = lazyWithRetry(() => import("../pages/ClubPaymentSuccess"));
+const ClubOwnerDashboard = lazyWithRetry(() => import("../pages/ClubOwnerDashboard"));
+const ProductOrderDashboard = lazyWithRetry(() => import("../pages/ProductOrderDashboard"));
+const ClubWalletPage = lazyWithRetry(() => import("../pages/ClubWalletPage"));
+const FollowersDirectory = lazyWithRetry(() => import("../pages/FollowersDirectory"));
+const CreateProductPage = lazyWithRetry(() => import("../pages/CreateProductPage"));
+const CreateEventPage = lazyWithRetry(() => import("../pages/CreateEventPage"));
+const CreateNormalPostPage = lazyWithRetry(() => import("../pages/CreateNormalPostPage"));
+const MyPosts = lazyWithRetry(() => import("../pages/MyPosts"));
+const ChatPage = lazyWithRetry(() => import("../pages/chat/ChatPage"));
+const OwnProfilePage = lazyWithRetry(() => import("../pages/profile/OwnProfilePage"));
+const EditProfilePage = lazyWithRetry(() => import("../pages/profile/EditProfilePage"));
+const SecurityPage = lazyWithRetry(() => import("../pages/profile/SecurityPage"));
+const PublicProfilePage = lazyWithRetry(() => import("../pages/profile/PublicProfilePage"));
 
-import BoardingOwnerMarketplace from "../pages/BoardingOwnerMarketplace";
-import CreateBoardingPostPage from "../pages/CreateBoardingPostPage";
+const BoardingOwnerMarketplace = lazyWithRetry(() => import("../pages/BoardingOwnerMarketplace"));
+const CreateBoardingPostPage = lazyWithRetry(() => import("../pages/CreateBoardingPostPage"));
 
-import FoodCafeOwnerMarketplace from "../pages/FoodCafeOwnerMarketplace";
-import CreateFoodCafePostPage from "../pages/CreateFoodCafePostPage";
+const FoodCafeOwnerMarketplace = lazyWithRetry(() => import("../pages/FoodCafeOwnerMarketplace"));
+const CreateFoodCafePostPage = lazyWithRetry(() => import("../pages/CreateFoodCafePostPage"));
 
-import ServicesOwnerMarketplace from "../pages/ServicesOwnerMarketplace";
-import CreateServicePostPage from "../pages/CreateServicePostPage";
+const ServicesOwnerMarketplace = lazyWithRetry(() => import("../pages/ServicesOwnerMarketplace"));
+const CreateServicePostPage = lazyWithRetry(() => import("../pages/CreateServicePostPage"));
 
-import MarketplaceReviews from "../pages/MarketplaceReviews";
-import ReceivedReviews from "../pages/ReceivedReviews";
-import MyReviewHistory from "../pages/MyReviewHistory";
-import BoostSelectPackage from "../pages/BoostSelectPackage";
-import BoostConfirmOrder from "../pages/BoostConfirmOrder";
-import BoostPostSuccess from "../pages/BoostPostSuccess";
-import BoostAnalytics from "../pages/BoostAnalytics";
+const MarketplaceReviews = lazyWithRetry(() => import("../pages/MarketplaceReviews"));
+const ReceivedReviews = lazyWithRetry(() => import("../pages/ReceivedReviews"));
+const MyReviewHistory = lazyWithRetry(() => import("../pages/MyReviewHistory"));
+const BoostSelectPackage = lazyWithRetry(() => import("../pages/BoostSelectPackage"));
+const BoostConfirmOrder = lazyWithRetry(() => import("../pages/BoostConfirmOrder"));
+const BoostPostSuccess = lazyWithRetry(() => import("../pages/BoostPostSuccess"));
+const BoostAnalytics = lazyWithRetry(() => import("../pages/BoostAnalytics"));
 
 // eslint-disable-next-line react-refresh/only-export-components
 const PlaceholderPage = ({ title }) => (

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { updateActiveAccountTokens, removeSavedAccount } from "./authService";
+import { clearPrivateCaches } from "../utils/pwaCache";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
@@ -79,6 +80,7 @@ api.interceptors.response.use(
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
+        clearPrivateCaches();
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";
         }
@@ -134,6 +136,7 @@ api.interceptors.response.use(
           }
 
           if (!localStorage.getItem("token") && window.location.pathname !== "/login") {
+            clearPrivateCaches();
             window.location.href = "/login";
           }
         }

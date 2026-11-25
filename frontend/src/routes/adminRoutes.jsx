@@ -1,19 +1,20 @@
+import lazyWithRetry from "../utils/lazyWithRetry";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
-import VerificationQueue from "../pages/VerificationQueue";
-import AdminDashboard from "../pages/AdminDashboard";
-import RevenueOverview from "../pages/RevenueOverview";
-import ActiveBusinesses from "../pages/ActiveBusinesses";
-import BusinessProfile from "../pages/BusinessProfile";
-import StudentManagement from "../pages/StudentManagement";
-import StudentUserProfile from "../pages/StudentUserProfile";
-import ReportModeration from "../pages/ReportModeration";
-import ReportDetail from "../pages/ReportDetail";
-import SuspendedUsers from "../pages/SuspendedUsers";
-import SuspendedUserProfile from "../pages/SuspendedUserProfile";
-import SuspendedUserReactivation from "../pages/SuspendedUserReactivation";
-import SuspendedUserSuccess from "../pages/SuspendedUserSuccess";
-import BoostController from "../pages/BoostController";
-import BoostPackageForm from "../pages/BoostPackageForm";
+const VerificationQueue = lazyWithRetry(() => import("../pages/VerificationQueue"));
+const AdminDashboard = lazyWithRetry(() => import("../pages/AdminDashboard"));
+const RevenueOverview = lazyWithRetry(() => import("../pages/RevenueOverview"));
+const ActiveBusinesses = lazyWithRetry(() => import("../pages/ActiveBusinesses"));
+const BusinessProfile = lazyWithRetry(() => import("../pages/BusinessProfile"));
+const StudentManagement = lazyWithRetry(() => import("../pages/StudentManagement"));
+const StudentUserProfile = lazyWithRetry(() => import("../pages/StudentUserProfile"));
+const ReportModeration = lazyWithRetry(() => import("../pages/ReportModeration"));
+const ReportDetail = lazyWithRetry(() => import("../pages/ReportDetail"));
+const SuspendedUsers = lazyWithRetry(() => import("../pages/SuspendedUsers"));
+const SuspendedUserProfile = lazyWithRetry(() => import("../pages/SuspendedUserProfile"));
+const SuspendedUserReactivation = lazyWithRetry(() => import("../pages/SuspendedUserReactivation"));
+const SuspendedUserSuccess = lazyWithRetry(() => import("../pages/SuspendedUserSuccess"));
+const BoostController = lazyWithRetry(() => import("../pages/BoostController"));
+const BoostPackageForm = lazyWithRetry(() => import("../pages/BoostPackageForm"));
 
 export const adminRoutes = [
   {
