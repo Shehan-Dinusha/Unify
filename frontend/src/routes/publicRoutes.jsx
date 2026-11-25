@@ -1,10 +1,11 @@
+import lazyWithRetry from "../utils/lazyWithRetry";
 import { Navigate } from "react-router-dom";
 import GuestRoute, { getDefaultPath } from "../components/auth/GuestRoute";
-import LandingHome from "../pages/LandingHome";
-import AboutPage from "../pages/AboutPage";
-import FeaturesPage from "../pages/FeaturesPage";
-import SupportPage from "../pages/SupportPage";
-import PricingPage from "../pages/PricingPage";
+const LandingHome = lazyWithRetry(() => import("../pages/LandingHome"));
+const AboutPage = lazyWithRetry(() => import("../pages/AboutPage"));
+const FeaturesPage = lazyWithRetry(() => import("../pages/FeaturesPage"));
+const SupportPage = lazyWithRetry(() => import("../pages/SupportPage"));
+const PricingPage = lazyWithRetry(() => import("../pages/PricingPage"));
 
 // eslint-disable-next-line react-refresh/only-export-components
 const IndexRoute = () => {

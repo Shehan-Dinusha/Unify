@@ -1,5 +1,6 @@
 import api from "./api";
 import { getMyProfile } from "./profileService";
+import { clearPrivateCaches } from "../utils/pwaCache";
 
 /**
  * Standardized error handling for all services.
@@ -273,6 +274,7 @@ export const logout = async () => {
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("user");
+  clearPrivateCaches();
   window.dispatchEvent(new Event("auth-changed"));
 
   try {

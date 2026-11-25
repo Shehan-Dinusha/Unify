@@ -1,6 +1,7 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import ScrollToTop from "../components/common/ScrollToTop";
+import RouteFallback from "../components/common/RouteFallback";
 import { BoostPackageProvider } from "../context/BoostPackageContext";
 import { SavedPostsProvider } from "../context/SavedPostsContext";
 import NotFound from "../pages/NotFound";
@@ -16,7 +17,9 @@ const RootLayout = () => (
   <SavedPostsProvider>
     <BoostPackageProvider>
       <ScrollToTop />
-      <Outlet />
+      <Suspense fallback={<RouteFallback />}>
+        <Outlet />
+      </Suspense>
     </BoostPackageProvider>
   </SavedPostsProvider>
 );

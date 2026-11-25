@@ -29,7 +29,7 @@ const NetworkStatusBanner = () => {
       <div className="mx-auto flex max-w-5xl items-center justify-center text-center">
         {isOnline
           ? "Back online"
-          : "You are offline. Changes will sync when connection returns."}
+          : "You're offline. Some features won't work until you reconnect."}
       </div>
     </div>
   );

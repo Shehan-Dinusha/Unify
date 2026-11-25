@@ -1,12 +1,13 @@
+import lazyWithRetry from "../utils/lazyWithRetry";
 import GuestRoute from "../components/auth/GuestRoute";
-import LoginPage from "../pages/LoginPage";
-import RegisterPage from "../pages/RegisterPage";
-import RegisterAccountTypePage from "../pages/RegisterAccountTypePage";
-import RegisterCredentialsPage from "../pages/RegisterCredentialsPage";
-import RegisterOtpPage from "../pages/RegisterOtpPage";
-import RegisterProfilePage from "../pages/RegisterProfilePage";
-import RegisterSuccessPage from "../pages/RegisterSuccessPage";
-import ForgotPasswordPage from "../pages/ForgotPasswordPage";
+const LoginPage = lazyWithRetry(() => import("../pages/LoginPage"));
+const RegisterPage = lazyWithRetry(() => import("../pages/RegisterPage"));
+const RegisterAccountTypePage = lazyWithRetry(() => import("../pages/RegisterAccountTypePage"));
+const RegisterCredentialsPage = lazyWithRetry(() => import("../pages/RegisterCredentialsPage"));
+const RegisterOtpPage = lazyWithRetry(() => import("../pages/RegisterOtpPage"));
+const RegisterProfilePage = lazyWithRetry(() => import("../pages/RegisterProfilePage"));
+const RegisterSuccessPage = lazyWithRetry(() => import("../pages/RegisterSuccessPage"));
+const ForgotPasswordPage = lazyWithRetry(() => import("../pages/ForgotPasswordPage"));
 
 export const authRoutes = [
   {
