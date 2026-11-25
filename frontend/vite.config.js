@@ -56,9 +56,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Precache only the app shell, UI icons and PWA icons. Images in
-        // public/*.jpg are demo/mock content and should not be downloaded
-        // to every device on install.
+        // Precache only the app shell, UI icons and PWA icons. Photos
+        // (jpg/webp) should not be downloaded to every device on install.
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
         navigateFallback: "/index.html",
         cleanupOutdatedCaches: true,

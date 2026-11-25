@@ -246,7 +246,7 @@ Run from the package root (`backend/` or `frontend/`).
 
 - Uses Node's built-in runner (`node:test` + `node:assert/strict`) — no Jest.
 - Tests live in `backend/tests/` (`unit/`, `validators/`, `helpers/`) and are named `*.test.js`.
-- CI runs `npm run lint` and the full test suite on every PR to `dev` and `main`.
+- CI runs backend lint + the full test suite, and frontend lint + production build, on every PR to `dev` and `main`.
 
 ### Conventions
 
@@ -272,7 +272,7 @@ Run from the package root (`backend/` or `frontend/`).
 
 The CI/CD pipeline (`.github/workflows/deploy.yml`):
 
-1. **On PRs to `dev`/`main`**: lint and test the backend.
+1. **On PRs to `dev`/`main`**: lint and test the backend; lint and build the frontend.
 2. **On push to `main`**: build two Docker images and push them to GHCR:
    - `unify-backend` — the Express API
    - `unify-server` — the built frontend served by nginx (which also reverse-proxies the API)
